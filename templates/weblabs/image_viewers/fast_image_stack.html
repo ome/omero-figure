@@ -1,0 +1,420 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html> <head>
+<title>Channel Overlay Viewer</title>
+
+<style type="text/css">
+
+body {
+    font-family: arial;
+}
+
+#large_img_container {
+    position:relative;
+    float: left;
+    width:{{image.getSizeX}}px;
+    height:{{image.getSizeY}}px;
+    overflow:hidden
+}
+
+.large_image {
+    position:absolute;
+    top:0px; left:0px;
+    display: none;
+}
+
+#main_img_x_line {
+    width: 1px;
+    height:{{image.getSizeY}}px;
+}
+#main_img_y_line {
+    height: 1px;
+    width:{{image.getSizeX}}px;
+}
+.line {
+    background: #ff0;
+    position:absolute;
+    left: 0px;
+    top: 0px;
+    z-index: 10;
+}
+
+/* div which follows mouse - contains several lens images */
+#lens {
+    position:fixed;
+    width:80px;
+    height:401px;
+    overflow:hidden;
+    background: #fff;
+    display: none;      /* hide initially */
+    z-index: 100;
+}
+/* Every plane is here - just show appropriate ones */
+.lens_image {
+    position:absolute;
+    width:78px;
+    height:78px;
+    left:1px;
+    top:1px;     /* hide */
+}
+
+#side_viewer {
+    margin-left: 5px;
+    position: relative;
+    float: left;
+    height:{{image.getSizeY}}px; /* div containing slices */
+    width:200px; /* 1px per Z section */
+}
+.side_image {
+    width:2px;
+    float:left;
+    height:{{image.getSizeY}}px; /* div bg is image */
+}
+#side_view_y_line {
+    height: 1px;
+}
+#side_view_z_line {
+    width: 1px;
+    background: #ff0;
+    position:absolute;
+    left: 0px;
+    top: 0px;
+    z-index: 10;
+    height:{{image.getSizeY}}px; /* div bg is image */
+}
+
+
+#bottom_viewer {
+    margin-top: 5px;
+    position: relative;
+    float: left;
+    width:{{image.getSizeY}}px; /* div containing slices */
+    height:200px; /* 1px per Z section */
+}
+.bottom_image {
+    height:2px;
+    width:{{image.getSizeY}}px; /* div bg is image */
+}
+#bottom_view_x_line {
+    width: 1px;
+}
+#bottom_view_z_line {
+    height: 1px;
+    background: #ff0;
+    position:absolute;
+    left: 0px;
+    top: 0px;
+    z-index: 10;
+    width:{{image.getSizeY}}px; /* div bg is image */
+}
+</style>
+
+<!-- links to current version of jquery -->
+{% include "webgateway/base/includes/script_src_jquery.html" %}
+<script type="text/javascript" src="{% static '3rdparty/jquery.mousewheel.js' %}"></script>
+
+<script type="text/javascript">
+
+$(document).ready(function() {
+
+    var THUMB_PADDING = 2,
+        THUMB_HEIGHT = 100,
+        SIZE_X = {{ image.getSizeX }},
+        SIZE_Y = {{ image.getSizeY }},
+        SIZE_Z = {{ image.getSizeZ }},
+        SIZE_C = {{ image.getSizeC }},
+        SIZE_T = {{ image.getSizeT }},
+        large_image_styles = [],
+        lens_style = $("#lens")[0].style,
+        half_lens_height = $("#lens").height()/2,
+        lens_width = $("#lens").width(),
+        lens_img_styles = [],
+        lens_z = 0,
+        lens_zoom = 2.0,
+        z_index = 0,
+        max_intensity_indices,
+        side_image_styles = [],
+        bottom_image_styles = [],
+        movie_interval;
+
+    $(".scroller_thumb")
+        .css("padding", THUMB_PADDING+"px")
+        .css("height", THUMB_HEIGHT+"px");
+    
+    // iterates through Z and T
+    $(".large_image").each(function() {
+        large_image_styles.push(this.style);
+    });
+    // same for lens images
+    $(".lens_image").each(function() {
+        lens_img_styles.push(this.style);
+    });
+    // and side-viewer images
+    $(".side_image").each(function() {
+        side_image_styles.push(this.style);
+        this.style.backgroundSize = (SIZE_X * 2) + "px " + SIZE_Y + "px";
+    });
+    $("#side_view_y_line").css('width', (SIZE_Z * 2) + "px");
+    // and bottom-viewer images
+    $(".bottom_image").each(function() {
+        bottom_image_styles.push(this.style);
+        this.style.backgroundSize = SIZE_X + "px " + (SIZE_Y* 2)  + "px";
+    });
+    $("#bottom_view_x_line").css('height', (SIZE_Z * 2) + "px");
+    
+    $("#mip_index_controls input").click(function() {
+        var mip_channel = $(this).attr('value');
+        $("#mip_index_spinner").show();
+        $.getJSON("/webtest/max_intensity_indices/{{image.id}}/"+ mip_channel, function(data){
+                $("#mip_index_spinner").hide();
+                max_intensity_indices = data;
+            });
+    });
+
+    // show the specified plane in the main viewer
+    var show_plane = function(theZ, theT, mip) {
+        if (theZ < 0 || theZ >= SIZE_Z) return;
+
+        z_index = theZ;
+
+        // hide all planes...
+        for (var i=0; i<large_image_styles.length; i++){
+            large_image_styles[i].display = 'none';
+        }
+        if (mip) {
+            // ...show the max intensity projection
+            large_image_styles[large_image_styles.length-1].display = 'block';
+        } else {
+            if (typeof theT == 'undefined') { theT = 0};
+            var index = (theT*SIZE_Z) + theZ;
+            // ...show the specified index 
+            large_image_styles[index].display = 'block';
+        }
+        
+        // update lens (TODO check visibility)
+        // reset by moving out of view (if needed)
+          for (var z=0; z<lens_img_styles.length; z++) {
+              lens_img_styles[z].top = '1000px';
+          }
+          var lens_index = 0;
+          for (var z=z_index-2; z<z_index+3; z++) {
+                // show each view-port (move to correct location)
+                if (z >= 0 && z < SIZE_Z) {
+                    lens_img_styles[z].top = (lens_index*lens_width +1) + "px";
+                }
+                lens_index += 1;
+            }
+    }
+    
+    // use the scroll of thumbnails to move through Z index
+    $("#z_scroller").scroll(function(event) {
+
+        var scrollTop = $(this).scrollTop(),
+            z = scrollTop/(THUMB_PADDING + THUMB_HEIGHT);
+        z = z >> 0;
+        show_plane(z);
+
+    });
+    
+    // Hotkeys for Projection etc.
+    $(document).bind('keydown', function(event){
+        var key = '' + event.which;
+        // 'p' key does projection - toggle...
+        if (key == '80') {
+            if (z_index == null) {
+                show_plane(9);
+            } else {
+                show_plane(null, null, true);   // z, t, proj
+            }
+        }
+    });
+    
+    // Show Lens when we mouseover image.
+    $("#large_img_container").mousemove(function(event) {
+      
+      var offset = $(this).offset();
+      var left = event.pageX - offset.left;
+      var top = event.pageY - offset.top;
+      
+      // cross-hairs update
+      $("#main_img_x_line").css('left', left+'px');
+      $("#main_img_y_line").css('top', top+"px");
+      
+      // update the location of the lens
+      lens_style.top = (top - half_lens_height) + "px";
+      lens_style.left = (left + 50) + "px";
+
+      var new_lens_z = z_index;
+      // if in projection mode...
+      if (new_lens_z == null) {
+          if (typeof max_intensity_indices != 'undefined') {
+              new_lens_z = max_intensity_indices[top][left];
+          } else {
+              $("#lens").hide();
+          }
+      }
+      
+      // update the content of the lens (location of lens images)
+      // reset by moving out of view (if needed)
+      var half_lens_width = lens_width/2 - 1;   // center (- padding)
+      var lens_img_w = lens_zoom * SIZE_X;
+      for (var z=0; z<lens_img_styles.length; z++) {
+          lens_img_styles[z].top = '1000px';
+          // set lens view-port (background position)
+          lens_img_styles[z].backgroundPosition = (half_lens_width-left*lens_zoom) + 'px ' + (half_lens_width-top*lens_zoom) + 'px';
+          // set zoom
+          lens_img_styles[z].backgroundSize = lens_img_w + "px";
+      }
+      
+      if (new_lens_z) {
+          var lens_index = 0;
+          for (var z=new_lens_z-2; z<new_lens_z+3; z++) {
+            // show each view-port (move to correct location)
+            if (z >= 0 && z < SIZE_Z) {
+                lens_img_styles[z].top = (lens_index*lens_width +1) + "px";
+            }
+            lens_index += 1;
+          }
+      }
+      
+      // Side viewer update...
+      for (var z=0; z<side_image_styles.length; z++) {
+            // set lens view-port (background position)
+            side_image_styles[z].backgroundPosition = -left*2 + 'px 0px';
+        }
+      // set indicators
+      $("#side_view_y_line").css('top', top + "px");
+      // Bottom viewer update...
+        for (var z=0; z<bottom_image_styles.length; z++) {
+              // set lens view-port (background position)
+              bottom_image_styles[z].backgroundPosition = '0px ' + (-top*2) + 'px';
+          }
+        // set indicators
+        $("#bottom_view_x_line").css('left', left + "px");
+      
+      
+    }).css('cursor', 'crosshair');
+    
+    $("#large_img_container").click(function(event) {
+
+        // update the location of the lens
+        var offset = $(this).offset();
+        var left = event.pageX - offset.left;
+        var top = event.pageY - offset.top;
+
+        // if we are in 'projection' mode
+        if (z_index == null) {
+            if (typeof max_intensity_indices != 'undefined') {
+                new_lens_z = max_intensity_indices[top][left];
+                show_plane(new_lens_z);
+            } else {
+                show_plane(9);
+            }
+        }
+    });
+    
+    $("#large_img_container").bind('mousewheel', function(event, delta) {
+        var incr = delta > 0 ? 1 : -1;
+        show_plane(z_index + incr);
+        // set indicators
+        $("#side_view_z_line").css('left', z_index*2 + "px");
+        $("#bottom_view_z_line").css('top', z_index*2 + "px");
+        return false;
+    });
+    $("#large_img_container").bind('mouseover', function(event) {
+        if ($("#show_lens").is(":checked")) {
+            $("#lens").show();
+        }
+    }).bind('mouseout', function(event) {
+        $("#lens").hide();
+    });
+    
+    
+    var interval_ms = 100;
+    var movie_playing = false;
+    
+    $("#fps").change(function() {
+        var fps = parseInt( $(this).val() );
+        interval_ms = (1000 / fps) >> 0;
+    });
+    
+    $("#play_movie").click(function(){
+        if ($(this).is(":checked")) {
+            movie_playing = true;
+            // hide all planes...
+            for (var i=0; i<large_image_styles.length; i++){
+                large_image_styles[i].display = 'none';
+            }
+            var movie_frame = function() {
+                if (!movie_playing) return;
+                large_image_styles[z_index].display = 'none';
+                z_index++;
+                if (z_index >= SIZE_Z) z_index = 0;
+                large_image_styles[z_index].display = 'block';
+                setTimeout(movie_frame, interval_ms);
+            }
+            movie_frame();
+        } else {
+            movie_playing = false;
+        }
+    });
+    
+    
+    show_plane(9);
+});
+</script>
+
+</head>
+
+<body>
+
+<div id="large_img_container">
+{% for z in z_indices %}
+    <img src="{% url webgateway.views.render_image image.id z 0 %}" class="large_image"/>
+{% endfor %}
+<!-- add a max-intensity projetion -->
+<img src="{% url webgateway.views.render_image image.id 0 0 %}?p=intmax" class="large_image"/>
+
+    <!-- lens is within main image div, in case we mouseover lens (still within main image div) -->
+    <div id="lens">
+    {% for z in z_indices %}
+        <div style="background-image:url({% url webgateway.views.render_image image.id z 0 %})" class="lens_image"></div>
+    {% endfor %}
+    </div>
+    
+    <div id="main_img_x_line" class="line"></div>
+    <div id="main_img_y_line" class="line"></div>
+</div>
+
+<div id="side_viewer">
+{% for z in z_indices %}
+    <div style="background-image:url({% url webgateway.views.render_image image.id z 0 %})" class="side_image"></div>
+{% endfor %}
+<div id="side_view_y_line" class="line"></div>
+<div id="side_view_z_line" class="line"></div>
+</div>
+
+
+Play Movie:<input type="checkbox" id="play_movie" /> FPS:<input type="text" id="fps" size="4" value='10'/> <br/>
+Lens:<input type="checkbox" id="show_lens" /><br />
+<!-- comment this out temporarily
+<div id="mip_index_controls">
+Projection Lookup:<img id="mip_index_spinner" src="{% static 'webgateway/img/spinner.gif' %}" style="display:none"/>
+    {% for c in image.getChannels %}
+        {{ c.getLabel }}:<input type="radio" name="mip_index" value='{{ forloop.counter0 }}'/> 
+    {% endfor %}
+</div>
+-->
+
+
+<div style="clear:both"></div>
+
+<div id="bottom_viewer">
+{% for z in z_indices %}
+    <div style="background-image:url({% url webgateway.views.render_image image.id z 0 %})" class="bottom_image"></div>
+{% endfor %}
+<div id="bottom_view_x_line" class="line"></div>
+<div id="bottom_view_z_line" class="line"></div>
+</div>
+
+
+</body> </html>
