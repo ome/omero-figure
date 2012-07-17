@@ -164,7 +164,7 @@ $(document).ready(function() {
     $("#mip_index_controls input").click(function() {
         var mip_channel = $(this).attr('value');
         $("#mip_index_spinner").show();
-        $.getJSON("/webtest/max_intensity_indices/{{image.id}}/"+ mip_channel, function(data){
+        $.getJSON("/weblabs/max_intensity_indices/{{image.id}}/"+ mip_channel, function(data){
                 $("#mip_index_spinner").hide();
                 max_intensity_indices = data;
             });
@@ -396,15 +396,23 @@ $(document).ready(function() {
 
 Play Movie:<input type="checkbox" id="play_movie" /> FPS:<input type="text" id="fps" size="4" value='10'/> <br/>
 Lens:<input type="checkbox" id="show_lens" /><br />
-<!-- comment this out temporarily
+
+<p>
+    Hot Keys:
+    <ul><li>P: Toggle Maximum Intensity Projection</li></ul>
+</p>
+
+<p>
+    Once we have retrieved look-up tables for the max-intensity Z-index (see below), when in Max-Intensity Projection view,
+    the lens will centre on the Z-index of max intensity for each pixel.
 <div id="mip_index_controls">
 Projection Lookup:<img id="mip_index_spinner" src="{% static 'webgateway/img/spinner.gif' %}" style="display:none"/>
     {% for c in image.getChannels %}
         {{ c.getLabel }}:<input type="radio" name="mip_index" value='{{ forloop.counter0 }}'/> 
     {% endfor %}
 </div>
--->
 
+<p>Watch a <a href="http://trac.openmicroscopy.org.uk/ome/raw-attachment/ticket/6201/Fast_Stack_Viewer.mov">demo movie for this viewer</a>.</p>
 
 <div style="clear:both"></div>
 
