@@ -1,0 +1,132 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+    <title>Rotation 3D Viewer</title>
+    <!-- links to current version of jquery -->
+    {% include "webgateway/base/includes/script_src_jquery.html" %}
+    {% include "webgateway/base/includes/jquery-ui.html" %}
+    <link rel="stylesheet" type="text/css" href="{% static "3rdparty/jquery-ui-1.8.19/jquery-ui-1.8.19.custom.css" %}" media="all" />
+    <style type="text/css">
+        body {
+            background: #ddd;
+        }
+        #canv {
+            float: left;
+        }
+        #slider {
+            width:300px;
+        }
+        
+        #rotation_stitch {
+            position: absolute;
+            top: 0px;
+            left: 0px;
+        }
+        #rotation_viewport {
+            position: relative;
+            overflow: hidden;
+            width: {{ image.getSizeX }}px;
+            height: {{ image.getSizeY }}px;
+        }
+    </style>
+    <script type="text/javascript" charset=\utf-8\>
+        var t;
+        var stitch_style;
+        var paused=0;
+        var i;
+        var current_frame=0;
+
+    $(function() {
+        
+        stitch_style= $("#rotation_stitch").get(0).style;
+
+
+        $("#slider").slider({
+            range: "min",
+            value: 0,
+            min: 0,
+            max: 35,
+            slide: function(event,ui) {change(ui.value)}
+        });
+
+        $( "#play" ).button({
+            text: false,
+            icons: {
+                primary: "ui-icon-play"
+            }
+        })
+        .click(function() { 
+            var options;
+            if ( $( this ).text() === "play") {
+                options = {
+                    label: "pause",
+                    icons: {
+                        primary: "ui-icon-pause"
+                    }
+                };
+                vid();
+            } else {
+                options = {
+                    label: "play",
+                    icons: {
+                        primary: "ui-icon-play" 
+                    }
+                };
+                pause();
+            }
+            $( this ).button( "option", options );
+        });
+
+        display_image(0);
+    });
+
+        function vid() {
+            if (paused==0)
+                {i=0;}
+            t=setInterval("video()",300);
+        }
+        function video() {
+            $("#slider").slider('value',i);
+            display_image(i);
+            i++;
+            if(i>35) {
+                clearInterval(t);
+                paused=0;
+                $("#play").button('option',{icons: {primary: "ui-icon-play"}})
+                $("#play").button('option','label',"play")
+            }
+        }
+        function pause() {
+            clearInterval(t);
+            paused=1;
+            if(i==35)
+            paused=0;
+        }
+        function change(v) {
+            $("#slider").slider('value',v);
+            i=v;paused=1;
+            display_image(i);
+        }
+        function display_image(x) {
+            stitch_style.left = "-"+(x * {{ image.getSizeX }})+"px";
+        }
+    </script>
+</head>
+<body>
+        <div id="canv">
+            
+            <img src="{% url webgateway.views.render_image image.id default_z 0 %}" class="large_image" />
+
+
+            <div style="bottom:5px;position:absolute;left:24%">
+                <button id="play" style="float:left">play</button>
+            </div>
+            <div id="slider" style="bottom:15px;position:absolute;left:32%"></div>
+
+        </div>
+        
+        <div id="rotation_viewport">
+            <img id="rotation_stitch" src="{% url weblabs_rotation_proj_stitch image.id %}"/>
+        </div>
+    </body>
+</html>
