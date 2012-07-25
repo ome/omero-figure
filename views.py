@@ -50,7 +50,6 @@ def max_intensity_indices (request, imageId, theC, conn=None, **kwargs):
     
     for z in range(image.getSizeZ()):
         plane = pixels.getPlane(z, c, 0)
-        print plane
         for x in range(w):
             for y in range(h):
                 if plane[y][x] > miPlane[y][x]:
@@ -72,6 +71,8 @@ def rotation_3d_viewer (request, imageId, conn=None, **kwargs):
 def rotation_proj_stitch (request, imageId, conn=None, **kwargs):
     """ Use ImageJ to give 3D 'rotation projections' - stitch these into a single jpeg """
 
+    region = request.REQUEST.get('region', None)
+
     inimagejpath = "/Applications/ImageJ/ImageJ.app/Contents/Resources/Java/ij.jar" # Path to ij.jar
     rotation_ijm = """str=getArgument();
 args=split(str,"*");
@@ -81,7 +82,7 @@ opname=args[2];
 oppath=args[3];
 
 run("Image Sequence...", "open=&ippath number=&slices starting=1 increment=1 scale=100 file=[] or=[] sort");
-run("3D Project...", "projection=[Brightest Point] axis=Y-Axis slice=2 initial=0 total=360 rotation=10 lower=1 upper=255 opacity=0 surface=100 interior=50");
+run("3D Project...", "projection=[Brightest Point] axis=Y-Axis slice=1 initial=0 total=360 rotation=10 lower=1 upper=255 opacity=0 surface=100 interior=50");
 run("Image Sequence... ", "format=JPEG name=[&opname] start=0 digits=4 save="+oppath );"""
     
     image = conn.getObject("Image", long(imageId))
@@ -114,10 +115,21 @@ run("Image Sequence... ", "format=JPEG name=[&opname] start=0 digits=4 save="+op
     f.write(rotation_ijm)
     f.close()
     theT = 0
+    if region is not None:
+        x, y, w, h = region.split(",")
+        def getPlane(z, t):
+            rv = image.renderJpegRegion(z, t, x, y, w, h)
+            if rv is not None:
+                i = StringIO(rv)
+                return Image.open(i)
+    else:
+        def getPlane(z, t):
+            return image.renderImage(z, t)
+        
     try:
         for z in range(sizeZ):
             img_path = os.path.join(tiff_stack, "plane_%02d.tiff" % z)
-            plane = image.renderImage(z, theT)
+            plane = getPlane(z, theT)
             plane.save(img_path)
         macro_args = "*".join( [tiff_stack, str(sizeX), "rot_frame", destination])        # can't use ";" on Mac / Linu. Use "*"
         cmd = "java -jar %s -batch %s %s" % (inimagejpath, ijm_path, macro_args)
@@ -125,14 +137,14 @@ run("Image Sequence... ", "format=JPEG name=[&opname] start=0 digits=4 save="+op
         
         # let's stitch all the jpegs together, so they can be returned as single http response
         image_list=os.listdir(destination)
-        stitch_width = sizeX * len(image_list)
-        stitch_height = sizeY
+        stitch_width = plane.size[0] * len(image_list)
+        stitch_height = plane.size[1]
         stiched = Image.new("RGB", (stitch_width,stitch_height), (255,255,255))
         x_pos = 0
         for i in image_list:
             img = Image.open(os.path.join(destination, i))
             stiched.paste(img, (x_pos, 0))
-            x_pos += sizeX
+            x_pos += plane.size[0]
         rv = StringIO()
         stiched.save(rv, 'jpeg', quality=90)
         

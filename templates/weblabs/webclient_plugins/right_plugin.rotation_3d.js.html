@@ -5,7 +5,7 @@ $(document).ready(function() {
     $("#rotation_3d_tab").omeroweb_right_plugin({
         plugin_index: {{ forloop.counter }},        // This MUST be defined
         load_tab_content: function(selected, obj_dtype, obj_id) {    // This MUST be defined
-            $(this).load('{% url weblabs_index %}rotation_3d_viewer/'+obj_id);
+            $(this).load('{% url weblabs_index %}rotation_3d_viewer/'+obj_id+'/');
         },
         //supported_obj_types: ['image','dataset'],   // E.g. only support single image/dataset selected
         

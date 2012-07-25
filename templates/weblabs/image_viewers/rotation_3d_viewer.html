@@ -3,43 +3,101 @@
 <head>
     <title>Rotation 3D Viewer</title>
     <!-- links to current version of jquery -->
-    {% include "webgateway/base/includes/script_src_jquery.html" %}
-    {% include "webgateway/base/includes/jquery-ui.html" %}
-    <link rel="stylesheet" type="text/css" href="{% static "3rdparty/jquery-ui-1.8.19/jquery-ui-1.8.19.custom.css" %}" media="all" />
+    <!--{% include "webgateway/base/includes/script_src_jquery.html" %}-->
+    <!--{% include "webgateway/base/includes/jquery-ui.html" %}-->
+    <!--<link rel="stylesheet" type="text/css" href="{% static "3rdparty/jquery-ui-1.8.19/jquery-ui-1.8.19.custom.css" %}" media="all" />-->
+    <link rel="stylesheet" href="{% static "webadmin/javascript/jquery.imgareaselect-0.9.8/css/imgareaselect-default.css" %}" type="text/css" media="screen"/>
+    <script type="text/javascript" src="{% static "webadmin/javascript/jquery.imgareaselect-0.9.8/jquery.imgareaselect.js" %}"></script>
     <style type="text/css">
-        body {
-            background: #ddd;
+
+        #container {
+            padding:10px;
         }
-        #canv {
-            float: left;
+        #spinner {
+            opacity: 0.5;
         }
-        #slider {
-            width:300px;
+        #full_image {
+            position: relative;
+            width: {{ image.getSizeX }}px;
+            height: {{ image.getSizeY }}px;
         }
-        
-        #rotation_stitch {
+        #max_proj, #rotation_stitch, #rotation_viewport {
             position: absolute;
             top: 0px;
             left: 0px;
         }
         #rotation_viewport {
-            position: relative;
+            position: absolute;
             overflow: hidden;
             width: {{ image.getSizeX }}px;
             height: {{ image.getSizeY }}px;
         }
+        /* I removed jquery-ui-1.8.19.custom.css since it messed up webclient when this page loads as plugin */
+        #slider, #play, .ui-slider-handle {
+            background: #eee;
+            border: 1px solid #aaa;
+        }
+        #slider {
+            width:200px;
+            position: relative;
+            left:10px;
+        }
+        # play {
+            cursor: pointer;
+            float:left;
+        }
+        #selectButton {
+            padding: 10px;
+        }
+        
     </style>
     <script type="text/javascript" charset=\utf-8\>
         var t;
         var stitch_style;
         var paused=0;
         var i;
+        var rotation_width = {{ image.getSizeX }};
         var current_frame=0;
 
     $(function() {
         
+        $("#rotation_stitch").attr("src", "{% url weblabs_rotation_proj_stitch image.id %}");
         stitch_style= $("#rotation_stitch").get(0).style;
 
+        var imgAS = $('#full_image').imgAreaSelect({ x1: 0, y1: 0, x2: 50, y2: 50, 
+                selectionOpacity: 0.8, 
+                aspectRatio: '1:1', 
+                handles: 'corners', 
+                instance: true,
+                //onSelectChange: function(a, e){ console.log(a, e) } 
+            });
+        //imgAS.setOptions({ show: false });
+        imgAS.cancelSelection();
+
+        $("#selectButton").click(function(){
+            imgAS.setSelection(10, 10, 50, 50);
+            imgAS.setOptions({ show: true });
+            imgAS.update();
+        });
+        
+        $("#updateButton").click(function(){
+            var sel = imgAS.getSelection();
+            var x = sel.x1,
+                y = sel.y1,
+                w = sel.x2 - sel.x1,
+                h = sel.y2 - sel.y1;
+            $("#rotation_viewport").css({ 
+                'left': x+'px',
+                'top': y+'px',
+                'width': w+'px',
+                'height': h+'px',
+                'border': 'solid white 1px'});
+            imgAS.cancelSelection();
+            rotation_width = sel.x2 - sel.x1;
+            
+            $("#rotation_stitch").attr('src', "{% url weblabs_rotation_proj_stitch image.id %}?region="+ [x,y,w,h].join(","));
+            display_image(0);
+        });
 
         $("#slider").slider({
             range: "min",
@@ -108,25 +166,26 @@
             display_image(i);
         }
         function display_image(x) {
-            stitch_style.left = "-"+(x * {{ image.getSizeX }})+"px";
+            stitch_style.left = ((-1 * x * rotation_width)-2)+"px";
         }
     </script>
 </head>
 <body>
-        <div id="canv">
-            
-            <img src="{% url webgateway.views.render_image image.id default_z 0 %}" class="large_image" />
-
-
-            <div style="bottom:5px;position:absolute;left:24%">
-                <button id="play" style="float:left">play</button>
+    <div id="container">
+        <div id="full_image">
+            <img src="{% url webgateway.views.render_image image.id default_z 0 %}?p=intmax" id="max_proj" />
+            <div id="rotation_viewport">
+                <img id="rotation_stitch" />
             </div>
-            <div id="slider" style="bottom:15px;position:absolute;left:32%"></div>
-
         </div>
+        <div>
+            <button id="play">play</button>
+            <div id="slider"></div>
+        </div>
+        <button id="selectButton" value="Select">Select</button>
+        <button id="updateButton" >Update</button>
         
-        <div id="rotation_viewport">
-            <img id="rotation_stitch" src="{% url weblabs_rotation_proj_stitch image.id %}"/>
-        </div>
-    </body>
+        <!--<img src="{% static 'webgateway/img/spinner_big.gif' %}" id="spinner" />-->
+    </div>
+</body>
 </html>
