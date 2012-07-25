@@ -58,6 +58,7 @@
         var i;
         var rotation_width = {{ image.getSizeX }};
         var current_frame=0;
+        var last_region = {};
 
     $(function() {
         
@@ -66,7 +67,7 @@
 
         var imgAS = $('#full_image').imgAreaSelect({ x1: 0, y1: 0, x2: 50, y2: 50, 
                 selectionOpacity: 0.8, 
-                aspectRatio: '1:1', 
+                //aspectRatio: '1:1', 
                 handles: 'corners', 
                 instance: true,
                 //onSelectChange: function(a, e){ console.log(a, e) } 
@@ -80,23 +81,35 @@
             imgAS.update();
         });
         
+        // Handle "UPDATE" to show new region in rotation viewport
         $("#updateButton").click(function(){
             var sel = imgAS.getSelection();
             var x = sel.x1,
                 y = sel.y1,
-                w = sel.x2 - sel.x1,
-                h = sel.y2 - sel.y1;
+                w = sel.width,
+                h = sel.height;
+            if (w == 0 || h == 0) {     // imgAreaSelect not shown. Use previous location
+                x = last_region['x'];
+                y = last_region['y'];
+                w = last_region['w'];
+                h = last_region['h'];
+            }
+            last_region = {'x':x, 'y':y, 'w':w, 'h':h};     // save region
+            // put the viewport in the right spot & size
             $("#rotation_viewport").css({ 
                 'left': x+'px',
                 'top': y+'px',
                 'width': w+'px',
                 'height': h+'px',
                 'border': 'solid white 1px'});
-            imgAS.cancelSelection();
-            rotation_width = sel.x2 - sel.x1;
-            
-            $("#rotation_stitch").attr('src', "{% url weblabs_rotation_proj_stitch image.id %}?region="+ [x,y,w,h].join(","));
+            imgAS.cancelSelection();    // hide selection tool
+            rotation_width = w;         // update so that display_image() knows increment between stitched frames
+            $("#rotation_stitch").attr('src', "");  // hide the old image, while we're waiting on new one
+            var axis = $("input[name='axis']:checked").attr('value');
+            // set the src of the rotation stitched image....
+            $("#rotation_stitch").attr('src', "{% url weblabs_rotation_proj_stitch image.id %}?region="+ [x,y,w,h].join(",") +"&axis="+axis);
             display_image(0);
+            $("#slider").slider('value',0);
         });
 
         $("#slider").slider({
@@ -184,6 +197,11 @@
         </div>
         <button id="selectButton" value="Select">Select</button>
         <button id="updateButton" >Update</button>
+        <div>
+            Rotate: 
+            Y-axis<input type="radio" name="axis" value="Y" checked="true" />
+            X-axis<input type="radio" name="axis" value="X" />
+        </div>
         
         <!--<img src="{% static 'webgateway/img/spinner_big.gif' %}" id="spinner" />-->
     </div>

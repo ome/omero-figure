@@ -67,11 +67,16 @@ def rotation_3d_viewer (request, imageId, conn=None, **kwargs):
     default_z = image.getSizeZ() /2
     return render_to_response('weblabs/image_viewers/rotation_3d_viewer.html', {'image':image, 'default_z': default_z})
 
+
 @login_required()
 def rotation_proj_stitch (request, imageId, conn=None, **kwargs):
-    """ Use ImageJ to give 3D 'rotation projections' - stitch these into a single jpeg """
+    """ 
+    Use ImageJ to give 3D 'rotation projections' - stitch these into a single jpeg 
+    so we can return them all as a single http response
+    """
 
-    region = request.REQUEST.get('region', None)
+    region = request.REQUEST.get('region', None)    # x,y,w,h  option to use region of image
+    axis = request.REQUEST.get('axis', 'Y')
 
     inimagejpath = "/Applications/ImageJ/ImageJ.app/Contents/Resources/Java/ij.jar" # Path to ij.jar
     rotation_ijm = """str=getArgument();
@@ -81,9 +86,9 @@ slices=args[1];
 opname=args[2];
 oppath=args[3];
 
-run("Image Sequence...", "open=&ippath number=&slices starting=1 increment=1 scale=100 file=[] or=[] sort");
-run("3D Project...", "projection=[Brightest Point] axis=Y-Axis slice=1 initial=0 total=360 rotation=10 lower=1 upper=255 opacity=0 surface=100 interior=50");
-run("Image Sequence... ", "format=JPEG name=[&opname] start=0 digits=4 save="+oppath );"""
+run("Image Sequence...", "open=&ippath number=&slices starting=1 increment=1 scale=100 file=[] or=[] sort");"""
+    rotation_ijm += '\nrun("3D Project...", "projection=[Brightest Point] axis=%s-Axis slice=1 initial=0 total=360 rotation=10 lower=1 upper=255 opacity=0 surface=100 interior=50");'% axis
+    rotation_ijm += '\nrun("Image Sequence... ", "format=JPEG name=[&opname] start=0 digits=4 save="+oppath );'
     
     image = conn.getObject("Image", long(imageId))
     sizeZ = image.getSizeZ()
@@ -111,10 +116,14 @@ run("Image Sequence... ", "format=JPEG name=[&opname] start=0 digits=4 save="+op
         os.mkdir(destination)
     except:
         pass # already exist, OK
+    
+    # write the macro to a known location (cache) we can pass to ImageJ
     f = open(ijm_path, 'w')
     f.write(rotation_ijm)
     f.close()
     theT = 0
+
+    # getPlane() will either return us the region, OR the whole plane.
     if region is not None:
         x, y, w, h = region.split(",")
         def getPlane(z, t):
@@ -127,10 +136,13 @@ run("Image Sequence... ", "format=JPEG name=[&opname] start=0 digits=4 save="+op
             return image.renderImage(z, t)
         
     try:
+        # Write a Z-stack to web cache
         for z in range(sizeZ):
             img_path = os.path.join(tiff_stack, "plane_%02d.tiff" % z)
-            plane = getPlane(z, theT)
+            plane = getPlane(z, theT)   # get Plane (or region)
             plane.save(img_path)
+
+        # Call ImageJ via command line, with macro ijm path & parameters
         macro_args = "*".join( [tiff_stack, str(sizeX), "rot_frame", destination])        # can't use ";" on Mac / Linu. Use "*"
         cmd = "java -jar %s -batch %s %s" % (inimagejpath, ijm_path, macro_args)
         os.system(cmd) #this calls the imagej macro and creates the 36 frames at each 10% and are then saved in the destination folder
@@ -149,6 +161,7 @@ run("Image Sequence... ", "format=JPEG name=[&opname] start=0 digits=4 save="+op
         stiched.save(rv, 'jpeg', quality=90)
         
     finally:
+        # remove everything we've just created in the cache
         shutil.rmtree(rotation_dir)
     return HttpResponse(rv.getvalue(), mimetype='image/jpeg')
     
