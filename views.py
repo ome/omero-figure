@@ -164,4 +164,12 @@ run("Image Sequence...", "open=&ippath number=&slices starting=1 increment=1 sca
         # remove everything we've just created in the cache
         shutil.rmtree(rotation_dir)
     return HttpResponse(rv.getvalue(), mimetype='image/jpeg')
-    
+
+
+@login_required()
+def render_settings (request, imageId, conn=None, **kwargs):
+    """ Demo of 'render_settings' jQuery plugin - creates rendering controls for an image """
+
+    image = conn.getObject("Image", imageId)
+    default_z = image.getSizeZ() /2
+    return render_to_response('weblabs/jquery_plugins/render_settings_plugin.html', {'image':image, 'default_z': default_z})

@@ -20,4 +20,8 @@ urlpatterns = patterns('django.views.generic.simple',
     #  Use ImageJ to give 3D 'rotation projections' - stitch these into a single jpeg
     url( r'^rotation_proj_stitch/(?P<imageId>[0-9]+)/', views.rotation_proj_stitch, name='weblabs_rotation_proj_stitch' ),
 
+
+    # Demo a 'render_settings' plugin for creating a rendering settings panel for an image
+    url( r'^render_settings/(?P<imageId>[0-9]+)/', views.render_settings, name='weblabs_render_settings' ),
+
 )

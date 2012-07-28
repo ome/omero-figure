@@ -1,0 +1,99 @@
+{% load verbatim_templatetag %}
+<html>
+<head>
+    <title>Rendering Settings jQuery plugin</title>
+
+<!-- links to current version of jquery -->
+{% include "webgateway/base/includes/script_src_jquery.html" %}
+<script src="{% static 'weblabs/3rdparty/jsrender.js' %}" type="text/javascript"></script>
+<script id="channelsTemplate" type="text/x-jsrender">
+{% verbatim %}
+
+    <div>
+		{{:#index+1}}: <b>{{>label}}</b> ({{>color}})
+	</div>
+
+{% endverbatim %}
+</script>
+
+
+<script>
+
+(function( $ ){
+
+  var methods = {
+     init : function( options ) {
+
+       return this.each(function(){
+         var $this = $(this),
+             data = $this.data('render_settings');
+         
+         // If the plugin hasn't been initialized yet
+         if ( ! data ) {
+         
+           /*
+             Do more setup stuff here
+           */
+           $.getJSON("{% url webgateway.views.imageData_json image.id %}", function(data){
+
+                var html = $( "#channelsTemplate" ).render( data.channels );
+                $this.html( html );
+           });
+
+           $(this).data('render_settings', {
+               target : $this
+           });
+
+         }
+       });
+     },
+     destroy : function( ) {
+
+       return this.each(function(){
+
+         var $this = $(this),
+             data = $this.data('render_settings');
+
+         // Namespacing FTW
+         data.render_settings.remove();
+         $this.removeData('render_settings');
+
+       })
+
+     }
+  };
+
+  $.fn.render_settings = function( method ) {
+    
+    if ( methods[method] ) {
+      return methods[method].apply( this, Array.prototype.slice.call( arguments, 1 ));
+    } else if ( typeof method === 'object' || ! method ) {
+      return methods.init.apply( this, arguments );
+    } else {
+      $.error( 'Method ' +  method + ' does not exist on jQuery.render_settings' );
+    }    
+  
+  };
+
+})( jQuery );
+
+</script>
+
+<script>
+
+$(function(){
+    
+    $(".render_settings").render_settings();
+});
+
+</script>
+
+</head>
+
+<body>
+    
+    <img src="{% url webgateway.views.render_image image.id default_z 0 %}" />
+    <div class="render_settings" id="{{ image.id }}-imgRndSettings"></div>
+
+</body>
+</html>
