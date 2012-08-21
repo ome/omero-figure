@@ -173,3 +173,13 @@ def render_settings (request, imageId, conn=None, **kwargs):
     image = conn.getObject("Image", imageId)
     default_z = image.getSizeZ() /2
     return render_to_response('weblabs/jquery_plugins/render_settings_plugin.html', {'image':image, 'default_z': default_z})
+
+
+
+@login_required()
+def viewport_test (request, imageId, conn=None, **kwargs):
+    """ Just playing to learn viewport """
+
+    image = conn.getObject("Image", imageId)
+    default_z = image.getSizeZ() /2
+    return render_to_response('weblabs/image_viewers/viewport_test.html', {'image':image, 'default_z': default_z})

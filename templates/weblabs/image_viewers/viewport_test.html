@@ -1,0 +1,88 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html> <head>
+<title>Channel Overlay Viewer</title>
+
+{% include "webgateway/base/includes/script_src_jquery.html" %}
+<script type="text/javascript" src="{% static "webgateway/js/ome.viewport.js" %}"></script>
+<script type="text/javascript" src="{% static "webgateway/js/ome.viewportImage.js" %}"></script>
+<script type="text/javascript" src="{% static "webgateway/js/ome.gs_slider.js" %}"></script>
+<script type="text/javascript" src="{% static "webgateway/js/ome.gs_utils.js" %}"></script>
+<script type="text/javascript" src="{% static "3rdparty/jquery.mousewheel.js" %}"></script>
+
+<link rel="stylesheet" href="{% static "webgateway/css/ome.gs_slider.css" %}" type="text/css" media="screen"/>
+<link rel="stylesheet" href="{% static "webgateway/css/ome.viewport.css" %}" type="text/css" media="screen"/>
+
+<script type="text/javascript">
+
+$(document).ready(function() {
+    
+    //var viewport = $.WeblitzViewport("#vp_image", "{% url webindex %}", {'mediaroot': '{{ STATIC_URL }}' } );
+    //viewport.load({{ image.id }});
+    
+   $vp = $("#vptest").viewportImage({panbars: false});
+    $vp.css('overflow', 'hidden');
+    $vp.get(0).setZoom(50, {{ image.getSizeX }}, {{ image.getSizeY }});
+    $vp.get(0).doMove(0,0); 
+});
+</script>
+
+
+</head>
+
+<body>
+    
+    <div id="vp_image" style="width:300px;height:300px"></div>
+    
+    <div style="width:300px; height: 300px" class="weblitz-viewport-vp">
+        <img id="vptest" src="{% url webgateway.views.render_image 1 10 0 %}" />
+    </div>
+    {{ image.getName }}
+    
+        
+        <h3>ome.viewport.js (called above)</h3>
+        
+        <ul>
+            <li>Init a few variables, this etc</li>
+            <li>Metadata() for loadedImg and loadedImg_def</li>
+            <li>Add elements - 'top' with Z slider, 'bottom' with T slider, viewport 'img'.</li>
+            <li>Init the viewport $('img').viewportImage() jQuery plugin, and bind 'zoom' to update loadedImg.current.zoom</li>
+            <li>Init sliders with .gs_slider() and bind 'change' to update loadedImg.current.t /z and _load();</li>
+            <li>setTpos() /Z methods simply delegate to sliders</li>
+            <li>after_img_load_cb(callback) - handle T range, Z range if projection, zoom if _this.hasLinePlot. callback()</li>
+            <li>_reset() after json load. _this.loadedImg._load(data);  handle ?query string, _this.refresh() //resize UI, _load() // on callback handle zoom, lineplot, trigger('imageLoad')</li>
+            <li>_load()   setUpTiles()  OR  showLoading()  and  _this.viewportimg.load(callback); _this.viewportimg.attr('src', href);</li>
+            <li>this.load(iid, dsid, query) - set dsid and query. getJSON(server+'/imgData/'+iid+'/?callback=?', _reset);</li>
+            <li>showLoading() / hideLoading()  keep loading count - show msg if >0</li>
+            <li>var linePlot - position and x/y.   refreshLinePlot(): viewportimg.get(0).showOverlay(linePlot.getUrl()..)</li>
+            <li>refresh()   resize and refresh viewport, resize sliders etc</li>
+            <li>setChannelActive(idx, act, noreload) ... _load();  trigger('channelChange'...)  setChannelColor(), setChannelWindow() and setChannelLabel() similar
+            <li>getSizeDict()  handles rdefs regular vv split-view grey/color</li>
+            <li>this.setProjection()    trigger('projectionChange'..)   _load( viewport.setZoomToFit() ) </li>
+            <li>this.setInvertedAxis()  ... _load()</li>
+            <li>this.setMode(m, noreload)   turn channels on/off etc.  _load( setZoomToFit if split-view ),  _this.self.trigger('modelChange'..)</li>
+            <li>this.setZoom()  viewportimg.setZoom()</li>
+            <li>this.setZoomToFit()   viewportimg.setZoomToFit(w,h)</li>
+            <li>Channel undo/redo support - is this used?</li>
+            <li>this.getQuery() assemble string based on rdefs etc</li>
+            <li>this.setQuery()  parse query and save (doesn't refresh etc)</li>
+            <li>this.bind(evt, cb)  Some events are handled by us, some are proxied to the viewport plugin.</li>
+        </ul>
+        
+        <h3>viewportImage.js (jquery plugin)</h3>
+        
+        <ul>
+            <li>Called on $('img').viewportImage()</li>
+            <li>dragdiv = image.wrap('div class='draggable')</li>
+            <li>wrapdiv = jQuery(dragdiv_dom.parentNode);</li>
+            <li>var overlay = $('img').appendTo(dragdiv);</li>
+            <li>this.showOverlay()   overlay.attr('src', url);   used by line-plot</li>
+            <li>this.doMove(dx, dy..)   dragdiv.css({left: left, top: top});  // update offset, check bounds, zoome etc</li>
+            <li>getXOffset() setXOffset() and Y  etc  for dragdiv.css 'left' and 'top'</li>
+            <li>this.setZoom(val)  calculate then image.attr({width: width, height: height}); (same for overlay). this.doMove(0, 0); to check offset</li>
+            <li>this.setZoomToFit()  calculate zoom then  setZoom(val)</li>
+            <li>this.doZoom(delta)   increment curr_zoom and setZoom(val)</li>
+            <li>dragdiv.bind(mouse down, up, move etc) to handle drag - ondrag calls doMove(dx, dy)</li>
+            <li>this.setUpTiles()   handles all Pano.js init etc</li>
+            <li>this.refresh()   reset width, height / tiles, then doMove(0,0) to check offset.</li>
+        </ul>
+</body>
