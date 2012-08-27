@@ -21,6 +21,13 @@ urlpatterns = patterns('django.views.generic.simple',
     url( r'^rotation_proj_stitch/(?P<imageId>[0-9]+)/', views.rotation_proj_stitch, name='weblabs_rotation_proj_stitch' ),
 
 
+    # colocalisation plot. E.g. http://www.ncbi.nlm.nih.gov/pmc/articles/PMC1993886/
+    url( r'^scatter_gram/(?P<imageId>[0-9]+)/', views.scatter_gram, name='webtest_scatter_gram' ),
+    # json array of rendered pixel values 0-255 for up to 3 channels. E.g. 2 channels is [[10,30], [12,35]...for each pixel]
+    # uses the webgateway ?c=... for rendering settings.
+    url( r'^plane_as_json/(?P<imageId>[0-9]+)/(?P<theZ>[0-9]+)/(?P<theT>[0-9]+)', views.plane_as_json, name='webtest_plane_as_json' ),
+
+
     # Demo a 'render_settings' plugin for creating a rendering settings panel for an image
     url( r'^render_settings/(?P<imageId>[0-9]+)/', views.render_settings, name='weblabs_render_settings' ),
     

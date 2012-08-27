@@ -5,6 +5,8 @@ from django.conf import settings
 import os
 import shutil
 
+from omeroweb.webgateway import views as webgateway_views
+
 try:
     from PIL import Image
 except ImportError:
@@ -164,6 +166,79 @@ run("Image Sequence...", "open=&ippath number=&slices starting=1 increment=1 sca
         # remove everything we've just created in the cache
         shutil.rmtree(rotation_dir)
     return HttpResponse(rv.getvalue(), mimetype='image/jpeg')
+
+
+@login_required()
+def scatter_gram (request, imageId, conn=None, **kwargs):
+    """ Scattergram plot http://www.ncbi.nlm.nih.gov/pmc/articles/PMC1993886/ 
+    Load the data via AJAX using plane_as_json """
+    
+    image = conn.getObject("Image", long(imageId))
+    default_z = image.getSizeZ() / 2
+    return render_to_response('weblabs/image_viewers/scatter_gram.html', {'image':image, 'default_z':default_z})
+
+
+@login_required()
+def plane_as_json (request, imageId, theZ, theT, conn=None, **kwargs):
+    """
+    Returns a 2D plane (or planes) as json. Channel(s) are specified in 
+    request as theC=1,2 or theC=0 etc. If more than one channel is
+    requested, this will return an array of planes.
+    """
+    def RGBIntToRGBA(RGB, cCount):
+    	""" 
+    	Returns a tuple of (r,g,b,a) from an integer colour
+    	r, g, b, a are 0-255. 
+
+    	@param RGB:		A colour as integer. Int
+    	@return:		A tuple of (r,g,b,a)
+    	"""
+    	r = (RGB >> 16) & 0xFF
+    	g = (RGB >> 8) & 0xFF
+    	b = (RGB >> 0) & 0xFF
+    	return [r,g,b][0:cCount]    # slice to truncate if too long
+    image = conn.getObject("Image", long(imageId))
+    sizeX = image.getSizeX()
+    sizeY = image.getSizeY()
+    sizeC = image.getSizeC()
+
+    if request.REQUEST.has_key('c'):
+        channels, windows, colors =  webgateway_views._split_channel_info(request.REQUEST['c'])
+        if len(channels) > 3:
+            channels = channels[0:3]
+    else:
+        channels = (1,)     # 1-based indices
+        colors = None
+
+    minMax = [[c.getWindowMin(), c.getWindowMax()] for c in image.getChannels()]
+
+    w = []
+    for i, cIndex in enumerate(channels):
+        print i, cIndex, windows[i], minMax[cIndex-1]
+        if windows[i][0] is not None and windows[i][1] is not None:
+            minMax[cIndex-1] = windows[i]
+    
+    colors = ['000']*sizeC      # up to 3 channels supported, returned as (r,g,b)
+    rgb = ['F00', '0F0', '00F']
+    for c, cIndex in enumerate(channels):
+        colors[cIndex-1] = rgb[c]
+    
+    #print channels, minMax, colors
+    image.setActiveChannels(channels, minMax, colors)
+    
+    z = int(theZ)
+    t = int(theT)
+    
+    image._pd.z = long(z)
+    image._pd.t = long(t)
+    
+    rv = image._re.renderAsPackedInt(image._pd)
+    
+    cCount = len(channels)
+    plane = [RGBIntToRGBA(i, cCount) for i in rv]
+    removeZeros = [i for i in plane if (10 not in i and 0 not in i)]
+
+    return HttpResponse(simplejson.dumps(removeZeros), mimetype='application/javascript')
 
 
 @login_required()

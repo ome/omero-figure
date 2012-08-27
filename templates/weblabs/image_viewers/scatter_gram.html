@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+  <head>
+ <!-- Example from http://alignedleft.com/tutorials/d3/making-a-scatterplot/ -->
+	<script type="text/javascript" src="{% static 'weblabs/3rdparty/d3/d3.v2.js' %}"></script>
+	<style type="text/css">
+
+	</style>
+	
+	<!-- links to current version of jquery -->
+    {% include "webgateway/base/includes/script_src_jquery.html" %}
+
+<script type='text/javascript'>
+
+    var totalPixels = {{ image.getSizeX }} * {{ image.getSizeY }};
+ $(document).ready(function() {
+     
+//Width and height
+var w = 500;
+var h = 300;
+var padding = 10;
+
+var dataset = [];
+
+    //Create SVG element
+    var svg = d3.select("#scatter_plot")
+              .append("svg")
+              .attr("width", w)
+              .attr("height", h),
+        xScale,
+        yScale;
+    
+    // init scales
+    var init_scales = function() {
+        xScale = d3.scale.linear()
+            .domain([0, d3.max(dataset, function(d) { return d[0]; })]) // input range 0 - max(d[0])
+            .range([padding, w - padding * 2]);
+
+        yScale = d3.scale.linear()
+            .domain([0, d3.max(dataset, function(d) { return d[1]; })])
+            .range([h - padding, padding]);     // upside-down
+    }
+
+    
+    function draw() {
+       // Draw the data…
+       svg.selectAll("circle")
+           .data(dataset)
+           .enter()       // if we've got more data points
+          .append("circle")
+             .attr("cx", function(d) {
+                        return xScale(d[0]);
+                   })
+                   .attr("cy", function(d) {
+                        return yScale(d[1]);
+                    })
+                    .attr("r", 2);
+     };
+     
+     function redraw() {
+        // Update…
+        var p = svg.selectAll("circle")
+            .data(dataset);
+
+        p.enter().append("circle");     // add any new points
+
+        // update all points
+        p.transition()
+            //.duration(1000)
+            .attr("cx", function(d) {
+                return xScale(d[0]);
+            })
+            .attr("cy", function(d) {
+                return yScale(d[1]);
+            })
+            .attr("r", 2);
+        // remove any extras
+        p.exit().remove();
+      };
+     
+     //redraw();
+
+     var draw_scatter = function(render_str) {
+         $.getJSON("{% url webtest_plane_as_json image.id default_z 0 %}?"+render_str, function(data){
+                  var old_data = dataset.length
+                  dataset = data;
+                  $("#plot_msg").text("Plotted " + dataset.length + " points (total: "+ totalPixels +")");
+                  init_scales();
+                  if (old_data) {
+                      console.log("redraw...");
+                      redraw()
+                  } else {
+                      console.log("draw...");
+                      draw();
+                  }
+              });
+     }
+     
+     var get_render_string = function(idx1, start1, end1, idx2, start2, end2) {
+         return "c="+idx1+"|"+start1+":"+end1+"$00FF00,"+idx2+"|"+start2+":"+end2+"$FF0000"
+     }
+
+    $("#refresh").click(function(){
+        
+        // get the 2 channels (green, then red)
+        var ch_idx_1 = $("#xAxisChooser").val();
+        var ch_idx_2 = $("#yAxisChooser").val();
+        
+        start1 = $("#cStart"+ch_idx_1).val();
+        end1 = $("#cEnd"+ch_idx_1).val();
+        start2 = $("#cStart"+ch_idx_2).val();
+        end2 = $("#cEnd"+ch_idx_2).val();
+
+        var render_str = get_render_string(ch_idx_1, start1, end1, ch_idx_2, start2, end2);
+        console.log(render_str);
+        var img_src = "{% url webgateway.views.render_image image.id default_z 0 %}?" + render_str;
+        $("#render_image").attr('src', img_src);
+        
+        draw_scatter(render_str);
+    });
+
+ });
+ 
+</script>
+
+</head>
+<body>
+    <div class="content">
+    </div>
+    
+    <table style="float:left">
+
+    {% for c in image.getChannels %}
+    <tr style="background: #{{c.getColor.getHtml }}">
+        <td>
+            {{ c.getLabel }}
+        </td>
+        <td bgcolor="#{{c.getColor.getHtml }}">
+        <input type="text" size='3' id="cStart{{ forloop.counter }}" value="{{ c.getWindowStart }}" />
+        -
+        <input type="text" size='3' id="cEnd{{ forloop.counter }}" value="{{ c.getWindowEnd }}" />
+        </td>
+    </tr>
+    {% endfor %}
+    </table>
+    
+    <img src="{% url webgateway.views.render_image image.id default_z 0 %}" />
+
+    <div style="clear:both"></div>
+    
+    <table>
+        <tr>    <!-- row has img, y-axis chooser, gradient & plot -->
+            <td>
+                <img id="render_image" src="{% url webgateway.views.render_image image.id default_z 0 %}" />
+            </td>
+            <td id="yAxisLabel"></td>
+            <td id="yAxisColour" width="20px" style="background: red">
+                <select id="yAxisChooser">
+                    {% for c in image.getChannels %}
+                        <option value="{{ forloop.counter }}">{{ c.getLabel }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td id="scatter_plot">
+            </td>
+        </tr>
+        <tr>
+            <td colspan="3"></td>
+            <td id="xAxisColour" height="20px" style="background: green">
+                <select id="xAxisChooser">
+                    {% for c in image.getChannels %}
+                        <option value="{{ forloop.counter }}">{{ c.getLabel }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="3"></td>
+            <td id="xAxisLabel"></td>
+        </tr>
+    </table>
+    <input id="refresh" type="button" value="refresh" />
+    <span id="plot_msg"></span>
+</body>
+</html>
