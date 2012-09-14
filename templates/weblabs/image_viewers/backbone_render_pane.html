@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <title>Backbone.js Rendering Settings</title>
+  
+  <!-- links to current version of jquery -->
+  {% include "webgateway/base/includes/script_src_jquery.html" %}
+  <script src="{% static 'weblabs/3rdparty/json2.js' %}"></script>
+  <script src="{% static 'weblabs/3rdparty/underscore.js' %}"></script>
+  <script src="{% static 'weblabs/3rdparty/backbone.js' %}"></script>
+  
+  <script type="text/javascript" src="{% static "webgateway/js/ome.rangewidget.js" %}"></script>
+  <script type="text/javascript" src="{% static "3rdparty/JQuerySpinBtn.js" %}"></script>
+  <script type="text/javascript" src="{% static "3rdparty/jquery-ui-1.8.19/jquery-ui-1.8.19.custom.min.js" %}"></script>
+  
+  <link rel="stylesheet" type="text/css" href="{% static "3rdparty/jquery-ui-1.8.19/jquery-ui-1.8.19.custom.css" %}" media="all" />
+  <link rel="stylesheet" type="text/css" href="{% static "3rdparty/JQuerySpinBtn.css" %}" />
+  <link rel="stylesheet" type="text/css" href="{% static "webgateway/css/ome.postit.css" %}" />
+  <link rel="stylesheet" type="text/css" href="{% static "webgateway/css/omero_image.css" %}" media="all" />
+<script>
+$(function(){
+
+    var Channel = Backbone.Model.extend({
+
+        // Default attributes for Channel
+        defaults: function() {
+            return {
+                label: "",
+                windowStart: 0,
+                windowEnd: 0,
+                color: "fffff",
+                index: 0, // Todos.nextOrder(),
+                active: false,
+            };
+        },
+
+        // Ensure that each todo created has `title`.
+        initialize: function() {
+            //if (!this.get("title")) {
+            //this.set({"title": this.defaults().title});
+            //}
+        },
+
+        // Toggle the `active` state of this channel
+        toggle: function() {
+            //this.save({active: !this.get("active")});
+            this.set({active: !this.get("active")});
+        },
+
+    });
+
+    var ChannelList = Backbone.Collection.extend({
+
+        // Reference to this collection's model.
+        model: Channel,
+
+        url: "{% url weblabs_index %}" + "channel/",
+
+        active: function() {
+            return this.filter(function(channel){ return channel.get('active'); });
+        },
+
+        atIndex: function(i) {
+            return this.models[i];
+        },
+        
+    });
+
+
+    // Create our global collection of **Channels**.
+    var Channels = new ChannelList;
+
+    Channels.on('change', function(){
+        console.log("Channels changed!");
+    });
+    // 
+    // --------------       VIEWS      ----------------------
+
+    // The DOM element for a Channel item...
+    var ChannelView = Backbone.View.extend({
+
+      //... is a list tag.
+      tagName:  "tbody",
+
+      // Cache the template function for a single item.
+      template: _.template($('#channel-template').html()),
+
+      // The DOM events specific to an item.
+      events: {
+          "click .toggle"   : "toggleActive",
+          "keypress .wStart"  : "updateWindowStart",
+          "keypress .wEnd"  : "updateWindowEnd",
+      },
+
+      // Toggle the `"active"` state of the channel.
+      toggleActive: function() {
+        this.model.toggle();
+      },
+
+      updateWindowStart: function(e) {
+          if (e.keyCode != 13) return;      // update on Enter key
+            var ws = parseInt( $(e.target).val() );
+            if (typeof ws != NaN && ws < this.model.get('windowEnd')) {
+                this.model.set('windowStart', ws);
+            } else {
+                $(e.target).val( this.model.get('windowStart') );
+            }
+      },
+
+      updateWindowEnd: function(e) {
+          if (e.keyCode != 13) return;      // update on Enter key
+          var we = parseInt( $(e.target).val() );
+          if (typeof we != NaN && we > this.model.get('windowStart')) {
+              this.model.set('windowEnd', we);
+          } else {
+              $(e.target).val( this.model.get('windowEnd') );
+          }
+      },
+
+      // The ChannelView listens for changes to its model, re-rendering. Since there's
+      // a one-to-one correspondence between a **Channel** and a **ChannelView** in this
+      // app, we set a direct reference on the model for convenience.
+      initialize: function() {
+        this.model.on('change', this.render, this);
+        this.model.on('destroy', this.remove, this);
+        this.render();
+      },
+
+      // Re-render the titles of the todo item.
+      render: function() {
+        this.$el.html(this.template(this.model.toJSON()));
+        //this.$el.toggleClass('done', this.model.get('done'));
+        //this.input = this.$('.edit');
+
+        $('.spin-button', this.$el).SpinButton();
+
+        var m = this.model;
+        // init jQuery-UI slider...
+        $('#wblitz-ch'+ this.model.get('index') +'-cwslider', this.$el).slider({
+            range: true,
+            min: this.model.get('windowMin'),
+            max: this.model.get('windowMax'),
+            values: [ this.model.get('windowStart'), this.model.get('windowEnd') ],
+            // update the model on 'stop'. This will cause re-rendering
+            stop: function(event, ui) {
+              m.set({'windowStart': ui.values[0], 'windowEnd':ui.values[1]});
+            }
+        })
+        .data('channel-idx', this.model.index)
+        // colour the middle of the slider (have to do this after slider init)
+        .children(".ui-slider-range").css("background-color", "#"+this.model.get('color'));
+        
+        return this;
+      },
+
+      // Remove the item, destroy the model.
+      clear: function() {
+        this.model.clear();
+      }
+      
+    });
+
+
+    var AppView = Backbone.View.extend({
+        
+        el: $("#main"),
+
+        initialize: function() {
+            Channels.on('add', this.addOne, this);
+        },
+      
+      addOne: function(ch) {
+          var view = new ChannelView({model: ch});
+          this.$("#channel-list").append(view.render().el);
+      }
+      
+
+    });
+
+    
+    var App = new AppView;
+
+    // when page loads, we get Image json and populate channels model.
+    $.getJSON("{% url webgateway.views.imageData_json image.id %}", function(data){
+        for (c in data.channels) {
+            var ch = {};
+            ch['index'] = c;
+            ch['label'] = data.channels[c]['label'];
+            ch['active'] = data.channels[c]['active'];
+            ch['color'] = data.channels[c]['color'];
+            ch['windowStart'] = data.channels[c]['window']['start'];
+            ch['windowEnd'] = data.channels[c]['window']['end'];
+            ch['windowMin'] = data.channels[c]['window']['min'];
+            ch['windowMax'] = data.channels[c]['window']['max'];
+            Channels.add(ch);
+        }
+        
+        //var c1 = Channels.atIndex(0);
+    });
+
+
+});
+</script>
+</head>
+
+<body>
+
+    <div id="main" class="postit" style="display:block; width:480px">
+        
+        <table id="channel-list" style="width:100%"></table>
+    </div>
+
+  <!-- Templates -->
+
+  <script type="text/template" id="channel-template">
+
+    <tr class="$cls">
+        <td><input id="rd-wblitz-ch$idx0" type="checkbox" onchange="rdChanSelHelper(this)" <%= active ? 'checked="checked"' : '' %> /></td>
+        <td><%- label %></td>
+        <td><button id="wblitz-ch<%- index %>-color" class="picker squarred" style="background-color: #<%- color %>">&nbsp;</button></td>
+        <td class="picker-selected">&nbsp;</td>
+    </tr>
+    <tr class="$cls rdef-window">
+        <td colspan="5">
+        <div id="wblitz-ch<%- index %>-cw" class="rangewidget">
+            <span class="min"> min:
+                <span id="wblitz-ch<%- index %>-cw-min"><%- windowMin %></span>
+            </span>
+            <input id="wblitz-ch<%- index %>-cw-start" class="spin-button wStart" type="text" value="<%- windowStart %>">
+            -
+            <input id="wblitz-ch<%- index %>-cw-end" class="spin-button wEnd" type="text" value="<%- windowEnd %>">
+            <span class="max"> max:
+                <span id="wblitz-ch<%- index %>-cw-max"><%- windowMax %></span>
+            </span>
+        </div>
+        
+        </td>
+    </tr>
+    <tr class="$cls rdef-window">
+        <td colspan="5"><div class="rangeslider" id="wblitz-ch<%- index %>-cwslider"></div></td>
+    </tr>
+  </script>
+
+  </body>
+</html>

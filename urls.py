@@ -28,8 +28,10 @@ urlpatterns = patterns('django.views.generic.simple',
     url( r'^plane_as_json/(?P<imageId>[0-9]+)/(?P<theZ>[0-9]+)/(?P<theT>[0-9]+)', views.plane_as_json, name='webtest_plane_as_json' ),
 
 
-    # Demo a 'render_settings' plugin for creating a rendering settings panel for an image
+    # Demo a 'render_settings' plugin for creating a rendering settings panel for an image - using render.js templating
     url( r'^render_settings/(?P<imageId>[0-9]+)/', views.render_settings, name='weblabs_render_settings' ),
+    # Same idea using Backbone.js MVC library
+    url( r'^backbone_render_pane/(?P<imageId>[0-9]+)/', views.backbone_render_pane, name='weblabs_backbone_render_pane' ),
     
     
     # Playing with viewport
