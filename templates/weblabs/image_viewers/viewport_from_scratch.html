@@ -35,6 +35,59 @@
                     $this.removeClass(options.klass);
                 }
                 $(this).data('viewport', data);
+
+                /**
+                 * Handle panning by mouse drag
+                 */
+                var dragdiv = $this.parent();
+                var ondrag = false;
+                var clickinterval = null;
+                var drag_px;
+                var drag_py;
+                dragdiv
+                  .click(function (e) {
+                      if (clickinterval != null) {
+                        clickinterval = null;
+                        $this.trigger(e);
+                      }
+                    })
+                .mousedown(function (e) {
+                  drag_px = e.screenX;
+                  drag_py = e.screenY;
+                  //jQuery(this).css('cursor', 'move');
+                  jQuery(this).addClass('ondrag');
+                  ondrag = true;
+                  if (clickinterval != null) {
+                    clearInterval(clickinterval);
+                  }
+                  clickinterval = setTimeout(function () {clearTimeout(clickinterval); clickinterval = null;}, 250)
+                  return false;
+                })
+                .mouseup(function (e) {
+                  if (ondrag) {
+                    ondrag = false;
+                    jQuery(this).removeClass('ondrag');
+                    return false;
+                    //jQuery(this).css('cursor', 'default');
+                  }
+                })
+                .mouseout(function (e) {
+                  if (ondrag) {
+                    ondrag = false;
+                    jQuery(this).removeClass('ondrag');
+                    return false;
+                    //jQuery(this).css('cursor', 'default');
+                  }
+                })
+                .mousemove(function (e) {
+                  if (ondrag) {
+                    methods.doMove.apply( $this, [e.screenX-drag_px, e.screenY-drag_py] );
+                    drag_px = e.screenX;
+                    drag_py = e.screenY;
+                    return false;
+                  }
+                });
+                
             }
         });
     },
