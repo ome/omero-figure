@@ -1,0 +1,245 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html> <head>
+<title>Viewport from Scratch</title>
+
+{% include "webgateway/base/includes/script_src_jquery.html" %}
+
+<script>
+(function( $ ){
+
+    var methods = {
+
+    init : function( options ) {
+
+        return this.each(function(){
+            var $this = $(this),
+                data = $this.data('viewport');
+
+            // If the plugin hasn't been initialized yet
+            if ( ! data ) {
+
+                var data = {};
+                data['orig_width'] = options['orig_width'] || $this.width();
+                data['orig_height'] = options['orig_height'] || $this.height();
+                data['wrapwidth'] = options['wrapwidth'] || data['orig_width'];
+                data['wrapheight'] = options['wrapheight'] || data['orig_height'];
+
+                $this.addClass('weblitz-viewport-img');
+                $this.wrap('<div style="display: inline; position: absolute;" class="draggable"></div>');
+
+                $this.parent().wrap('<div style="border: solid black 1px; background-color: #ddd; position:relative; overflow: hidden">');
+                $this.parent().parent().css( {'width':data['wrapheight']+'px', 'height':data['wrapheight']+'px'} );
+
+                if (typeof options.klass == "string") {
+                    $this.parent().parent().addClass(options.klass);
+                    $this.removeClass(options.klass);
+                }
+                $(this).data('viewport', data);
+            }
+        });
+    },
+
+    setZoom : function (val) {
+        return this.each(function(){
+            var $this = $(this);
+            var data = $this.data('viewport');
+            var width = parseInt(data['orig_width']*val/100);
+            var height = parseInt(data['orig_height']*val/100);
+            data['cur_zoom'] = val;
+            var offsetW = parseInt( ($this.width() - width)/2 );
+            var offsetH = parseInt( ($this.height() - height)/2 );
+
+            /*
+            if (!changing) {
+            changing = setTimeout(function () {;
+            image.trigger("zoom", [cur_zoom]);
+            changing = null;
+            }, 20);
+            }
+            image.trigger("instant_zoom", [cur_zoom])
+            */
+            $this.attr({width: width, height: height});
+            //overlay.attr({width: width, height: height});
+            $this.data('viewport', data);
+            
+            methods.doMove.apply( $(this), [offsetW, offsetH] );
+        });
+    },
+
+    zoomToFit : function() {
+        return this.each(function(){
+            
+            var $this = $(this);
+            var data = $this.data('viewport');
+            var ztf = Math.min(data['wrapwidth'] * 100.0 / data['orig_width'], data['wrapheight'] * 100.0 / data['orig_height']);
+            methods.setZoom.apply( $(this), [ztf] );
+        });
+    },
+    
+    doMove : function (deltax, deltay, smooth, auto_move_cb) {
+        
+        return this.each(function(){
+            
+            var $this = $(this);
+            var data = $this.data('viewport');
+            var dragdiv = $this.parent();
+            var dragdiv_dom = dragdiv.get(0);
+            var wrapdiv = $(dragdiv_dom.parentNode);
+            
+            /* Image and wrapping div */
+            var pos = dragdiv.offset();
+            var rel = wrapdiv.offset();
+
+            pos.left -= rel.left + parseInt(jQuery.curCSS(wrapdiv[0], "borderLeftWidth", true));
+            pos.top -= rel.top + parseInt(jQuery.curCSS(wrapdiv[0], "borderTopWidth", true));
+            var left = pos.left + deltax;
+            var top = pos.top + deltay;
+            var self = this;
+
+            var imagewidth = $this.width(),
+                wrapwidth = data['wrapwidth'],
+                imageheight = $this.height(),
+                wrapheight = data['wrapheight'];
+
+            /* Is the viewport bigger than the image ? */
+            if (imagewidth <= wrapwidth) {
+                /* Viewport wider than image, center horizontally */
+                left = (wrapwidth - imagewidth) / 2;
+            } else {
+                /* Image wider than viewport... */
+                if (left >= 0) {
+                    left = 0;
+                }
+                if ((wrapwidth - imagewidth) >= left ) {
+                    left = wrapwidth - imagewidth;
+                }
+            }
+
+            if (imageheight <= wrapheight) {
+                /* Viewport higher than image, center vertically */
+                top = (wrapheight - imageheight) / 2;
+            } else {
+                /* Image higher than viewport... */
+                if (top >= 0) {
+                    top = 0;
+                }
+                if ((wrapheight - imageheight) >= top ) {
+                    top = wrapheight - imageheight;
+                }
+            }
+            if (left == dragdiv_dom.offsetLeft && top == dragdiv_dom.offsetTop) {
+                return;
+            }
+
+            if (smooth != null) {
+                dragdiv.animate({left: left, top: top}, 'fast', 'linear', function () {
+                    if (auto_move_cb != null && auto_move_cb()) {
+                        self.doMove(deltax, deltay, smooth, auto_move_cb);
+                    }
+                });
+            } else {
+                dragdiv.css({left: left, top: top});
+            }
+
+        });
+    },
+
+    destroy : function( ) {
+
+        return this.each(function(){
+
+            var $this = $(this),
+                data = $this.data('viewport');
+
+            data.viewport.remove();
+            $this.removeData('viewport');
+        });
+    }
+    };
+
+    $.fn.viewport = function( method ) {
+
+        if ( methods[method] ) {
+          return methods[method].apply( this, Array.prototype.slice.call( arguments, 1 ));
+        } else if ( typeof method === 'object' || ! method ) {
+          return methods.init.apply( this, arguments );
+        } else {
+          $.error( 'Method ' +  method + ' does not exist on jQuery.render_settings' );
+        }
+    };
+
+})( jQuery );
+
+</script>
+
+
+<script type="text/javascript">
+
+$(document).ready(function() {
+
+    $("#button1").click(function(){
+        $("#vp1").viewport({
+            orig_width: {{ image.getSizeX }},
+            orig_height: {{ image.getSizeY }},
+            wrapwidth: 250,
+            wrapheight: 250
+        });
+        
+        $(".split").viewport({
+            orig_width: {{ image.getSizeX }},
+            orig_height: {{ image.getSizeY }},
+            wrapwidth: 150,
+            wrapheight: 150,
+            klass: 'layout'
+        });
+        
+        $(".vp").viewport("zoomToFit");
+    });
+    
+    $("#button2").click(function(){
+        $(".vp").viewport("setZoom", 50);
+    });
+    
+    $("#button3").click(function(){
+        $(".vp").viewport("zoomToFit");
+    });
+    
+    $("#button4").click(function(){
+        $(".vp").viewport("setZoom", 100);
+    });
+    
+    $("#button5").click(function(){
+        $(".vp").viewport("doMove", -25, -25);
+    });
+    
+    //$("#button1").click();  // init viewports
+    
+});
+</script>
+
+<style type="text/css">
+    .layout {
+        display: inline-block;
+        margin:10px;
+    }
+</style>
+
+
+</head>
+
+<body>
+    
+    <button id="button1">Init viewports</button>
+    <button id="button2">Zoom to 50%</button>
+    <button id="button3">Zoom to fit</button>
+    <button id="button4">Zoom to 100%</button>
+    <button id="button5">Move Up and Left</button>
+
+    <br />
+    <img class="vp" id="vp1" src="{% url webgateway.views.render_image 1 10 0 %}" />
+
+    <img class="vp split layout" id="vp2" src="{% url webgateway.views.render_image 1 10 0 %}?c=1" />
+    <img class="vp split layout" id="vp3" src="{% url webgateway.views.render_image 1 10 0 %}?c=2" />
+    <img class="vp split layout" id="vp3" src="{% url webgateway.views.render_image 1 10 0 %}?c=3" />
+
+</body>

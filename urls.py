@@ -36,5 +36,6 @@ urlpatterns = patterns('django.views.generic.simple',
     
     # Playing with viewport
     url( r'^viewport_test/(?P<imageId>[0-9]+)/', views.viewport_test, name='weblabs_viewport_test' ),
+    url( r'^viewport_from_scratch/(?P<imageId>[0-9]+)/', views.viewport_from_scratch, name='weblabs_viewport_from_scratch' ),
 
 )

@@ -266,3 +266,12 @@ def viewport_test (request, imageId, conn=None, **kwargs):
     image = conn.getObject("Image", imageId)
     default_z = image.getSizeZ() /2
     return render_to_response('weblabs/image_viewers/viewport_test.html', {'image':image, 'default_z': default_z})
+
+
+@login_required()
+def viewport_from_scratch (request, imageId, conn=None, **kwargs):
+    """ Looking to rewrite the viewport, using separate components """
+    
+    image = conn.getObject("Image", imageId)
+    default_z = image.getSizeZ() /2
+    return render_to_response('weblabs/image_viewers/viewport_from_scratch.html', {'image':image, 'default_z': default_z})
