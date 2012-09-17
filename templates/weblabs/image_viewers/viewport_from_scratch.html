@@ -66,6 +66,15 @@
         });
     },
 
+    doZoom : function(incr) {
+        return this.each(function(){
+            var $this = $(this);
+            var data = $this.data('viewport');
+            var zoom = data['cur_zoom'] + incr;
+            methods.setZoom.apply( $(this), [zoom] );
+        });
+    },
+
     zoomToFit : function() {
         return this.each(function(){
             
@@ -209,6 +218,14 @@ $(document).ready(function() {
     });
     
     $("#button5").click(function(){
+        $(".vp").viewport("doZoom", 10);
+    });
+    
+    $("#button6").click(function(){
+        $(".vp").viewport("doZoom", -10);
+    });
+    
+    $("#button7").click(function(){
         $(".vp").viewport("doMove", -25, -25);
     });
     
@@ -233,7 +250,9 @@ $(document).ready(function() {
     <button id="button2">Zoom to 50%</button>
     <button id="button3">Zoom to fit</button>
     <button id="button4">Zoom to 100%</button>
-    <button id="button5">Move Up and Left</button>
+    <button id="button5" title="Zoom In">+</button>
+    <button id="button6" title="Zoom Out">-</button>
+    <button id="button7">Move Up and Left</button>
 
     <br />
     <img class="vp" id="vp1" src="{% url webgateway.views.render_image 1 10 0 %}" />
