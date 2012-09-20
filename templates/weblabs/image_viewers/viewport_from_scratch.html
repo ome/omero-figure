@@ -4,6 +4,8 @@
 
 {% include "webgateway/base/includes/script_src_jquery.html" %}
 
+<script type="text/javascript" src="{% static "3rdparty/jquery.mousewheel.js" %}"></script>
+
 <script>
 (function( $ ){
 
@@ -28,10 +30,44 @@
                 $this.wrap('<div style="display: inline; position: absolute;" class="draggable"></div>');
 
                 $this.parent().wrap('<div style="border: solid black 1px; background-color: #ddd; position:relative; overflow: hidden">');
-                $this.parent().parent().css( {'width':data['wrapheight']+'px', 'height':data['wrapheight']+'px'} );
+                
+                var $frame = $this.parent().parent();
+                $frame.css( {'width':data['wrapheight']+'px', 'height':data['wrapheight']+'px'} );
+                var mw_zoom = function (e, delta) {
+                    methods.doZoom.apply( $this, [delta] );
+                    e.preventDefault();
+                }
+                var $zm_1_1 = $('<button class="zoom_1_1" title="Zoom 1:1">1:1</button>')
+                    .click(function(){
+                        methods.setZoom.apply( $this, [100] );
+                    });
+                var $zm_tofit = $('<button class="zoom_to_fit" title="Zoom to fit">fit</button>')
+                    .click(function(){
+                        methods.zoomToFit.apply( $this, [] );
+                    });
+                var $zm_in = $('<button class="zoom_in" title="Zoom In"></button>')
+                    .click(function(){
+                        methods.doZoom.apply( $this, [10] );
+                    });
+                var $zm_out = $('<button class="zoom_out" title="Zoom Out"></button>')
+                    .click(function(){
+                        methods.doZoom.apply( $this, [-10] );
+                    });
+                $('<div class="zoom_percent" title="Use Mouse-wheel to Zoom"><div class="cur_zoom"></div></div>')
+                    .mousewheel(mw_zoom)
+                    .append($zm_in)
+                    .append($zm_out)
+                    .append($zm_1_1)
+                    .append($zm_tofit)
+                    .mouseout(function(){$zm_1_1.hide(); $zm_tofit.hide(); $(this).css('opacity','0.7')})
+                    .mouseover(function(){$zm_1_1.show(); $zm_tofit.show(); $(this).css('opacity','1.0')})
+                    .css('opacity','0.7')
+                    .appendTo($frame);
+                $zm_1_1.hide();
+                $zm_tofit.hide();
 
                 if (typeof options.klass == "string") {
-                    $this.parent().parent().addClass(options.klass);
+                    $frame.addClass(options.klass);
                     $this.removeClass(options.klass);
                 }
                 $(this).data('viewport', data);
@@ -99,8 +135,6 @@
             var width = parseInt(data['orig_width']*val/100);
             var height = parseInt(data['orig_height']*val/100);
             data['cur_zoom'] = val;
-            var offsetW = parseInt( ($this.width() - width)/2 );
-            var offsetH = parseInt( ($this.height() - height)/2 );
 
             /*
             if (!changing) {
@@ -115,7 +149,9 @@
             //overlay.attr({width: width, height: height});
             $this.data('viewport', data);
             
-            methods.doMove.apply( $(this), [offsetW, offsetH] );
+            $('.cur_zoom', $this.parent().parent()).text(parseInt(val) + " %");
+            
+            methods.doMove.apply( $(this), [0, 0] );
         });
     },
 
@@ -282,7 +318,7 @@ $(document).ready(function() {
         $(".vp").viewport("doMove", -25, -25);
     });
     
-    //$("#button1").click();  // init viewports
+    $("#button1").click();  // init viewports
     
 });
 </script>
@@ -291,6 +327,48 @@ $(document).ready(function() {
     .layout {
         display: inline-block;
         margin:10px;
+    }
+    .zoom_1_1, .zoom_to_fit {
+        background-color: #eee;
+        margin-right: 2px;
+        color: black;
+        width: 22px;
+        height: 15px;
+        border-width: 0px;
+        font-family: arial;
+        border-radius: 5px;
+        position: relative;
+        top:4px;
+    }
+    .zoom_in, .zoom_out {
+        position: absolute;
+        left: 5px;
+        border: 0px solid #9EA5AC;
+        background-color: black;
+        width: 10px;
+        height: 10px;
+    }
+    .zoom_in {
+        top: 2px;
+        background: url("{% static 'webgateway/img/white_arrow_up.gif' %}") no-repeat scroll center center transparent;
+    }
+    .zoom_out {
+        top: 12px;
+        background: url("{% static 'webgateway/img/white_arrow_down.gif' %}") no-repeat scroll center center transparent;
+    }
+    .zoom_percent {
+        position: absolute;
+        top:3px;
+        left:3px;
+        background-color: black;
+        color: white;
+        font-family: arial;
+        font-size: 15px;
+    }
+    .cur_zoom {
+        float: left;
+        padding: 3px;
+        padding-left: 20px;
     }
 </style>
 
