@@ -25,6 +25,7 @@
                 data['orig_height'] = options['orig_height'] || $this.height();
                 data['wrapwidth'] = options['wrapwidth'] || data['orig_width'];
                 data['wrapheight'] = options['wrapheight'] || data['orig_height'];
+                data['cur_zoom'] = 100;
 
                 $this.addClass('weblitz-viewport-img');
                 $this.wrap('<div style="display: inline; position: absolute;" class="draggable"></div>');
@@ -122,6 +123,23 @@
                     drag_py = e.screenY;
                     return false;
                   }
+                })
+                .dblclick(function (e) {
+                    var x = e.pageX - dragdiv.offset().left;
+                    var y = e.pageY - dragdiv.offset().top;
+                    var w_before = $this.width();
+                    var h_before = $this.height();
+                    var czm = $this.data('viewport')['cur_zoom'];
+                    if (czm) {
+                        methods.setZoom.apply( $this, [czm * 2] );
+                    } else {
+                        methods.doZoom.apply( $this, [50] );
+                    }
+                    var zoom_w = $this.width() - w_before;
+                    var zoom_h = $this.height() - h_before;
+                    var offset_w = zoom_w * (x / w_before);
+                    var offset_h = zoom_h * (y / h_before);
+                    methods.doMove.apply( $this, [-offset_w, -offset_h] );
                 });
                 
             }
