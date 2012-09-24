@@ -1,6 +1,7 @@
 from django.conf.urls.defaults import *
 
 from omeroweb.weblabs import views
+from omeroweb.webclient import views as wc_views
 
 
 urlpatterns = patterns('django.views.generic.simple',
@@ -37,5 +38,7 @@ urlpatterns = patterns('django.views.generic.simple',
     # Playing with viewport
     url( r'^viewport_test/(?P<imageId>[0-9]+)/', views.viewport_test, name='weblabs_viewport_test' ),
     url( r'^viewport_from_scratch/(?P<imageId>[0-9]+)/', views.viewport_from_scratch, name='weblabs_viewport_from_scratch' ),
-
+    url( r'^viewport_on_dataset/(?P<o1_id>[0-9]+)/', wc_views.load_data, 
+        {'o1_type': 'dataset', 'template':'weblabs/image_viewers/viewport_on_dataset.html'}, name='weblabs_viewport_on_dataset' ),
+    
 )

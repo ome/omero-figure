@@ -143,6 +143,7 @@
                     methods.doMove.apply( $this, [-offset_w, -offset_h] );
                 });
                 
+            methods.zoomToFit.apply( $this, [] );
             }
         });
     },
@@ -164,7 +165,8 @@
             }
             image.trigger("instant_zoom", [cur_zoom])
             */
-            $this.attr({width: width, height: height});
+            console.log( width, height);
+            $this.css({'width': width, 'height': height});
             //overlay.attr({width: width, height: height});
             $this.data('viewport', data);
             
@@ -268,6 +270,9 @@
             var $this = $(this),
                 data = $this.data('viewport');
 
+            $('.zoom_percent', $this.parent().parent()).remove();
+            $this.unwrap();
+            $this.unwrap();
             data.viewport.remove();
             $this.removeData('viewport');
         });

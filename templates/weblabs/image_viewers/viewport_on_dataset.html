@@ -1,0 +1,163 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html> <head>
+<title>Viewport on Dataset</title>
+
+{% include "webgateway/base/includes/script_src_jquery.html" %}
+{% include "webgateway/base/includes/jquery-ui.html" %}
+
+<script type="text/javascript" src="{% static "3rdparty/jquery.mousewheel.js" %}"></script>
+<script type="text/javascript" src="{% static "weblabs/js/viewport.js" %}"></script>
+<script type="text/javascript" src="{% static "weblabs/js/src_loader.js" %}"></script>
+
+<link rel="stylesheet" href="{% static "webclient/css/layout.css" %}" type="text/css" media="screen"/>
+<link rel="stylesheet" href="{% static "3rdparty/jquery-ui-1.8.19/themes/base/jquery.ui.base.css" %}" type="text/css" />
+
+
+<script type="text/javascript">
+
+$(document).ready(function() {
+    
+    var icon_styles = [];
+    var li_styles = [];
+    var aspect_ratios = [];
+    // manipulate thumbnail styles directly (approx 2x faster than using jQuery)
+    $("#dataIcons img").each(function(){
+        icon_styles.push(this.style);
+    });
+    var sizeX, sizeY
+    $("#dataIcons li").each(function(){
+        li_styles.push(this.style);
+        sizeX = $(".sizeX", $(this)).text();
+        sizeY = $(".sizeY", $(this)).text();
+        aspect_ratios.push(parseFloat(sizeX) / parseFloat(sizeY));
+    })
+    .click(function(event) {
+        var iconSize = $(this).width();
+        $("img", $(this)).viewport({
+            orig_width: $(".sizeX", $(this)).text(),
+            orig_height: $(".sizeY", $(this)).text(),
+            wrapwidth: iconSize,
+            wrapheight: iconSize
+        });
+    });
+
+    var setIconSize = function(icon_size) {
+        for (s in icon_styles) {
+            if (aspect_ratios[s] < 1) {
+                icon_styles[s].width = (icon_size * aspect_ratios[s]) >> 0 + "px";
+                icon_styles[s].height = icon_size + "px";
+            } else if (aspect_ratios[s] > 1) {
+                icon_styles[s].height = (icon_size / aspect_ratios[s]) >> 0 + "px";
+                icon_styles[s].width = icon_size + "px";
+            } else {
+                icon_styles[s].width = icon_size + "px";
+                icon_styles[s].height = icon_size + "px";
+            }
+            li_styles[s].width = icon_size + "px";
+            li_styles[s].height = icon_size + "px";
+        }
+    }
+    
+    setIconSize(75);
+    
+    $("#thumb_size_slider").slider({
+        max: 200,
+        min: 30,
+        value: 75,
+        slide: function(event, ui) {
+            $(".draggable img").viewport("destroy");
+            setIconSize(ui.value);
+        }
+    });
+});
+</script>
+
+<style type="text/css">
+    .body {
+        font-family: arial;
+    }
+    .layout {
+        display: inline-block;
+        margin:10px;
+    }
+    .zoom_1_1, .zoom_to_fit {
+        background-color: #eee;
+        margin-right: 2px;
+        color: black;
+        width: 22px;
+        height: 15px;
+        border-width: 0px;
+        border-radius: 5px;
+        position: relative;
+        top:4px;
+    }
+    .zoom_in, .zoom_out {
+        position: absolute;
+        left: 5px;
+        border: 0px solid #9EA5AC;
+        background-color: black;
+        width: 10px;
+        height: 10px;
+    }
+    .zoom_in {
+        top: 2px;
+        background: url("{% static 'webgateway/img/white_arrow_up.gif' %}") no-repeat scroll center center transparent;
+    }
+    .zoom_out {
+        top: 12px;
+        background: url("{% static 'webgateway/img/white_arrow_down.gif' %}") no-repeat scroll center center transparent;
+    }
+    .zoom_percent {
+        position: absolute;
+        top:3px;
+        left:3px;
+        background-color: black;
+        color: white;
+        font-family: arial;
+        font-size: 15px;
+    }
+    .cur_zoom {
+        float: left;
+        padding: 3px;
+        padding-left: 20px;
+    }
+    .viewport-msg {
+        color: #fff;
+        font-weight: bold;
+        position: absolute;
+        right: 0.5em;
+        top: 0.5em;
+        z-index: 1000;
+    }
+    .sizeX, .sizeY {display:none}
+    #thumb_size_slider {
+        border: 1px solid #aaa;
+        height: 6px;
+        left: 20px;
+        position: absolute;
+        top: 9px;
+        width: 120px;
+    }
+    #thumb_size_slider .ui-slider-handle {
+        /*background: -moz-linear-gradient(center top , #727C86 0%, #4F565D 100%) repeat scroll 0 0 #FFFFFF;*/
+        background: #727C86;
+        border-radius: 3px;
+    }
+</style>
+
+
+</head>
+
+<body>
+    <div id="thumb_size_slider" title="Zoom Thumbnails"></div>
+    
+    <ul id="dataIcons">
+        {% for c in manager.containers.images %}
+        <li id="image_icon-{{ c.id }}" title="{{ c.name }}" {% if not c.canEdit %}{% if isLeader %}class="editonly"{% else %}class="readonly"{% endif %}{% endif %}>
+            <img id="{{ c.id }}" src="{% url render_thumbnail_resize 96 c.id %}" alt="image" title="{{ c.name }}{% if not c.isOwned %}, owned by {{ c.getOwner.getNameWithInitial }}{% endif %}"/>
+            <span class="sizeX">{{ c.getSizeX }}</span> <span class="sizeY">{{ c.getSizeY }}</span>
+        </li>
+        {% endfor %}
+    </ul>
+
+</body>
