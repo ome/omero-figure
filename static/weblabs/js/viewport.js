@@ -1,5 +1,7 @@
 (function( $ ){
 
+    "use strict";
+
     var methods = {
 
     init : function( options ) {
@@ -8,14 +10,13 @@
             var $this = $(this),
                 data = $this.data('viewport'),
                 $frame,
-                $msg,
-                zooming_center;
+                $msg;
 
             // If the plugin hasn't been initialized yet
             if ( ! data ) {
 
                 data = {};
-                data['orig_width'] = options['orig_width'] || $this.width();
+                data.orig_width = options.orig_width || $this.width();
                 data['orig_height'] = options['orig_height'] || $this.height();
                 data['wrapwidth'] = options['wrapwidth'] || data['orig_width'];
                 data['wrapheight'] = options['wrapheight'] || data['orig_height'];
@@ -25,9 +26,13 @@
                 $this.wrap('<div style="display: inline; position: absolute;" class="draggable"></div>');
                 
                 var dragdiv = $this.parent();
-                $this.parent().wrap('<div style="border: solid black 1px; background-color: #ddd; position:relative; overflow: hidden">');
+                $this.parent().wrap('<div></div>');
                 
                 $frame = $this.parent().parent();
+                $frame.css( {'border': 'solid black 1px',
+                        'background-color': '#ddd', 
+                        'position':'relative', 
+                        'overflow': 'hidden'});
                 $frame.css( {'width':data['wrapheight']+'px', 'height':data['wrapheight']+'px'} );
                 
                 // Status message display
@@ -74,8 +79,8 @@
 
                     if (zoom_timeout) {
                         // we're currently zooming
-                        clearTimeout(zoom_timeout)
-                    };
+                        clearTimeout(zoom_timeout);
+                    }
 
                     // after half a sec of no mouse-wheel zooming - clear cx and cy.
                     zoom_timeout = setTimeout(function(){
@@ -84,7 +89,10 @@
                     }, 500);
                     
                     e.preventDefault();
-                }
+                    return false;
+                };
+                
+                // prepare and add buttons for zooming
                 var $zm_1_1 = $('<button class="zoom_1_1" title="Zoom 1:1">1:1</button>')
                     .click(function(){
                         methods.setZoom.apply( $this, [100] );
@@ -107,14 +115,14 @@
                     .append($zm_out)
                     .append($zm_1_1)
                     .append($zm_tofit)
-                    .mouseout(function(){$zm_1_1.hide(); $zm_tofit.hide(); $(this).css('opacity','0.7')})
-                    .mouseover(function(){$zm_1_1.show(); $zm_tofit.show(); $(this).css('opacity','1.0')})
+                    .mouseout(function(){$zm_1_1.hide(); $zm_tofit.hide(); $(this).css('opacity','0.7');})
+                    .mouseover(function(){$zm_1_1.show(); $zm_tofit.show(); $(this).css('opacity','1.0');})
                     .css('opacity','0.7')
                     .appendTo($frame);
                 $zm_1_1.hide();
                 $zm_tofit.hide();
 
-                if (typeof options.klass == "string") {
+                if (typeof options.klass === "string") {
                     $frame.addClass(options.klass);
                     $this.removeClass(options.klass);
                 }
@@ -129,7 +137,7 @@
                 var drag_py;
                 dragdiv
                   .click(function (e) {
-                      if (clickinterval != null) {
+                      if (clickinterval !== null) {
                         clickinterval = null;
                         $this.trigger(e);
                       }
@@ -138,18 +146,18 @@
                   drag_px = e.screenX;
                   drag_py = e.screenY;
                   //jQuery(this).css('cursor', 'move');
-                  jQuery(this).addClass('ondrag');
+                  $(this).addClass('ondrag');
                   ondrag = true;
-                  if (clickinterval != null) {
+                  if (clickinterval !== null) {
                     clearInterval(clickinterval);
                   }
-                  clickinterval = setTimeout(function () {clearTimeout(clickinterval); clickinterval = null;}, 250)
+                  clickinterval = setTimeout(function () {clearTimeout(clickinterval); clickinterval = null;}, 250);
                   return false;
                 })
                 .mouseup(function (e) {
                   if (ondrag) {
                     ondrag = false;
-                    jQuery(this).removeClass('ondrag');
+                    $(this).removeClass('ondrag');
                     return false;
                     //jQuery(this).css('cursor', 'default');
                   }
@@ -157,7 +165,7 @@
                 .mouseout(function (e) {
                   if (ondrag) {
                     ondrag = false;
-                    jQuery(this).removeClass('ondrag');
+                    $(this).removeClass('ondrag');
                     return false;
                     //jQuery(this).css('cursor', 'default');
                   }
@@ -197,8 +205,8 @@
         return this.each(function(){
             var $this = $(this);
             var data = $this.data('viewport');
-            var width = parseInt(data['orig_width']*val/100);
-            var height = parseInt(data['orig_height']*val/100);
+            var width = +(data['orig_width']*val/100);
+            var height = +(data['orig_height']*val/100);
             data['cur_zoom'] = val;
 
             /*
@@ -214,7 +222,7 @@
             //overlay.attr({width: width, height: height});
             $this.data('viewport', data);
             
-            $('.cur_zoom', $this.parent().parent()).text(parseInt(val) + " %");
+            $('.cur_zoom', $this.parent().parent()).text(parseInt(val,10) + " %");
             
             if (recenter !== false) {
                 methods.doMove.apply( $(this), [0, 0] );
@@ -236,7 +244,8 @@
             
             var $this = $(this);
             var data = $this.data('viewport');
-            var ztf = Math.min(data['wrapwidth'] * 100.0 / data['orig_width'], data['wrapheight'] * 100.0 / data['orig_height']);
+            var ztf = Math.min(data['wrapwidth'] * 100.0 / data['orig_width'], 
+                    data['wrapheight'] * 100.0 / data['orig_height']);
             methods.setZoom.apply( $(this), [ztf] );
         });
     },
@@ -255,8 +264,8 @@
             var pos = dragdiv.offset();
             var rel = wrapdiv.offset();
 
-            pos.left -= rel.left + parseInt(jQuery.curCSS(wrapdiv[0], "borderLeftWidth", true));
-            pos.top -= rel.top + parseInt(jQuery.curCSS(wrapdiv[0], "borderTopWidth", true));
+            pos.left -= rel.left + parseInt($.curCSS(wrapdiv[0], "borderLeftWidth", true),10);
+            pos.top -= rel.top + parseInt($.curCSS(wrapdiv[0], "borderTopWidth", true),10);
             var left = pos.left + deltax;
             var top = pos.top + deltay;
             var self = this;
@@ -292,13 +301,13 @@
                     top = wrapheight - imageheight;
                 }
             }
-            if (left == dragdiv_dom.offsetLeft && top == dragdiv_dom.offsetTop) {
+            if (left === dragdiv_dom.offsetLeft && top === dragdiv_dom.offsetTop) {
                 return;
             }
 
-            if (smooth != null) {
+            if (smooth) {
                 dragdiv.animate({left: left, top: top}, 'fast', 'linear', function () {
-                    if (auto_move_cb != null && auto_move_cb()) {
+                    if (auto_move_cb !== null && auto_move_cb()) {
                         self.doMove(deltax, deltay, smooth, auto_move_cb);
                     }
                 });
@@ -313,8 +322,7 @@
 
         return this.each(function(){
 
-            var $this = $(this),
-                data = $this.data('viewport');
+            var $this = $(this);
 
             $('.zoom_percent', $this.parent().parent()).remove();
             $this.unwrap();
@@ -328,11 +336,11 @@
 
         if ( methods[method] ) {
           return methods[method].apply( this, Array.prototype.slice.call( arguments, 1 ));
-        } else if ( typeof method === 'object' || ! method ) {
-          return methods.init.apply( this, arguments );
-        } else {
-          $.error( 'Method ' +  method + ' does not exist on jQuery.viewport' );
         }
+        if ( typeof method === 'object' || ! method ) {
+          return methods.init.apply( this, arguments );
+        }
+        $.error( 'Method ' +  method + ' does not exist on jQuery.viewport' );
     };
 
-})( jQuery );
+}(jQuery));
