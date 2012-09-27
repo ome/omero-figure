@@ -36,8 +36,8 @@ $(document).ready(function() {
         $("img", $(this)).viewport({
             orig_width: $(".sizeX", $(this)).text(),
             orig_height: $(".sizeY", $(this)).text(),
-            wrapwidth: iconSize,
-            wrapheight: iconSize
+            wrapwidth: iconSize - 2,
+            wrapheight: iconSize - 2
         });
     });
 

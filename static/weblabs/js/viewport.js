@@ -6,12 +6,15 @@
 
         return this.each(function(){
             var $this = $(this),
-                data = $this.data('viewport');
+                data = $this.data('viewport'),
+                $frame,
+                $msg,
+                zooming_center;
 
             // If the plugin hasn't been initialized yet
             if ( ! data ) {
 
-                var data = {};
+                data = {};
                 data['orig_width'] = options['orig_width'] || $this.width();
                 data['orig_height'] = options['orig_height'] || $this.height();
                 data['wrapwidth'] = options['wrapwidth'] || data['orig_width'];
@@ -20,14 +23,15 @@
 
                 $this.addClass('weblitz-viewport-img');
                 $this.wrap('<div style="display: inline; position: absolute;" class="draggable"></div>');
-
+                
+                var dragdiv = $this.parent();
                 $this.parent().wrap('<div style="border: solid black 1px; background-color: #ddd; position:relative; overflow: hidden">');
                 
-                var $frame = $this.parent().parent();
+                $frame = $this.parent().parent();
                 $frame.css( {'width':data['wrapheight']+'px', 'height':data['wrapheight']+'px'} );
                 
                 // Status message display
-                var $msg = $('<div class="viewport-msg" style="display:none"></div>')
+                $msg = $('<div class="viewport-msg" style="display:none"></div>')
                     .hide()
                     .appendTo($frame);
                 $this.bind('status',function(e, status){
@@ -35,8 +39,50 @@
                         .show();
                 });
 
+                var zoom_timeout, cx, cy;
                 var mw_zoom = function (e, delta) {
-                    methods.doZoom.apply( $this, [delta] );
+                    // need to center the 'zoom' (multiple mouse-wheel events close together)
+                    // on the center of the viewport
+                    // note the x,y point of image at the center of viewport
+                    var poffset = dragdiv.parent().offset(),
+                        doffset = dragdiv.offset(),
+                        offset_x = poffset.left - doffset.left,
+                        offset_y = poffset.top - doffset.top;
+                    var vp_cx = offset_x + (data['wrapwidth'] / 2),
+                        vp_cy = offset_y + (data['wrapheight'] / 2);
+                    
+                    // only note a new cx, cy if we're not currently zooming
+                    if (typeof cx === "undefined") {
+                        cx = (vp_cx / $this.width()) * data['orig_width'];
+                    }
+                    if (typeof cy === "undefined") {
+                        cy = (vp_cy / $this.height()) * data['orig_height'];
+                    }
+
+                    // now we can do the zoom, before recentering
+                    methods.doZoom.apply( $this, [delta, false] );  // don't recenter
+
+                    // recenter
+                    var move_x = (cx / data['orig_width']) * $this.width(),
+                        off_x = move_x - (data['wrapwidth'] / 2),
+                        move_y = (cy / data['orig_height']) * $this.height(),
+                        off_y = move_y - (data['wrapheight'] / 2);
+                    dragdiv.css({left: -off_x, top: -off_y});
+
+                    // check we're within viewport
+                    methods.doMove.apply( $this, [0,0] );
+
+                    if (zoom_timeout) {
+                        // we're currently zooming
+                        clearTimeout(zoom_timeout)
+                    };
+
+                    // after half a sec of no mouse-wheel zooming - clear cx and cy.
+                    zoom_timeout = setTimeout(function(){
+                        cx = undefined;
+                        cy = undefined;
+                    }, 500);
+                    
                     e.preventDefault();
                 }
                 var $zm_1_1 = $('<button class="zoom_1_1" title="Zoom 1:1">1:1</button>')
@@ -77,7 +123,6 @@
                 /**
                  * Handle panning by mouse drag
                  */
-                var dragdiv = $this.parent();
                 var ondrag = false;
                 var clickinterval = null;
                 var drag_px;
@@ -148,7 +193,7 @@
         });
     },
 
-    setZoom : function (val) {
+    setZoom : function (val, recenter) {
         return this.each(function(){
             var $this = $(this);
             var data = $this.data('viewport');
@@ -165,23 +210,24 @@
             }
             image.trigger("instant_zoom", [cur_zoom])
             */
-            console.log( width, height);
             $this.css({'width': width, 'height': height});
             //overlay.attr({width: width, height: height});
             $this.data('viewport', data);
             
             $('.cur_zoom', $this.parent().parent()).text(parseInt(val) + " %");
             
-            methods.doMove.apply( $(this), [0, 0] );
+            if (recenter !== false) {
+                methods.doMove.apply( $(this), [0, 0] );
+            }
         });
     },
 
-    doZoom : function(incr) {
+    doZoom : function(incr, recenter) {
         return this.each(function(){
             var $this = $(this);
             var data = $this.data('viewport');
             var zoom = data['cur_zoom'] + incr;
-            methods.setZoom.apply( $(this), [zoom] );
+            methods.setZoom.apply( $(this), [zoom, recenter] );
         });
     },
 
@@ -273,7 +319,6 @@
             $('.zoom_percent', $this.parent().parent()).remove();
             $this.unwrap();
             $this.unwrap();
-            data.viewport.remove();
             $this.removeData('viewport');
         });
     }
