@@ -275,11 +275,3 @@ def viewport_from_scratch (request, imageId, conn=None, **kwargs):
     image = conn.getObject("Image", imageId)
     default_z = image.getSizeZ() /2
     return render_to_response('weblabs/image_viewers/viewport_from_scratch.html', {'image':image, 'default_z': default_z})
-
-
-@login_required()
-def viewport_on_dataset (request, datasetId, conn=None, **kwargs):
-    """ Use new viewport on dataset """
-    
-    dataset = conn.getObject("Image", datasetId)
-    return render_to_response('weblabs/image_viewers/viewport_from_scratch.html', {'image':image, 'default_z': default_z})

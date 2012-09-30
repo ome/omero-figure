@@ -32,12 +32,26 @@ $(document).ready(function() {
         aspect_ratios.push(parseFloat(sizeX) / parseFloat(sizeY));
     })
     .click(function(event) {
-        var iconSize = $(this).width();
-        $("img", $(this)).viewport({
+        var $this = $(this),
+            iconSize = $(this).width(),
+            image_id = parseInt($this.attr('id').split("-")[1]),
+            currZ = 0,
+            sizeZ = $(".sizeZ", $this).text(),
+            sizeT = $(".sizeT", $this).text();
+        
+        $("img", $this).viewport({
             orig_width: $(".sizeX", $(this)).text(),
             orig_height: $(".sizeY", $(this)).text(),
             wrapwidth: iconSize - 2,
             wrapheight: iconSize - 2
+        }).src_loader({
+            image_id: image_id,
+            get_src: function(image_id, theZ, theT) {
+                return "{% url webgateway %}render_image/"+ image_id +"/"+ theZ +"/"+ theT +"/";
+            },
+            theZ: currZ,  // theZ and theT are 0 by default
+            sizeZ: sizeZ,
+            sizeT: sizeT
         });
     });
 
@@ -65,7 +79,7 @@ $(document).ready(function() {
         min: 30,
         value: 75,
         slide: function(event, ui) {
-            $(".draggable img").viewport("destroy");
+            $(".draggable img").viewport("destroy").src_loader("destroy");
             setIconSize(ui.value);
         }
     });
@@ -115,6 +129,7 @@ $(document).ready(function() {
         color: white;
         font-family: arial;
         font-size: 15px;
+        height:40px;
     }
     .cur_zoom {
         float: left;
@@ -129,7 +144,7 @@ $(document).ready(function() {
         top: 0.5em;
         z-index: 1000;
     }
-    .sizeX, .sizeY {display:none}
+    .sizeX, .sizeY, .sizeZ, .sizeC, .sizeT {display:none}
     #thumb_size_slider {
         border: 1px solid #aaa;
         height: 6px;
@@ -155,7 +170,11 @@ $(document).ready(function() {
         {% for c in manager.containers.images %}
         <li id="image_icon-{{ c.id }}" title="{{ c.name }}" {% if not c.canEdit %}{% if isLeader %}class="editonly"{% else %}class="readonly"{% endif %}{% endif %}>
             <img id="{{ c.id }}" src="{% url render_thumbnail_resize 96 c.id %}" alt="image" title="{{ c.name }}{% if not c.isOwned %}, owned by {{ c.getOwner.getNameWithInitial }}{% endif %}"/>
-            <span class="sizeX">{{ c.getSizeX }}</span> <span class="sizeY">{{ c.getSizeY }}</span>
+            <span class="sizeX">{{ c.getSizeX }}</span>
+            <span class="sizeY">{{ c.getSizeY }}</span>
+            <span class="sizeZ">{{ c.getSizeZ }}</span>
+            <span class="sizeC">{{ c.getSizeC }}</span>
+            <span class="sizeT">{{ c.getSizeT }}</span>
         </li>
         {% endfor %}
     </ul>

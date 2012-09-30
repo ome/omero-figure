@@ -185,7 +185,7 @@
                     var h_before = $this.height();
                     var czm = $this.data('viewport')['cur_zoom'];
                     if (czm) {
-                        methods.setZoom.apply( $this, [czm * 2] );
+                        methods.setZoom.apply( $this, [czm * 2, false] );
                     } else {
                         methods.doZoom.apply( $this, [50] );
                     }
@@ -328,6 +328,7 @@
             $this.unwrap();
             $this.unwrap();
             $this.removeData('viewport');
+            $this.unbind('status');
         });
     }
     };

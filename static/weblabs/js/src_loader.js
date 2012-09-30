@@ -40,7 +40,6 @@
 
 
                 $this.mousewheel(function (e, delta) {
-                    //console.log(e, delta)
                     var incr = delta > 0 ? 1 : -1;
                     methods.increment_z.apply($this, [incr]);
                     e.preventDefault();
@@ -114,11 +113,10 @@
 
         return this.each(function(){
 
-            var $this = $(this),
-                data = $this.data('src_loader');
+            var $this = $(this);
 
-            data.src_loader.remove();
             $this.removeData('src_loader');
+            $this.unbind('mousewheel');
         });
     }
     };
