@@ -1,15 +1,25 @@
+
+// This is a jQuery plugin for creating a 'viewport' from an <img> element.
+// It wraps the image in a dragable div, and this is wrapped in a frame, so that
+// the div and image can be dragged & zoomed within the frame.
+// Reuses code from Carlos' ome.viewport.js plugin.
+// This jQuery plugin style is based on code at http://docs.jquery.com/Plugins/Authoring
+
 (function( $ ){
 
     "use strict";
 
     var methods = {
 
+    // Initialise: wrap the image in 2 divs to create the viewport, adding other widgets for 
+    // displaying and editing Zoom and Z index.
     init : function( options ) {
 
         return this.each(function(){
-            var $this = $(this),
+            var $this = $(this),    // image
                 data = $this.data('viewport'),
-                $frame,
+                dragdiv,            // draggable div
+                $frame,             // outer frame
                 $msg;
 
             // If the plugin hasn't been initialized yet
@@ -25,7 +35,7 @@
                 $this.addClass('weblitz-viewport-img');
                 $this.wrap('<div style="display: inline; position: absolute;" class="draggable"></div>');
                 
-                var dragdiv = $this.parent();
+                dragdiv = $this.parent();
                 $this.parent().wrap('<div></div>');
                 
                 $frame = $this.parent().parent();
@@ -44,23 +54,25 @@
                         .show();
                 });
 
+                // Handle mouse-wheel zoom on the 'zoom' controls (NB: not on the image itself)
+                // we want the image zoom to be centered on the point of the image that is currently
+                // at the center of the viewport. cx & cy.
+                // Since recentering on each individual mousewheel event leads to rounding errors,
+                // we aggregate a whole series of mousewheel events, noting the cx & cy at the
+                // start, and calculating the new position after each new event 
+                // until we have a timeout of 500 millisecs (cx & cy are reset)
                 var zoom_timeout, cx, cy;
-                var mw_zoom = function (e, delta) {
-                    // need to center the 'zoom' (multiple mouse-wheel events close together)
-                    // on the center of the viewport
-                    // note the x,y point of image at the center of viewport
-                    var poffset = dragdiv.parent().offset(),
-                        doffset = dragdiv.offset(),
-                        offset_x = poffset.left - doffset.left,
-                        offset_y = poffset.top - doffset.top;
-                    var vp_cx = offset_x + (data['wrapwidth'] / 2),
-                        vp_cy = offset_y + (data['wrapheight'] / 2);
-                    
-                    // only note a new cx, cy if we're not currently zooming
+                var mw_zoom = function (e, delta) {                    
+                    // only note a new cx, cy if we're starting a new zoom
                     if (typeof cx === "undefined") {
+                        var poffset = dragdiv.parent().offset(),
+                            doffset = dragdiv.offset(),
+                            offset_x = poffset.left - doffset.left,
+                            offset_y = poffset.top - doffset.top;
+                        var vp_cx = offset_x + (data['wrapwidth'] / 2),
+                            vp_cy = offset_y + (data['wrapheight'] / 2);
+                        
                         cx = (vp_cx / $this.width()) * data['orig_width'];
-                    }
-                    if (typeof cy === "undefined") {
                         cy = (vp_cy / $this.height()) * data['orig_height'];
                     }
 
@@ -122,6 +134,8 @@
                 $zm_1_1.hide();
                 $zm_tofit.hide();
 
+                // allows a class that may be on the image to be moved to parent frame
+                // to maintain layout of the frame in place of the image
                 if (typeof options.klass === "string") {
                     $frame.addClass(options.klass);
                     $this.removeClass(options.klass);
@@ -178,24 +192,29 @@
                     return false;
                   }
                 })
+                // Double-clicking on the image zooms in (zoom x 2).
+                // Zooming is centered on the point that is clicked.
                 .dblclick(function (e) {
-                    var x = e.pageX - dragdiv.offset().left;
-                    var y = e.pageY - dragdiv.offset().top;
-                    var w_before = $this.width();
-                    var h_before = $this.height();
-                    var czm = $this.data('viewport')['cur_zoom'];
+                    var x = e.pageX - dragdiv.offset().left,
+                        y = e.pageY - dragdiv.offset().top,
+                        w_before = $this.width(),
+                        h_before = $this.height(),
+                        czm = $this.data('viewport')['cur_zoom'];
                     if (czm) {
                         methods.setZoom.apply( $this, [czm * 2, false] );
                     } else {
                         methods.doZoom.apply( $this, [50] );
                     }
+                    // after zoom, center the zoom on the clicked x and y coords
                     var zoom_w = $this.width() - w_before;
                     var zoom_h = $this.height() - h_before;
                     var offset_w = zoom_w * (x / w_before);
                     var offset_h = zoom_h * (y / h_before);
                     methods.doMove.apply( $this, [-offset_w, -offset_h] );
+                    return false;
                 });
-                
+
+            // By default, after initialising the viewport, we zoom to fit.
             methods.zoomToFit.apply( $this, [] );
             }
         });
@@ -209,15 +228,6 @@
             var height = +(data['orig_height']*val/100);
             data['cur_zoom'] = val;
 
-            /*
-            if (!changing) {
-            changing = setTimeout(function () {;
-            image.trigger("zoom", [cur_zoom]);
-            changing = null;
-            }, 20);
-            }
-            image.trigger("instant_zoom", [cur_zoom])
-            */
             $this.css({'width': width, 'height': height});
             //overlay.attr({width: width, height: height});
             $this.data('viewport', data);

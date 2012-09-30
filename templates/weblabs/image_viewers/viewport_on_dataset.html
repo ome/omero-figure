@@ -35,10 +35,10 @@ $(document).ready(function() {
         var $this = $(this),
             iconSize = $(this).width(),
             image_id = parseInt($this.attr('id').split("-")[1]),
-            currZ = 0,
+            currZ = parseInt($(".defaultZ", $this).text()),
+            currT = parseInt($(".defaultT", $this).text()),
             sizeZ = $(".sizeZ", $this).text(),
             sizeT = $(".sizeT", $this).text();
-        
         $("img", $this).viewport({
             orig_width: $(".sizeX", $(this)).text(),
             orig_height: $(".sizeY", $(this)).text(),
@@ -50,9 +50,10 @@ $(document).ready(function() {
                 return "{% url webgateway %}render_image/"+ image_id +"/"+ theZ +"/"+ theT +"/";
             },
             theZ: currZ,  // theZ and theT are 0 by default
+            theT: currT,
             sizeZ: sizeZ,
             sizeT: sizeT
-        });
+        }).src_loader("load_src", currZ, currT);    // replace thumbnail with full image
     });
 
     var setIconSize = function(icon_size) {
@@ -144,7 +145,7 @@ $(document).ready(function() {
         top: 0.5em;
         z-index: 1000;
     }
-    .sizeX, .sizeY, .sizeZ, .sizeC, .sizeT {display:none}
+    .sizeX, .sizeY, .sizeZ, .sizeC, .sizeT, .defaultZ, .defaultT {display:none}
     #thumb_size_slider {
         border: 1px solid #aaa;
         height: 6px;
@@ -175,6 +176,8 @@ $(document).ready(function() {
             <span class="sizeZ">{{ c.getSizeZ }}</span>
             <span class="sizeC">{{ c.getSizeC }}</span>
             <span class="sizeT">{{ c.getSizeT }}</span>
+            <span class="defaultZ">{{ c.getDefaultZ }}</span>
+            <span class="defaultT">{{ c.getDefaultT }}</span>
         </li>
         {% endfor %}
     </ul>

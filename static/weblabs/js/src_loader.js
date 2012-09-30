@@ -3,6 +3,7 @@
 // src attribute, theZ, theT, and a map of query-string attributes, allowing
 // any to be updated independently.
 // It triggers a 'status' message to notify loading / loaded status etc.
+// This jQuery plugin is based on code at http://docs.jquery.com/Plugins/Authoring
 (function ($) {
 
     "use strict";
@@ -10,6 +11,7 @@
     var get_src;
     var methods = {
 
+    // initialise the plugin
     init : function (options) {
 
         get_src = options['get_src'];
@@ -51,6 +53,7 @@
         });
     },
 
+    // increment Z index and update src
     increment_z : function(incr) {
         return this.each(function(){
             var $this = $(this),
@@ -61,6 +64,8 @@
         });
     },
 
+    // set the src attribute of the image, triggering a 'status' event (with message) 
+    // to indicate start of loading and completion.
     load_src : function(theZ, theT) {
 
         return this.each(function(){
@@ -109,6 +114,7 @@
         });
     },
 
+    // revert the element to it's original state: remove data and listeners.
     destroy : function( ) {
 
         return this.each(function(){
@@ -121,6 +127,8 @@
     }
     };
 
+
+    // the plugin definition: either we init or we're calling a named method.
     $.fn.src_loader = function( method ) {
 
         if ( methods[method] ) {
