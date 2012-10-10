@@ -8,10 +8,13 @@
 <script type="text/javascript" src="{% static "3rdparty/jquery.mousewheel.js" %}"></script>
 <script type="text/javascript" src="{% static "weblabs/js/viewport.js" %}"></script>
 <script type="text/javascript" src="{% static "weblabs/js/src_loader.js" %}"></script>
+<script type="text/javascript" src="{% static "weblabs/js/xy_sliders.js" %}"></script>
 
 <link rel="stylesheet" href="{% static "webclient/css/layout.css" %}" type="text/css" media="screen"/>
 <link rel="stylesheet" href="{% static "3rdparty/jquery-ui-1.8.19/themes/base/jquery.ui.base.css" %}" type="text/css" />
 
+<!-- keep-alive ping so that OMERO session doesn't die -->
+{% include "webclient/base/includes/ping.html" %}
 
 <script type="text/javascript">
 
@@ -24,7 +27,7 @@ $(document).ready(function() {
     $("#dataIcons img").each(function(){
         icon_styles.push(this.style);
     });
-    var sizeX, sizeY
+    var sizeX, sizeY;
     $("#dataIcons li").each(function(){
         li_styles.push(this.style);
         sizeX = $(".sizeX", $(this)).text();
@@ -33,13 +36,18 @@ $(document).ready(function() {
     })
     .click(function(event) {
         var $this = $(this),
+            $image = $("img", $this),
             iconSize = $(this).width(),
             image_id = parseInt($this.attr('id').split("-")[1]),
             currZ = parseInt($(".defaultZ", $this).text()),
             currT = parseInt($(".defaultT", $this).text()),
             sizeZ = $(".sizeZ", $this).text(),
             sizeT = $(".sizeT", $this).text();
-        $("img", $this).viewport({
+        if (iconSize < 150) {
+            // don't init viewport if icon is still small
+            return;
+        }
+        $image.viewport({
             orig_width: $(".sizeX", $(this)).text(),
             orig_height: $(".sizeY", $(this)).text(),
             wrapwidth: iconSize - 2,
@@ -53,7 +61,15 @@ $(document).ready(function() {
             theT: currT,
             sizeZ: sizeZ,
             sizeT: sizeT
-        }).src_loader("load_src", currZ, currT);    // replace thumbnail with full image
+        })
+        
+        .parent().parent().xy_sliders({
+            image: $image,      // will sync currZ & currT with this. 
+            theZ: currZ,
+            theT: currT,
+            sizeZ: sizeZ,
+            sizeT: sizeT
+        });
     });
 
     var setIconSize = function(icon_size) {
@@ -76,10 +92,11 @@ $(document).ready(function() {
     setIconSize(75);
     
     $("#thumb_size_slider").slider({
-        max: 200,
+        max: 300,
         min: 30,
         value: 75,
         slide: function(event, ui) {
+            $(".draggable img").parent().parent().xy_sliders("destroy");
             $(".draggable img").viewport("destroy").src_loader("destroy");
             setIconSize(ui.value);
         }
@@ -138,11 +155,14 @@ $(document).ready(function() {
         padding-left: 20px;
     }
     .viewport-msg {
+        background-color: black;
+        font-size: 15px;
+        height:40px;
         color: #fff;
-        font-weight: bold;
         position: absolute;
-        right: 0.5em;
-        top: 0.5em;
+        right: 3px;
+        top: 3px;
+        padding: 3px;
         z-index: 1000;
     }
     .sizeX, .sizeY, .sizeZ, .sizeC, .sizeT, .defaultZ, .defaultT {display:none}
@@ -152,12 +172,22 @@ $(document).ready(function() {
         left: 20px;
         position: absolute;
         top: 9px;
-        width: 120px;
+        width: 200px;
     }
     #thumb_size_slider .ui-slider-handle {
         /*background: -moz-linear-gradient(center top , #727C86 0%, #4F565D 100%) repeat scroll 0 0 #FFFFFF;*/
         background: #727C86;
         border-radius: 3px;
+    }
+    .vertical_slider, .horizontal_slider {
+        background: #fef6af;
+        border: solid black 1px;
+    }
+    .slider_frame .ui-slider-handle {
+        background: #fef6af;
+        border: solid gray 1px;
+        border-radius: 3px;
+        left: -0.5em;
     }
 </style>
 

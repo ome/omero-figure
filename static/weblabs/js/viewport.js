@@ -11,7 +11,7 @@
 
     var methods = {
 
-    // Initialise: wrap the image in 2 divs to create the viewport, adding other widgets for 
+    // Initialise: wrap the image in 2 divs to create the viewport, adding other widgets for
     // displaying and editing Zoom and Z index.
     init : function( options ) {
 
@@ -48,6 +48,9 @@
                 // Status message display
                 $msg = $('<div class="viewport-msg" style="display:none"></div>')
                     .hide()
+                    .mouseout(function(){$(this).css('opacity','0.7');})
+                    .mouseover(function(){$(this).css('opacity','1.0');})
+                    .css('opacity','0.7')
                     .appendTo($frame);
                 $this.bind('status',function(e, status){
                     $msg.text(status)
@@ -288,7 +291,12 @@
             /* Is the viewport bigger than the image ? */
             if (imagewidth <= wrapwidth) {
                 /* Viewport wider than image, center horizontally */
-                left = (wrapwidth - imagewidth) / 2;
+                if (left < 0) {
+                    left = 0;
+                }
+                if ((wrapwidth - imagewidth) <= left ) {
+                    left = wrapwidth - imagewidth;
+                }
             } else {
                 /* Image wider than viewport... */
                 if (left >= 0) {
@@ -300,8 +308,13 @@
             }
 
             if (imageheight <= wrapheight) {
-                /* Viewport higher than image, center vertically */
-                top = (wrapheight - imageheight) / 2;
+                /* Viewport higher than image... keep top and bottom within viewport */
+                if (top < 0) {
+                    top = 0;
+                }
+                if ((wrapheight - imageheight) <= top ) {
+                    top = wrapheight - imageheight;
+                }
             } else {
                 /* Image higher than viewport... */
                 if (top >= 0) {
@@ -335,8 +348,9 @@
             var $this = $(this);
 
             $('.zoom_percent', $this.parent().parent()).remove();
-            $this.unwrap();
-            $this.unwrap();
+            $('.viewport-msg', $this.parent().parent()).remove();
+            $this.unwrap();     // remove the 'draggable' div
+            $this.unwrap();     // remove the 'frame'
             $this.removeData('viewport');
             $this.unbind('status');
         });

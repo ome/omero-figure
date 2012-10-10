@@ -46,8 +46,11 @@
                     methods.increment_z.apply($this, [incr]);
                     e.preventDefault();
                 });
-
+                
                 $this.data('src_loader', data);
+                
+                // finally - load the current image
+                methods.load_src.apply( $this, [data['theZ'], data['theT']] );
                 
             }
         });
@@ -64,7 +67,7 @@
         });
     },
 
-    // set the src attribute of the image, triggering a 'status' event (with message) 
+    // set the src attribute of the image, triggering a 'status' event (with message)
     // to indicate start of loading and completion.
     load_src : function(theZ, theT) {
 
@@ -78,6 +81,7 @@
                     data['theZ'] = theZ;
                     $this.data('src_loader', data);
                     load_msg += "Z: " + theZ;
+                    $this.trigger("changeZ", [theZ]);
                 }
             }
             if (typeof theT === 'number' && theT >= 0){
@@ -85,6 +89,7 @@
                     data['theT'] = theT;
                     $this.data('src_loader', data);
                     load_msg += "T: " + theT;
+                    $this.trigger("changeT", [theT]);
                 }
             }
 
@@ -100,9 +105,12 @@
             };
             if (data['query_opts'] && Object.keys(data['query_opts']).length > 0) {
                 var query = [],
+                    query_opts = data['query_opts'],
                     q;
-                for (q in data['query_opts']) {
-                    query.push(q + "=" + data['query_opts'][q]);
+                for (q in query_opts) {
+                    if (query_opts.hasOwnProperty(q)){
+                        query.push(q + "=" + data['query_opts'][q]);
+                    }
                 }
                 src += "?" + query.join("&");
             }
