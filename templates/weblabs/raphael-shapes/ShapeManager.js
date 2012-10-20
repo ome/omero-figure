@@ -36,18 +36,28 @@ function ShapeManager(canvasId, width, height) {
             };
             $canvas.bind('mousemove', trackPointer);
         
+            var wait;
             var addPoint = function(event) {
                 // only add point if this is single click (cancel if double-click)
-                // TODO: cancel this on dblclick below
-                var wait = setTimeout(function(){
-                    var x2 = event.pageX - $this.offset().left,
-                        y2 = event.pageY - $this.offset().top;
-                    line.addPoint(x2, y2);
-                }, 200);
+                // if this is the second of a double-click, ignore!
+                if (typeof wait !== "undefined") {
+                    clearTimeout(wait);
+                    wait = undefined;
+                    return;
+                }
+                // To avoid delay in UI, need to add instantly but... (see dblclick below)
+                var x2 = event.pageX - $this.offset().left,
+                    y2 = event.pageY - $this.offset().top;
+                line.addPoint(x2, y2);  // add point instantly
+                wait = setTimeout(function(){
+                    wait = undefined;
+                }, 250);
             };
             $canvas.click(addPoint);
         
+            // On Double-Click we don't add ANY points. We simply stop the creating process.
             $canvas.one('dblclick', function() {
+                line.removeLastPoint();     // ...remove point added by first click of double-click!
                 $canvas.unbind('mousemove', trackPointer);
                 $canvas.unbind('click', addPoint);
                 $canvas.one('click', handleCanvasClick);

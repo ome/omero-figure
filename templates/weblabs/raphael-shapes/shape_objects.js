@@ -233,9 +233,9 @@ function Polyline(paper, id, points_list, handle_shape_click, closed, manager) {
 Polyline.prototype.createHandles = function() {
     // init handles & line
     var self = this;
-    console.log("createHandles");
-    //self.handles.remove();
+    self.handles.remove();
     self.handles = self.paper.set();
+    
     var _handle_drag = function() {
         return function (dx, dy) {
             // on DRAG: update the corresponding point of the parent and redraw
@@ -258,6 +258,7 @@ Polyline.prototype.createHandles = function() {
         var hx = self.points_list[i][0];
         var hy = self.points_list[i][1];
         handle = self.paper.rect(hx-handle_wh/2, hy-handle_wh/2, handle_wh, handle_wh).attr(handle_attrs);
+        handle.attr( {fill: Raphael.getColor() })
         handle.i = i;
         handle.polyline = self;
         handle.drag(
@@ -284,7 +285,17 @@ Polyline.prototype.updateLastPoint = function(px, py) {
     this.redrawShape();
 };
 
+Polyline.prototype.removeLastPoint = function(px, py) {
+    this.points_list.pop();
+    this.createHandles();
+    this.redrawShape();
+};
+
+
 Polyline.prototype.addPoint = function(px, py) {
+    //console.log("addPoint", px, py);
+    var pl_length = this.points_list.length;
+    this.points_list[pl_length-1] = [px,py];
     this.points_list.push([px,py]);
     this.createHandles();
     this.redrawShape();
