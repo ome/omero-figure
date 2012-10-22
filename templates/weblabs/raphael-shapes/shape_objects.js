@@ -6,21 +6,26 @@ var selected_line_attrs = {'stroke': '#00a8ff', 'fill-opacity':0.3};
 
 
 // Rectangle shape
-function Rectangle(paper, id, x, y, width, height, handle_shape_click, manager) {
+function Rectangle(paper, id, x, y, width, height, handle_shape_click, manager, options) {
 
     this.MINSIZE = 20;
     this.paper = paper;
     this.id = id;
     this.x = x; this.y = y; this.width = width; this.height = height;
     this.handle_shape_click = handle_shape_click;
-    this.line_attrs = default_line_attrs;
+    if (typeof options === "undefined") {
+        options = {};
+    }
+    this.line_attrs = $.extend({}, default_line_attrs, options);
+    console.log(this.line_attrs);
+    this.selected_line_attrs = $.extend({}, selected_line_attrs);
     var self = this;
 
     // draw rectangle
-    self.rect = self.paper.rect(self.x, self.y, self.width, self.height).attr(this.line_attrs);
-    self.rect.rect_obj = self;
+    self.shape = self.paper.rect(self.x, self.y, self.width, self.height).attr(this.line_attrs);
+    self.shape.rect_obj = self;
     
-    self.rect.drag(
+    self.shape.drag(
         function(dx, dy) {
             if (manager.getState() !== ShapeManager.STATES.SELECT) {
                 return;
@@ -101,8 +106,8 @@ function Rectangle(paper, id, x, y, width, height, handle_shape_click, manager) 
     self.handles.hide();     // show on selection
 
     // selection happens on mouse-down. E.g. start drag.
-    self.rect.mousedown(function() {
-        self.handle_shape_click();
+    self.shape.mousedown(function() {
+        self.handle_shape_click(self.line_attrs);
     });
 
 }
@@ -140,7 +145,7 @@ Rectangle.prototype.recenter = function(cx, cy) {
 
 Rectangle.prototype.updateShape = function() {
     // need to update the location of all handles and rectangle
-    this.rect.attr({'x':this.x, 'y':this.y, 'width':this.width, 'height':this.height});
+    this.shape.attr({'x':this.x, 'y':this.y, 'width':this.width, 'height':this.height});
     
     this.handleIds = {'nw': [this.x, this.y],
         'n': [this.x+this.width/2,this.y],
@@ -163,27 +168,35 @@ Rectangle.prototype.updateShape = function() {
 Rectangle.prototype.setSelected = function(selected) {
     
     if (selected) {
-        this.rect.attr(selected_line_attrs);
-        this.rect.toFront();
+        this.shape.attr(selected_line_attrs);
+        this.shape.toFront();
         this.handles.show();
         this.handles.toFront();
     } else {
-        this.rect.attr(this.line_attrs);
+        this.shape.attr(this.line_attrs);
         this.handles.hide();
     }
 };
 
 
 // Polyline shape
-function Polyline(paper, id, points_list, handle_shape_click, closed, manager) {
+function Polyline(paper, id, points_list, handle_shape_click, closed, manager, options) {
 
     this.paper = paper;
     this.id = id;
     this.closed = closed;
     this.points_list = points_list;
     this.handle_shape_click = handle_shape_click;
-    this.line_attrs = default_line_attrs;
-    this.selected_line_attrs = selected_line_attrs;
+    if (typeof options === "undefined") {
+        options = {};
+    }
+    var sel_opts = {};
+    if (!closed) {
+        options['fill-opacity'] = 0.001;
+        sel_opts['fill-opacity'] = 0.001;
+    }
+    this.line_attrs = $.extend({}, default_line_attrs, options);
+    this.selected_line_attrs = $.extend({}, selected_line_attrs, sel_opts);
     this.manager = manager;
     var self = this;
 
@@ -198,10 +211,10 @@ function Polyline(paper, id, points_list, handle_shape_click, closed, manager) {
     self.handles.hide();     // show on selection
     
     
-    self.line = self.paper.path(path_string).attr(this.line_attrs);
-    self.line.pl = this;
+    self.shape = self.paper.path(path_string).attr(this.line_attrs);
+    self.shape.pl = this;
     
-    self.line.drag(
+    self.shape.drag(
         function (dx, dy) {
             // on DRAG: update the location of the handles and the line
             if (manager.getState() !== ShapeManager.STATES.SELECT) {
@@ -224,8 +237,8 @@ function Polyline(paper, id, points_list, handle_shape_click, closed, manager) {
     );
     
     // selection happens on mouse-down. E.g. start drag.
-    self.line.mousedown(function() {
-        self.handle_shape_click();
+    self.shape.mousedown(function() {
+        self.handle_shape_click(self.line_attrs);
     });
 
 }
@@ -258,7 +271,7 @@ Polyline.prototype.createHandles = function() {
         var hx = self.points_list[i][0];
         var hy = self.points_list[i][1];
         handle = self.paper.rect(hx-handle_wh/2, hy-handle_wh/2, handle_wh, handle_wh).attr(handle_attrs);
-        handle.attr( {fill: Raphael.getColor() })
+        handle.attr( {fill: Raphael.getColor() });
         handle.i = i;
         handle.polyline = self;
         handle.drag(
@@ -268,7 +281,7 @@ Polyline.prototype.createHandles = function() {
         );
         self.handles.push(handle);
     }
-}
+};
 
 Polyline.prototype.updatePoints = function(points) {
     this.points_list = points;
@@ -314,17 +327,17 @@ Polyline.prototype.redrawShape = function() {
     if (this.closed) {
         path_string += " z";
     }
-    this.line.attr({path: path_string});
+    this.shape.attr({path: path_string});
 };
 
 Polyline.prototype.setSelected = function(selected) {
     if (selected) {
-        this.line.attr(this.selected_line_attrs);
-        this.line.toFront();
+        this.shape.attr(this.selected_line_attrs);
+        this.shape.toFront();
         this.handles.show();
         this.handles.toFront();
     } else {
-        this.line.attr(this.line_attrs);
+        this.shape.attr(this.line_attrs);
         this.handles.hide();
     }
 };

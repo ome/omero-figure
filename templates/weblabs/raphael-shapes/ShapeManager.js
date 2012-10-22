@@ -7,11 +7,16 @@ function ShapeManager(canvasId, width, height) {
         paper = Raphael(canvasId, width, height),
         shape_objects = [],
         state = ShapeManager.STATES.SELECT,
+        current_color,
+        selected_shape_id,
         $canvas = $("#"+canvasId),
-        handle_shape_click = function(event) {
+        handle_shape_click = function(attrs) {
             if (self.getState() !== ShapeManager.STATES.SELECT) {
                 return;
             }
+            // TODO - Don't blindly pass attrs to $.publish.
+            //console.log(attrs);
+            $.publish("selection_change", attrs);
             self.setSelectedShape(this.id);
         };
     self.defaultSquareSize = null;  // 'public' variable
@@ -19,14 +24,16 @@ function ShapeManager(canvasId, width, height) {
     // Mouse events on the canvas itself - used to create events (if we're in the right state)
     var trackPointer;
     var handleCanvasClick = function(event) {
-        if (self.getState() === ShapeManager.STATES.CREATE_POLYLINE) {
+        if (self.getState() === ShapeManager.STATES.CREATE_POLYLINE || 
+                self.getState() === ShapeManager.STATES.CREATE_POLYGON) {
             self.clearSelection();
-            var $this = $(this);
+            var $this = $(this),
+                closed = (self.getState() === ShapeManager.STATES.CREATE_POLYGON);
             var x = event.pageX - $this.offset().left,
                 y = event.pageY - $this.offset().top;
             var id = x+y, // TODO  use random number instead;
                 points_list = [[x,y], [x,y]];
-            var line = new Polyline(paper, id, points_list, handle_shape_click, true, self);
+            var line = new Polyline(paper, id, points_list, handle_shape_click, closed, self, {'fill':current_fillcolor});
             shape_objects.push(line);
         
             trackPointer = function(event) {
@@ -61,6 +68,7 @@ function ShapeManager(canvasId, width, height) {
                 $canvas.unbind('mousemove', trackPointer);
                 $canvas.unbind('click', addPoint);
                 $canvas.one('click', handleCanvasClick);
+                self.setSelectedShape(id);
             });
         } else {
             // if we haven't 'used' our one click - need to add it again
@@ -111,7 +119,7 @@ function ShapeManager(canvasId, width, height) {
                 size = self.defaultSquareSize;
                 var x1 = x - (size/2),
                     y1 = y - (size/2);
-                square = new Rectangle(paper, id, x1, y1, size, size, handle_shape_click, self);
+                square = new Rectangle(paper, id, x1, y1, size, size, handle_shape_click, self, {'fill':current_fillcolor});
                 shape_objects.push(square);
                 
                 // while mouse stays down (drag), we recenter the new square...
@@ -129,7 +137,7 @@ function ShapeManager(canvasId, width, height) {
                 });
             } else {
                 id = x+y; // TODO  use random number instead;
-                square = new Rectangle(paper, id, x, y, 0, 0, handle_shape_click, self);
+                square = new Rectangle(paper, id, x, y, 0, 0, handle_shape_click, self, {'fill':current_fillcolor});
                 shape_objects.push(square);
                 
                 // while mouse stays down (drag), we resize the new square...
@@ -155,11 +163,11 @@ function ShapeManager(canvasId, width, height) {
     this.addShape = function(shape_params) {
         if (shape_params.type === "Rectangle") {
             var r = new Rectangle(paper, shape_params.id, shape_params.x, shape_params.y, 
-                    shape_params.width, shape_params.height, handle_shape_click, this);
+                    shape_params.width, shape_params.height, handle_shape_click, this, {'fill':current_fillcolor});
             shape_objects.push(r);
         } else if (shape_params.type === "Polygon") {
             var p = new Polyline(paper, shape_params.id, shape_params.points, 
-                    handle_shape_click, true, this);   // true: closed handle_shape_click, this);
+                    handle_shape_click, true, this, {'fill':current_fillcolor});   // true: closed handle_shape_click, this);
             shape_objects.push(p);
         }
 
@@ -177,12 +185,53 @@ function ShapeManager(canvasId, width, height) {
     };
 
     this.setSelectedShape = function(shape_id) {
+        console.log( "SET SelectedShape:", shape_id );
+        selected_shape_id = shape_id;
         for (var i=0; i<shape_objects.length; i++) {
             var s = shape_objects[i];
             s.setSelected(shape_id == s.id);
         }
     };
+    this.getSelectedShape = function() {
+        for (var i=0; i<shape_objects.length; i++) {
+            var s = shape_objects[i];
+            if (selected_shape_id == s.id) {
+                return s;
+            }
+        }
+    };
+
+    // Set the current color in our pallette, E.g. "#ff0000"
+    this.setFillColor = function(color) {
+        current_fillcolor = color;
+        var selshpe = this.getSelectedShape();
+        if (selshpe) {
+            selshpe.line_attrs.fill = color;
+            selshpe.shape.attr('fill', color);
+        }
+    };
+
+    // If a shape is currently selected, delete it
+    this.deleteCurrentShape = function() {
+        var idx,
+            shape_obj;
+        for (var i=0; i<shape_objects.length; i++) {
+            var s = shape_objects[i];
+            if (selected_shape_id == s.id) {
+                idx = i;
+                shape_obj = s;
+                break;
+            }
+        }
+        if (typeof idx !== "undefined") {
+            shape_obj.shape.remove();
+            shape_obj.handles.remove();
+            shape_objects.splice(idx,1);
+        }
+        console.log("shape_objects.length", shape_objects.length);
+    };
 }
+
 
 ShapeManager.prototype.clearSelection = function() {
     this.setSelectedShape(null);
