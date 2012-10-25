@@ -44,7 +44,7 @@
         var shapeManager = new ShapeManager("holder", 600, 400);
         
         shapeManager.setFillColor(INIT_FILL_COLOR);
-        shapeManager.addShape( {
+        shapeManager.newShape( {
             type: "Rectangle",
             id: 10,
             x: 50,
@@ -52,7 +52,7 @@
             width: 100,
             height: 150} );
 
-        shapeManager.addShape( {
+        shapeManager.newShape( {
             type: "Rectangle",
             id: 11,
             x: 250,
@@ -60,7 +60,7 @@
             width: 100,
             height: 150} );
 
-        shapeManager.addShape( {
+        shapeManager.newShape( {
             type: "Polygon",
             id: 12,
             points: [[319,327], [179,227], [459,27]]} );
@@ -93,10 +93,10 @@
         })
         .val(INIT_FILL_COLOR)
         .css("background", INIT_FILL_COLOR);
-        $.subscribe("selection_change", function(event, attrs) {
-            console.log(attrs['fill']);
-            $("#color_select").css('background', attrs['fill'])
-                .val(attrs['fill']);
+        $.subscribe("fillColor", function(event, color) {
+            console.log("color", color);
+            $("#color_select").css('background', color)
+                .val(color);
 
         });
 

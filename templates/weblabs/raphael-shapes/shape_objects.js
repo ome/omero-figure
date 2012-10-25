@@ -5,6 +5,35 @@ var default_line_attrs = {'stroke-width':1, 'stroke': '#ffffff', 'cursor': 'defa
 var selected_line_attrs = {'stroke': '#00a8ff', 'fill-opacity':0.3};
 
 
+// ------- Base Shape -------------
+function BaseShape() {
+}
+
+BaseShape.prototype.getFillColor = function() {
+    return this.shape.attr('fill');
+};
+BaseShape.prototype.setFillColor = function(color) {
+    this.line_attrs.fill = color;
+    this.shape.attr('fill', color);
+};
+
+BaseShape.prototype.setSelected = function(selected) {
+    if (selected) {
+        this.shape.attr(this.selected_line_attrs);
+        this.shape.toFront();
+        this.handles.show();
+        this.handles.toFront();
+    } else {
+        this.shape.attr(this.line_attrs);
+        this.handles.hide();
+    }
+};
+
+BaseShape.prototype.getAttrs = function() {
+    return this.line_attrs;
+};
+
+
 // Rectangle shape
 function Rectangle(paper, id, x, y, width, height, handle_shape_click, manager, options) {
 
@@ -17,7 +46,6 @@ function Rectangle(paper, id, x, y, width, height, handle_shape_click, manager, 
         options = {};
     }
     this.line_attrs = $.extend({}, default_line_attrs, options);
-    console.log(this.line_attrs);
     this.selected_line_attrs = $.extend({}, selected_line_attrs);
     var self = this;
 
@@ -107,10 +135,13 @@ function Rectangle(paper, id, x, y, width, height, handle_shape_click, manager, 
 
     // selection happens on mouse-down. E.g. start drag.
     self.shape.mousedown(function() {
-        self.handle_shape_click(self.line_attrs);
+        self.handle_shape_click();
     });
 
 }
+
+// Basic prototype inheritance!
+Rectangle.prototype = new BaseShape();
 
 // NB: x1 and x2, y1 and y2 order unimportant
 Rectangle.prototype.updateCorners = function(x1, y1, x2, y2) {
@@ -162,19 +193,6 @@ Rectangle.prototype.updateShape = function() {
         var hy = this.handleIds[h_id][1];
         hnd.attr({'x':hx-handle_wh/2, 'y':hy-handle_wh/2});
         
-    }
-};
-
-Rectangle.prototype.setSelected = function(selected) {
-    
-    if (selected) {
-        this.shape.attr(selected_line_attrs);
-        this.shape.toFront();
-        this.handles.show();
-        this.handles.toFront();
-    } else {
-        this.shape.attr(this.line_attrs);
-        this.handles.hide();
     }
 };
 
@@ -242,6 +260,10 @@ function Polyline(paper, id, points_list, handle_shape_click, closed, manager, o
     });
 
 }
+
+// Basic prototype inheritance!
+Polyline.prototype = new BaseShape();
+
 
 Polyline.prototype.createHandles = function() {
     // init handles & line
@@ -328,16 +350,4 @@ Polyline.prototype.redrawShape = function() {
         path_string += " z";
     }
     this.shape.attr({path: path_string});
-};
-
-Polyline.prototype.setSelected = function(selected) {
-    if (selected) {
-        this.shape.attr(this.selected_line_attrs);
-        this.shape.toFront();
-        this.handles.show();
-        this.handles.toFront();
-    } else {
-        this.shape.attr(this.line_attrs);
-        this.handles.hide();
-    }
 };
