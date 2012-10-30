@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Display of OME.xsd</title>
+	
+	<link rel="stylesheet" type="text/css" href="xsd-2-html-styles.css"/>
+
+	<script src="../raphael-shapes/raphael-min.js" type="text/javascript"></script>
+	<script src="../raphael-shapes/mousetrap.min.js" type="text/javascript"></script>
+	<script src="../raphael-shapes/jquery.js" type="text/javascript"></script>
+	<script src="raphael_bb.js" type="text/javascript"></script>
+	<script src="underscore.js" type="text/javascript"></script>
+	<script src="backbone.js" type="text/javascript"></script>
+
+
+<script>
+    $(function(){
+        var paper = Raphael("holder", 500, 400);
+        var default_line_attrs = {'stroke-width':1, 'stroke': '#ffffff', 'cursor': 'default', 'fill-opacity':0.1, 'fill': '#000'};
+        var handle_attrs = {stroke:'#fff', fill:'#000', 'cursor': 'default'};
+        var handle_wh = 10;
+        
+        
+        //var elip = paper.ellipse(33, 33, 66, 66);
+        //elip.attr( default_line_attrs );
+        
+        // --------------------------------- MODELS --------------------------
+
+        
+        // ------------------- Base Shape ------------------------
+
+        var Shape = Backbone.Model.extend({
+            initialize: function() {
+                console.log("Shape initialize");
+                //if (!this.get("title")) {
+                //this.set({"title": this.defaults().title});
+                //}
+            },
+            
+            // Toggle the `active` state of this channel
+            show: function() {
+                console.log("Shape show");
+                //this.save({active: !this.get("active")});
+                //this.set({active: !this.get("active")});
+            },
+        });
+        
+        // ------------------------ Shape COLLECTION (used in ROI model)-------------------------
+
+        var ShapeList = Backbone.Collection.extend({
+            model: Shape,
+            url: "fake"
+        });
+        
+        // ---------------------- Shape Instances -----------------------
+        
+        var Rect = Shape.extend({
+
+            // Default attributes for Rect
+            defaults: function() {
+                return {
+                    x: 0,
+                    y: 0,
+                    width: 100,
+                    height: 100
+                };
+            },
+
+            // Ensure that each rect created has....
+            initialize: function() {
+                console.log("Rect initialize");
+                //if (!this.get("title")) {
+                //this.set({"title": this.defaults().title});
+                //}
+            },
+
+        });
+        
+        var Ellipse = Shape.extend({
+
+            // Default attributes for Rect
+            defaults: function() {
+                return {
+                    x: 100,
+                    y: 100,
+                    rx: 50,
+                    ry: 75
+                };
+            },
+
+            // Ensure that each rect created has....
+            initialize: function() {
+                console.log("Ellipse initialize");
+                //if (!this.get("title")) {
+                //this.set({"title": this.defaults().title});
+                //}
+            },
+
+        });
+        
+        
+        // ------------------ ROI ---------------------------
+        
+        var ROI = Backbone.Model.extend({
+            initialize: function() {
+                console.log("ROI initialize");
+                this.shapes = new ShapeList;
+            },
+            addRect: function(attrs) {
+                var r = new Rect(attrs);
+                this.shapes.add(r);
+            },
+            addEllipse: function(attrs) {
+                var e = new Ellipse(attrs);
+                this.shapes.add(e);
+            }
+        });
+        
+        
+    // ------------------------ VIEWS -------------------------------
+
+
+        // ------------- Rect ----------------
+        
+        var RectView = Backbone.View.extend({
+            // make a child on click
+            events: {
+                'mousedown': 'selectShape'
+            },
+            initialize: function() {
+                // Here we create the shape itself, the drawing handles and
+                // bind drag events to all of them to drag/resize the rect.
+
+                var self = this;
+
+                // Set up our 'view' attributes (for rendering without updating model)
+                this.x = this.model.get("x");
+                this.y = this.model.get("y");
+                this.width = this.model.get("width");
+                this.height = this.model.get("height");
+
+                // ---- Create Handles -----
+                // map of centre-points for each handle
+                this.handleIds = {'nw': [this.x, this.y],
+                    'n': [this.x+this.width/2,this.y],
+                    'ne': [this.x+this.width,this.y],
+                    'w': [this.x, this.y+this.height/2],
+                    'e': [this.x+this.width, this.y+this.height/2],
+                    'sw': [this.x, this.y+this.height],
+                    's': [this.x+this.width/2, this.y+this.height],
+                    'se': [this.x+this.width, this.y+this.height]
+                };
+                // draw handles
+                self.handles = paper.set();
+                for (var key in this.handleIds) {
+                var hx = this.handleIds[key][0];
+                var hy = this.handleIds[key][1];
+                var handle = paper.rect(hx-handle_wh/2, hy-handle_wh/2, handle_wh, handle_wh).attr(handle_attrs);
+                handle.attr({'cursor': key + '-resize'});     // css, E.g. ne-resize
+                handle.id = key;
+                handle.rect = self;
+
+                //handle.drag(
+                //    _handle_drag(),
+                //    _handle_drag_start()
+                //);
+                self.handles.push(handle);
+                }
+                //self.handles.hide();     // show on selection
+
+
+                // ----- Create the rect itself ---- 
+                this.element = paper.rect();
+                this.element.attr( default_line_attrs );
+                // set "element" to the raphael node (allows Backbone to handle events)
+                this.setElement(this.element.node);
+                this.delegateEvents(this.events);   // we need to rebind the events
+
+                // Handle drag
+                this.element.drag(
+                    function(dx, dy) {
+                        // DRAG, update location and redraw
+                        // TODO - need some way to disable drag if we're not in select state
+                        //if (manager.getState() !== ShapeManager.STATES.SELECT) {
+                        //    return;
+                        //}
+                        self.x = dx+this.ox;
+                        self.y = this.oy+dy;
+                        self.updateShape();
+                    },
+                    function() {
+                        // START drag: note the location of all points (copy list)
+                        this.ox = this.attr('x');
+                        this.oy = this.attr('y');
+                    },
+                    function() {
+                        // STOP: save current position to model
+                        self.model.set({'x': self.x, 'y': self.y});
+                    }
+                );
+
+                // Finally, we need to render when model changes
+                this.model.on('change', this.render, this);
+            },
+
+            // render updates our local attributes from the Model AND updates coordinates
+            render: function() {
+                console.log("render RECT");
+                this.x = this.model.get("x");
+                this.y = this.model.get("y");
+                this.width = this.model.get("width");
+                this.height = this.model.get("height");
+                this.updateShape();
+            },
+
+            // used to update during drags etc. Also called by render()
+            updateShape: function() {
+                this.element.attr({'x':this.x, 'y':this.y, 'width':this.width, 'height':this.height});
+
+                this.handleIds = {'nw': [this.x, this.y],
+                'n': [this.x+this.width/2,this.y],
+                'ne': [this.x+this.width,this.y],
+                'w': [this.x, this.y+this.height/2],
+                'e': [this.x+this.width, this.y+this.height/2],
+                'sw': [this.x, this.y+this.height],
+                's': [this.x+this.width/2, this.y+this.height],
+                'se': [this.x+this.width, this.y+this.height]};
+                var hnd, h_id, hx, hy;
+                for (var h=0, l=this.handles.length; h<l; h++) {
+                    hnd = this.handles[h];
+                    h_id = hnd.id;
+                    hx = this.handleIds[h_id][0];
+                    hy = this.handleIds[h_id][1];
+                    hnd.attr({'x':hx-handle_wh/2, 'y':hy-handle_wh/2});
+                }
+            },
+            // Create a new model and a view for it
+            selectShape: function() {
+                console.log("selectShape");
+            }
+        });
+        
+        
+        // ----------------- Ellipse --------------------
+        
+        var EllipseView = Backbone.View.extend({
+          // make a child on click
+          events: {
+            'mousedown': 'selectShape'
+          },
+          initialize: function() {
+              console.log("ellipse view init....", this);
+            // draw a node, set "element" to the raphael node
+            
+            this.element = paper.ellipse();
+            this.element.attr( default_line_attrs );
+            this.setElement(this.element.node);
+            // now that we have overwritten the default this.el DOM object, 
+            // we need to rebind the events
+            this.delegateEvents(this.events);
+            
+            //this.element = Exobrain.drawNode(
+            //  this.model.x(), this.model.y(), this.model.size()
+            //);
+            // set the dom element to the raphael element's dom node
+            this.setElement(this.element.node);
+            this.model.on('change', this.render, this);
+          },
+          // render will just move the node, not re-draw it
+          render: function() {
+              console.log ("render ellipse", this.model.get("x"),this.model.get("y"), this.model.get("rx"), this.model.get("ry") );
+              this.element.attr('cx', this.model.get("cx"));
+              this.element.attr('cy', this.model.get("cy"));
+              this.element.attr('rx', this.model.get("rx"));
+              this.element.attr('ry', this.model.get("ry"));
+          },
+          
+          // on click...
+          selectShape: function() {
+              console.log("Ellipse selectShape");
+          }
+        });
+
+
+        // ----------------- ROI ------------------------
+        
+        var RoiView = Backbone.View.extend({
+            
+            initialize: function(roi) {
+                roi.shapes.on("add", function(shape){
+                    var view;
+                    if (shape instanceof Rect) {
+                        view = new RectView({model: shape});
+                    } else if (shape instanceof Ellipse) {
+                        view = new EllipseView({model: shape});
+                    }
+                    view.render();
+                });
+            }
+        });
+
+        
+        // ------------------------ Try it out! ---------------------------
+        
+        
+        var roi = new ROI();
+        
+        var roiVw = new RoiView(roi);
+        
+        roi.addRect({x: 50, y:100, width:200, height:75});
+        roi.addEllipse({cx: 200, cy:200, rx: 30, ry:80});
+
+
+    });
+    
+</script>
+
+	<style type="text/css" media="screen">
+                #holder {
+                    -moz-border-radius: 10px;
+                    -webkit-border-radius: 10px;
+                    border: solid 1px #333;
+                    background: #ccc;
+                    cursor: pointer;
+                }
+                p {
+                    text-align: center;
+                }
+            </style>
+</head>
+
+<body>
+    <div id="controls">
+        <input type="radio" name="state" value="SELECT" checked="checked">Select 
+        <input type="radio" name="state" value="CREATE_RECT">Rect 
+        <input type="radio" name="state" value="CREATE_LINE">Line 
+        <input type="radio" name="state" value="CREATE_POLYLINE">Polyline 
+        <input type="radio" name="state" value="CREATE_POLYGON">Polygon
+        
+        | Default square size: <input id="default_square_size" type="text" />
+        
+        <select id="color_select" style="background: #ff0000">
+            <option style="background: #ff0000" value="#ff0000">Red</option>
+            <option style="background: #00ff00" value="#00ff00">Green</option>
+            <option style="background: #0000ff" value="#0000ff">Blue</option>
+            <option style="background: #ffff00" value="#ffff00">Yellow</option>
+            <option style="background: #00ffff" value="#00ffff">Cyan</option>
+            <option style="background: #ff00ff" value="#ff00ff">Purple</option>
+            <option style="background: #ffffff" value="#ffffff">White</option>
+            <option style="background: #000000" value="#000000">Black</option>
+        </select>
+    </div>
+    <div id="holder"></div>
+</body>
