@@ -27,7 +27,8 @@ $(document).ready(function() {
     $("#dataIcons img").each(function(){
         icon_styles.push(this.style);
     });
-    var sizeX, sizeY;
+    var sizeX, sizeY,
+        $viewports = $("none"); // empty jQuery array
     $("#dataIcons li").each(function(){
         li_styles.push(this.style);
         sizeX = $(".sizeX", $(this)).text();
@@ -47,6 +48,7 @@ $(document).ready(function() {
             // don't init viewport if icon is still small
             return;
         }
+        $viewports = $viewports.add($image);
         $image.viewport({
             orig_width: $(".sizeX", $(this)).text(),
             orig_height: $(".sizeY", $(this)).text(),
@@ -70,6 +72,7 @@ $(document).ready(function() {
             sizeZ: sizeZ,
             sizeT: sizeT
         });
+        console.log($viewports);
     });
 
     var setIconSize = function(icon_size) {
@@ -96,8 +99,12 @@ $(document).ready(function() {
         min: 30,
         value: 75,
         slide: function(event, ui) {
-            $(".draggable img").parent().parent().xy_sliders("destroy");
-            $(".draggable img").viewport("destroy").src_loader("destroy");
+            if ($viewports.length > 0) {
+                console.log("destroy!!");
+                $viewports.parent().parent().xy_sliders("destroy");
+                $viewports.viewport("destroy").src_loader("destroy");
+                $viewports = $viewports.not($viewports);    // empty array
+            }
             setIconSize(ui.value);
         }
     });

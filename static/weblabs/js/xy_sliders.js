@@ -100,6 +100,9 @@
 
             $(".vertical_slider", $this.parent()).remove();
             $(".horizontal_slider", $this.parent()).remove();
+            
+            // TODO: need to save a reference to options.image
+            // so we can unbind 'changeZ', 'changeT' listeners.
             $this.unwrap();
             $this.removeData('xy_sliders');
         });
