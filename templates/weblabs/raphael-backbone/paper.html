@@ -152,19 +152,61 @@
                 };
                 // draw handles
                 self.handles = paper.set();
+                var _handle_drag = function() {
+                    return function (dx, dy) {
+                        // on DRAG: update the location of the handle and the corresponding point of the parent
+                        //if (manager.getState() !== ShapeManager.STATES.SELECT) {
+                        //    return;
+                        //}
+                        var new_x = this.ox + dx;
+                        var new_y = this.oy + dy;
+                        console.log( new_x, new_y, this.h_id);
+                        if (this.h_id.indexOf('e') > -1) {    // if we're dragging an 'EAST' handle, update width
+                            this.rect.width = new_x - self.x + handle_wh/2;
+                        }
+                        if (this.h_id.indexOf('s') > -1) {    // if we're dragging an 'SOUTH' handle, update height
+                            this.rect.height = new_y - self.y + handle_wh/2;
+                        }
+                        if (this.h_id.indexOf('n') > -1) {    // if we're dragging an 'NORTH' handle, update y and height
+                            this.rect.y = new_y + handle_wh/2;
+                            this.rect.height = this.obottom - new_y;
+                        }
+                        if (this.h_id.indexOf('w') > -1) {    // if we're dragging an 'WEST' handle, update x and width
+                            this.rect.x = new_x + handle_wh/2;
+                            this.rect.width = this.oright - new_x;
+                        }
+                        this.rect.updateShape();
+                    };
+                };
+                var _handle_drag_start = function() {
+                    return function () {
+                        // START drag: simply note the location we started
+                        this.ox = this.attr("x");
+                        this.oy = this.attr("y");
+                        this.oright = self.width + this.ox;
+                        this.obottom = self.height + this.oy;
+                    };
+                };
+                var _handle_drag_end = function() {
+                    return function() {
+                        this.rect.model.set({'x': this.rect.x, 'y': this.rect.y, 
+                            'width':this.rect.width, 'height':this.rect.height});
+                    }
+                }
                 for (var key in this.handleIds) {
-                var hx = this.handleIds[key][0];
-                var hy = this.handleIds[key][1];
-                var handle = paper.rect(hx-handle_wh/2, hy-handle_wh/2, handle_wh, handle_wh).attr(handle_attrs);
-                handle.attr({'cursor': key + '-resize'});     // css, E.g. ne-resize
-                handle.id = key;
-                handle.rect = self;
+                    var hx = this.handleIds[key][0];
+                    var hy = this.handleIds[key][1];
+                    var handle = paper.rect(hx-handle_wh/2, hy-handle_wh/2, handle_wh, handle_wh).attr(handle_attrs);
+                    handle.attr({'cursor': key + '-resize'});     // css, E.g. ne-resize
+                    handle.h_id = key;
+                    handle.rect = self;
 
-                //handle.drag(
-                //    _handle_drag(),
-                //    _handle_drag_start()
-                //);
-                self.handles.push(handle);
+                    handle.drag(
+                        _handle_drag(),
+                        _handle_drag_start(),
+                        _handle_drag_end()
+                    );
+                    self.handles.push(handle);
                 }
                 //self.handles.hide();     // show on selection
 
@@ -228,7 +270,7 @@
                 var hnd, h_id, hx, hy;
                 for (var h=0, l=this.handles.length; h<l; h++) {
                     hnd = this.handles[h];
-                    h_id = hnd.id;
+                    h_id = hnd.h_id;
                     hx = this.handleIds[h_id][0];
                     hy = this.handleIds[h_id][1];
                     hnd.attr({'x':hx-handle_wh/2, 'y':hy-handle_wh/2});
@@ -308,7 +350,8 @@
         var roiVw = new RoiView(roi);
         
         roi.addRect({x: 50, y:100, width:200, height:75});
-        roi.addEllipse({cx: 200, cy:200, rx: 30, ry:80});
+        roi.addRect({x: 333, y:333, width:33, height:33});
+        //roi.addEllipse({cx: 200, cy:200, rx: 30, ry:80});
 
 
     });
