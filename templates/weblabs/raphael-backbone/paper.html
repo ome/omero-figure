@@ -100,6 +100,53 @@
         });
         
         
+        // --------------- UNDO MANAGER ----------------------
+        
+        var UndoManager = Backbone.Model.extend({
+            initialize: function() {
+                this.undoQueue = [];
+                this.undoInProgress = false;
+            },
+            undo: function() {
+                var lastidx = this.undoQueue.length - 1;
+                this.undoQueue[lastidx].undo();
+                this.undoQueue.pop();
+            },
+            addAction: function(undo) {
+                this.undoQueue.push(undo);
+            },
+            addListener: function(model) {
+                var self = this;
+                model.on("change", function(shape, attr) {
+                    if (self.undoInProgress) {
+                        return;     // Don't undo the undo!
+                    }
+                    console.log("shapes change", shape, attr);
+                    console.log( shape.previous("x"), shape.previous("y"));
+
+                    var undo_attrs = {};
+                    for (attr in attr.changes) {
+                        undo_attrs[attr] = shape.previous(attr);
+                    }
+                    console.log("undo_attrs", undo_attrs);
+                    
+                    self.addAction( {
+                        name: "Undo Shape",
+                        undo: function() {
+                            console.log("UNDO...");
+                            self.undoInProgress = true;
+                            shape.set(undo_attrs);
+                            self.undoInProgress = false;
+                        }
+                    });
+                    
+                    //setTimeout(undo, 1000);
+                });
+            }
+        });
+        
+        
+        
         // ------------------ ROI ---------------------------
         
         var ROI = Backbone.Model.extend({
@@ -142,13 +189,18 @@
         
         var roi = new ROI();
         
+        var undoManager = new UndoManager();
+        undoManager.addListener(roi.shapes);
+        
         var roiVw = new RoiView(roi);
         
         roi.addRect({x: 50, y:100, width:200, height:75});
         roi.addRect({x: 333, y:333, width:33, height:33});
         roi.addEllipse({cx: 200, cy:200, rx: 30, ry:80});
 
-
+        $("#undo").click(function(){
+            undoManager.undo();
+        })
     });
     
 </script>
@@ -187,6 +239,8 @@
             <option style="background: #ffffff" value="#ffffff">White</option>
             <option style="background: #000000" value="#000000">Black</option>
         </select>
+        
+        <button id="undo" value="undo">Undo</button>
     </div>
     <div id="holder"></div>
 </body>
