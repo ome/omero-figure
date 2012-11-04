@@ -38,7 +38,6 @@
                 //}
             },
             
-            // Toggle the `active` state of this channel
             show: function() {
                 console.log("Shape show");
                 //this.save({active: !this.get("active")});
@@ -106,14 +105,39 @@
             initialize: function() {
                 this.undoQueue = [];
                 this.undoInProgress = false;
+                this.undo_pointer = -1;
+            },
+            canUndo: function() {
+                return this.undo_pointer >= 0;
             },
             undo: function() {
-                var lastidx = this.undoQueue.length - 1;
-                this.undoQueue[lastidx].undo();
-                this.undoQueue.pop();
+                if (this.undo_pointer < 0) {
+                    return;
+                };
+                this.undoQueue[this.undo_pointer].undo();
+                this.undo_pointer--;
+                console.log("this.undo_pointer", this.undo_pointer);
             },
-            addAction: function(undo) {
+            canRedo: function() {
+                return this.undo_pointer < this.undoQueue.length;
+            },
+            redo: function() {
+                if (this.undo_pointer+1 >= this.undoQueue.length) {
+                    return;
+                };
+                this.undo_pointer++;
+                this.undoQueue[this.undo_pointer].redo();
+            },
+            postEdit: function(undo) {
+                // remove any undo ahead of current position
+                if (this.undoQueue.length > this.undo_pointer+1) {
+                    console.log("Slice", this.undoQueue.length, this.undo_pointer);
+                    this.undoQueue = this.undoQueue.slice(0, this.undo_pointer+1);
+                    console.log("Sliced!", this.undoQueue.length, this.undo_pointer);
+                }
                 this.undoQueue.push(undo);
+                this.undo_pointer++;
+                console.log("this.undo_pointer", this.undo_pointer);
             },
             addListener: function(model) {
                 var self = this;
@@ -122,20 +146,27 @@
                         return;     // Don't undo the undo!
                     }
                     console.log("shapes change", shape, attr);
-                    console.log( shape.previous("x"), shape.previous("y"));
 
-                    var undo_attrs = {};
+                    var undo_attrs = {},
+                        redo_attrs = {};
                     for (attr in attr.changes) {
                         undo_attrs[attr] = shape.previous(attr);
+                        redo_attrs[attr] = shape.get(attr);
                     }
-                    console.log("undo_attrs", undo_attrs);
+                    console.log("undo_attrs", undo_attrs, redo_attrs);
                     
-                    self.addAction( {
+                    self.postEdit( {
                         name: "Undo Shape",
                         undo: function() {
                             console.log("UNDO...");
                             self.undoInProgress = true;
                             shape.set(undo_attrs);
+                            self.undoInProgress = false;
+                        },
+                        redo: function() {
+                            console.log("REDO...");
+                            self.undoInProgress = true;
+                            shape.set(redo_attrs);
                             self.undoInProgress = false;
                         }
                     });
@@ -200,7 +231,10 @@
 
         $("#undo").click(function(){
             undoManager.undo();
-        })
+        });
+        $("#redo").click(function(){
+            undoManager.redo();
+        });
     });
     
 </script>
@@ -241,6 +275,7 @@
         </select>
         
         <button id="undo" value="undo">Undo</button>
+        <button id="redo" value="redo">Redo</button>
     </div>
     <div id="holder"></div>
 </body>
