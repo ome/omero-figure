@@ -34,13 +34,17 @@
             
             initialize: function(roi) {
                 roi.shapes.on("add", function(shape){
-                    var view;
-                    if (shape instanceof Rect) {
+                    var view = undefined,
+                        type = shape.get('type');
+                    console.log("on 'add'", shape.get('type'));
+                    if (type === "Rectangle") {
                         view = new RectView({model:shape, paper:paper});
-                    } else if (shape instanceof Ellipse) {
+                    } else if (type === "Ellipse") {
                         view = new EllipseView({model:shape, paper:paper});
                     }
-                    view.render();
+                    if (view) {
+                        view.render();
+                    }
                 });
             }
         });
@@ -68,9 +72,8 @@
                 roiViews.push(roiVw);
                 for (var c=0, s=roi_data.shapes.length; c<s; c++) {
                     shape = roi_data.shapes[c];
-                    if (shape.type === "Rectangle") {
-                        roi.addRect(shape);
-                    }
+                    console.log( shape.type );
+                    roi.shapes.create(shape);
                 }
             }
         });

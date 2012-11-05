@@ -44,7 +44,6 @@ var RectView = Backbone.View.extend({
                 //}
                 var new_x = this.ox + dx;
                 var new_y = this.oy + dy;
-                console.log( new_x, new_y, this.h_id);
                 if (this.h_id.indexOf('e') > -1) {    // if we're dragging an 'EAST' handle, update width
                     this.rect.width = new_x - self.x + handle_wh/2;
                 }
@@ -73,10 +72,10 @@ var RectView = Backbone.View.extend({
         };
         var _handle_drag_end = function() {
             return function() {
-                this.rect.model.set({'x': this.rect.x, 'y': this.rect.y, 
+                this.rect.model.set({'x': this.rect.x, 'y': this.rect.y,
                     'width':this.rect.width, 'height':this.rect.height});
-            }
-        }
+            };
+        };
         for (var key in this.handleIds) {
             var hx = this.handleIds[key][0];
             var hy = this.handleIds[key][1];
@@ -95,7 +94,7 @@ var RectView = Backbone.View.extend({
         //self.handles.hide();     // show on selection
 
 
-        // ----- Create the rect itself ---- 
+        // ----- Create the rect itself ----
         this.element = this.paper.rect();
         this.element.attr( default_line_attrs );
         // set "element" to the raphael node (allows Backbone to handle events)
@@ -131,7 +130,6 @@ var RectView = Backbone.View.extend({
 
     // render updates our local attributes from the Model AND updates coordinates
     render: function() {
-        console.log("render RECT");
         this.x = this.model.get("x");
         this.y = this.model.get("y");
         this.width = this.model.get("width");
@@ -162,7 +160,6 @@ var RectView = Backbone.View.extend({
     },
     // Create a new model and a view for it
     selectShape: function() {
-        console.log("selectShape");
     }
 });
 
