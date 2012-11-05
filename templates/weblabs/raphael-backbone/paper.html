@@ -12,6 +12,8 @@
 	<script src="underscore.js" type="text/javascript"></script>
 	<script src="backbone.js" type="text/javascript"></script>
 	<script src="view-shapes.js" type="text/javascript"></script>
+	<script src="model-shapes.js" type="text/javascript"></script>
+	<script src="undo.js" type="text/javascript"></script>
 
 
 <script>
@@ -20,180 +22,6 @@
         var default_line_attrs = {'stroke-width':1, 'stroke': '#ffffff', 'cursor': 'default', 'fill-opacity':0.1, 'fill': '#000'};
         var handle_attrs = {stroke:'#fff', fill:'#000', 'cursor': 'default'};
         var handle_wh = 10;
-        
-        
-        //var elip = paper.ellipse(33, 33, 66, 66);
-        //elip.attr( default_line_attrs );
-        
-        // --------------------------------- MODELS --------------------------
-
-        
-        // ------------------- Base Shape ------------------------
-
-        var Shape = Backbone.Model.extend({
-            initialize: function() {
-                console.log("Shape initialize");
-                //if (!this.get("title")) {
-                //this.set({"title": this.defaults().title});
-                //}
-            },
-            
-            show: function() {
-                console.log("Shape show");
-                //this.save({active: !this.get("active")});
-                //this.set({active: !this.get("active")});
-            },
-        });
-        
-        // ------------------------ Shape COLLECTION (used in ROI model)-------------------------
-
-        var ShapeList = Backbone.Collection.extend({
-            model: Shape,
-            url: "fake"
-        });
-        
-        // ---------------------- Shape Instances -----------------------
-        
-        var Rect = Shape.extend({
-
-            // Default attributes for Rect
-            defaults: function() {
-                return {
-                    x: 0,
-                    y: 0,
-                    width: 100,
-                    height: 100
-                };
-            },
-
-            // Ensure that each rect created has....
-            initialize: function() {
-                console.log("Rect initialize");
-                //if (!this.get("title")) {
-                //this.set({"title": this.defaults().title});
-                //}
-            },
-
-        });
-        
-        var Ellipse = Shape.extend({
-
-            // Default attributes for Rect
-            defaults: function() {
-                return {
-                    x: 100,
-                    y: 100,
-                    rx: 50,
-                    ry: 75
-                };
-            },
-
-            // Ensure that each rect created has....
-            initialize: function() {
-                console.log("Ellipse initialize");
-                //if (!this.get("title")) {
-                //this.set({"title": this.defaults().title});
-                //}
-            },
-
-        });
-        
-        
-        // --------------- UNDO MANAGER ----------------------
-        
-        var UndoManager = Backbone.Model.extend({
-            initialize: function() {
-                this.undoQueue = [];
-                this.undoInProgress = false;
-                this.undo_pointer = -1;
-            },
-            canUndo: function() {
-                return this.undo_pointer >= 0;
-            },
-            undo: function() {
-                if (this.undo_pointer < 0) {
-                    return;
-                };
-                this.undoQueue[this.undo_pointer].undo();
-                this.undo_pointer--;
-                console.log("this.undo_pointer", this.undo_pointer);
-            },
-            canRedo: function() {
-                return this.undo_pointer < this.undoQueue.length;
-            },
-            redo: function() {
-                if (this.undo_pointer+1 >= this.undoQueue.length) {
-                    return;
-                };
-                this.undo_pointer++;
-                this.undoQueue[this.undo_pointer].redo();
-            },
-            postEdit: function(undo) {
-                // remove any undo ahead of current position
-                if (this.undoQueue.length > this.undo_pointer+1) {
-                    console.log("Slice", this.undoQueue.length, this.undo_pointer);
-                    this.undoQueue = this.undoQueue.slice(0, this.undo_pointer+1);
-                    console.log("Sliced!", this.undoQueue.length, this.undo_pointer);
-                }
-                this.undoQueue.push(undo);
-                this.undo_pointer++;
-                console.log("this.undo_pointer", this.undo_pointer);
-            },
-            addListener: function(model) {
-                var self = this;
-                model.on("change", function(shape, attr) {
-                    if (self.undoInProgress) {
-                        return;     // Don't undo the undo!
-                    }
-                    console.log("shapes change", shape, attr);
-
-                    var undo_attrs = {},
-                        redo_attrs = {};
-                    for (attr in attr.changes) {
-                        undo_attrs[attr] = shape.previous(attr);
-                        redo_attrs[attr] = shape.get(attr);
-                    }
-                    console.log("undo_attrs", undo_attrs, redo_attrs);
-                    
-                    self.postEdit( {
-                        name: "Undo Shape",
-                        undo: function() {
-                            console.log("UNDO...");
-                            self.undoInProgress = true;
-                            shape.set(undo_attrs);
-                            self.undoInProgress = false;
-                        },
-                        redo: function() {
-                            console.log("REDO...");
-                            self.undoInProgress = true;
-                            shape.set(redo_attrs);
-                            self.undoInProgress = false;
-                        }
-                    });
-                    
-                    //setTimeout(undo, 1000);
-                });
-            }
-        });
-        
-        
-        
-        // ------------------ ROI ---------------------------
-        
-        var ROI = Backbone.Model.extend({
-            initialize: function() {
-                console.log("ROI initialize");
-                this.shapes = new ShapeList;
-            },
-            addRect: function(attrs) {
-                var r = new Rect(attrs);
-                this.shapes.add(r);
-            },
-            addEllipse: function(attrs) {
-                var e = new Ellipse(attrs);
-                this.shapes.add(e);
-            }
-        });
 
 
         // ----------------- ROI ------------------------
@@ -217,11 +45,11 @@
         
         // ------------------------ Try it out! ---------------------------
         
-        
         var roi = new ROI();
         
         var undoManager = new UndoManager();
         undoManager.addListener(roi.shapes);
+        var undoView = new UndoView({model:undoManager});
         
         var roiVw = new RoiView(roi);
         
@@ -229,12 +57,13 @@
         roi.addRect({x: 333, y:333, width:33, height:33});
         roi.addEllipse({cx: 200, cy:200, rx: 30, ry:80});
 
+/*
         $("#undo").click(function(){
             undoManager.undo();
         });
         $("#redo").click(function(){
             undoManager.redo();
-        });
+        }); */
     });
     
 </script>
@@ -274,8 +103,10 @@
             <option style="background: #000000" value="#000000">Black</option>
         </select>
         
-        <button id="undo" value="undo">Undo</button>
-        <button id="redo" value="redo">Redo</button>
+        <span id="undoControls">
+            <button id="undo" class="undo" value="undo">Undo</button>
+            <button id="redo" class="redo" value="redo">Redo</button>
+        </span>
     </div>
     <div id="holder"></div>
 </body>
