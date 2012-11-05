@@ -41,4 +41,6 @@ urlpatterns = patterns('django.views.generic.simple',
     url( r'^viewport_on_dataset/(?P<o1_id>[0-9]+)/', wc_views.load_data, 
         {'o1_type': 'dataset', 'template':'weblabs/image_viewers/viewport_on_dataset.html'}, name='weblabs_viewport_on_dataset' ),
     
+    # ROIs
+    url( r'^roi_backbone/(?P<imageId>[0-9]+)/', views.roi_backbone, name='weblabs_roi_backbone' ),
 )

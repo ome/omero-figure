@@ -35,6 +35,7 @@ var UndoManager = Backbone.Model.extend({
         this.set('undo_pointer', pointer+1); // trigger change event
     },
     postEdit: function(undo) {
+        console.log("postEdit", undo);
         var pointer = this.get('undo_pointer');
         // remove any undo ahead of current position
         if (this.undoQueue.length > pointer+1) {
@@ -46,6 +47,7 @@ var UndoManager = Backbone.Model.extend({
     addListener: function(model) {
         var self = this;
         model.on("change", function(shape, attr) {
+            console.log("undo model change");
             if (self.undoInProgress) {
                 return;     // Don't undo the undo!
             }
