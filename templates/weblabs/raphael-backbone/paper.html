@@ -3,8 +3,6 @@
 <head>
 	<title>ROIs with backbone.js</title>
 	
-	<link rel="stylesheet" type="text/css" href="xsd-2-html-styles.css"/>
-
     {% include "webgateway/base/includes/script_src_jquery.html" %}
     <script src="{% static 'weblabs/3rdparty/json2.js' %}"></script>
     <script src="{% static 'weblabs/3rdparty/underscore.js' %}"></script>
@@ -33,18 +31,43 @@
         var RoiView = Backbone.View.extend({
             
             initialize: function(roi) {
-                roi.shapes.on("add", function(shape){
-                    var view = undefined,
-                        type = shape.get('type');
-                    console.log("on 'add'", shape.get('type'));
-                    if (type === "Rectangle") {
-                        view = new RectView({model:shape, paper:paper});
-                    } else if (type === "Ellipse") {
-                        view = new EllipseView({model:shape, paper:paper});
-                    }
-                    if (view) {
-                        view.render();
-                    }
+                console.log('ROIView init', roi.get('shapes'));
+                
+                // Add Views for any existing shapes models
+                roi.shapes.each(this.create_shape_view);
+                
+                // If a shape is added, Create View for that too
+                roi.shapes.on("add", this.create_shape_view);
+            },
+            
+            create_shape_view: function(shape) {
+                var view = undefined,
+                    type = shape.get('type');
+                if (type === "Rectangle") {
+                    view = new RectView({model:shape, paper:paper});
+                } else if (type === "Ellipse") {
+                    view = new EllipseView({model:shape, paper:paper});
+                }
+                if (view) {
+                    view.render();
+                }
+            }
+        });
+        
+        var RoiManagerView = Backbone.View.extend({
+            
+            initialize: function(rois) {
+                rois.on("all", function(o, n) {
+                    console.log("all", o,n);
+                });
+                rois.on("sync", function() {
+                    rois.each(function(model, i){
+                        //console.log(model, i, this);
+                        new RoiView(model);
+                    });
+                });
+                rois.on("add", function(roi){
+                    new RoiView({model: roi});
                 });
             }
         });
@@ -52,6 +75,7 @@
         
         // ------------------------ Try it out! ---------------------------
         
+        /*
         $.getJSON("{% url webgateway_get_rois_json image.id %}", function(data) {
             
             var undoManager = new UndoManager(),
@@ -73,10 +97,23 @@
                 for (var c=0, s=roi_data.shapes.length; c<s; c++) {
                     shape = roi_data.shapes[c];
                     console.log( shape.type );
-                    roi.shapes.create(shape);
+                    roi.shapes.add(new Shape(shape));
+                    //roi.shapes.create(shape);     // This attempts PUT to sync server
                 }
-            }
+            } 
         });
+        */
+        
+        var ROIS = new RoiList;
+        var manager = new RoiManagerView(ROIS);
+
+        ROIS.on('add', function(abc, def){
+            console.log("add", abc, def);
+        })
+        console.log(ROIS.url);
+        ROIS.url = "{% url webgateway_get_rois_json image.id %}";
+        console.log(ROIS.url);
+        ROIS.fetch();
         
         
         //var undoManager = new UndoManager();
@@ -89,10 +126,12 @@
         //roi.addRect({x: 333, y:333, width:33, height:33});
         //roi.addEllipse({cx: 200, cy:200, rx: 30, ry:80});
 
-/*
-        $("#undo").click(function(){
-            undoManager.undo();
+
+        $("#addShape").click(function(){
+            ROIS.at(0).shapes.create({type:'Ellipse', cx: 200, cy:200, rx: 30, ry:80});
         });
+        
+        /*
         $("#redo").click(function(){
             undoManager.redo();
         }); */
@@ -139,6 +178,8 @@
             <button id="undo" class="undo" value="undo">Undo</button>
             <button id="redo" class="redo" value="redo">Redo</button>
         </span>
+        
+        <button id="addShape" title="Add Shape to ROI[0]">Add Shape</button>
     </div>
     <div id="holder"></div>
 </body>

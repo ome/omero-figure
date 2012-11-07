@@ -6,13 +6,15 @@
 // All this data is handled by the View to Create correct UI.
 
 var Shape = Backbone.Model.extend({
+    initialize: function() {
+        console.log("Shape initialize");
+    }
 });
 
 // ------------------------ Shape COLLECTION (used in ROI model)-------------------------
 
 var ShapeList = Backbone.Collection.extend({
-    model: Shape,
-    url: "fake"
+    model: Shape
 });
 
 
@@ -20,7 +22,12 @@ var ShapeList = Backbone.Collection.extend({
 
 var ROI = Backbone.Model.extend({
     initialize: function() {
-        this.shapes = new ShapeList;
+        console.log("ROI initialize");
+        this.shapes = new ShapeList(this.get("shapes"));
     }
 });
 
+// --Handy reference: http://www.deploymentzone.com/2011/08/10/backbone-js-collections-of-models-within-models/
+var RoiList = Backbone.Collection.extend({
+    model: ROI,
+});
