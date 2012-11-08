@@ -1,4 +1,5 @@
 // ------------------------ VIEWS -------------------------------
+/*global Backbone:true */
 
 var default_line_attrs = {'stroke-width':1, 'stroke': '#ffffff', 'cursor': 'default', 'fill-opacity':0.1, 'fill': '#000'};
 var handle_attrs = {stroke:'#fff', fill:'#000', 'cursor': 'default'};

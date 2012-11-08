@@ -1,5 +1,6 @@
 // --------------- UNDO MANAGER ----------------------
 
+/*global Backbone:true */
 
 var UndoManager = Backbone.Model.extend({
     defaults: function(){
@@ -35,7 +36,6 @@ var UndoManager = Backbone.Model.extend({
         this.set('undo_pointer', pointer+1); // trigger change event
     },
     postEdit: function(undo) {
-        console.log("postEdit", undo);
         var pointer = this.get('undo_pointer');
         // remove any undo ahead of current position
         if (this.undoQueue.length > pointer+1) {
@@ -47,7 +47,6 @@ var UndoManager = Backbone.Model.extend({
     addListener: function(model) {
         var self = this;
         model.on("change", function(shape, attr) {
-            console.log("undo model change");
             if (self.undoInProgress) {
                 return;     // Don't undo the undo!
             }
@@ -73,8 +72,6 @@ var UndoManager = Backbone.Model.extend({
                     self.undoInProgress = false;
                 }
             });
-            
-            //setTimeout(undo, 1000);
         });
     }
 });
@@ -97,7 +94,6 @@ var UndoView = Backbone.View.extend({
     },
     
     render: function() {
-        console.log("undo render", this.model.canRedo());
         //this.$el.html("<button class='undo'>Undo</button>");
         this.undoBtn.attr('disabled', !this.model.canUndo());
         this.redoBtn.attr('disabled', !this.model.canRedo());
@@ -105,7 +101,6 @@ var UndoView = Backbone.View.extend({
     },
     
     undo: function() {
-        console.log("undo view undo");
         this.model.undo();
     },
     redo: function() {

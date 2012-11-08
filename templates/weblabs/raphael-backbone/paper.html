@@ -31,7 +31,6 @@
         var RoiView = Backbone.View.extend({
             
             initialize: function(roi) {
-                console.log('ROIView init', roi.get('shapes'));
                 
                 // Add Views for any existing shapes models
                 roi.shapes.each(this.create_shape_view);
@@ -58,11 +57,10 @@
             
             initialize: function(rois) {
                 rois.on("all", function(o, n) {
-                    console.log("all", o,n);
+                    //console.log("all", o,n);
                 });
                 rois.on("sync", function() {
                     rois.each(function(model, i){
-                        //console.log(model, i, this);
                         new RoiView(model);
                     });
                 });
@@ -74,54 +72,26 @@
 
         
         // ------------------------ Try it out! ---------------------------
-        
-        /*
-        $.getJSON("{% url webgateway_get_rois_json image.id %}", function(data) {
-            
-            var undoManager = new UndoManager(),
-                undoView = new UndoView({model:undoManager});
-            var roi_data,
-                roi,
-                shape,
-                roiVw,
-                rois = [],
-                roiViews = [];
-            for (var i=0, l=data.length; i<l; i++) {
-                roi_data = data[i];
-                console.log(roi_data.id, roi_data.shapes.length);
-                roi = new ROI();
-                roiVw = new RoiView(roi);
-                undoManager.addListener(roi.shapes);
-                rois.push(roi);
-                roiViews.push(roiVw);
-                for (var c=0, s=roi_data.shapes.length; c<s; c++) {
-                    shape = roi_data.shapes[c];
-                    console.log( shape.type );
-                    roi.shapes.add(new Shape(shape));
-                    //roi.shapes.create(shape);     // This attempts PUT to sync server
-                }
-            } 
-        });
-        */
-        
+
+        // Create Model - list of ROIs.
         var ROIS = new RoiList;
+        // View of this - Handles creation of RoiViews
         var manager = new RoiManagerView(ROIS);
 
-        ROIS.on('add', function(abc, def){
-            console.log("add", abc, def);
-        })
-        console.log(ROIS.url);
+
+        // Undo Model and View
+        var undoManager = new UndoManager(),
+            undoView = new UndoView({model:undoManager});
+        // Listen for changes to ROIs (and Shapes)
+        undoManager.addListener(ROIS);
+
+
+        // Url is dynamic (from Django)
         ROIS.url = "{% url webgateway_get_rois_json image.id %}";
-        console.log(ROIS.url);
+        // Fetch ROI json!
         ROIS.fetch();
-        
-        
-        //var undoManager = new UndoManager();
-        //undoManager.addListener(roi.shapes);
-        //var undoView = new UndoView({model:undoManager});
-        
-        //var roiVw = new RoiView(roi);
-        
+
+
         //roi.addRect({x: 50, y:100, width:200, height:75});
         //roi.addRect({x: 333, y:333, width:33, height:33});
         //roi.addEllipse({cx: 200, cy:200, rx: 30, ry:80});
@@ -130,11 +100,7 @@
         $("#addShape").click(function(){
             ROIS.at(0).shapes.create({type:'Ellipse', cx: 200, cy:200, rx: 30, ry:80});
         });
-        
-        /*
-        $("#redo").click(function(){
-            undoManager.redo();
-        }); */
+
     });
     
 </script>

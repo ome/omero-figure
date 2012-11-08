@@ -1,5 +1,5 @@
 // --------------------------------- MODELS --------------------------
-
+/*global Backbone:true */
 
 // ------------------- Base Shape ------------------------
 // This is purely a holder for Shape data, including 'type':'Rectangle' etc.
@@ -7,7 +7,6 @@
 
 var Shape = Backbone.Model.extend({
     initialize: function() {
-        console.log("Shape initialize");
     }
 });
 
@@ -22,8 +21,13 @@ var ShapeList = Backbone.Collection.extend({
 
 var ROI = Backbone.Model.extend({
     initialize: function() {
-        console.log("ROI initialize");
         this.shapes = new ShapeList(this.get("shapes"));
+        var that = this;
+        
+        // we notify ROI of changes to Shapes, for Undo etc.
+        this.shapes.on("change", function(shape, attr) {
+            that.trigger("change", shape, attr);
+        });
     }
 });
 
