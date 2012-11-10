@@ -277,10 +277,41 @@ def viewport_from_scratch (request, imageId, conn=None, **kwargs):
     return render_to_response('weblabs/image_viewers/viewport_from_scratch.html', {'image':image, 'default_z': default_z})
     
 
+#@login_required()
+#def roi_backbone (request, imageId, conn=None, **kwargs):
+#    """ ROI 'measurement tool' based on backbone.js """
+#    
+#    image = conn.getObject("Image", imageId)
+#    default_z = image.getSizeZ() /2
+#    return render_to_response('weblabs/raphael-backbone/paper.html', {'image':image, 'default_z': default_z})
+
+
 @login_required()
 def roi_backbone (request, imageId, conn=None, **kwargs):
-    """ ROI 'measurement tool' based on backbone.js """
+    """
+    This view is responsible for showing the omero_image template
+    Image rendering options in request are used in the display page. See L{getImgDetailsFromReq}.
     
-    image = conn.getObject("Image", imageId)
-    default_z = image.getSizeZ() /2
-    return render_to_response('weblabs/raphael-backbone/paper.html', {'image':image, 'default_z': default_z})
+    @param request:     http request.
+    @param iid:         Image ID
+    @param conn:        L{omero.gateway.BlitzGateway}
+    @param **kwargs:    Can be used to specify the html 'template' for rendering
+    @return:            html page of image and metadata
+    """
+    iid = imageId
+    from omeroweb.webgateway.views import getImgDetailsFromReq
+    rid = getImgDetailsFromReq(request)
+    
+    image = conn.getObject("Image", iid)
+    if image is None:
+        logger.debug("(a)Image %s not found..." % (str(iid)))
+        raise Http404
+    d = {'blitzcon': conn,
+         'image': image,
+         'opts': rid,
+         'roiCount': image.getROICount(),
+         'viewport_server': kwargs.get('viewport_server', '/webgateway'),
+         'object': 'image:%i' % int(iid)}
+
+    template = kwargs.get('template', "weblabs/raphael-backbone/omero_image.html")
+    return render_to_response(template, d)
