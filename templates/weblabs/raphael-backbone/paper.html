@@ -23,7 +23,7 @@
 
 
         // ----------------- ROI ------------------------
-        var paper = Raphael("holder", 500, 400);
+        var paper = Raphael("holder", {{ image.getSizeX }}, {{ image.getSizeY }});
         
         
         // This ROI-View doesn't SHOW anything on paper:
@@ -53,7 +53,11 @@
             }
         });
         
-        var RoiManagerView = Backbone.View.extend({
+        
+        
+        
+        // Main manager of ROI views. E.g. for canvas and table
+        var RoiViewManager = Backbone.View.extend({
             
             initialize: function(rois) {
                 rois.on("all", function(o, n) {
@@ -76,7 +80,7 @@
         // Create Model - list of ROIs.
         var ROIS = new RoiList;
         // View of this - Handles creation of RoiViews
-        var manager = new RoiManagerView(ROIS);
+        var manager = new RoiViewManager(ROIS);
 
 
         // Undo Model and View
@@ -147,5 +151,5 @@
         
         <button id="addShape" title="Add Shape to ROI[0]">Add Shape</button>
     </div>
-    <div id="holder"></div>
+    <div id="holder" style="width:{{ image.getSizeX }}px; height:{{ image.getSizeY }}px"></div>
 </body>
