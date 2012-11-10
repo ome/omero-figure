@@ -1344,6 +1344,7 @@
     viewport.viewportimg.bind("rois_loaded", handle_rois_loaded);
     
     /* And we're done! */
+    setTimeout(show_rois, 1000);
 
 {% block initial_resize %}
     /* Set Window Initial Size */

@@ -44,6 +44,98 @@ $.fn.roi_display = function(options) {
         // Creates Raphael canvas. Uses scale.raphael.js to provide paper.scaleAll(ratio);
         var paper = new ScaleRaphael(canvas_name, orig_width, orig_height);
         
+        
+        
+        
+        // This ROI-View doesn't SHOW anything on paper:
+        // - Just binds creation of Shape-Views to shape creation.
+        var RoiView = Backbone.View.extend({
+            
+            initialize: function(roi) {
+                
+                // Add Views for any existing shapes models
+                roi.shapes.each(this.create_shape_view);
+                
+                // If a shape is added, Create View for that too
+                roi.shapes.on("add", this.create_shape_view);
+            },
+            
+            create_shape_view: function(shape) {
+                var view = undefined,
+                    type = shape.get('type');
+                if (type === "Rectangle") {
+                    view = new RectView({model:shape, paper:paper});
+                } else if (type === "Ellipse") {
+                    view = new EllipseView({model:shape, paper:paper});
+                }
+                if (view) {
+                    view.render();
+                }
+            }
+        });
+
+
+        // Main manager of ROI views. E.g. for canvas and table
+        var RoiViewManager = Backbone.View.extend({
+            
+            initialize: function(rois) {
+                rois.on("all", function(o, n) {
+                    //console.log("all", o,n);
+                });
+                rois.on("sync", function() {
+                    rois.each(function(model, i){
+                        new RoiView(model);
+                    });
+                });
+                rois.on("add", function(roi){
+                    new RoiView({model: roi});
+                });
+            }
+        });
+
+        // ------------------------ Try it out! ---------------------------
+
+        // Create Model - list of ROIs.
+        var ROIS = new RoiList;
+        // View of this - Handles creation of RoiViews
+        var manager = new RoiViewManager(ROIS);
+
+
+        // Undo Model and View
+        var undoManager = new UndoManager(),
+            undoView = new UndoView({model:undoManager});
+        // Listen for changes to ROIs (and Shapes)
+        undoManager.addListener(ROIS);
+
+        
+        // load the ROIs from json call and display
+        load_rois = function(display_rois) {
+            
+            ROIS.url = json_url;
+            
+            // Fetch ROI json!
+            console.log("ROIS.fetch");
+            ROIS.fetch();
+            
+            /*
+            if (json_url == undefined) return;
+            
+            $.getJSON(json_url, function(data) {
+                roi_json = data;
+
+                // plot the rois
+                if (display_rois) {
+                  rois_displayed = true;
+                  refresh_rois();
+                }
+                $viewportimg.trigger("rois_loaded");
+            }); */
+        }
+        
+        
+        
+        
+        
         // break long labels into multiple lines
         var formatShapeText = function(text_string) {
             var rows = parseInt(Math.sqrt(text_string.length / 6));     // rough ratio: cols = rows * 6
@@ -242,21 +334,6 @@ $.fn.roi_display = function(options) {
             self.set_selected_shape(shape_id);
         }
 
-        // load the ROIs from json call and display
-        load_rois = function(display_rois) {
-            if (json_url == undefined) return;
-            
-            $.getJSON(json_url, function(data) {
-                roi_json = data;
-
-                // plot the rois
-                if (display_rois) {
-                  rois_displayed = true;
-                  refresh_rois();
-                }
-                $viewportimg.trigger("rois_loaded");
-            });
-        }
 
         // returns the ROI data as json. May be null if not yet loaded! 
         this.get_roi_json = function() {
