@@ -60,6 +60,7 @@ var RectView = Backbone.View.extend({
                     this.rect.width = this.oright - new_x;
                 }
                 this.rect.updateShape();
+                return false;
             };
         };
         var _handle_drag_start = function() {
@@ -69,12 +70,14 @@ var RectView = Backbone.View.extend({
                 this.oy = this.attr("y");
                 this.oright = self.width + this.ox;
                 this.obottom = self.height + this.oy;
+                return false;
             };
         };
         var _handle_drag_end = function() {
             return function() {
                 this.rect.model.set({'x': this.rect.x, 'y': this.rect.y,
                     'width':this.rect.width, 'height':this.rect.height});
+                return false;
             };
         };
         for (var key in this.handleIds) {
@@ -113,17 +116,26 @@ var RectView = Backbone.View.extend({
                 self.x = dx+this.ox;
                 self.y = this.oy+dy;
                 self.updateShape();
+                return false;
             },
             function() {
                 // START drag: note the location of all points (copy list)
                 this.ox = this.attr('x');
                 this.oy = this.attr('y');
+                return false;
             },
             function() {
                 // STOP: save current position to model
                 self.model.set({'x': self.x, 'y': self.y});
+                return false;
             }
         );
+
+        // If we're starting DRAG, don't let event propogate up to dragdiv etc.
+        // https://groups.google.com/forum/?fromgroups=#!topic/raphaeljs/s06GIUCUZLk
+        this.element.mousedown(function(e){
+             e.stopImmediatePropagation();
+        });
 
         // Finally, we need to render when model changes
         this.model.on('change', this.render, this);
@@ -288,6 +300,12 @@ var EllipseView = Backbone.View.extend({
                 self.model.set({'cx':self.cx, 'cy':self.cy});
             }
         );
+
+        // If we're starting DRAG, don't let event propogate up to dragdiv etc.
+        // https://groups.google.com/forum/?fromgroups=#!topic/raphaeljs/s06GIUCUZLk
+        this.element.mousedown(function(e){
+             e.stopImmediatePropagation();
+        });
 
         // Finally, we need to render when model changes
         this.model.on('change', this.render, this);
