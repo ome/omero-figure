@@ -173,6 +173,11 @@ var RectView = Backbone.View.extend({
     },
     // Create a new model and a view for it
     selectShape: function() {
+    },
+    
+    destroy: function() {
+        this.element.remove();
+        this.handles.remove();
     }
 });
 
@@ -346,6 +351,12 @@ var EllipseView = Backbone.View.extend({
     // Create a new model and a view for it
     selectShape: function() {
         //console.log("selectShape");
+    },
+    
+    
+    destroy: function() {
+        this.element.remove();
+        this.handles.remove();
     }
 });
 

@@ -11,11 +11,10 @@ $.fn.roi_display = function(options) {
         var canvas_name = (options.canvas_name ? options.canvas_name : 'roi_canvas');
         var tiles =  (options.tiles ? options.tiles : false);
         
-        if (options != null) {
-            var orig_width = options.width;
-            var orig_height = options.height;
-            var json_url = options.json_url;
-        }
+        var orig_width = options.width;
+        var orig_height = options.height;
+        var json_url = options.json_url;
+        
 
         var $viewportimg = $(this);
         var width = $viewportimg.attr('width');   // 0 initially
@@ -26,7 +25,7 @@ $.fn.roi_display = function(options) {
             var $dragdiv = $viewportimg.parent();
             var $canvas =   $('<div id="'+canvas_name+'" class="'+canvas_name+'">').appendTo($dragdiv);
         } else {
-            var $canvas = $('#'+canvas_name)
+            var $canvas = $('#'+canvas_name);
         }
 
         var roi_json = null;          // load ROI data as json when needed
@@ -38,8 +37,8 @@ $.fn.roi_display = function(options) {
         var selected_shape_id = null;  // html page is kept in sync with this
         var selectedClone = null;      // a highlighted shape cloned from currently selected shape
         
-        // for keeping track of objects - E.g. de-select all. 
-        var shape_objects = new Array();
+        // for keeping track of objects - E.g. de-select all.
+        var shape_objects = [];
         
         // Creates Raphael canvas. Uses scale.raphael.js to provide paper.scaleAll(ratio);
         var paper = new ScaleRaphael(canvas_name, orig_width, orig_height);
@@ -51,17 +50,42 @@ $.fn.roi_display = function(options) {
         // - Just binds creation of Shape-Views to shape creation.
         var RoiView = Backbone.View.extend({
             
-            initialize: function(roi) {
+            initialize: function() {
                 
+                this.shapeViews = [];
+                
+                var self = this;
                 // Add Views for any existing shapes models
-                roi.shapes.each(this.create_shape_view);
+                this.model.shapes.each(function(shape) {
+                    self.create_shape_view(shape);
+                });
                 
                 // If a shape is added, Create View for that too
-                roi.shapes.on("add", this.create_shape_view);
+                this.model.shapes.on("add", this.create_shape_view);
+            },
+            
+            destroyShapes: function() {
+                
+                var svs = this.shapeViews,
+                    sv;
+                for(var i=0; i<svs.length; i++) {
+                    sv = svs[i];
+                    sv.destroy();
+                }
+                svs.length = 0;     // All shapes gone
+            },
+            
+            showShapes: function(theZ, theT) {
+                var self = this;
+                this.model.shapes.each(function(shape) {
+                    if ((shape.get('theZ') === theZ) && (shape.get('theT') === theT)) {
+                        self.create_shape_view(shape);
+                    }
+                });
             },
             
             create_shape_view: function(shape) {
-                var view = undefined,
+                var view,
                     type = shape.get('type');
                 if (type === "Rectangle") {
                     view = new RectView({model:shape, paper:paper});
@@ -70,35 +94,106 @@ $.fn.roi_display = function(options) {
                 }
                 if (view) {
                     view.render();
+                    this.shapeViews.push(view);
                 }
             }
         });
 
+        var RoiTableView = Backbone.View.extend({
+            
+            tagName: "tr",
 
-        // Main manager of ROI views. E.g. for canvas and table
-        var RoiViewManager = Backbone.View.extend({
+            //template: _.template($('#item-template').html()),
+            
+            // events: { },
+            
+            initialize: function() {
+                this.model.on('change', this.render, this);
+            },
+            
+            render: function() {
+                console.log("ROI table view render...", this.model.get('id'));
+              this.$el.html("ROI " + this.model.get('id'));
+              return this;
+            },
+        });
+
+
+        // Main manager of ROI views for table
+        var RoiTableViewManager = Backbone.View.extend({
             
             initialize: function(rois) {
+                rois.on("sync", function() {
+                    rois.each(function(model, i){
+                        var view = new RoiTableView({model: model});
+                        $("#roi_small_table").append(view.render().el);
+                    });
+                });
+                rois.on("add", function(roi){
+                    var view = new RoiTableView({model: model});
+                    $("#roi_small_table").append(view.render().el);
+                });
+            },
+        });
+
+
+        // Manage the ROI views for canvas
+        var RoiCanvasViewManager = Backbone.View.extend({
+            
+            initialize: function(rois) {
+                this.views = [];
+                
+                var self = this;
+                
                 rois.on("all", function(o, n) {
                     //console.log("all", o,n);
                 });
                 rois.on("sync", function() {
                     rois.each(function(model, i){
-                        new RoiView(model);
+                        var v = new RoiView({model:model});
+                        self.views.push(v);
                     });
                 });
                 rois.on("add", function(roi){
-                    new RoiView({model: roi});
+                    var v = new RoiView({model: roi});
+                    self.views.push(v);
                 });
+                
+                this.theZ = null;
+                this.theT = null;
+            },
+
+            setZandT: function(theZ, theT) {
+                if (typeof theZ === "number") {
+                    this.theZ = theZ;
+                }
+                if (typeof theT === "number") {
+                    this.theT = theT;
+                }
+                this.refresh_rois();
+            },
+            
+            refresh_rois: function() {
+                // need to clear existing shapes
+                var roi_view;
+                for (var i=0; i<this.views.length; i++) {
+                    roi_view = this.views[i];
+                    roi_view.destroyShapes();
+                    roi_view.showShapes(this.theZ, this.theT);
+                }
+                
+                // show shapes on current plane
             }
+            
         });
 
         // ------------------------ Try it out! ---------------------------
 
         // Create Model - list of ROIs.
-        var ROIS = new RoiList;
+        var ROIS = new RoiList();
         // View of this - Handles creation of RoiViews
-        var manager = new RoiViewManager(ROIS);
+        var tableViewManager = new RoiTableViewManager(ROIS);
+        var canvasViewManager = new RoiCanvasViewManager(ROIS);
 
 
         // Undo Model and View
@@ -130,7 +225,12 @@ $.fn.roi_display = function(options) {
                 }
                 $viewportimg.trigger("rois_loaded");
             }); */
-        }
+        };
+        
+        
+        this.refresh_rois = function(theZ, theT) {
+            canvasViewManager.setZandT(theZ-1, theT-1);
+        };
         
         
         
@@ -341,7 +441,7 @@ $.fn.roi_display = function(options) {
         }
 
         // clears paper and draws ROIs (if rois_displayed) for the given T and Z. NB: indexes are 1-based. 
-        this.refresh_rois = function(theZ, theT) {
+        this.refresh_roisX = function(theZ, theT) {
 
             if (typeof theZ != 'undefined') this.theZ = theZ;
             if (typeof theT != 'undefined') this.theT = theT;
