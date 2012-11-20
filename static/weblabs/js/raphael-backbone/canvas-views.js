@@ -6,6 +6,110 @@ var handle_attrs = {stroke:'#fff', fill:'#000', 'cursor': 'default'};
 var handle_wh = 10;
 
 
+// Manage the ROI views for canvas
+var RoiCanvasViewManager = Backbone.View.extend({
+    
+    initialize: function(opts) {
+        this.views = [];
+        this.paper = opts.paper;
+        
+        var self = this,
+            model = this.model;
+
+        this.model.on("sync", function() {
+            model.each(function(model, i){
+                var v = new RoiCanvasView({model:model, paper:opts.paper});
+                self.views.push(v);
+            });
+        });
+        this.model.on("add", function(roi){
+            var v = new RoiCanvasView({model: roi, paper:opts.paper});
+            self.views.push(v);
+        });
+        
+        this.theZ = null;
+        this.theT = null;
+    },
+
+    setZandT: function(theZ, theT) {
+        if (typeof theZ === "number") {
+            this.theZ = theZ;
+        }
+        if (typeof theT === "number") {
+            this.theT = theT;
+        }
+        this.refresh_rois();
+    },
+    
+    refresh_rois: function() {
+        // need to clear existing shapes
+        var roi_view;
+        for (var i=0; i<this.views.length; i++) {
+            roi_view = this.views[i];
+            roi_view.destroyShapes();
+            roi_view.showShapes(this.theZ, this.theT);
+        }
+        
+        // show shapes on current plane
+    }
+    
+});
+
+
+// This ROI-View doesn't SHOW anything on paper:
+// - Just binds creation of Shape-Views to shape creation.
+var RoiCanvasView = Backbone.View.extend({
+    
+    initialize: function(opts) {
+        this.shapeViews = [];
+        this.paper = opts.paper;    // seems we need to do this for paper but not for model
+        
+        var self = this;
+        // Add Views for any existing shapes models
+        this.model.shapes.each(function(shape) {
+            self.create_shape_view(shape);
+        });
+        
+        // If a shape is added, Create View for that too
+        this.model.shapes.on("add", this.create_shape_view);
+    },
+    
+    destroyShapes: function() {
+        
+        var svs = this.shapeViews,
+            sv;
+        for(var i=0; i<svs.length; i++) {
+            sv = svs[i];
+            sv.destroy();
+        }
+        svs.length = 0;     // All shapes gone
+    },
+    
+    showShapes: function(theZ, theT) {
+        var self = this;
+        this.model.shapes.each(function(shape) {
+            if ((shape.get('theZ') === theZ) && (shape.get('theT') === theT)) {
+                self.create_shape_view(shape);
+            }
+        });
+    },
+    
+    create_shape_view: function(shape) {
+        var view,
+            type = shape.get('type');
+        if (type === "Rectangle") {
+            view = new RectView({model:shape, paper:this.paper});
+        } else if (type === "Ellipse") {
+            view = new EllipseView({model:shape, paper:this.paper});
+        }
+        if (view) {
+            view.render();
+            this.shapeViews.push(view);
+        }
+    }
+});
+
+
 var RectView = Backbone.View.extend({
     // make a child on click
     events: {
