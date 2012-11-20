@@ -178,6 +178,7 @@ var RectView = Backbone.View.extend({
     destroy: function() {
         this.element.remove();
         this.handles.remove();
+        this.model.off('change', this.render, this);
     }
 });
 
@@ -357,6 +358,7 @@ var EllipseView = Backbone.View.extend({
     destroy: function() {
         this.element.remove();
         this.handles.remove();
+        this.model.off('change', this.render, this);
     }
 });
 
