@@ -69,26 +69,16 @@ $.fn.roi_display = function(options) {
             // Fetch ROI json!
             console.log("ROIS.fetch");
             ROIS.fetch();
-            
-            /*
-            if (json_url == undefined) return;
-            
-            $.getJSON(json_url, function(data) {
-                roi_json = data;
-
-                // plot the rois
-                if (display_rois) {
-                  rois_displayed = true;
-                  refresh_rois();
-                }
-                $viewportimg.trigger("rois_loaded");
-            }); */
         };
         
         
         this.refresh_rois = function(theZ, theT) {
             canvasViewManager.setZandT(theZ-1, theT-1);
         };
+        
+        this.addShape = function(shape_opts) {
+            ROIS.at(0).shapes.create(shape_opts);
+        }
         
         
         

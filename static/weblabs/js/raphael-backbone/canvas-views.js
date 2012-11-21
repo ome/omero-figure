@@ -71,7 +71,9 @@ var RoiCanvasView = Backbone.View.extend({
         });
         
         // If a shape is added, Create View for that too
-        this.model.shapes.on("add", this.create_shape_view);
+        this.model.shapes.on("add", function(shape) {
+            self.create_shape_view(shape);
+        });
     },
     
     destroyShapes: function() {

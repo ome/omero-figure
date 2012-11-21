@@ -13,7 +13,8 @@ var Shape = Backbone.Model.extend({
 // ------------------------ Shape COLLECTION (used in ROI model)-------------------------
 
 var ShapeList = Backbone.Collection.extend({
-    model: Shape
+    model: Shape,
+    url: "fake"
 });
 
 

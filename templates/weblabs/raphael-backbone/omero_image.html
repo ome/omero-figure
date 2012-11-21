@@ -1100,6 +1100,8 @@
                     <a href="#" onclick="show_rois()">Show ROIs</a> |
                     <a href="#" onclick="hide_rois()">Hide</a>
                 {% endifnotequal %}
+                
+                <button id="addShape" title="Add Shape to ROI[0]">Add Shape</button>
           </div>
 {% endblock roi_buttons %}
           {% block current_image_tools %}{% endblock %}
@@ -1337,6 +1339,11 @@
             }
         }
         return false;
+    });
+    
+    // ---------- TEST CODE for Backbone ROIs -------------
+    $("#addShape").click(function(){
+        viewport.viewportimg.get(0).addShape({type:'Ellipse', cx: 200, cy:200, rx: 30, ry:80, theZ:10, theT:0});
     });
     
     
