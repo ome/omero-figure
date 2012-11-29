@@ -2,28 +2,31 @@
 /*global Backbone:true */
 
 var default_line_attrs = {'stroke-width':1, 'stroke': '#ffffff', 'cursor': 'default', 'fill-opacity':0.1, 'fill': '#000'};
+var selected_line_attrs = {'stroke':'#ff0000'};
 var handle_attrs = {stroke:'#fff', fill:'#000', 'cursor': 'default'};
 var handle_wh = 10;
 
 
 // Manage the ROI views for canvas
 var RoiCanvasViewManager = Backbone.View.extend({
-    
+
+    // Bind creation of ROIs to new ROI-Views
     initialize: function(opts) {
         this.views = [];
         this.paper = opts.paper;
+        this.selected_shape_id;     // We manage shape selection here!
         
         var self = this,
             model = this.model;
 
         this.model.on("sync", function() {
             model.each(function(model, i){
-                var v = new RoiCanvasView({model:model, paper:opts.paper});
+                var v = new RoiCanvasView({model:model, paper:opts.paper, manager:self});
                 self.views.push(v);
             });
         });
         this.model.on("add", function(roi){
-            var v = new RoiCanvasView({model: roi, paper:opts.paper});
+            var v = new RoiCanvasView({model: roi, paper:opts.paper, manager:self});
             self.views.push(v);
         });
         
@@ -31,6 +34,7 @@ var RoiCanvasViewManager = Backbone.View.extend({
         this.theT = null;
     },
 
+    // Update the Z and T, then destroy & create new shapes
     setZandT: function(theZ, theT) {
         if (typeof theZ === "number") {
             this.theZ = theZ;
@@ -38,46 +42,57 @@ var RoiCanvasViewManager = Backbone.View.extend({
         if (typeof theT === "number") {
             this.theT = theT;
         }
-        this.refresh_rois();
+        this.recreate_rois();
     },
-    
-    refresh_rois: function() {
-        // need to clear existing shapes
+
+    // Destroy all shapes and create new shapes for current plane
+    recreate_rois: function() {
         var roi_view;
         for (var i=0; i<this.views.length; i++) {
             roi_view = this.views[i];
             roi_view.destroyShapes();
             roi_view.showShapes(this.theZ, this.theT);
         }
-        
-        // show shapes on current plane
+    },
+
+    // set the selected shape ID, then update visible shapes
+    set_selected_shape: function(shape_id) {
+        this.selected_shape_id = shape_id;
+        this.update_rois();
+    },
+
+    // Just update selection of any visible Shapes
+    update_rois: function() {
+        var roi_view;
+        for (var i=0; i<this.views.length; i++) {
+            roi_view = this.views[i];
+            roi_view.updateShapes();
+        }
     }
-    
 });
 
 
 // This ROI-View doesn't SHOW anything on paper:
 // - Just binds creation of Shape-Views to shape creation.
 var RoiCanvasView = Backbone.View.extend({
-    
+
+    // Bind Shape creation to New Shape-Views
     initialize: function(opts) {
         this.shapeViews = [];
         this.paper = opts.paper;    // seems we need to do this for paper but not for model
+        this.manager = opts.manager;
         
         var self = this;
-        // Add Views for any existing shapes models
-        this.model.shapes.each(function(shape) {
-            self.create_shape_view(shape);
-        });
         
+        // Don't create shape initially...(may not be on correct Z/T plane)
         // If a shape is added, Create View for that too
         this.model.shapes.on("add", function(shape) {
             self.create_shape_view(shape);
         });
     },
-    
+
+    // Destroy all shapes
     destroyShapes: function() {
-        
         var svs = this.shapeViews,
             sv;
         for(var i=0; i<svs.length; i++) {
@@ -86,7 +101,8 @@ var RoiCanvasView = Backbone.View.extend({
         }
         svs.length = 0;     // All shapes gone
     },
-    
+
+    // Create shapes on specified Z and T
     showShapes: function(theZ, theT) {
         var self = this;
         this.model.shapes.each(function(shape) {
@@ -95,18 +111,28 @@ var RoiCanvasView = Backbone.View.extend({
             }
         });
     },
-    
+
+    // Create method called above
     create_shape_view: function(shape) {
         var view,
             type = shape.get('type');
         if (type === "Rectangle") {
-            view = new RectView({model:shape, paper:this.paper});
+            view = new RectView({model:shape, paper:this.paper, manager: this.manager});
         } else if (type === "Ellipse") {
-            view = new EllipseView({model:shape, paper:this.paper});
+            view = new EllipseView({model:shape, paper:this.paper, manager: this.manager});
         }
         if (view) {
             view.render();
             this.shapeViews.push(view);
+        }
+    },
+
+    // Refresh the selection appearence etc of existing shapes
+    updateShapes: function() {
+        var shape;
+        for (var i=0, l=this.shapeViews.length; i<l; i++) {
+            shape = this.shapeViews[i];
+            shape.updateShape();
         }
     }
 });
@@ -115,7 +141,7 @@ var RoiCanvasView = Backbone.View.extend({
 var RectView = Backbone.View.extend({
     // make a child on click
     events: {
-        'mousedown': 'selectShape'
+        //'mousedown': 'selectShape'    // we need to handle this more manually (see below)
     },
     initialize: function(options) {
         // Here we create the shape itself, the drawing handles and
@@ -123,6 +149,7 @@ var RectView = Backbone.View.extend({
 
         var self = this;
         this.paper = options.paper;
+        this.manager = options.manager;
 
         // Set up our 'view' attributes (for rendering without updating model)
         this.x = this.model.get("x");
@@ -201,7 +228,7 @@ var RectView = Backbone.View.extend({
             );
             self.handles.push(handle);
         }
-        //self.handles.hide();     // show on selection
+        self.handles.hide();     // show on selection
 
 
         // ----- Create the rect itself ----
@@ -241,7 +268,10 @@ var RectView = Backbone.View.extend({
         // https://groups.google.com/forum/?fromgroups=#!topic/raphaeljs/s06GIUCUZLk
         this.element.mousedown(function(e){
              e.stopImmediatePropagation();
+             self.selectShape();
         });
+
+        this.updateShape();  // sync position, selection etc.
 
         // Finally, we need to render when model changes
         this.model.on('change', this.render, this);
@@ -260,6 +290,14 @@ var RectView = Backbone.View.extend({
     updateShape: function() {
         this.element.attr({'x':this.x, 'y':this.y, 'width':this.width, 'height':this.height});
 
+        if (this.manager.selected_shape_id === this.model.get("id")) {
+            this.element.attr( selected_line_attrs );
+            this.handles.show();
+        } else {
+            this.element.attr( default_line_attrs );    // this should be the shapes OWN line / fill colour etc.
+            this.handles.hide();
+        }
+
         this.handleIds = {'nw': [this.x, this.y],
         'n': [this.x+this.width/2,this.y],
         'ne': [this.x+this.width,this.y],
@@ -277,8 +315,10 @@ var RectView = Backbone.View.extend({
             hnd.attr({'x':hx-handle_wh/2, 'y':hy-handle_wh/2});
         }
     },
-    // Create a new model and a view for it
+    
     selectShape: function() {
+        this.manager.set_selected_shape( this.model.get('id') );
+        //this.updateShape();
     },
     
     destroy: function() {
@@ -294,12 +334,13 @@ var RectView = Backbone.View.extend({
 var EllipseView = Backbone.View.extend({
     // make a child on click
     events: {
-        'mousedown': 'selectShape'
+        //'mousedown': 'selectShape'    // need to handle manually
     },
     initialize: function(options) {
 
         var self = this;
         this.paper = options.paper;
+        this.manager = options.manager;
 
         // Set up our 'view' attributes (for rendering without updating model)
         this.cx = this.model.get("cx");
@@ -380,7 +421,7 @@ var EllipseView = Backbone.View.extend({
             );
             self.handles.push(handle);
         }
-        //self.handles.hide();     // show on selection
+        self.handles.hide();     // show on selection
 
 
         // ----- Create the rect itself ----
@@ -417,7 +458,10 @@ var EllipseView = Backbone.View.extend({
         // https://groups.google.com/forum/?fromgroups=#!topic/raphaeljs/s06GIUCUZLk
         this.element.mousedown(function(e){
              e.stopImmediatePropagation();
+             self.selectShape();
         });
+
+        this.updateShape();     // sync selection etc
 
         // Finally, we need to render when model changes
         this.model.on('change', this.render, this);
@@ -437,6 +481,15 @@ var EllipseView = Backbone.View.extend({
         //console.log("updateShape", "cx:", this.cx, "cy:", this.cy, "rx:", this.rx, "ry:", this.ry);
         this.element.attr({'cx':this.cx, 'cy':this.cy, 'rx':this.rx, 'ry':this.ry});
 
+        // NB: this is identical in Other shapes - TODO: refactor into BaseShape
+        if (this.manager.selected_shape_id === this.model.get("id")) {
+            this.element.attr( selected_line_attrs );
+            this.handles.show();
+        } else {
+            this.element.attr( default_line_attrs );    // this should be the shapes OWN line / fill colour etc.
+            this.handles.hide();
+        }
+
         this.handleIds = {'nw': [this.cx-this.rx, this.cy-this.ry],
             'n': [this.cx, this.cy-this.ry],
             'ne': [this.cx+this.rx, this.cy-this.ry],
@@ -455,12 +508,13 @@ var EllipseView = Backbone.View.extend({
             hnd.attr({'x':hx-handle_wh/2, 'y':hy-handle_wh/2});
         }
     },
+
     // Create a new model and a view for it
     selectShape: function() {
-        //console.log("selectShape");
+        this.manager.set_selected_shape( this.model.get('id') );
     },
-    
-    
+
+    // Destroy: remove Raphael elements and event listeners
     destroy: function() {
         this.element.remove();
         this.handles.remove();

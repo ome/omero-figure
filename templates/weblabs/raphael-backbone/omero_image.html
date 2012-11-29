@@ -513,7 +513,7 @@
       $("#roi_table_postit").show();
 
       // loads ROIs (if needed) and shows. 
-    viewport.viewportimg.get(0).show_rois(theZ, theT);
+    viewport.viewportimg.get(0).show_rois(theZ-1, theT-1);   // Use Zero-based index on NEW roi viewer!
   }
   
   
@@ -876,6 +876,18 @@
 
   /* ]]> */
 </script>
+
+<script id="table_shape-template">
+
+<td></td>
+<td class='shape_cell icon'><img src=""/></td>
+<td class='shape_cell'><%= id %></td>
+<td class='shape_cell'><%= type %></td>
+<td class='shape_cell'><%= theZ %></td>
+<td class='shape_cell'><%= theT %></td>
+</script>
+
+
     <div id="channel-window-help" style="display: none;">
 {% comment %}
       <h2>Setting the Default Image Display Settings:</h2>
@@ -1286,7 +1298,8 @@
         }
     }
     
-    $("#roi_small_table").click(function(event) {
+    // Turning this OFF - should all be handled by BACKBONE!
+    $("#roi_small_tableXXXXXX").click(function(event) {
         var $target = $(event.target);
         if ($target.attr('id') == "toggle_roi_thumbs") {
             update_roi_thumbs();
@@ -1346,6 +1359,16 @@
         viewport.viewportimg.get(0).addShape({type:'Ellipse', cx: 200, cy:200, rx: 30, ry:80, theZ:10, theT:0});
     });
     
+    // ---------- Backbone ROIs-Table triggers when shape selected - to update Z / T
+    $("#roi_small_table").bind("ztChanged", function(event, z, t){
+        if (typeof z === 'number') {
+            viewport.setZPos(z+1);    // +1 because viewport uses 1-based indicies.
+        }
+        if (typeof t === 'number') {
+            viewport.setTPos(t+1);
+        }
+    });
+    
     
     // we can bind events to viewportimg for roi_display-plugin to trigger (plugin not created yet)
     viewport.viewportimg.bind("shape_click", handle_shape_selection);
@@ -1365,6 +1388,5 @@
 {% endblock content_script %}
   /* ]]> */
 </script>
-
 
 {% endblock %}

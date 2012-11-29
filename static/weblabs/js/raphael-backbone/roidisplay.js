@@ -62,13 +62,19 @@ $.fn.roi_display = function(options) {
 
         
         // load the ROIs from json call and display
-        load_rois = function(display_rois) {
+        var load_rois = function(display_rois) {
             
             ROIS.url = json_url;
             
             // Fetch ROI json!
-            console.log("ROIS.fetch");
-            ROIS.fetch();
+            ROIS.fetch({
+                success: function() {
+                    setTimeout(function() {
+                        // need to wait for the 'sync' event to create Views, then...
+                        canvasViewManager.setZandT(self.theZ, self.theT);
+                    }, 20);
+                }
+            });
         };
         
         
@@ -78,7 +84,7 @@ $.fn.roi_display = function(options) {
         
         this.addShape = function(shape_opts) {
             ROIS.at(0).shapes.create(shape_opts);
-        }
+        };
         
         
         

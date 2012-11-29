@@ -54,31 +54,44 @@ var RoiTableView = Backbone.View.extend({
     create_shape_view: function(shape) {
         
         var view = new TableShapeView({model:shape});
-        console.log( view.render().el, this.$el, this.$el.parent());
         this.$el.parent().append(view.render().el);
     }
 });
 
 
-
 var TableShapeView = Backbone.View.extend({
     tagName: "tr",
     
+    // For some reason, this can't find the template at this stage (OK at init)
+    //template: _.template($('#table_shape-template').html()),
+
     initialize: function() {
         this.model.on('change', this.render, this);
+        this.template = _.template($('#table_shape-template').html());
+    },
+
+    events: {
+        "click .shape_cell": "select_shape",
+    },
+    
+    select_shape: function() {
+        
+        var newZ = this.model.get('theZ'),
+            newT = this.model.get('theT');
+        $("#roi_small_table").trigger("ztChanged", [newZ, newT]);
     },
     
     render: function() {
-        var text = "Shape " + this.model.get('id') + " " + this.model.get('type') + " theZ: " + this.model.get('theZ');
-        if (this.model.get('x')) {
-            text += " x:" + this.model.get('x');
-            text += " y:" + this.model.get('y');
+        // Have to handle potential nulls, since the template doesn't like them!
+        var json = this.model.toJSON();
+        if (typeof json.theT === "undefined") {
+            json.theT = "-";
         }
-        if (this.model.get('cx')) {
-            text += " cx:" + this.model.get('cx');
-            text += " cy:" + this.model.get('cy');
+        if (typeof json.theZ === "undefined") {
+            json.theZ = "-";
         }
-      this.$el.html(text);
-      return this;
+        var text = this.template(json);
+        this.$el.html(text);
+        return this;
     }
 });
