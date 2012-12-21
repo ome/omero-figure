@@ -30,6 +30,11 @@ var RoiCanvasViewManager = Backbone.View.extend({
             self.views.push(v);
         });
         
+        opts.uiState.on("change", function(state) {
+            //console.log("change", state.get('theZ'), state.get('theT'));
+            self.setZandT( state.get('theZ'), state.get('theT') );
+        });
+        
         this.theZ = null;
         this.theT = null;
     },

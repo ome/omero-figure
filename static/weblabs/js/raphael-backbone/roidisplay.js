@@ -46,12 +46,22 @@ $.fn.roi_display = function(options) {
 
 
         // ------------------------ Try it out! ---------------------------
+        
+        // -- Basic outline: --
+        // We have Roi & Shape MODELS, then at least 2 VIEWS for each of these: Canvas(raphael), Table...etc
+        // RoiManagers listen for NEW ROIs and create ROI-views for them.
+        // This also happens on 'sync' once we've loaded json from server.
+        // We have a UiState model to sync current Z / T index and selected Shape etc.
+        // -- This roidisplay.json is the interface with the viewer html page. --
+
 
         // Create Model - list of ROIs.
         var ROIS = new RoiList();
+        var UIstate = new UiState();    // manage current Z, T etc.
+
         // View of this - Handles creation of RoiViews
-        var tableViewManager = new RoiTableViewManager({model:ROIS});
-        var canvasViewManager = new RoiCanvasViewManager({model:ROIS, paper: paper});
+        var tableViewManager = new RoiTableViewManager({model:ROIS, uiState:UIstate});
+        var canvasViewManager = new RoiCanvasViewManager({model:ROIS, paper: paper, uiState:UIstate});
 
 
         // Undo Model and View
@@ -60,7 +70,6 @@ $.fn.roi_display = function(options) {
         // Listen for changes to ROIs (and Shapes)
         undoManager.addListener(ROIS);
 
-        
         // load the ROIs from json call and display
         var load_rois = function(display_rois) {
             
@@ -76,19 +85,53 @@ $.fn.roi_display = function(options) {
                 }
             });
         };
+
+
+        // ---------- Following code keeps Z & T in sync between viewport and ROIs ------------
         
-        
+        // This is called when the Viewport changes Z/T
         this.refresh_rois = function(theZ, theT) {
-            canvasViewManager.setZandT(theZ-1, theT-1);
+            console.log("roidisplay.refresh_rois", theZ, theT);
+            //canvasViewManager.setZandT(theZ-1, theT-1);
+            UIstate.set('theZ', theZ-1);
+            UIstate.set('theT', theT-1);
         };
-        
+
+        // To notify Viewport of Z/T changes due to shape selection etc:
+        UIstate.on("change", function(state, attr) {
+
+            if (attr.changes.theZ || attr.changes.theT) {
+                $(self).trigger('ztChanged', [state.get('theZ'), state.get('theT')]);
+            }
+        });
+
+
+        // temp code for testing...
         this.addShape = function(shape_opts) {
             ROIS.at(0).shapes.create(shape_opts);
         };
         
         
         
-        
+        // --------- START by loading the ROIs if needed and display them ---------
+        // NB: we get theZ and theT here (current Z and T of viewport)
+        this.show_rois = function(theZ, theT) {
+            //this.theZ = theZ
+            //this.theT = theT
+            UIstate.set('theZ', theZ);
+            UIstate.set('theT', theT);
+          if (roi_json == null) {
+              load_rois(true);      // load and display
+          } else {
+              rois_displayed = true;
+              this.refresh_rois(theZ, theT);
+          }
+        }
+
+
+
+        // ------------- OLD CODE below (pre-Backbone etc) -----------
+
         
         // break long labels into multiple lines
         var formatShapeText = function(text_string) {
@@ -405,18 +448,6 @@ $.fn.roi_display = function(options) {
         }
 
 
-        // loads the ROIs if needed and displays them
-        this.show_rois = function(theZ, theT) {
-            this.theZ = theZ
-            this.theT = theT
-          if (roi_json == null) {
-              load_rois(true);      // load and display
-          } else {
-              rois_displayed = true;
-              this.refresh_rois();
-          }
-        }
-        
 
         // hides the ROIs from display
         this.hide_rois = function() {

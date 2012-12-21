@@ -76,6 +76,7 @@
     <script src="{% static 'weblabs/js/raphael-backbone/table-views.js' %}"></script>
     <script src="{% static 'weblabs/js/raphael-backbone/model-shapes.js' %}"></script>
     <script src="{% static 'weblabs/js/raphael-backbone/undo.js' %}"></script>
+    <script src="{% static 'weblabs/js/raphael-backbone/ui_state.js' %}"></script>
 
     <!-- big images -->
 
@@ -1360,7 +1361,8 @@
     });
     
     // ---------- Backbone ROIs-Table triggers when shape selected - to update Z / T
-    $("#roi_small_table").bind("ztChanged", function(event, z, t){
+    viewport.viewportimg.bind("ztChanged", function(event, z, t){
+        console.log('ztChanged', z, t);
         if (typeof z === 'number') {
             viewport.setZPos(z+1);    // +1 because viewport uses 1-based indicies.
         }
