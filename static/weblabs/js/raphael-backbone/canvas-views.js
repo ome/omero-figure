@@ -1,4 +1,16 @@
-// ------------------------ VIEWS -------------------------------
+// ------------------------ CANVAS VIEWS -------------------------------
+// Here we handle all rendering of the Backbone Shape Models on a Raphael
+// 'paper' canvas.
+// We have a 'Manager' to handle creation of ROI - Views
+// (based on changes in the ROI model)
+// and coordinate changes in theZ, theT or selected shape_id etc
+// (based on changes to the uiState model).
+// ROI-Views themselves don't do any rendering, they simply manage Shape Views.
+// Shape views (one for each type of Shape) render as Raphael Rect, Line, etc
+// with 'handles' to allow resizing & moving.
+// The Manager is passed down to each Shape View, so each Shape View can
+// get and set the selected shape_id.
+
 /*global Backbone:true */
 
 var default_line_attrs = {'stroke-width':1, 'stroke': '#ffffff', 'cursor': 'default', 'fill-opacity':0.1, 'fill': '#000'};
