@@ -25,7 +25,7 @@ var RoiTableViewManager = Backbone.View.extend({
             var view = new RoiTableView({model: roi, uiState:opts.uiState});
             $("#roi_small_table").append(view.render().el);
         });
-    },
+    }
 });
 
 var RoiTableView = Backbone.View.extend({
@@ -75,21 +75,25 @@ var TableShapeView = Backbone.View.extend({
 
     initialize: function(opts) {
         this.uiState = opts.uiState;
+        // we render on Changes in the model OR selected shape etc.
         this.model.on('change', this.render, this);
+        this.uiState.on('change', this.render, this);
         this.template = _.template($('#table_shape-template').html());
     },
 
     events: {
-        "click .shape_cell": "select_shape",
+        "click .shape_cell": "select_shape"
     },
     
     select_shape: function() {
         
         var newZ = this.model.get('theZ'),
-            newT = this.model.get('theT');
+            newT = this.model.get('theT'),
+            selId = this.model.get('id');
         //$("#roi_small_table").trigger("ztChanged", [newZ, newT]);
         this.uiState.set('theZ', newZ);
         this.uiState.set('theT', newT);
+        this.uiState.set('selectedShape', selId);
     },
     
     render: function() {
@@ -107,6 +111,11 @@ var TableShapeView = Backbone.View.extend({
         }
         var text = this.template(json);
         this.$el.html(text);
+        if (this.uiState.get('selectedShape') === this.model.get('id')) {
+            this.$el.addClass('selected');
+        } else {
+            this.$el.removeClass('selected');
+        }
         return this;
     }
 });

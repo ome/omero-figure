@@ -14,7 +14,7 @@ var RoiCanvasViewManager = Backbone.View.extend({
     initialize: function(opts) {
         this.views = [];
         this.paper = opts.paper;
-        this.selected_shape_id;     // We manage shape selection here!
+        this.uiState = opts.uiState;
         
         var self = this,
             model = this.model;
@@ -30,9 +30,13 @@ var RoiCanvasViewManager = Backbone.View.extend({
             self.views.push(v);
         });
         
-        opts.uiState.on("change", function(state) {
-            //console.log("change", state.get('theZ'), state.get('theT'));
-            self.setZandT( state.get('theZ'), state.get('theT') );
+        opts.uiState.on("change", function(state, attr) {
+            if (attr.changes.theZ || attr.changes.theT) {
+                self.setZandT( state.get('theZ'), state.get('theT') );
+            }
+            if (attr.changes.selectedShape) {
+                self.update_shape_selection( state.get('selectedShape') );
+            }
         });
         
         this.theZ = null;
@@ -62,6 +66,10 @@ var RoiCanvasViewManager = Backbone.View.extend({
 
     // set the selected shape ID, then update visible shapes
     set_selected_shape: function(shape_id) {
+        this.uiState.set("selectedShape", shape_id);
+    },
+
+    update_shape_selection: function(shape_id) {
         this.selected_shape_id = shape_id;
         this.update_rois();
     },
@@ -483,7 +491,6 @@ var EllipseView = Backbone.View.extend({
 
     // used to update during drags etc. Also called by render()
     updateShape: function() {
-        //console.log("updateShape", "cx:", this.cx, "cy:", this.cy, "rx:", this.rx, "ry:", this.ry);
         this.element.attr({'cx':this.cx, 'cy':this.cy, 'rx':this.rx, 'ry':this.ry});
 
         // NB: this is identical in Other shapes - TODO: refactor into BaseShape

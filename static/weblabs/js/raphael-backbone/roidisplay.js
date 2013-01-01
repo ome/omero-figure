@@ -16,16 +16,17 @@ $.fn.roi_display = function(options) {
         var json_url = options.json_url;
         
 
-        var $viewportimg = $(this);
+        var $viewportimg = $(this),
+            $canvas;
         var width = $viewportimg.attr('width');   // 0 initially
         var height = $viewportimg.attr('height');
 
         if (!tiles) {
             // add our ROI canvas as a sibling to the image plane. Parent is the 'draggable' div
             var $dragdiv = $viewportimg.parent();
-            var $canvas =   $('<div id="'+canvas_name+'" class="'+canvas_name+'">').appendTo($dragdiv);
+            $canvas =   $('<div id="'+canvas_name+'" class="'+canvas_name+'">').appendTo($dragdiv);
         } else {
-            var $canvas = $('#'+canvas_name);
+            $canvas = $('#'+canvas_name);
         }
 
         var roi_json = null;          // load ROI data as json when needed
@@ -91,7 +92,6 @@ $.fn.roi_display = function(options) {
         
         // This is called when the Viewport changes Z/T
         this.refresh_rois = function(theZ, theT) {
-            console.log("roidisplay.refresh_rois", theZ, theT);
             //canvasViewManager.setZandT(theZ-1, theT-1);
             UIstate.set('theZ', theZ-1);
             UIstate.set('theT', theT-1);
