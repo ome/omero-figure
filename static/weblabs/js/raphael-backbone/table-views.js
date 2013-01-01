@@ -78,7 +78,7 @@ var TableShapeView = Backbone.View.extend({
         this.uiState = opts.uiState;
         // we render on Changes in the model OR selected shape etc.
         this.model.on('change', this.render, this);
-        this.uiState.on('change', this.render, this);
+        this.uiState.on('change', this.update_selection, this);
         this.template = _.template($('#table_shape-template').html());
     },
 
@@ -99,6 +99,16 @@ var TableShapeView = Backbone.View.extend({
         this.uiState.set('selectedShape', selId);
     },
 
+
+    // selection changes only need to update the css (not re-render)
+    update_selection: function() {
+        if (this.uiState.get('selectedShape') === this.model.get('id')) {
+            this.$el.addClass('selected');
+        } else {
+            this.$el.removeClass('selected');
+        }
+    },
+
     render: function() {
         // Have to handle potential nulls, since the template doesn't like them!
         var json = this.model.toJSON();
@@ -114,11 +124,7 @@ var TableShapeView = Backbone.View.extend({
         }
         var text = this.template(json);
         this.$el.html(text);
-        if (this.uiState.get('selectedShape') === this.model.get('id')) {
-            this.$el.addClass('selected');
-        } else {
-            this.$el.removeClass('selected');
-        }
+        this.update_selection();
         return this;
     }
 });
