@@ -145,6 +145,12 @@ var RoiCanvasView = Backbone.View.extend({
             view = new RectView({model:shape, paper:this.paper, manager: this.manager});
         } else if (type === "Ellipse") {
             view = new EllipseView({model:shape, paper:this.paper, manager: this.manager});
+        } else if (type === "Line") {
+            view = new PolylineView({model:shape, paper:this.paper, manager: this.manager});
+        } else if (type === "PolyLine") {
+            view = new PolylineView({model:shape, paper:this.paper, manager: this.manager});
+        } else if (type === "Polygon") {
+            view = new PolylineView({model:shape, paper:this.paper, manager: this.manager});
         }
         if (view) {
             view.render();
@@ -159,6 +165,209 @@ var RoiCanvasView = Backbone.View.extend({
             shape = this.shapeViews[i];
             shape.updateShape();
         }
+    }
+});
+
+
+var PolylineView = Backbone.View.extend({
+
+    initialize: function(options) {
+        var self = this;
+        this.paper = options.paper;
+        this.manager = options.manager;
+
+        // Set up our 'view' attributes (for rendering without updating model)
+        this.loadPointsList();      // loads this.points_list and this.closed
+
+        // ---- Create Handles ----
+        self.handles = this.paper.set();
+        self.createHandles();
+        self.handles.hide();     // show on selection
+
+        // Create the Polyline itself...
+        self.element = this.paper.path("").attr(default_line_attrs);
+        // set "element" to the raphael node (allows Backbone to handle events)
+        this.setElement(this.element.node);
+        this.delegateEvents(this.events);   // we need to rebind the events
+        self.element.pl = this;
+
+        self.element.drag(
+            function (dx, dy) {
+                // on DRAG: update the location of the handles and the line
+                //if (manager.getState() !== ShapeManager.STATES.SELECT) {
+                //    return;
+                //}
+                for (var p=0; p < self.points_list.length; p++) {
+                    var ox = this.pl.orig_points[p][0];
+                    var oy = this.pl.orig_points[p][1];
+                    this.pl.points_list[p] = [(ox + dx), (oy + dy)];
+                }
+                this.pl.updateShape();
+            },
+            function () {
+                // START drag: note the location of all points (copy list)
+                this.pl.orig_points = [];
+                for (var i=0; i < this.pl.points_list.length; i++) {
+                    this.pl.orig_points.push(this.pl.points_list[i]);
+                }
+            },
+            function() {
+                // STOP: save current position to model
+                self.savePointsList();
+                return false;
+            }
+        );
+
+        // If we're starting DRAG, don't let event propogate up to dragdiv etc.
+        // https://groups.google.com/forum/?fromgroups=#!topic/raphaeljs/s06GIUCUZLk
+        this.element.mousedown(function(e){
+             e.stopImmediatePropagation();
+             self.selectShape();
+        });
+
+        self.updateShape();
+
+        // Finally, we need to render when model changes
+        this.model.on('change', this.render, this);
+    },
+
+    // The Model uses a 'points' string but we want to work with a list of [x,y] points
+    loadPointsList: function() {
+        var points,
+            pl, i,
+            rv = [];
+        if (this.model.get('type') === 'Line') {
+            var x1 = this.model.get('x1'),
+                x2 = this.model.get('x2'),
+                y1 = this.model.get('y1'),
+                y2 = this.model.get('y2');
+            this.points_list = [ [x1,y1], [x2,y2]];
+        } else {
+            points = this.model.get('points');      // E.g. "M 370 147 L 309 208 L 372 291 L 418 253 L 424 199 z"
+            points = points.replace("M ", "");
+            if (points.slice(-1) === "z") {
+                this.closed = true;
+            }
+            points = points.replace(" z", "");
+            points = points.split(" L ");
+            for (i=0; i<points.length; i++) {
+                pl = points[i].split(" ");
+                rv.push( [parseInt(pl[0], 10), parseInt(pl[1], 10)] );
+            }
+            this.points_list = rv;
+        }
+    },
+
+    // Saves the current this.points_list back to the model 'points' string
+    savePointsList: function() {
+        if (this.model.get('type') === 'Line') {
+            var x1 = this.points_list[0][0],
+                y1 = this.points_list[0][1],
+                x2 = this.points_list[1][0],
+                y2 = this.points_list[1][1];
+            this.model.set('x1', x1);
+            this.model.set('y1', y1);
+            this.model.set('x2', x2);
+            this.model.set('y2', y2);
+        } else {
+            var points = "M " + this.points_list[0].join(" ");
+            for (var i=1; i<this.points_list.length; i++) {
+                points += " L " + this.points_list[i].join(" ");
+            }
+            if (this.closed) {
+                points += " z";
+            }
+            this.model.set("points", points);
+        }
+    },
+
+    createHandles: function() {
+        // init handles & line
+        var self = this;
+        self.handles.remove();
+        self.handles = self.paper.set();
+
+        var _handle_drag = function() {
+            return function (dx, dy) {
+                // on DRAG: update the corresponding point of the parent and redraw
+                //if (self.manager.getState() !== ShapeManager.STATES.SELECT) {
+                //    return;
+                //}
+                this.polyline.points_list[this.i] = [(this.ox + dx + handle_wh/2),(this.oy + dy + handle_wh/2)];
+                this.polyline.updateShape();
+            };
+        };
+        var _handle_drag_start = function() {
+            return function () {
+                // START drag: simply note the location we started
+                this.ox = this.attr("x");
+                this.oy = this.attr("y");
+            };
+        };
+        var _handle_drag_stop = function() {
+            return function () {
+                // STOP drag: save points to model
+                this.polyline.savePointsList();
+            };
+        };
+        var handle;
+        for (var i=0; i < self.points_list.length; i++) {
+            var hx = self.points_list[i][0];
+            var hy = self.points_list[i][1];
+            handle = self.paper.rect(hx-handle_wh/2, hy-handle_wh/2, handle_wh, handle_wh).attr(handle_attrs);
+            handle.attr( {fill: Raphael.getColor() });
+            handle.i = i;
+            handle.polyline = self;
+            handle.drag(
+                _handle_drag(),
+                _handle_drag_start(),
+                _handle_drag_stop()
+            );
+            self.handles.push(handle);
+        }
+    },
+
+    selectShape: function() {
+        this.manager.set_selected_shape( this.model.get('id') );
+    },
+
+    // render updates our local attributes from the Model AND updates coordinates
+    render: function() {
+        this.loadPointsList();
+        this.updateShape();
+    },
+
+    // used to update during drags etc. Also called by render()
+    updateShape: function() {
+
+        if (this.manager.selected_shape_id === this.model.get("id")) {
+            this.element.attr( selected_line_attrs );
+            this.handles.show();
+        } else {
+            this.element.attr( default_line_attrs );    // this should be the shapes OWN line / fill colour etc.
+            this.handles.hide();
+        }
+
+        // set position of each handle
+        var px, py;
+        for (var p=0; p < this.points_list.length; p++) {
+            px = this.points_list[p][0];
+            py = this.points_list[p][1];
+            this.handles[p].attr({x: (px - handle_wh/2), y: (py - handle_wh/2)});
+        }
+        // redraw line
+        var path_string = "M" + this.points_list.join("L");
+        if (this.closed) {
+            path_string += " z";
+        }
+
+        this.element.attr({path: path_string});
+    },
+
+    destroy: function() {
+        this.element.remove();
+        this.handles.remove();
+        this.model.off('change', this.render, this);
     }
 });
 
@@ -343,7 +552,6 @@ var RectView = Backbone.View.extend({
     
     selectShape: function() {
         this.manager.set_selected_shape( this.model.get('id') );
-        //this.updateShape();
     },
     
     destroy: function() {
@@ -533,7 +741,6 @@ var EllipseView = Backbone.View.extend({
         }
     },
 
-    // Create a new model and a view for it
     selectShape: function() {
         this.manager.set_selected_shape( this.model.get('id') );
     },
