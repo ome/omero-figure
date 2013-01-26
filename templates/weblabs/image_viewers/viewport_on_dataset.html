@@ -44,10 +44,6 @@ $(document).ready(function() {
             currT = parseInt($(".defaultT", $this).text()),
             sizeZ = $(".sizeZ", $this).text(),
             sizeT = $(".sizeT", $this).text();
-        if (iconSize < 150) {
-            // don't init viewport if icon is still small
-            return;
-        }
         $viewports = $viewports.add($image);
         $image.viewport({
             orig_width: $(".sizeX", $(this)).text(),
@@ -195,6 +191,13 @@ $(document).ready(function() {
         border: solid gray 1px;
         border-radius: 3px;
         left: -0.5em;
+    }
+    #dataIcons li {
+        float: left;
+        padding: 10px;
+    }
+    #dataIcons {
+        padding-top: 20px;
     }
 </style>
 

@@ -169,7 +169,22 @@ var RoiCanvasView = Backbone.View.extend({
 });
 
 
-var PolylineView = Backbone.View.extend({
+var BaseShapeView = Backbone.View.extend({
+
+    selectShape: function() {
+        this.manager.set_selected_shape( this.model.get('id') );
+    },
+
+    // Destroy: remove Raphael elements and event listeners
+    destroy: function() {
+        this.element.remove();
+        this.handles.remove();
+        this.model.off('change', this.render, this);
+    }
+});
+
+
+var PolylineView = BaseShapeView.extend({
 
     initialize: function(options) {
         var self = this;
@@ -327,10 +342,6 @@ var PolylineView = Backbone.View.extend({
         }
     },
 
-    selectShape: function() {
-        this.manager.set_selected_shape( this.model.get('id') );
-    },
-
     // render updates our local attributes from the Model AND updates coordinates
     render: function() {
         this.loadPointsList();
@@ -362,17 +373,11 @@ var PolylineView = Backbone.View.extend({
         }
 
         this.element.attr({path: path_string});
-    },
-
-    destroy: function() {
-        this.element.remove();
-        this.handles.remove();
-        this.model.off('change', this.render, this);
     }
 });
 
 
-var RectView = Backbone.View.extend({
+var RectView = BaseShapeView.extend({
     // make a child on click
     events: {
         //'mousedown': 'selectShape'    // we need to handle this more manually (see below)
@@ -548,23 +553,13 @@ var RectView = Backbone.View.extend({
             hy = this.handleIds[h_id][1];
             hnd.attr({'x':hx-handle_wh/2, 'y':hy-handle_wh/2});
         }
-    },
-    
-    selectShape: function() {
-        this.manager.set_selected_shape( this.model.get('id') );
-    },
-    
-    destroy: function() {
-        this.element.remove();
-        this.handles.remove();
-        this.model.off('change', this.render, this);
     }
 });
 
 
 // ----------------- Ellipse --------------------
 
-var EllipseView = Backbone.View.extend({
+var EllipseView = BaseShapeView.extend({
     // make a child on click
     events: {
         //'mousedown': 'selectShape'    // need to handle manually
@@ -739,17 +734,6 @@ var EllipseView = Backbone.View.extend({
             hy = this.handleIds[h_id][1];
             hnd.attr({'x':hx-handle_wh/2, 'y':hy-handle_wh/2});
         }
-    },
-
-    selectShape: function() {
-        this.manager.set_selected_shape( this.model.get('id') );
-    },
-
-    // Destroy: remove Raphael elements and event listeners
-    destroy: function() {
-        this.element.remove();
-        this.handles.remove();
-        this.model.off('change', this.render, this);
     }
 });
 
