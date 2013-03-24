@@ -65,8 +65,8 @@ body {
     width:200px; /* 1px per Z section */
 }
 .side_image {
-    width:2px;
-    float:left;
+    width: 10px;
+    position: absolute;
     height:{{image.getSizeY}}px; /* div bg is image */
 }
 #side_view_y_line {
@@ -149,7 +149,8 @@ $(document).ready(function() {
         lens_img_styles.push(this.style);
     });
     // and side-viewer images
-    $(".side_image").each(function() {
+    $(".side_image").each(function(i) {
+        this.style.left = (i * 2) + "px";
         side_image_styles.push(this.style);
         this.style.backgroundSize = (SIZE_X * 2) + "px " + SIZE_Y + "px";
     });
