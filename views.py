@@ -315,3 +315,13 @@ def roi_backbone (request, imageId, conn=None, **kwargs):
 
     template = kwargs.get('template', "weblabs/raphael-backbone/omero_image.html")
     return render_to_response(template, d)
+
+
+@login_required()
+def figureshop (request, conn=None, **kwargs):
+    """
+    Single page 'app' for creating a Figure, allowing you to choose images and lay them
+    out in a customised table
+    """
+
+    return render_to_response("weblabs/figureshop.html", {})

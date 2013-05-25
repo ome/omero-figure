@@ -43,4 +43,8 @@ urlpatterns = patterns('django.views.generic.simple',
     
     # ROIs
     url( r'^roi_backbone/(?P<imageId>[0-9]+)/', views.roi_backbone, name='weblabs_roi_backbone' ),
+
+
+    # FigureShop
+    url( r'^figureshop/', views.figureshop, name='weblabs_figureshop' ),
 )

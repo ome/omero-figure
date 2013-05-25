@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>FigureShop</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width">
+
+    <link rel="stylesheet" href="{% static 'weblabs/3rdparty/h5bp/css/normalize.css' %}">
+    <link rel="stylesheet" href="{% static 'weblabs/3rdparty/h5bp/css/main.css' %}">
+
+    {% include "webgateway/base/includes/script_src_jquery.html" %}
+    {% include "webgateway/base/includes/jquery-ui.html" %}
+    <link rel="stylesheet" href="{% static "3rdparty/jquery-ui-1.8.19/themes/base/jquery.ui.base.css" %}" type="text/css" />
+    <script>
+
+    $(document).ready(function() {
+
+
+        //var p = new Panel({imageId:123});
+
+        var figureModel = new FigureModel({ colCount: 2, vspacer: 10, hspacer:2});
+
+        figureModel.panels.add({imageId: 2, x: 100, y:100});
+        figureModel.panels.add({imageId: 3, x: 650, y:100});
+
+        figureModel.panels.add({imageId: 4, x: -650, y:100});
+
+        var panel = new Panel({imageId: 5, x: 100, y:650});
+        figureModel.panels.add(panel);
+
+        //var view = new PanelView({ model:p });
+
+        var view = new FigureTableView( {model: figureModel, uiState: "TODO"});
+
+        setTimeout(function(){
+            figureModel.panels.add({imageId: 14,x: 650, y:650});
+        }, 1000);
+
+        console.log( $("main").attr("scrollTop") );
+
+        //$("main").attr("scrollTop",200);
+        //$("main").attr("scrollLeft",100);
+
+        //console.log( $("main").attr("scrollTop") );
+
+
+        var $main = $('main'),
+            $article = $('article'),
+            $canvas = $("#figureCanvas"),
+            curr_zoom = 100,
+            co = $canvas.offset(),
+            ao = $article.offset(),
+            canvas_top = co.top - ao.top,
+            canvas_left = co.left - ao.left,
+            canvas_center_v = canvas_top + ($canvas.height()/2),
+            canvas_center_h = canvas_left + ($canvas.width()/2);
+
+
+        var scrollCanvasToCentre = function(speed) {
+            // setCentre([canvas_center_h, canvas_center_v], speed);
+            setCentre([canvas_center_h, canvas_center_v-500], speed);
+        }
+
+        
+        var $article_wrapper = $(".article_wrapper"),
+            article_w = $article.width(),
+            article_h = $article.height();
+
+
+
+        var setZoomPercent = function(percent) {
+
+            var curr_centre = getCentre();
+            console.log("curr_centre", curr_centre);
+            var fraction = percent/100,
+                scale = "scale("+fraction+", "+fraction+")";
+            $article.css({"transform": scale, "-webkit-transform": scale});
+
+            var scaled_w = article_w * fraction,
+                scaled_h = article_h * fraction;
+            $article_wrapper.css({'width':scaled_w+"px", 'height': scaled_h+"px"});
+            var margin_top = (article_h - scaled_h)/2,
+                margin_left = (article_w - scaled_w)/2;
+            $article.css({'top': "-"+margin_top+"px", "left": "-"+margin_left+"px"});
+
+            curr_zoom = percent;
+            
+            setCentre(curr_centre);
+        }
+
+
+        var getCentre = function() {
+            var viewport_w = $main.width(),
+                viewport_h = $main.height(),
+                offst_left = $article_wrapper.offset().left - $main.offset().left,
+                offst_top = $article_wrapper.offset().top - $main.offset().top,
+                cx = -offst_left + viewport_w/2,
+                cy = -offst_top + viewport_h/2,
+                zm_fraction = curr_zoom * 0.01;
+            return [cx/zm_fraction, cy/zm_fraction];
+        }
+
+        var setCentre = function(cx_cy, speed) {
+            var zm_fraction = curr_zoom * 0.01,
+                cx = cx_cy[0] * zm_fraction,
+                cy = cx_cy[1] * zm_fraction,
+                viewport_w = $main.width(),
+                viewport_h = $main.height(),
+                offst_left = cx - viewport_w/2,
+                offst_top = cy - viewport_h/2,
+                speed = speed || 0;
+            console.log(cx, cy);
+            $main.animate({
+                scrollLeft: offst_left,
+                scrollTop: offst_top
+            }, speed);
+        }
+
+
+        $("#zoom_slider").slider({
+            max: 100,
+            min: 10,
+            value: 20,
+            slide: function(event, ui) {
+                setZoomPercent(ui.value);
+            }
+        });
+
+        setZoomPercent(20);
+        scrollCanvasToCentre(2000);
+        //setCentre([5000,3000]);
+    });
+
+    </script>
+
+    <style type="text/css">
+        body {
+            padding: 0px;
+        }
+        header {
+            background: gray;
+            height: 30px;
+            width: 100%;
+            position: fixed;
+            top: 0px;
+        }
+
+        main {
+            position: fixed;
+            top: 30px;
+            bottom: 30px;
+            width: 100%;
+            overflow: auto;
+            background-color: #bbb;
+        }
+
+        article {
+            width: 10000px;
+            height: 6000px;
+            background-color: #EFF1F4;
+            position: relative;
+            /*transform: scale(0.25, 0.25);*/
+        }
+
+        #figureCanvas {
+            position: absolute;
+            width: 2000px;
+            height: 3000px;
+            top: 1500px;
+            left: 4000px;
+            border: solid gray 2px;
+            background: white;
+        }
+
+        .img_panel{
+            width:512px;
+            height:512px;
+            position: absolute;
+        }
+
+        footer {
+            background: gray;
+            height: 30px;
+            width: 100%;
+            position: fixed;
+            bottom: 0px;
+        }
+
+        #zoom_slider {
+            border: 1px solid #aaa;
+            height: 6px;
+            left: 95px;
+            position: absolute;
+            top: 11px;
+            width: 120px;
+        }
+        #zoom_slider .ui-slider-handle {
+            background: #727C86;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <header>HEADER</header>
+
+    <main>
+        <div class="article_wrapper" style="overflow: hidden; position: relative">
+            <article>
+                <div id="figureCanvas"></div>
+            </article>
+        </div>
+
+    <!-- 0.25, 400px -> 100px, -150px // 0.5, 400 -> 200px, -100px -->
+
+<!--         <div style="width:200px; height:200px; overflow: hidden; border: solid green 2px">
+            <div style="width: 400px; height: 400px; overflow:auto;
+                    transform: scale(0.5, 0.5); position:relative; top:-100px; left:-100px">
+
+                    <img style="width: 400px; height: 400px;" src="/webgateway/render_image/2/">
+            </div>
+        </div> -->
+    </main>
+
+    <footer>
+        <div id="zoom_slider"></div>
+    </footer>
+
+
+    <script id="figure_panel_template" type="text/template">
+        <img class="img_panel" src="/webgateway/render_image/<%= imageId %>/" style="left:<%= x %>px; top:<%= y %>px"/>
+    </script>
+
+    <script src="{% static 'weblabs/3rdparty/json2.js' %}"></script>
+    <script src="{% static 'weblabs/3rdparty/underscore.js' %}"></script>
+    <script src="{% static 'weblabs/3rdparty/backbone.js' %}"></script>
+
+    <script type="text/javascript" src="{% static "weblabs/js/figureshop/figureshop.js" %}"></script>
+
+</body>
+
+</html>
