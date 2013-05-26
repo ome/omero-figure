@@ -97,7 +97,7 @@
 
             // The element that is 'rendered' for the ROI is the <tr>
             // this.$el = $("<tr></tr>").appendTo(this.$el);
-            this.$el = $("#figureCanvas");
+            this.$el = $("#paper");
 
             // If a panel is added, need to re-render whole table
             this.model.panels.on("add", function(panel) {

@@ -21,19 +21,14 @@
     $(document).ready(function() {
 
 
-        //var p = new Panel({imageId:123});
-
         var figureModel = new FigureModel({ colCount: 2, vspacer: 10, hspacer:2});
 
         figureModel.panels.add({imageId: 2, x: 100, y:100});
         figureModel.panels.add({imageId: 3, x: 650, y:100});
-
         figureModel.panels.add({imageId: 4, x: -650, y:100});
 
         var panel = new Panel({imageId: 5, x: 100, y:650});
         figureModel.panels.add(panel);
-
-        //var view = new PanelView({ model:p });
 
         var view = new FigureTableView( {model: figureModel, uiState: "TODO"});
 
@@ -41,35 +36,26 @@
             figureModel.panels.add({imageId: 14,x: 650, y:650});
         }, 1000);
 
-        console.log( $("main").attr("scrollTop") );
 
-        //$("main").attr("scrollTop",200);
-        //$("main").attr("scrollLeft",100);
-
-        //console.log( $("main").attr("scrollTop") );
-
-
-        var $main = $('main'),
-            $article = $('article'),
-            $canvas = $("#figureCanvas"),
+        var $main = $('main'),          // main content, with scrollbars, contains...
+            $canvas_wrapper = $(".canvas_wrapper"),     // shrink-wraps canvas, resizes on zoom
+            $canvas = $('#canvas'),     // content resizes via css on zoom
+            $paper = $("#paper"),       // The white page of the Figure itself
             curr_zoom = 100,
+            article_w = $canvas.width(),
+            article_h = $canvas.height(),
+            po = $paper.offset(),
             co = $canvas.offset(),
-            ao = $article.offset(),
-            canvas_top = co.top - ao.top,
-            canvas_left = co.left - ao.left,
-            canvas_center_v = canvas_top + ($canvas.height()/2),
-            canvas_center_h = canvas_left + ($canvas.width()/2);
+            paper_top = po.top - co.top,
+            paper_left = po.left - co.left,
+            paper_center_v = paper_top + ($paper.height()/2),
+            paper_center_h = paper_left + ($paper.width()/2);
 
 
         var scrollCanvasToCentre = function(speed) {
-            // setCentre([canvas_center_h, canvas_center_v], speed);
-            setCentre([canvas_center_h, canvas_center_v-500], speed);
+            // setCentre([paper_center_h, paper_center_v], speed);
+            setCentre([paper_center_h, paper_center_v-500], speed);
         }
-
-        
-        var $article_wrapper = $(".article_wrapper"),
-            article_w = $article.width(),
-            article_h = $article.height();
 
 
 
@@ -79,14 +65,14 @@
             console.log("curr_centre", curr_centre);
             var fraction = percent/100,
                 scale = "scale("+fraction+", "+fraction+")";
-            $article.css({"transform": scale, "-webkit-transform": scale});
+            $canvas.css({"transform": scale, "-webkit-transform": scale});
 
             var scaled_w = article_w * fraction,
                 scaled_h = article_h * fraction;
-            $article_wrapper.css({'width':scaled_w+"px", 'height': scaled_h+"px"});
+            $canvas_wrapper.css({'width':scaled_w+"px", 'height': scaled_h+"px"});
             var margin_top = (article_h - scaled_h)/2,
                 margin_left = (article_w - scaled_w)/2;
-            $article.css({'top': "-"+margin_top+"px", "left": "-"+margin_left+"px"});
+            $canvas.css({'top': "-"+margin_top+"px", "left": "-"+margin_left+"px"});
 
             curr_zoom = percent;
             
@@ -97,8 +83,8 @@
         var getCentre = function() {
             var viewport_w = $main.width(),
                 viewport_h = $main.height(),
-                offst_left = $article_wrapper.offset().left - $main.offset().left,
-                offst_top = $article_wrapper.offset().top - $main.offset().top,
+                offst_left = $canvas_wrapper.offset().left - $main.offset().left,
+                offst_top = $canvas_wrapper.offset().top - $main.offset().top,
                 cx = -offst_left + viewport_w/2,
                 cy = -offst_top + viewport_h/2,
                 zm_fraction = curr_zoom * 0.01;
@@ -167,7 +153,7 @@
             /*transform: scale(0.25, 0.25);*/
         }
 
-        #figureCanvas {
+        #paper {
             position: absolute;
             width: 2000px;
             height: 3000px;
@@ -211,21 +197,11 @@
     <header>HEADER</header>
 
     <main>
-        <div class="article_wrapper" style="overflow: hidden; position: relative">
-            <article>
-                <div id="figureCanvas"></div>
+        <div class="canvas_wrapper" style="overflow: hidden; position: relative">
+            <article id="canvas">
+                <div id="paper"></div>
             </article>
         </div>
-
-    <!-- 0.25, 400px -> 100px, -150px // 0.5, 400 -> 200px, -100px -->
-
-<!--         <div style="width:200px; height:200px; overflow: hidden; border: solid green 2px">
-            <div style="width: 400px; height: 400px; overflow:auto;
-                    transform: scale(0.5, 0.5); position:relative; top:-100px; left:-100px">
-
-                    <img style="width: 400px; height: 400px;" src="/webgateway/render_image/2/">
-            </div>
-        </div> -->
     </main>
 
     <footer>
