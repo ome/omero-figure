@@ -41,6 +41,7 @@
             $canvas_wrapper = $(".canvas_wrapper"),     // shrink-wraps canvas, resizes on zoom
             $canvas = $('#canvas'),     // content resizes via css on zoom
             $paper = $("#paper"),       // The white page of the Figure itself
+            $zoom_input = $("#zoom_input"),
             curr_zoom = 100,
             article_w = $canvas.width(),
             article_h = $canvas.height(),
@@ -75,6 +76,7 @@
             $canvas.css({'top': "-"+margin_top+"px", "left": "-"+margin_left+"px"});
 
             curr_zoom = percent;
+            $zoom_input.val(curr_zoom);
             
             setCentre(curr_centre);
         }
@@ -177,16 +179,26 @@
             bottom: 0px;
         }
 
-        #zoom_slider {
+        footer input {
+            position: absolute;
+            left: 155px;
+            top: 3px;
+        }
+
+        footer .ui-slider {
             border: 1px solid #aaa;
             height: 6px;
-            left: 95px;
+            left: 15px;
             position: absolute;
             top: 11px;
             width: 120px;
+            background: #bbb;
         }
         #zoom_slider .ui-slider-handle {
-            background: #727C86;
+            background: #ddd;
+            border: 1px solid white;
+            height: 14px;
+            border-radius: 5px;
         }
     </style>
 
@@ -205,7 +217,8 @@
     </main>
 
     <footer>
-        <div id="zoom_slider"></div>
+        <div id="zoom_slider" title="Zoom"></div>
+        <input id="zoom_input" type="text" size="3" maxlength="3" disabled="disabled" title="zoom"/>
     </footer>
 
 
