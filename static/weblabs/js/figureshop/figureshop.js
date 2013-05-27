@@ -67,13 +67,13 @@
         },
 
         render: function() {
-            console.log("panel render", this.model.get('imageId'));
             // Have to handle potential nulls, since the template doesn't like them!
             var json = this.model.toJSON();
             
             //this.$el.html("panel" + this.model.get("imageId"));
             var text = this.template(json);
             this.$el.html(text);
+            $(this.$el).draggable({ snap: true });
             return this;
         }
     });
@@ -86,7 +86,6 @@
     // render() is called on init, and on any change to the model
     var FigureTableView = Backbone.View.extend({
 
-        tagName: "tbody",
 
         initialize: function(opts) {
             this.uiState = opts.uiState;
@@ -101,7 +100,6 @@
 
             // If a panel is added, need to re-render whole table
             this.model.panels.on("add", function(panel) {
-                console.log("add...");
                 self.render();
             });
 
@@ -113,7 +111,6 @@
         // using the Figure 'colCount' to know when to add a new <tr>.
         // NB: We actually add spacer columns and rows in-between those containing panels.
         render: function() {
-            console.log("render...");
             var self = this;
 
             // Start with empty tbody...
