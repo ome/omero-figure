@@ -21,19 +21,26 @@
     $(document).ready(function() {
 
 
-        var figureModel = new FigureModel({ colCount: 2, vspacer: 10, hspacer:2});
+        var figureModel = new FigureModel();
+        // UI Model (not saved - just used to coordinate UI status)
+        var uiState = new UiState( {model:figureModel} )
 
-        figureModel.panels.add({imageId: 2, x: 100, y:100});
-        figureModel.panels.add({imageId: 3, x: 650, y:100});
-        figureModel.panels.add({imageId: 4, x: -650, y:100});
+        var view = new FigureView( {model: figureModel, uiState: uiState});
 
-        var panel = new Panel({imageId: 5, x: 100, y:650});
+        figureModel.panels.add({imageId: 72, x: 100, y:100});
+        figureModel.panels.add({imageId: 73, x: 650, y:100});
+        figureModel.panels.add({imageId: 74, x: -650, y:100});
+
+        var panel = new Panel({imageId: 75, x: 100, y:650});
         figureModel.panels.add(panel);
 
-        var view = new FigureTableView( {model: figureModel, uiState: "TODO"});
+
+        // Show drag handles etc
+        new SelectionView({model: uiState});
+
 
         setTimeout(function(){
-            figureModel.panels.add({imageId: 14,x: 650, y:650});
+            figureModel.panels.add({imageId: 76,x: 650, y:650});
         }, 1000);
 
 
@@ -63,7 +70,6 @@
         var setZoomPercent = function(percent) {
 
             var curr_centre = getCentre();
-            console.log("curr_centre", curr_centre);
             var fraction = percent/100,
                 scale = "scale("+fraction+", "+fraction+")";
             $canvas.css({"transform": scale, "-webkit-transform": scale});
@@ -76,6 +82,7 @@
             $canvas.css({'top': "-"+margin_top+"px", "left": "-"+margin_left+"px"});
 
             curr_zoom = percent;
+            uiState.set('curr_zoom', curr_zoom);
             $zoom_input.val(curr_zoom);
             
             setCentre(curr_centre);
@@ -102,7 +109,6 @@
                 offst_left = cx - viewport_w/2,
                 offst_top = cy - viewport_h/2,
                 speed = speed || 0;
-            console.log(cx, cy);
             $main.animate({
                 scrollLeft: offst_left,
                 scrollTop: offst_top
@@ -120,7 +126,7 @@
         });
 
         setZoomPercent(20);
-        scrollCanvasToCentre(2000);
+        scrollCanvasToCentre(100);
         //setCentre([5000,3000]);
     });
 
@@ -147,11 +153,21 @@
             background-color: #bbb;
         }
 
-        article {
+        #canvas_wrapper {
+            overflow: hidden;
+            position: relative;
+        }
+
+        #canvas_wrapper svg {
+            z-index: 10;
+        }
+
+        #canvas {
+            z-index: 1;
             width: 10000px;
             height: 6000px;
             background-color: #EFF1F4;
-            position: relative;
+            position: absolute;
             /*transform: scale(0.25, 0.25);*/
         }
 
@@ -163,6 +179,11 @@
             left: 4000px;
             border: solid gray 2px;
             background: white;
+        }
+
+        #paper div {
+            position: absolute;
+            border: solid red 3px;
         }
 
         .img_panel{
@@ -209,7 +230,8 @@
     <header>HEADER</header>
 
     <main>
-        <div class="canvas_wrapper" style="overflow: hidden; position: relative">
+        <div id="canvas_wrapper" class="canvas_wrapper">
+            <!-- <div id="canvas_overlay"></div> -->
             <article id="canvas">
                 <div id="paper"></div>
             </article>
@@ -223,12 +245,13 @@
 
 
     <script id="figure_panel_template" type="text/template">
-        <img class="img_panel" src="/webgateway/render_image/<%= imageId %>/" style="left:<%= x %>px; top:<%= y %>px"/>
+        <img class="img_panel" src="/webgateway/render_image/<%= imageId %>/" />
     </script>
 
     <script src="{% static 'weblabs/3rdparty/json2.js' %}"></script>
     <script src="{% static 'weblabs/3rdparty/underscore.js' %}"></script>
     <script src="{% static 'weblabs/3rdparty/backbone.js' %}"></script>
+    <script src="{% static 'weblabs/3rdparty/raphael-min.js' %}"></script>
 
     <script type="text/javascript" src="{% static "weblabs/js/figureshop/figureshop.js" %}"></script>
 
