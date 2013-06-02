@@ -27,11 +27,11 @@
 
         var view = new FigureView( {model: figureModel, uiState: uiState});
 
-        figureModel.panels.add({imageId: 72, x: 100, y:100});
-        figureModel.panels.add({imageId: 73, x: 650, y:100});
-        figureModel.panels.add({imageId: 74, x: -650, y:100});
+        figureModel.panels.add({imageId: 72, x: 100, y:100, width:512, height:512});
+        figureModel.panels.add({imageId: 73, x: 650, y:100, width:512, height:512});
+        figureModel.panels.add({imageId: 74, x: -650, y:100, width:512, height:512});
 
-        var panel = new Panel({imageId: 75, x: 100, y:650});
+        var panel = new Panel({imageId: 75, x: 100, y:650, width:512, height:512});
         figureModel.panels.add(panel);
 
 
@@ -40,7 +40,7 @@
 
 
         setTimeout(function(){
-            figureModel.panels.add({imageId: 76,x: 650, y:650});
+            figureModel.panels.add({imageId: 76,x: 650, y:650, width:512, height:512});
         }, 1000);
 
 
@@ -183,13 +183,10 @@
 
         #paper div {
             position: absolute;
-            border: solid red 3px;
         }
 
         .img_panel{
-            width:512px;
-            height:512px;
-            position: absolute;
+            /*position: absolute;*/
         }
 
         footer {
@@ -245,7 +242,8 @@
 
 
     <script id="figure_panel_template" type="text/template">
-        <img class="img_panel" src="/webgateway/render_image/<%= imageId %>/" />
+        <img class="img_panel" src="/webgateway/render_image/<%= imageId %>/" 
+            style="width:<%= width %>; height:<%= height %>" />
     </script>
 
     <script src="{% static 'weblabs/3rdparty/json2.js' %}"></script>
