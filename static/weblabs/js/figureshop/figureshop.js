@@ -157,65 +157,136 @@
     var SelectionView = Backbone.View.extend({
 
         initialize: function(opts) {
-            var $c = $("#canvas"),
-                $p = $("#paper"),
-                po = $p.offset(),
-                co = $c.offset(),
-                self = this;
-            this.orig_width = $c.width();
-            this.orig_height = $c.height();
-            this.paper_top = po.top - co.top,
-            this.paper_left = po.left - co.left,
+
+            // set up various elements and we need repeatedly
+            this.$main = $('main');
+            this.$canvas = $("#canvas");
+            this.$canvas_wrapper = $("#canvas_wrapper");
+            this.$paper = $("#paper");
+
+            var self = this,
+                canvas_width = this.model.model.get('canvas_width'),
+                canvas_height = this.model.model.get('canvas_height');
 
             // Create <svg> canvas
-            this.paper = Raphael("canvas_wrapper", this.orig_width, this.orig_height);
+            this.raphael_paper = Raphael("canvas_wrapper", canvas_width, canvas_height);
 
             // Add global click handler
             $("#canvas_wrapper>svg").mousedown(function(event){
-                self.handleClick(event, click_x, click_y);
+                self.handleClick(event);
             });
 
             // respond to uiStatus changes
             this.listenTo(this.model, 'change:curr_zoom', this.setZoom);
             this.listenTo(this.model, 'change:seletion', this.render);
+
+            this.setZoom();
+            this.reCentre();
         },
 
         // User has zoomed the UI - work out new sizes etc...
         setZoom: function() {
-            var scale = this.model.get('curr_zoom') * 0.01,
-                newWidth = parseInt(this.orig_width * scale),
-                newHeight = parseInt(this.orig_height * scale);
-            this.paper.setSize(newWidth, newHeight);
-            // re-render at the new coordinates
+            var curr_zoom = this.model.get('curr_zoom'),
+                fraction = curr_zoom * 0.01,
+                newWidth = parseInt(this.orig_width * fraction),
+                newHeight = parseInt(this.orig_height * fraction),
+                scale = "scale("+fraction+", "+fraction+")";
+
+            this.raphael_paper.setSize(newWidth, newHeight);
+
+            // var setZoomPercent = function(percent) {
+
+            var curr_centre = this.getCentre();
+            // var scale = "scale("+fraction+", "+fraction+")";
+            this.$canvas.css({"transform": scale, "-webkit-transform": scale});
+
+            var canvas_w = this.model.model.get('canvas_width'),
+                canvas_h = this.model.model.get('canvas_height');
+            var scaled_w = canvas_w * fraction,
+                scaled_h = canvas_h * fraction;
+            this.$canvas_wrapper.css({'width':scaled_w+"px", 'height': scaled_h+"px"});
+            var margin_top = (canvas_h - scaled_h)/2,
+                margin_left = (canvas_w - scaled_w)/2;
+            this.$canvas.css({'top': "-"+margin_top+"px", "left": "-"+margin_left+"px"});
+
+            if (curr_centre) {
+                this.setCentre(curr_centre);
+            }
+            // curr_zoom = percent;
+            // uiState.set('curr_zoom', curr_zoom);
+            $("#zoom_input").val(curr_zoom);
+
+            // re-render raphael at the new coordinates
             this.render();
+        },
+
+        reCentre: function() {
+            var canvas_w = this.model.model.get('canvas_width'),
+                canvas_h = this.model.model.get('canvas_height');
+            this.setCentre( [canvas_w/2, canvas_h/2] );
+        },
+
+        getCentre: function() {
+            var curr_zoom = this.model.previous('curr_zoom');
+            if (curr_zoom == undefined) {
+                return;
+            }
+            var viewport_w = this.$main.width(),
+                viewport_h = this.$main.height(),
+                offst_left = this.$canvas_wrapper.offset().left - this.$main.offset().left,
+                offst_top = this.$canvas_wrapper.offset().top - this.$main.offset().top,
+                cx = -offst_left + viewport_w/2,
+                cy = -offst_top + viewport_h/2,
+                zm_fraction = curr_zoom * 0.01;
+            return [cx/zm_fraction, cy/zm_fraction];
+        },
+
+        setCentre: function(cx_cy, speed) {
+            var curr_zoom = this.model.get('curr_zoom'),
+                zm_fraction = curr_zoom * 0.01,
+                cx = cx_cy[0] * zm_fraction,
+                cy = cx_cy[1] * zm_fraction,
+                viewport_w = this.$main.width(),
+                viewport_h = this.$main.height(),
+                offst_left = cx - viewport_w/2,
+                offst_top = cy - viewport_h/2,
+                speed = speed || 0;
+            this.$main.animate({
+                scrollLeft: offst_left,
+                scrollTop: offst_top
+            }, speed);
         },
 
         // Canvas mouse-down. Need to work out x and y on paper at current zoom
         handleClick: function(event) {
-            var zoom_fraction = self.model.get('curr_zoom') * 0.01,
-                    ost = $("#canvas_wrapper").offset(),
-                    click_x = ((event.pageX - ost.left)/zoom_fraction >> 0) - self.paper_left,
-                    click_y = ((event.pageY - ost.top)/zoom_fraction >> 0) - self.paper_top;
+            var zoom_fraction = this.model.get('curr_zoom') * 0.01,
+                ost = this.$canvas_wrapper.offset(),
+                paper_top = (this.model.model.get('canvas_height') - this.model.model.get('paper_height'))/2;
+                paper_left = (this.model.model.get('canvas_width') - this.model.model.get('paper_width'))/2;
+                click_x = ((event.pageX - ost.left)/zoom_fraction >> 0) - paper_left,
+                click_y = ((event.pageY - ost.top)/zoom_fraction >> 0) - paper_top;
             // Let the model work out what to do with it (check panels etc)
-            this.model.handleClick(event, canvas_x, canvas_y);
+            this.model.handleClick(event, click_x, click_y);
         },
 
         // draw outlines around any selected panels
         render: function() {
-            this.paper.clear();
+            this.raphael_paper.clear();
             var zoom = this.model.get('curr_zoom') * 0.01,
                 self = this;
             this.model.getSelected().each(function(m){
-                var rect_x = (self.paper_left + 1 + m.get('x')) * zoom,
-                    rect_y = (self.paper_top + 1 + m.get('y')) * zoom,
+                var paper_top = (self.model.model.get('canvas_height') - self.model.model.get('paper_height'))/2;
+                    paper_left = (self.model.model.get('canvas_width') - self.model.model.get('paper_width'))/2;
+                    rect_x = (paper_left + 1 + m.get('x')) * zoom,
+                    rect_y = (paper_top + 1 + m.get('y')) * zoom,
                     rect_w = m.get('width') * zoom,
                     rect_h = m.get('height') * zoom,
                     path1 = "M" + rect_x +","+ rect_y +"l"+ rect_w +","+ rect_h,
                     path2 = "M" + (rect_x+rect_w) +","+ rect_y +"l-"+ rect_w +","+ rect_h;
                 // rectangle plus 2 diagonal lines
-                self.paper.rect(rect_x, rect_y, rect_w, rect_h).attr('stroke', '#4b80f9');
-                self.paper.path(path1).attr('stroke', '#4b80f9');
-                self.paper.path(path2).attr('stroke', '#4b80f9');
+                self.raphael_paper.rect(rect_x, rect_y, rect_w, rect_h).attr('stroke', '#4b80f9');
+                self.raphael_paper.path(path1).attr('stroke', '#4b80f9');
+                self.raphael_paper.path(path2).attr('stroke', '#4b80f9');
             });
         }
     })
@@ -224,6 +295,7 @@
     // FigureView: Model is PanelList
     var FigureView = Backbone.View.extend({
 
+        el: $("#paper"),
 
         initialize: function(opts) {
             // this.uiState = opts.uiState;
@@ -231,8 +303,6 @@
 
             // Render on changes to the model
             this.model.on('change', this.render, this);
-
-            this.$el = $("#paper");
 
             // If a panel is added...
             this.model.panels.on("add", this.addOne, this);
@@ -249,7 +319,18 @@
 
         // Render is called on init(). TODO - Move more main UI code here.
         render: function() {
-            var self = this;
+
+            var paper_w = this.model.get('paper_width'),
+                paper_h = this.model.get('paper_height'),
+                canvas_w = this.model.get('canvas_width'),
+                canvas_h = this.model.get('canvas_height'),
+                paper_left = (canvas_w - paper_w)/2,
+                paper_top = (canvas_h - paper_h)/2;
+
+            this.$el.css({'width': paper_w, 'height': paper_h,
+                    'left': paper_left, 'top': paper_top});
+            $("#canvas").css({'width': this.model.get('canvas_width'),
+                    'height': this.model.get('canvas_height')});
 
             return this;
         }

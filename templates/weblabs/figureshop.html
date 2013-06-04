@@ -21,7 +21,9 @@
     $(document).ready(function() {
 
 
-        var figureModel = new FigureModel();
+        var figureModel = new FigureModel( {'canvas_width': 10000, 'canvas_height': 6000,
+                'paper_width': 1500, 'paper_height': 2000});
+
         // UI Model (not saved - just used to coordinate UI status)
         var uiState = new UiState( {model:figureModel} )
 
@@ -44,90 +46,17 @@
         }, 1000);
 
 
-        var $main = $('main'),          // main content, with scrollbars, contains...
-            $canvas_wrapper = $(".canvas_wrapper"),     // shrink-wraps canvas, resizes on zoom
-            $canvas = $('#canvas'),     // content resizes via css on zoom
-            $paper = $("#paper"),       // The white page of the Figure itself
-            $zoom_input = $("#zoom_input"),
-            curr_zoom = 100,
-            article_w = $canvas.width(),
-            article_h = $canvas.height(),
-            po = $paper.offset(),
-            co = $canvas.offset(),
-            paper_top = po.top - co.top,
-            paper_left = po.left - co.left,
-            paper_center_v = paper_top + ($paper.height()/2),
-            paper_center_h = paper_left + ($paper.width()/2);
-
-
-        var scrollCanvasToCentre = function(speed) {
-            // setCentre([paper_center_h, paper_center_v], speed);
-            setCentre([paper_center_h, paper_center_v-500], speed);
-        }
-
-
-
-        var setZoomPercent = function(percent) {
-
-            var curr_centre = getCentre();
-            var fraction = percent/100,
-                scale = "scale("+fraction+", "+fraction+")";
-            $canvas.css({"transform": scale, "-webkit-transform": scale});
-
-            var scaled_w = article_w * fraction,
-                scaled_h = article_h * fraction;
-            $canvas_wrapper.css({'width':scaled_w+"px", 'height': scaled_h+"px"});
-            var margin_top = (article_h - scaled_h)/2,
-                margin_left = (article_w - scaled_w)/2;
-            $canvas.css({'top': "-"+margin_top+"px", "left": "-"+margin_left+"px"});
-
-            curr_zoom = percent;
-            uiState.set('curr_zoom', curr_zoom);
-            $zoom_input.val(curr_zoom);
-            
-            setCentre(curr_centre);
-        }
-
-
-        var getCentre = function() {
-            var viewport_w = $main.width(),
-                viewport_h = $main.height(),
-                offst_left = $canvas_wrapper.offset().left - $main.offset().left,
-                offst_top = $canvas_wrapper.offset().top - $main.offset().top,
-                cx = -offst_left + viewport_w/2,
-                cy = -offst_top + viewport_h/2,
-                zm_fraction = curr_zoom * 0.01;
-            return [cx/zm_fraction, cy/zm_fraction];
-        }
-
-        var setCentre = function(cx_cy, speed) {
-            var zm_fraction = curr_zoom * 0.01,
-                cx = cx_cy[0] * zm_fraction,
-                cy = cx_cy[1] * zm_fraction,
-                viewport_w = $main.width(),
-                viewport_h = $main.height(),
-                offst_left = cx - viewport_w/2,
-                offst_top = cy - viewport_h/2,
-                speed = speed || 0;
-            $main.animate({
-                scrollLeft: offst_left,
-                scrollTop: offst_top
-            }, speed);
-        }
-
-
         $("#zoom_slider").slider({
             max: 100,
             min: 10,
             value: 20,
             slide: function(event, ui) {
-                setZoomPercent(ui.value);
+                uiState.set('curr_zoom', ui.value);
             }
         });
 
-        setZoomPercent(20);
-        scrollCanvasToCentre(100);
-        //setCentre([5000,3000]);
+        // Do this after other setup above
+        uiState.set('curr_zoom', 20);
     });
 
     </script>
@@ -164,8 +93,6 @@
 
         #canvas {
             z-index: 1;
-            width: 10000px;
-            height: 6000px;
             background-color: #EFF1F4;
             position: absolute;
             /*transform: scale(0.25, 0.25);*/
@@ -173,10 +100,6 @@
 
         #paper {
             position: absolute;
-            width: 2000px;
-            height: 3000px;
-            top: 1500px;
-            left: 4000px;
             border: solid gray 2px;
             background: white;
         }
