@@ -22,7 +22,7 @@
 
 
         var figureModel = new FigureModel( {'canvas_width': 10000, 'canvas_height': 6000,
-                'paper_width': 1500, 'paper_height': 2000});
+                'paper_width': 2000, 'paper_height': 3000});
 
         // UI Model (not saved - just used to coordinate UI status)
         var uiState = new UiState( {model:figureModel} )
@@ -147,7 +147,15 @@
 
 <body>
 
-    <header>HEADER</header>
+    <header>HEADER
+        <div style="float:right; padding-right:20px">
+            <select id="paper_size_chooser">
+                <option value="2000,3000">custom 2000 x 3000</option>
+                <option value="612.0,792.0">letter (300 dpi)</option>
+                <option value="595.27559055118104,841.88976377952747">A4 (300 dpi)</option>
+            </select>
+        </div>
+    </header>
 
     <main>
         <div id="canvas_wrapper" class="canvas_wrapper">

@@ -302,13 +302,24 @@
             var self = this;
 
             // Render on changes to the model
-            this.model.on('change', this.render, this);
+            this.model.on('change:paper_width', this.render, this);
 
             // If a panel is added...
             this.model.panels.on("add", this.addOne, this);
 
+            $("#paper_size_chooser").change(function(){
+                var wh = $(this).val().split(","),
+                    w = wh[0],
+                    h = wh[1];
+                self.model.set({'paper_width':w, 'paper_height':h});
+            });
+
             // 'Auto-render' on init.
             this.render();
+        },
+
+        events: {
+
         },
 
         // Add a panel to the view
