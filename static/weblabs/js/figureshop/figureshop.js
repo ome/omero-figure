@@ -266,15 +266,18 @@
                 click_x = ((event.pageX - ost.left)/zoom_fraction >> 0) - paper_left,
                 click_y = ((event.pageY - ost.top)/zoom_fraction >> 0) - paper_top;
             // Let the model work out what to do with it (check panels etc)
+            console.log("handleClick // ");
             this.model.handleClick(event, click_x, click_y);
         },
 
         // draw outlines around any selected panels
         render: function() {
+            console.log("SelectionView render...");
             this.raphael_paper.clear();
             var zoom = this.model.get('curr_zoom') * 0.01,
                 self = this;
-            this.model.getSelected().each(function(m){
+            // this.model.getSelected().each(function(m){
+            this.model.model.panels.each(function(m){
                 var paper_top = (self.model.model.get('canvas_height') - self.model.model.get('paper_height'))/2;
                     paper_left = (self.model.model.get('canvas_width') - self.model.model.get('paper_width'))/2;
                     rect_x = (paper_left + 1 + m.get('x')) * zoom,
@@ -284,9 +287,14 @@
                     path1 = "M" + rect_x +","+ rect_y +"l"+ rect_w +","+ rect_h,
                     path2 = "M" + (rect_x+rect_w) +","+ rect_y +"l-"+ rect_w +","+ rect_h;
                 // rectangle plus 2 diagonal lines
-                self.raphael_paper.rect(rect_x, rect_y, rect_w, rect_h).attr('stroke', '#4b80f9');
-                self.raphael_paper.path(path1).attr('stroke', '#4b80f9');
-                self.raphael_paper.path(path2).attr('stroke', '#4b80f9');
+                // self.raphael_paper.rect(rect_x, rect_y, rect_w, rect_h).attr('stroke', '#4b80f9');
+                // self.raphael_paper.path(path1).attr('stroke', '#4b80f9');
+                // self.raphael_paper.path(path2).attr('stroke', '#4b80f9');
+                var rectModel = new RectModel({'x':rect_x, 'y':rect_y, 'width':rect_w, 'height':rect_h});
+                rectModel.on('all', function(name, evt){
+                    console.log("Rect", name, evt);
+                });
+                var rectView = new RectView({'model':rectModel, 'paper':self.raphael_paper});
             });
         }
     })
