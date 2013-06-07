@@ -25,24 +25,25 @@
                 'paper_width': 2000, 'paper_height': 3000});
 
         // UI Model (not saved - just used to coordinate UI status)
-        var uiState = new UiState( {model:figureModel} )
+        // var uiState = new UiState( {model:figureModel} )
 
-        var view = new FigureView( {model: figureModel, uiState: uiState});
+        var view = new FigureView( {model: figureModel});   // uiState: uiState
 
-        figureModel.panels.add({imageId: 72, x: 100, y:100, width:512, height:512});
-        figureModel.panels.add({imageId: 73, x: 650, y:100, width:512, height:512});
-        figureModel.panels.add({imageId: 74, x: -650, y:100, width:512, height:512});
+        figureModel.panels.add({imageId: 1, x: 100, y:100, width:512, height:512});
+        figureModel.panels.add({imageId: 2, x: 650, y:100, width:512, height:512});
+        figureModel.panels.add({imageId: 4, x: -650, y:100, width:512, height:512});
 
-        var panel = new Panel({imageId: 75, x: 100, y:650, width:512, height:512});
+        var panel = new Panel({imageId: 6, x: 100, y:650, width:512, height:512});
         figureModel.panels.add(panel);
 
 
         // Show drag handles etc
-        new SelectionView({model: uiState});
+        // new SelectionView({model: uiState});
 
 
         setTimeout(function(){
-            figureModel.panels.add({imageId: 76,x: 650, y:650, width:512, height:512});
+            figureModel.panels.add({imageId: 5,x: 650, y:650, width:512, height:512});
+            figureModel.set('curr_zoom', 20);
         }, 1000);
 
 
@@ -51,12 +52,12 @@
             min: 10,
             value: 20,
             slide: function(event, ui) {
-                uiState.set('curr_zoom', ui.value);
+                figureModel.set('curr_zoom', ui.value);
             }
         });
 
         // Do this after other setup above
-        uiState.set('curr_zoom', 20);
+        figureModel.set('curr_zoom', 20);
     });
 
     </script>
@@ -174,7 +175,7 @@
 
     <script id="figure_panel_template" type="text/template">
         <img class="img_panel" src="/webgateway/render_image/<%= imageId %>/" 
-            style="width:<%= width %>; height:<%= height %>" />
+            style="width:<%= width %>px; height:<%= height %>px" />
     </script>
 
     <script src="{% static 'weblabs/3rdparty/json2.js' %}"></script>
