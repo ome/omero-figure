@@ -223,7 +223,10 @@
         initialize: function(opts) {
             // we render on Changes in the model OR selected shape etc.
             this.model.on('destroy', this.remove, this);
-            this.listenTo(this.model, 'change', this.render);
+            this.listenTo(this.model, 'change:x change:y change:width change:height', this.render);
+            // During drag, model isn't updated, but we trigger 'drag'
+            this.model.on('drag', this.dragResize, this);
+            console.log("PanelView init done");
         },
 
         events: {
@@ -235,6 +238,19 @@
             // TODO: remove from DOM, remove event handlers etc.
         },
 
+        // During drag, we resize etc
+        dragResize: function(xywh) {
+            console.log("dragResize", xywh);
+            this.$img_panel.css({
+                'width': xywh[2]+'px',
+                'height': xywh[3]+'px'
+            });
+            this.$el.css({
+                'left': xywh[0]+'px',
+                'top': xywh[1]+'px'
+            });
+        },
+
         render: function() {
             // Have to handle potential nulls, since the template doesn't like them!
             var json = this.model.toJSON(),
@@ -242,6 +258,10 @@
             this.$el.html(text);
             this.$el.css({'top': this.model.get('y')+'px',
                             'left': this.model.get('x')+'px'});
+
+            this.$img_panel = $(".img_panel", this.$el);    // cache for later
+
+            console.log("render", this.$el, this.$img_panel);
             return this;
         }
     });
@@ -262,9 +282,13 @@
 
             this.listenTo(this.figureModel, 'change:curr_zoom', this.updateZoom);
             this.listenTo(this.panelModel, 'change:selected', this.updateSelection);
+            // listen to a trigger on this Model (triggered from Rect)
+            this.listenTo(this, 'drag', this.dragResize);
+            // listen to change to this model
+            this.listenTo(this, 'change', this.resize);
         },
 
-        // return the SVG x, y, w, h (converting model)
+        // return the SVG x, y, w, h (converting from figureModel)
         getSvgCoords: function() {
             var zoom = this.figureModel.get('curr_zoom') * 0.01,
                 paper_top = (this.figureModel.get('canvas_height') - this.figureModel.get('paper_height'))/2;
@@ -274,6 +298,36 @@
                 rect_w = this.panelModel.get('width') * zoom,
                 rect_h = this.panelModel.get('height') * zoom;
             return {'x':rect_x, 'y':rect_y, 'width':rect_w, 'height':rect_h};
+        },
+
+        // return the Model x, y, w, h (converting from SVG coords)
+        getModelCoords: function(coords) {
+            var zoom = this.figureModel.get('curr_zoom') * 0.01,
+                paper_top = (this.figureModel.get('canvas_height') - this.figureModel.get('paper_height'))/2;
+                paper_left = (this.figureModel.get('canvas_width') - this.figureModel.get('paper_width'))/2;
+                x = (coords.x/zoom) - paper_left - 1,
+                y = (coords.y/zoom) - paper_top - 1,
+                w = coords.width/zoom,
+                h = coords.height/zoom;
+            //console.log("getModelCoords", zoom, paper_top, xywh, [x,y,w,h]);
+            return {'x':x, 'y':y, 'width':w, 'height':h};
+        },
+
+        dragResize: function(xywh) {
+            var coords = this.getModelCoords({'x':xywh[0], 'y':xywh[1], 'width':xywh[2], 'height':xywh[3]})
+            this.panelModel.trigger('drag', [coords.x, coords.y, coords.width, coords.height]);
+        },
+
+        resize: function(event) {
+            console.log(event.changed);
+            var coords = this.getModelCoords({
+                    'x':this.get('x'),
+                    'y':this.get('y'),
+                    'width':this.get('width'),
+                    'height':this.get('height')
+                });
+            console.log("resize", coords);
+            this.panelModel.set(coords);
         },
 
         updateZoom: function() {

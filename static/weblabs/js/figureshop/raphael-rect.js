@@ -61,6 +61,7 @@ var RectView = Backbone.View.extend({
                     this.rect.x = new_x + handle_wh/2;
                     this.rect.width = this.oright - new_x;
                 }
+                this.rect.model.trigger("drag", [this.rect.x, this.rect.y, this.rect.width, this.rect.height]);
                 this.rect.updateShape();
                 return false;
             };
@@ -120,6 +121,7 @@ var RectView = Backbone.View.extend({
                 //}
                 self.x = dx+this.ox;
                 self.y = this.oy+dy;
+                self.model.trigger("drag", [self.x, self.y, self.width, self.height]);
                 self.updateShape();
                 return false;
             },
@@ -147,6 +149,8 @@ var RectView = Backbone.View.extend({
 
         // Finally, we need to render when model changes
         this.model.on('change', this.render, this);
+
+        console.log("rect init DONE");
     },
 
     // render updates our local attributes from the Model AND updates coordinates
@@ -160,7 +164,6 @@ var RectView = Backbone.View.extend({
 
     // used to update during drags etc. Also called by render()
     updateShape: function() {
-        this.model.trigger("drag", [this.x, this.y, this.width, this.height]);
         this.element.attr({'x':this.x, 'y':this.y, 'width':this.width, 'height':this.height});
 
         // TODO Draw diagonals on init - then simply update here (show if selected)
