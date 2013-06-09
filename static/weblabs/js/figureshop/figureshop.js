@@ -17,17 +17,6 @@
         initialize: function() {
         },
 
-        // When the canvas is clicked etc, we test if it's on a Panel
-        containsPoint: function(x, y) {
-            var panel_x = this.get('x'),
-                panel_y = this.get('y');
-            if ((x > panel_x && x < (panel_x+512)) && 
-                    (y > panel_y && y < (panel_y+512))) {
-                return true;
-            }
-            return false;
-        },
-
     });
 
     // ------------------------ Panel Collection -------------------------
@@ -39,103 +28,39 @@
     // ------------------------- Figure Model -----------------------------------
     // Has a PanelList as well as other attributes of the Figure
     var FigureModel = Backbone.Model.extend({
-        initialize: function() {
-            this.panels = new PanelList();      //this.get("shapes"));
-            this.selectedItems = new PanelList();
 
-            var that = this;
-            
-            // we notify ROI of changes to Shapes, for Undo etc.
-            //this.shapes.on("change", function(shape, attr) {
-            //    that.trigger("change", shape, attr);
-            //});
+        defaults: {
+            'curr_zoom': 100
         },
 
-        addSelected: function(item) {
-            this.selectedItems.add(item);
-            this.trigger("change:seletion");
+        initialize: function() {
+            this.panels = new PanelList();      //this.get("shapes"));
         },
 
         setSelected: function(item) {
-            this.selectedItems = new PanelList([item]);
-            this.trigger("change:seletion");
+            this.clearSelected();
+            item.set('selected', true);
+        },
+
+        addSelected: function(item) {
+            item.set('selected', true);
         },
 
         clearSelected: function() {
-            this.selectedItems = new PanelList();
-            this.trigger("change:seletion");
+            this.panels.each(function(p){
+                p.set('selected', false);
+            });
         },
 
         getSelected: function() {
-            return this.selectedItems;
+            return this.filter(function(panel){ return panel.get('selected'); });
         },
-
-        // Main canvas click handler
-        // x and y refer to coordinates on the paper
-        handleClick: function(event, x, y) {
-
-            // // Check if any panel was clicked
-            // var panel_found = false,
-            //     self = this;
-            // this.model.panels.each(function(p) {
-            //     if (panel_found) return;      // only handle first one
-
-            //     // If clicked, set or add to selection
-            //     if (p.containsPoint(x, y)) {
-            //         panel_found = true;
-            //         if (event.shiftKey) {
-            //             self.addSelected(p);
-            //         } else {
-            //             self.setSelected(p);
-            //         }
-            //     }
-            // });
-
-            // // If no panels were clicked, clear selection
-            // if (!panel_found) {
-            //     this.clearSelected();
-            // }
-
-            // we only expect to hear a click if no panels clicked
-            this.clearSelected();
-        }
 
     });
 
 
     // -------------------------- Backbone VIEWS -----------------------------------------
 
-    // -------------------------Panel View -----------------------------------
-    // A Panel is a <div>, added to the #paper by the FigureView below.
-    var PanelView = Backbone.View.extend({
-        tagName: "div",
-        className: "panel",
-        template: _.template($('#figure_panel_template').html()),
-
-        initialize: function(opts) {
-            // this.uiState = opts.uiState;
-            // we render on Changes in the model OR selected shape etc.
-            this.model.on('destroy', this.remove, this);
-            this.listenTo(this.model, 'change', this.render);
-        },
-
-        events: {
-            // "click .img_panel": "select_panel"
-        },
-
-        render: function() {
-            // Have to handle potential nulls, since the template doesn't like them!
-            var json = this.model.toJSON(),
-                text = this.template(json);
-            this.$el.html(text);
-            this.$el.css({'top': this.model.get('y')+'px',
-                            'left': this.model.get('x')+'px'});
-            return this;
-        }
-    });
-
-
-    // -------------- Selection Overlay View ----------------------
 
     // var SelectionView = Backbone.View.extend({
     var FigureView = Backbone.View.extend({
@@ -150,17 +75,7 @@
             this.$canvas_wrapper = $("#canvas_wrapper");
             this.$paper = $("#paper");
 
-            var self = this,
-                canvas_width = this.model.get('canvas_width'),
-                canvas_height = this.model.get('canvas_height');
-
-            // Create <svg> canvas
-            this.raphael_paper = Raphael("canvas_wrapper", canvas_width, canvas_height);
-
-            // Add global click handler
-            $("#canvas_wrapper>svg").mousedown(function(event){
-                self.handleClick(event);
-            });
+            var self = this;
 
             // Render on changes to the model
             this.model.on('change:paper_width', this.render, this);
@@ -168,6 +83,7 @@
             // If a panel is added...
             this.model.panels.on("add", this.addOne, this);
 
+            // Select a different size paper
             $("#paper_size_chooser").change(function(){
                 var wh = $(this).val().split(","),
                     w = wh[0],
@@ -175,79 +91,82 @@
                 self.model.set({'paper_width':w, 'paper_height':h});
             });
 
-            // respond to uiStatus changes
+            // respond to zoom changes
             this.listenTo(this.model, 'change:curr_zoom', this.setZoom);
-            this.listenTo(this.model, 'change:seletion', this.render);
 
+            // refresh current UI
             this.setZoom();
             this.reCentre();
 
             // 'Auto-render' on init.
             this.render();
 
-            // this.uiState = opts.uiState;
-            var self = this;
-
-
         },
 
         // User has zoomed the UI - work out new sizes etc...
+        // We zoom the main content 'canvas' using css transform: scale()
+        // But also need to resize the canvas_wrapper manually.
         setZoom: function() {
             var curr_zoom = this.model.get('curr_zoom'),
-                fraction = curr_zoom * 0.01,
-                newWidth = parseInt(this.orig_width * fraction),
-                newHeight = parseInt(this.orig_height * fraction),
-                scale = "scale("+fraction+", "+fraction+")";
+                zoom = curr_zoom * 0.01,
+                newWidth = parseInt(this.orig_width * zoom),
+                newHeight = parseInt(this.orig_height * zoom),
+                scale = "scale("+zoom+", "+zoom+")";
 
-            this.raphael_paper.setSize(newWidth, newHeight);
-
-            // var setZoomPercent = function(percent) {
-
+            // We want to stay centered on the same spot...
             var curr_centre = this.getCentre();
-            // var scale = "scale("+fraction+", "+fraction+")";
+
+            // Scale canvas via css
             this.$canvas.css({"transform": scale, "-webkit-transform": scale});
 
+            // Scale canvas wrapper manually
             var canvas_w = this.model.get('canvas_width'),
                 canvas_h = this.model.get('canvas_height');
-            var scaled_w = canvas_w * fraction,
-                scaled_h = canvas_h * fraction;
+            var scaled_w = canvas_w * zoom,
+                scaled_h = canvas_h * zoom;
             this.$canvas_wrapper.css({'width':scaled_w+"px", 'height': scaled_h+"px"});
+            // and offset the canvas to stay visible
             var margin_top = (canvas_h - scaled_h)/2,
                 margin_left = (canvas_w - scaled_w)/2;
             this.$canvas.css({'top': "-"+margin_top+"px", "left": "-"+margin_left+"px"});
 
+            // ...apply centre from before zooming
             if (curr_centre) {
                 this.setCentre(curr_centre);
             }
-            // curr_zoom = percent;
-            // uiState.set('curr_zoom', curr_zoom);
-            $("#zoom_input").val(curr_zoom);
 
-            // re-render raphael at the new coordinates
-            this.render();
+            // Show zoom level in UI
+            $("#zoom_input").val(curr_zoom);
         },
 
+        // Centre the viewport on the middle of the paper
         reCentre: function() {
             var canvas_w = this.model.get('canvas_width'),
                 canvas_h = this.model.get('canvas_height');
             this.setCentre( [canvas_w/2, canvas_h/2] );
         },
 
+        // Get the coordinates on the paper of the viewport center.
+        // Used after zoom update (but BEFORE the UI has changed)
         getCentre: function() {
+            // Need to know the zoom BEFORE the update
             var curr_zoom = this.model.previous('curr_zoom');
             if (curr_zoom == undefined) {
                 return;
             }
             var viewport_w = this.$main.width(),
                 viewport_h = this.$main.height(),
-                offst_left = this.$canvas_wrapper.offset().left - this.$main.offset().left,
-                offst_top = this.$canvas_wrapper.offset().top - this.$main.offset().top,
+                co = this.$canvas_wrapper.offset(),
+                mo = this.$main.offset(),
+                offst_left = co.left - mo.left,
+                offst_top = co.top - mo.top,
                 cx = -offst_left + viewport_w/2,
                 cy = -offst_top + viewport_h/2,
                 zm_fraction = curr_zoom * 0.01;
             return [cx/zm_fraction, cy/zm_fraction];
         },
 
+        // Scroll viewport to place a specified paper coordinate at the centre
         setCentre: function(cx_cy, speed) {
             var curr_zoom = this.model.get('curr_zoom'),
                 zm_fraction = curr_zoom * 0.01,
@@ -264,53 +183,17 @@
             }, speed);
         },
 
-        // Canvas mouse-down. Need to work out x and y on paper at current zoom
-        handleClick: function(event) {
-            var zoom_fraction = this.model.get('curr_zoom') * 0.01,
-                ost = this.$canvas_wrapper.offset(),
-                paper_top = (this.model.get('canvas_height') - this.model.get('paper_height'))/2;
-                paper_left = (this.model.get('canvas_width') - this.model.get('paper_width'))/2;
-                click_x = ((event.pageX - ost.left)/zoom_fraction >> 0) - paper_left,
-                click_y = ((event.pageY - ost.top)/zoom_fraction >> 0) - paper_top;
-            // Let the model work out what to do with it (check panels etc)
-            console.log("handleClick // ");
-            this.model.handleClick(event, click_x, click_y);
-        },
-
         // Add a panel to the view
         addOne: function(panel) {
             var view = new PanelView({model:panel});    // uiState:this.uiState
             this.$el.append(view.render().el);
         },
 
-        // Render is called on init(). TODO - Move more main UI code here.
-
-        // draw outlines around any selected panels
+        // Render is called on init()
+        // Update any changes to sizes of paper or canvas
         render: function() {
-            console.log("SelectionView render...");
-            this.raphael_paper.clear();
             var zoom = this.model.get('curr_zoom') * 0.01,
                 self = this;
-            // this.model.getSelected().each(function(m){
-            this.model.panels.each(function(m){
-                var paper_top = (self.model.get('canvas_height') - self.model.get('paper_height'))/2;
-                    paper_left = (self.model.get('canvas_width') - self.model.get('paper_width'))/2;
-                    rect_x = (paper_left + 1 + m.get('x')) * zoom,
-                    rect_y = (paper_top + 1 + m.get('y')) * zoom,
-                    rect_w = m.get('width') * zoom,
-                    rect_h = m.get('height') * zoom,
-                    path1 = "M" + rect_x +","+ rect_y +"l"+ rect_w +","+ rect_h,
-                    path2 = "M" + (rect_x+rect_w) +","+ rect_y +"l-"+ rect_w +","+ rect_h;
-                // rectangle plus 2 diagonal lines
-                // self.raphael_paper.rect(rect_x, rect_y, rect_w, rect_h).attr('stroke', '#4b80f9');
-                // self.raphael_paper.path(path1).attr('stroke', '#4b80f9');
-                // self.raphael_paper.path(path2).attr('stroke', '#4b80f9');
-                var rectModel = new RectModel({'x':rect_x, 'y':rect_y, 'width':rect_w, 'height':rect_h});
-                rectModel.on('all', function(name, evt){
-                    console.log("Rect", name, evt);
-                });
-                var rectView = new RectView({'model':rectModel, 'paper':self.raphael_paper});
-            });
 
             var paper_w = this.model.get('paper_width'),
                 paper_h = this.model.get('paper_height'),
@@ -326,4 +209,149 @@
 
             return this;
         }
-    })
+    });
+
+
+
+    // -------------------------Panel View -----------------------------------
+    // A Panel is a <div>, added to the #paper by the FigureView below.
+    var PanelView = Backbone.View.extend({
+        tagName: "div",
+        className: "panel",
+        template: _.template($('#figure_panel_template').html()),
+
+        initialize: function(opts) {
+            // we render on Changes in the model OR selected shape etc.
+            this.model.on('destroy', this.remove, this);
+            this.listenTo(this.model, 'change', this.render);
+        },
+
+        events: {
+            // "click .img_panel": "select_panel"
+        },
+
+        // TODO
+        remove: function() {
+            // TODO: remove from DOM, remove event handlers etc.
+        },
+
+        render: function() {
+            // Have to handle potential nulls, since the template doesn't like them!
+            var json = this.model.toJSON(),
+                text = this.template(json);
+            this.$el.html(text);
+            this.$el.css({'top': this.model.get('y')+'px',
+                            'left': this.model.get('x')+'px'});
+            return this;
+        }
+    });
+
+
+    // -------------- Selection Overlay Views ----------------------
+
+
+    // SvgView uses ProxyRectModel to manage Svg Rects (raphael)
+    // They convert between zoomed coordiantes of the html DOM panels
+    // and the unzoomed SVG overlay.
+    var ProxyRectModel = Backbone.Model.extend({
+
+        initialize: function(opts) {
+            this.panelModel = opts.panel;    // ref to the genuine PanelModel
+            this.figureModel = opts.figure;
+            this.set( this.getSvgCoords() );
+
+            this.listenTo(this.figureModel, 'change:curr_zoom', this.updateZoom);
+            this.listenTo(this.panelModel, 'change:selected', this.updateSelection);
+        },
+
+        // return the SVG x, y, w, h (converting model)
+        getSvgCoords: function() {
+            var zoom = this.figureModel.get('curr_zoom') * 0.01,
+                paper_top = (this.figureModel.get('canvas_height') - this.figureModel.get('paper_height'))/2;
+                paper_left = (this.figureModel.get('canvas_width') - this.figureModel.get('paper_width'))/2;
+                rect_x = (paper_left + 1 + this.panelModel.get('x')) * zoom,
+                rect_y = (paper_top + 1 + this.panelModel.get('y')) * zoom,
+                rect_w = this.panelModel.get('width') * zoom,
+                rect_h = this.panelModel.get('height') * zoom;
+            return {'x':rect_x, 'y':rect_y, 'width':rect_w, 'height':rect_h};
+        },
+
+        updateZoom: function() {
+            this.set( this.getSvgCoords() );
+        },
+
+        updateSelection: function() {
+            this.set('selected', this.panelModel.get('selected'));
+        },
+
+        handleClick: function(event) {
+            if (event.shiftKey) {
+                this.figureModel.addSelected(this.panelModel);
+            } else {
+                this.figureModel.setSelected(this.panelModel);
+            }
+        }
+
+    });
+
+    // var ProxyRectModelList = Backbone.Collection.extend({
+    //     model: ProxyRectModel
+    // });
+
+    var SvgView = Backbone.View.extend({
+
+        initialize: function(opts) {
+
+            var self = this,
+                canvas_width = this.model.get('canvas_width'),
+                canvas_height = this.model.get('canvas_height');
+
+            // Create <svg> canvas
+            this.raphael_paper = Raphael("canvas_wrapper", canvas_width, canvas_height);
+
+            // this.panelRects = new ProxyRectModelList();
+
+            // Add global click handler
+            $("#canvas_wrapper>svg").mousedown(function(event){
+                self.handleClick(event);
+            });
+
+            // If a panel is added...
+            this.model.panels.on("add", this.addOne, this);
+            // TODO remove on destroy
+
+            this.listenTo(this.model, 'change:selection', this.render);
+
+        },
+
+        // A panel has been added - We add a corresponding Raphael Rect 
+        addOne: function(m) {
+
+            var rectModel = new ProxyRectModel({panel: m, figure:this.model});
+            rectModel.on('all', function(name, evt){
+            });
+            new RectView({'model':rectModel, 'paper':this.raphael_paper});
+
+            // this.panelRects.add(rectModel);
+        },
+
+        // TODO
+        remove: function() {
+            // TODO: remove from svg, remove event handlers etc.
+        },
+
+        // We simply re-size the Raphael svg itself - Shapes have their own zoom listeners
+        setZoom: function() {
+            var zoom = this.model.get('curr_zoom') * 0.01,
+                newWidth = parseInt(this.orig_width * zoom),
+                newHeight = parseInt(this.orig_height * zoom);
+
+            this.raphael_paper.setSize(newWidth, newHeight);
+        },
+
+        // Any mouse click (mousedown) that isn't captured by Panel Rect clears selection
+        handleClick: function(event) {
+            this.model.clearSelected();
+        }
+    });
+

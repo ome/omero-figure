@@ -4,19 +4,6 @@ var default_line_attrs = {'stroke-width':1, 'stroke': '#4b80f9', 'cursor': 'defa
 var selected_line_attrs = {'stroke':'#4b80f9'};
 var handle_attrs = {stroke:'#fff', fill:'#000', 'cursor': 'default'};
 
-var RectModel = Backbone.Model.extend({
-
-
-});
-
-
-
-
-
-
-
-
-
 
 
 
@@ -153,7 +140,7 @@ var RectView = Backbone.View.extend({
         // https://groups.google.com/forum/?fromgroups=#!topic/raphaeljs/s06GIUCUZLk
         this.element.mousedown(function(e){
              e.stopImmediatePropagation();
-             self.selectShape();
+             self.selectShape(e);
         });
 
         this.updateShape();  // sync position, selection etc.
@@ -176,8 +163,15 @@ var RectView = Backbone.View.extend({
         this.model.trigger("drag", [this.x, this.y, this.width, this.height]);
         this.element.attr({'x':this.x, 'y':this.y, 'width':this.width, 'height':this.height});
 
+        // TODO Draw diagonals on init - then simply update here (show if selected)
+        // var path1 = "M" + this.x +","+ this.y +"l"+ this.width +","+ this.height,
+        //     path2 = "M" + (this.x+this.width) +","+ this.y +"l-"+ this.width +","+ this.height;
+        //     // rectangle plus 2 diagonal lines
+        //     this.paper.path(path1).attr('stroke', '#4b80f9');
+        //     this.paper.path(path2).attr('stroke', '#4b80f9');
+
         // if (this.manager.selected_shape_id === this.model.get("id")) {
-        if (this.selected) {
+        if (this.model.get('selected')) {
             this.element.attr( selected_line_attrs );
             this.handles.show();
         } else {
@@ -203,11 +197,9 @@ var RectView = Backbone.View.extend({
         }
     },
 
-    selectShape: function() {
-        console.log("TODO selectShape");
-        this.selected = true;
-        this.updateShape();
-        // this.manager.set_selected_shape( this.model.get('id') );
+    selectShape: function(event) {
+        // pass back to model to update all selection
+        this.model.handleClick(event);
     },
 
     // Destroy: remove Raphael elements and event listeners

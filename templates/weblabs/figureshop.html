@@ -28,6 +28,7 @@
         // var uiState = new UiState( {model:figureModel} )
 
         var view = new FigureView( {model: figureModel});   // uiState: uiState
+        var svgView = new SvgView( {model: figureModel});
 
         figureModel.panels.add({imageId: 1, x: 100, y:100, width:512, height:512});
         figureModel.panels.add({imageId: 2, x: 650, y:100, width:512, height:512});
@@ -86,6 +87,7 @@
         #canvas_wrapper {
             overflow: hidden;
             position: relative;
+            margin: auto;
         }
 
         #canvas_wrapper svg {
