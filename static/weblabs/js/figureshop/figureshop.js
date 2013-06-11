@@ -226,7 +226,6 @@
             this.listenTo(this.model, 'change:x change:y change:width change:height', this.render);
             // During drag, model isn't updated, but we trigger 'drag'
             this.model.on('drag', this.dragResize, this);
-            console.log("PanelView init done");
         },
 
         events: {
@@ -240,7 +239,6 @@
 
         // During drag, we resize etc
         dragResize: function(xywh) {
-            console.log("dragResize", xywh);
             this.$img_panel.css({
                 'width': xywh[2]+'px',
                 'height': xywh[3]+'px'
@@ -261,7 +259,6 @@
 
             this.$img_panel = $(".img_panel", this.$el);    // cache for later
 
-            console.log("render", this.$el, this.$img_panel);
             return this;
         }
     });
@@ -309,7 +306,6 @@
                 y = (coords.y/zoom) - paper_top - 1,
                 w = coords.width/zoom,
                 h = coords.height/zoom;
-            //console.log("getModelCoords", zoom, paper_top, xywh, [x,y,w,h]);
             return {'x':x, 'y':y, 'width':w, 'height':h};
         },
 
@@ -319,14 +315,12 @@
         },
 
         resize: function(event) {
-            console.log(event.changed);
             var coords = this.getModelCoords({
                     'x':this.get('x'),
                     'y':this.get('y'),
                     'width':this.get('width'),
                     'height':this.get('height')
                 });
-            console.log("resize", coords);
             this.panelModel.set(coords);
         },
 

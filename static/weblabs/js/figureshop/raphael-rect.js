@@ -1,8 +1,8 @@
 
-var handle_wh = 20;
-var default_line_attrs = {'stroke-width':1, 'stroke': '#4b80f9', 'cursor': 'default', 'fill-opacity':0.1, 'fill': '#000'};
-var selected_line_attrs = {'stroke':'#4b80f9'};
-var handle_attrs = {stroke:'#fff', fill:'#000', 'cursor': 'default'};
+var handle_wh = 6;
+var default_line_attrs = {'stroke-width':0, 'stroke': '#4b80f9', 'cursor': 'default', 'fill-opacity':0.1, 'fill': '#000'};
+var selected_line_attrs = {'stroke':'#4b80f9', 'stroke-width':2 };
+var handle_attrs = {'stroke':'#4b80f9', 'fill':'#fff', 'cursor': 'default', 'fill-opacity':1.0};
 
 
 
@@ -150,7 +150,6 @@ var RectView = Backbone.View.extend({
         // Finally, we need to render when model changes
         this.model.on('change', this.render, this);
 
-        console.log("rect init DONE");
     },
 
     // render updates our local attributes from the Model AND updates coordinates
@@ -177,6 +176,7 @@ var RectView = Backbone.View.extend({
         if (this.model.get('selected')) {
             this.element.attr( selected_line_attrs );
             this.handles.show();
+            this.handles.toFront();
         } else {
             this.element.attr( default_line_attrs );    // this should be the shapes OWN line / fill colour etc.
             this.handles.hide();
