@@ -1,13 +1,11 @@
 
-var handle_wh = 6;
-var default_line_attrs = {'stroke-width':0, 'stroke': '#4b80f9', 'cursor': 'default', 'fill-opacity':0.1, 'fill': '#000'};
-var selected_line_attrs = {'stroke':'#4b80f9', 'stroke-width':2 };
-var handle_attrs = {'stroke':'#4b80f9', 'fill':'#fff', 'cursor': 'default', 'fill-opacity':1.0};
-
-
-
-
 var RectView = Backbone.View.extend({
+
+    handle_wh: 6,
+    default_line_attrs: {'stroke-width':0, 'stroke': '#4b80f9', 'cursor': 'default', 'fill-opacity':0.01, 'fill': '#fff'},
+    selected_line_attrs: {'stroke':'#4b80f9', 'stroke-width':2 },
+    handle_attrs: {'stroke':'#4b80f9', 'fill':'#fff', 'cursor': 'default', 'fill-opacity':1.0},
+
     // make a child on click
     events: {
         //'mousedown': 'selectShape'    // we need to handle this more manually (see below)
@@ -48,17 +46,17 @@ var RectView = Backbone.View.extend({
                 var new_x = this.ox + dx;
                 var new_y = this.oy + dy;
                 if (this.h_id.indexOf('e') > -1) {    // if we're dragging an 'EAST' handle, update width
-                    this.rect.width = new_x - self.x + handle_wh/2;
+                    this.rect.width = new_x - self.x + self.handle_wh/2;
                 }
                 if (this.h_id.indexOf('s') > -1) {    // if we're dragging an 'SOUTH' handle, update height
-                    this.rect.height = new_y - self.y + handle_wh/2;
+                    this.rect.height = new_y - self.y + self.handle_wh/2;
                 }
                 if (this.h_id.indexOf('n') > -1) {    // if we're dragging an 'NORTH' handle, update y and height
-                    this.rect.y = new_y + handle_wh/2;
+                    this.rect.y = new_y + self.handle_wh/2;
                     this.rect.height = this.obottom - new_y;
                 }
                 if (this.h_id.indexOf('w') > -1) {    // if we're dragging an 'WEST' handle, update x and width
-                    this.rect.x = new_x + handle_wh/2;
+                    this.rect.x = new_x + self.handle_wh/2;
                     this.rect.width = this.oright - new_x;
                 }
                 this.rect.model.trigger("drag", [this.rect.x, this.rect.y, this.rect.width, this.rect.height]);
@@ -78,15 +76,15 @@ var RectView = Backbone.View.extend({
         };
         var _handle_drag_end = function() {
             return function() {
-                this.rect.model.set({'x': this.rect.x, 'y': this.rect.y,
-                    'width':this.rect.width, 'height':this.rect.height});
+                this.rect.model.trigger('dragStop', [this.rect.x, this.rect.y,
+                    this.rect.width, this.rect.height]);
                 return false;
             };
         };
         for (var key in this.handleIds) {
             var hx = this.handleIds[key][0];
             var hy = this.handleIds[key][1];
-            var handle = this.paper.rect(hx-handle_wh/2, hy-handle_wh/2, handle_wh, handle_wh).attr(handle_attrs);
+            var handle = this.paper.rect(hx-self.handle_wh/2, hy-self.handle_wh/2, self.handle_wh, self.handle_wh).attr(self.handle_attrs);
             handle.attr({'cursor': key + '-resize'});     // css, E.g. ne-resize
             handle.h_id = key;
             handle.rect = self;
@@ -106,7 +104,7 @@ var RectView = Backbone.View.extend({
 
         // ----- Create the rect itself ----
         this.element = this.paper.rect();
-        this.element.attr( default_line_attrs );
+        this.element.attr( self.default_line_attrs );
         // set "element" to the raphael node (allows Backbone to handle events)
         this.setElement(this.element.node);
         this.delegateEvents(this.events);   // we need to rebind the events
@@ -133,7 +131,7 @@ var RectView = Backbone.View.extend({
             },
             function() {
                 // STOP: save current position to model
-                self.model.set({'x': self.x, 'y': self.y});
+                self.model.trigger('dragStop', [self.x, self.y, self.width, self.height]);
                 return false;
             }
         );
@@ -153,7 +151,7 @@ var RectView = Backbone.View.extend({
     },
 
     // render updates our local attributes from the Model AND updates coordinates
-    render: function() {
+    render: function(event) {
         this.x = this.model.get("x");
         this.y = this.model.get("y");
         this.width = this.model.get("width");
@@ -174,11 +172,10 @@ var RectView = Backbone.View.extend({
 
         // if (this.manager.selected_shape_id === this.model.get("id")) {
         if (this.model.get('selected')) {
-            this.element.attr( selected_line_attrs );
-            this.handles.show();
-            this.handles.toFront();
+            this.element.attr( this.selected_line_attrs ).toFront();
+            this.handles.show().toFront();
         } else {
-            this.element.attr( default_line_attrs );    // this should be the shapes OWN line / fill colour etc.
+            this.element.attr( this.default_line_attrs );    // this should be the shapes OWN line / fill colour etc.
             this.handles.hide();
         }
 
@@ -196,7 +193,7 @@ var RectView = Backbone.View.extend({
             h_id = hnd.h_id;
             hx = this.handleIds[h_id][0];
             hy = this.handleIds[h_id][1];
-            hnd.attr({'x':hx-handle_wh/2, 'y':hy-handle_wh/2});
+            hnd.attr({'x':hx-this.handle_wh/2, 'y':hy-this.handle_wh/2});
         }
     },
 

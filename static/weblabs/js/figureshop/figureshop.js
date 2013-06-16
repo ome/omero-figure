@@ -11,17 +11,56 @@
             x: 100,     // coordinates on the 'paper'
             y: 100,
             width: 512,
-            height: 512
+            height: 512,
+            selected: false
         },
 
         initialize: function() {
+
+            this.on('change', function(event){
+                console.log("** Panel Model Change", event.changed);
+            });
         },
+
+        // When a multi-select rectangle is drawn around several Panels
+        // a resize of the rectangle x1, y1, w1, h1 => x2, y2, w2, h2
+        // will resize the Panels within it in proportion.
+        // This might be during a drag, or drag-stop (save=true)
+        multiselectdrag: function(x1, y1, w1, h1, x2, y2, w2, h2, save){
+
+            var shift_x = function(startX) {
+                return ((startX - x1)/w1) * w2 + x2;
+            }
+            var shift_y = function(startY) {
+                return ((startY - y1)/h1) * h2 + y2;
+            }
+
+            var newX = shift_x( this.get('x') ),
+                newY = shift_y( this.get('y') ),
+                newW = shift_x( this.get('x')+this.get('width') ) - newX,
+                newH = shift_y( this.get('y')+this.get('height') ) - newY;
+
+            // Either set the new coordinates...
+            if (save) {
+                this.set( {'x':newX, 'y':newY, 'width':newW, 'height':newH} );
+            } else {
+                // ... Or update the UI Panels
+                // both svg and DOM views listen for this...
+                this.trigger('multiselectdrag', [newX, newY, newW, newH] );
+            }
+        }
 
     });
 
     // ------------------------ Panel Collection -------------------------
     var PanelList = Backbone.Collection.extend({
-        model: Panel
+        model: Panel,
+
+        getSelected: function() {
+            return this.filter(function(panel){
+                return panel.get('selected'); 
+            });
+        }
     });
 
 
@@ -38,22 +77,27 @@
         },
 
         setSelected: function(item) {
-            this.clearSelected();
+            this.clearSelected(false);
             item.set('selected', true);
+            this.trigger('change:selection');
         },
 
         addSelected: function(item) {
             item.set('selected', true);
+            this.trigger('change:selection');
         },
 
-        clearSelected: function() {
+        clearSelected: function(trigger) {
             this.panels.each(function(p){
                 p.set('selected', false);
             });
+            if (trigger !== false) {
+                this.trigger('change:selection');
+            }
         },
 
         getSelected: function() {
-            return this.filter(function(panel){ return panel.get('selected'); });
+            return this.panels.getSelected();
         },
 
     });
@@ -225,7 +269,7 @@
             this.model.on('destroy', this.remove, this);
             this.listenTo(this.model, 'change:x change:y change:width change:height', this.render);
             // During drag, model isn't updated, but we trigger 'drag'
-            this.model.on('drag', this.dragResize, this);
+            this.model.on('drag multiselectdrag', this.dragResize, this);
         },
 
         events: {
@@ -268,32 +312,41 @@
 
 
     // SvgView uses ProxyRectModel to manage Svg Rects (raphael)
-    // They convert between zoomed coordiantes of the html DOM panels
+    // This converts between zoomed coordiantes of the html DOM panels
     // and the unzoomed SVG overlay.
+    // Attributes of this model apply to the SVG canvas and are updated from
+    // the PanelModel.
+    // The SVG RectView (Raphael) notifies this Model via trigger 'drag' & 'dragStop'
+    // and this is delegated to the PanelModel via trigger or set respectively.
     var ProxyRectModel = Backbone.Model.extend({
 
         initialize: function(opts) {
             this.panelModel = opts.panel;    // ref to the genuine PanelModel
             this.figureModel = opts.figure;
-            this.set( this.getSvgCoords() );
 
-            this.listenTo(this.figureModel, 'change:curr_zoom', this.updateZoom);
-            this.listenTo(this.panelModel, 'change:selected', this.updateSelection);
+            this.renderFromModel();
+
+            // Refresh c
+            this.listenTo(this.figureModel, 'change:curr_zoom', this.renderFromModel);
+            this.listenTo(this.panelModel, 'change:x change:y change:width change:height', this.renderFromModel);
+            // when PanelModel is being dragged, but NOT by this ProxyRectModel
+            this.listenTo(this.panelModel, 'multiselectdrag', this.renderFromTrigger);
+            this.listenTo(this.panelModel, 'change:selected', this.renderSelection);
             // listen to a trigger on this Model (triggered from Rect)
-            this.listenTo(this, 'drag', this.dragResize);
-            // listen to change to this model
-            this.listenTo(this, 'change', this.resize);
+            this.listenTo(this, 'drag', this.drag);
+            // listen to change to this model - update PanelModel
+            this.listenTo(this, 'dragStop', this.dragStop);
         },
 
         // return the SVG x, y, w, h (converting from figureModel)
-        getSvgCoords: function() {
+        getSvgCoords: function(coords) {
             var zoom = this.figureModel.get('curr_zoom') * 0.01,
                 paper_top = (this.figureModel.get('canvas_height') - this.figureModel.get('paper_height'))/2;
                 paper_left = (this.figureModel.get('canvas_width') - this.figureModel.get('paper_width'))/2;
-                rect_x = (paper_left + 1 + this.panelModel.get('x')) * zoom,
-                rect_y = (paper_top + 1 + this.panelModel.get('y')) * zoom,
-                rect_w = this.panelModel.get('width') * zoom,
-                rect_h = this.panelModel.get('height') * zoom;
+                rect_x = (paper_left + 1 + coords.x) * zoom,
+                rect_y = (paper_top + 1 + coords.y) * zoom,
+                rect_w = coords.width * zoom,
+                rect_h = coords.height * zoom;
             return {'x':rect_x, 'y':rect_y, 'width':rect_w, 'height':rect_h};
         },
 
@@ -306,32 +359,49 @@
                 y = (coords.y/zoom) - paper_top - 1,
                 w = coords.width/zoom,
                 h = coords.height/zoom;
-            return {'x':x, 'y':y, 'width':w, 'height':h};
+            return {'x':x>>0, 'y':y>>0, 'width':w>>0, 'height':h>>0};
         },
 
-        dragResize: function(xywh) {
+        // called on trigger from the RectView, we simply convert coordinates and delegate to panelModel
+        drag: function(xywh) {
             var coords = this.getModelCoords({'x':xywh[0], 'y':xywh[1], 'width':xywh[2], 'height':xywh[3]})
             this.panelModel.trigger('drag', [coords.x, coords.y, coords.width, coords.height]);
         },
 
-        resize: function(event) {
-            var coords = this.getModelCoords({
-                    'x':this.get('x'),
-                    'y':this.get('y'),
-                    'width':this.get('width'),
-                    'height':this.get('height')
-                });
+        // Needed to update the Model on changes to Rect (drag stop etc)
+        dragStop: function(xywh) {
+            var coords = this.getModelCoords({'x':xywh[0], 'y':xywh[1], 'width':xywh[2], 'height':xywh[3]})
             this.panelModel.set(coords);
         },
 
-        updateZoom: function() {
-            this.set( this.getSvgCoords() );
+        // Called when the FigureModel zooms or the PanelModel changes coords.
+        // Refreshes the RectView since that listens to changes in this ProxyModel
+        renderFromModel: function() {
+            this.set( this.getSvgCoords({
+                'x': this.panelModel.get('x'),
+                'y': this.panelModel.get('y'),
+                'width': this.panelModel.get('width'),
+                'height': this.panelModel.get('height')
+            }) );
         },
 
-        updateSelection: function() {
+        // While the Panel is being dragged (by the multi-select Rect), we need to keep updating
+        // from the 'multiselectDrag' trigger on the model. RectView renders on change
+        renderFromTrigger:function(xywh) {
+            this.set( this.getSvgCoords({
+                'x': xywh[0],
+                'y': xywh[1],
+                'width': xywh[2],
+                'height': xywh[3]
+            }) );
+        },
+
+        // When PanelModel changes selection - update and RectView will render change
+        renderSelection: function() {
             this.set('selected', this.panelModel.get('selected'));
         },
 
+        // Handle click (mousedown) on the RectView - changing selection.
         handleClick: function(event) {
             if (event.shiftKey) {
                 this.figureModel.addSelected(this.panelModel);
@@ -340,6 +410,120 @@
             }
         }
 
+    });
+
+
+    // This model underlies the Rect that is drawn around multi-selected panels
+    // (only shown if 2 or more panels selected)
+    // On drag or resize, we calculate how to move or resize the seleted panels.
+    var MultiSelectRectModel = ProxyRectModel.extend({
+
+        defaults: {
+            x: 0,
+            y: 0,
+            width: 0,
+            height: 0
+        },
+
+        initialize: function(opts) {
+            this.figureModel = opts.figureModel;
+
+            // listen to a trigger on this Model (triggered from Rect)
+            this.listenTo(this, 'drag', this.drag);
+            this.listenTo(this, 'dragStop', this.dragStop);
+            this.listenTo(this.figureModel, 'change:selection', this.updateSelection);
+            this.listenTo(this.figureModel, 'change:curr_zoom', this.updateSelection);
+        },
+
+
+        // Need to re-draw on selection AND zoom changes
+        updateSelection: function() {
+
+            var min_x = 100000, max_x = -10000,
+                min_y = 100000, max_y = -10000
+
+            var selected = this.figureModel.getSelected();
+            if (selected.length < 2){
+
+                this.set({
+                    'x': 0,
+                    'y': 0,
+                    'width': 0,
+                    'height': 0,
+                    'selected': false
+                });
+                return;
+            }
+
+            for (var i=0; i<selected.length; i++) {
+                var panel = selected[i],
+                    x = panel.get('x'),
+                    y = panel.get('y'),
+                    w = panel.get('width'),
+                    h = panel.get('height');
+                min_x = Math.min(min_x, x);
+                max_x = Math.max(max_x, x+w);
+                min_y = Math.min(min_y, y);
+                max_y = Math.max(max_y, y+h);
+            };
+
+            this.set( this.getSvgCoords({
+                'x': min_x,
+                'y': min_y,
+                'width': max_x - min_x,
+                'height': max_y - min_y
+            }) );
+
+            // Rect SVG will be notified and re-render
+            this.set('selected', true);
+        },
+
+        // RectView drag is delegated to Panels to update coords (don't save)
+        drag: function(xywh) {
+
+            this.notifyModelofDrag(xywh, false);
+        },
+
+        // RectView dragStop is delegated to Panels to update coords (with save 'true')
+        dragStop: function(xywh) {
+            this.notifyModelofDrag(xywh, true);
+
+            this.set({
+                'x': xywh[0],
+                'y': xywh[1],
+                'width': xywh[2],
+                'height': xywh[3]
+            });
+        },
+
+        // While the multi-select RectView is being dragged, we need to calculate the new coords
+        // of all selected Panels, based on the start-coords and the current coords of
+        // the multi-select Rect.
+        notifyModelofDrag: function(xywh, save) {
+            var startCoords = this.getModelCoords({
+                'x': this.get('x'),
+                'y': this.get('y'),
+                'width': this.get('width'),
+                'height': this.get('height')
+            });
+            var dragCoords = this.getModelCoords({
+                'x': xywh[0],
+                'y': xywh[1],
+                'width': xywh[2],
+                'height': xywh[3]
+            });
+
+            var selected = this.figureModel.getSelected();
+            for (var i=0; i<selected.length; i++) {
+                selected[i].multiselectdrag(startCoords.x, startCoords.y, startCoords.width, startCoords.height,
+                    dragCoords.x, dragCoords.y, dragCoords.width, dragCoords.height, save);
+            };
+        },
+
+        // Ignore mousedown
+        handleClick: function(event) {
+
+        }
     });
 
     // var ProxyRectModelList = Backbone.Collection.extend({
@@ -368,19 +552,16 @@
             this.model.panels.on("add", this.addOne, this);
             // TODO remove on destroy
 
-            this.listenTo(this.model, 'change:selection', this.render);
-
+            var multiSelectRect = new MultiSelectRectModel({figureModel: this.model}),
+                rv = new RectView({'model':multiSelectRect, 'paper':this.raphael_paper});
+            rv.selected_line_attrs = {'stroke-width': 1, 'stroke':'#4b80f9'};
         },
 
         // A panel has been added - We add a corresponding Raphael Rect 
         addOne: function(m) {
 
             var rectModel = new ProxyRectModel({panel: m, figure:this.model});
-            rectModel.on('all', function(name, evt){
-            });
             new RectView({'model':rectModel, 'paper':this.raphael_paper});
-
-            // this.panelRects.add(rectModel);
         },
 
         // TODO
