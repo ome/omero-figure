@@ -38,11 +38,26 @@ var RectView = Backbone.View.extend({
         // draw handles
         self.handles = this.paper.set();
         var _handle_drag = function() {
-            return function (dx, dy) {
-                // on DRAG: update the location of the handle and the corresponding point of the parent
-                //if (manager.getState() !== ShapeManager.STATES.SELECT) {
-                //    return;
-                //}
+            return function (dx, dy, mouseX, mouseY, event) {
+                // on DRAG...
+
+                // If shift-drag on corner handle, retain aspect ratio. dx/dy = aspect
+                if (event.shiftKey && this.h_id.length === 2) {     // E.g. handle is corner 'ne' etc
+                    if (this.h_id === 'se' || this.h_id === 'nw') {
+                        if (Math.abs(dx/dy) > this.aspect) {
+                            dy = dx/this.aspect;
+                        } else {
+                            dx = dy*this.aspect;
+                        }
+                    } else {
+                        if (Math.abs(dx/dy) > this.aspect) {
+                            dy = -dx/this.aspect;
+                        } else {
+                            dx = -dy*this.aspect;
+                        }
+                    }
+                }
+                // Use dx & dy to update the location of the handle and the corresponding point of the parent
                 var new_x = this.ox + dx;
                 var new_y = this.oy + dy;
                 if (this.h_id.indexOf('e') > -1) {    // if we're dragging an 'EAST' handle, update width
@@ -71,6 +86,7 @@ var RectView = Backbone.View.extend({
                 this.oy = this.attr("y");
                 this.oright = self.width + this.ox;
                 this.obottom = self.height + this.oy;
+                this.aspect = self.model.get('width') / self.model.get('height');
                 return false;
             };
         };
