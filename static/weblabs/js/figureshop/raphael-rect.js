@@ -74,7 +74,7 @@ var RectView = Backbone.View.extend({
                     this.rect.x = new_x + self.handle_wh/2;
                     this.rect.width = this.oright - new_x;
                 }
-                this.rect.model.trigger("drag", [this.rect.x, this.rect.y, this.rect.width, this.rect.height]);
+                this.rect.model.trigger("drag_resize", [this.rect.x, this.rect.y, this.rect.width, this.rect.height]);
                 this.rect.updateShape();
                 return false;
             };
@@ -92,7 +92,7 @@ var RectView = Backbone.View.extend({
         };
         var _handle_drag_end = function() {
             return function() {
-                this.rect.model.trigger('dragStop', [this.rect.x, this.rect.y,
+                this.rect.model.trigger('drag_resize_stop', [this.rect.x, this.rect.y,
                     this.rect.width, this.rect.height]);
                 return false;
             };
@@ -135,7 +135,8 @@ var RectView = Backbone.View.extend({
                 //}
                 self.x = dx+this.ox;
                 self.y = this.oy+dy;
-                self.model.trigger("drag", [self.x, self.y, self.width, self.height]);
+                self.dragging = true;
+                self.model.trigger("drag_xy", [dx, dy]);
                 self.updateShape();
                 return false;
             },
@@ -147,7 +148,8 @@ var RectView = Backbone.View.extend({
             },
             function() {
                 // STOP: save current position to model
-                self.model.trigger('dragStop', [self.x, self.y, self.width, self.height]);
+                self.model.trigger('drag_xy_stop', [self.x-this.ox, self.y-this.oy]);
+                self.dragging = false;
                 return false;
             }
         );
@@ -168,6 +170,7 @@ var RectView = Backbone.View.extend({
 
     // render updates our local attributes from the Model AND updates coordinates
     render: function(event) {
+        if (this.dragging) return;
         this.x = this.model.get("x");
         this.y = this.model.get("y");
         this.width = this.model.get("width");
@@ -188,7 +191,7 @@ var RectView = Backbone.View.extend({
 
         // if (this.manager.selected_shape_id === this.model.get("id")) {
         if (this.model.get('selected')) {
-            this.element.attr( this.selected_line_attrs ).toFront();
+            this.element.attr( this.selected_line_attrs );  //.toFront();
             this.handles.show().toFront();
         } else {
             this.element.attr( this.default_line_attrs );    // this should be the shapes OWN line / fill colour etc.

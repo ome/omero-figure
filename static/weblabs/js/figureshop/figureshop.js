@@ -46,8 +46,33 @@
             } else {
                 // ... Or update the UI Panels
                 // both svg and DOM views listen for this...
-                this.trigger('multiselectdrag', [newX, newY, newW, newH] );
+                this.trigger('drag_resize', [newX, newY, newW, newH] );
             }
+        },
+
+        // Drag resizing - notify the PanelView without saving
+        drag_resize: function(x, y, w, h) {
+            this.trigger('drag_resize', [x, y, w, h] );
+        },
+
+        // Drag moving - notify the PanelView & SvgModel with/without saving
+        drag_xy: function(dx, dy, save) {
+            var newX = this.get('x') + dx,
+                newY = this.get('y') + dy,
+                w = this.get('width'),
+                h = this.get('height');
+
+            // Either set the new coordinates...
+            if (save) {
+                this.set( {'x':newX, 'y':newY} );
+            } else {
+                // ... Or update the UI Panels
+                // both svg and DOM views listen for this...
+                this.trigger('drag_resize', [newX, newY, w, h] );
+            }
+
+            // we return new X and Y so FigureModel knows where panels are
+            return {'x':newX, 'y':newY}
         }
 
     });
@@ -74,12 +99,46 @@
 
         initialize: function() {
             this.panels = new PanelList();      //this.get("shapes"));
+
+            // trigger on 'drag' will move all selected panels
+            this.listenTo(this, 'drag', this.multiselectdrag_xy);
         },
 
-        setSelected: function(item) {
-            this.clearSelected(false);
-            item.set('selected', true);
-            this.trigger('change:selection');
+
+        // This can come from multi-select Rect OR any selected Panel
+        // Need to notify ALL panels and Multi-select Rect.
+        drag_xy: function(dx, dy, save) {
+            var minX = 10000,
+                minY = 10000,
+                xy;
+            // First we notidy all Panels
+            var selected = this.getSelected();
+            for (var i=0; i<selected.length; i++) {
+                xy = selected[i].drag_xy(dx, dy, save);
+                minX = Math.min(minX, xy['x']);
+                minY = Math.min(minY, xy['y']);
+            };
+            // Notify the Multi-select Rect of it's new X and Y
+            this.trigger('drag_xy', [minX, minY, save]);
+        },
+
+
+        // This comes from the Multi-Select Rect.
+        // Simply delegate to all the Panels
+        multiselectdrag: function(x1, y1, w1, h1, x2, y2, w2, h2, save) {
+            var selected = this.getSelected();
+            for (var i=0; i<selected.length; i++) {
+                selected[i].multiselectdrag(x1, y1, w1, h1, x2, y2, w2, h2, save);
+            };
+        },
+
+        // If already selected, do nothing (unless clearOthers is true)
+        setSelected: function(item, clearOthers) {
+            if ((!item.get('selected')) || clearOthers) {
+                this.clearSelected(false);
+                item.set('selected', true);
+                this.trigger('change:selection');
+            }
         },
 
         addSelected: function(item) {
@@ -269,7 +328,7 @@
             this.model.on('destroy', this.remove, this);
             this.listenTo(this.model, 'change:x change:y change:width change:height', this.render);
             // During drag, model isn't updated, but we trigger 'drag'
-            this.model.on('drag multiselectdrag', this.dragResize, this);
+            this.model.on('drag_resize', this.drag_resize, this);
         },
 
         events: {
@@ -282,7 +341,7 @@
         },
 
         // During drag, we resize etc
-        dragResize: function(xywh) {
+        drag_resize: function(xywh) {
             this.$img_panel.css({
                 'width': xywh[2]+'px',
                 'height': xywh[3]+'px'
@@ -296,8 +355,8 @@
         render: function() {
             // Have to handle potential nulls, since the template doesn't like them!
             var json = this.model.toJSON(),
-                text = this.template(json);
-            this.$el.html(text);
+                html = this.template(json);
+            this.$el.html(html);
             this.$el.css({'top': this.model.get('y')+'px',
                             'left': this.model.get('x')+'px'});
 
@@ -330,12 +389,14 @@
             this.listenTo(this.figureModel, 'change:curr_zoom', this.renderFromModel);
             this.listenTo(this.panelModel, 'change:x change:y change:width change:height', this.renderFromModel);
             // when PanelModel is being dragged, but NOT by this ProxyRectModel
-            this.listenTo(this.panelModel, 'multiselectdrag', this.renderFromTrigger);
+            this.listenTo(this.panelModel, 'drag_resize', this.renderFromTrigger);
             this.listenTo(this.panelModel, 'change:selected', this.renderSelection);
             // listen to a trigger on this Model (triggered from Rect)
-            this.listenTo(this, 'drag', this.drag);
+            this.listenTo(this, 'drag_xy', this.drag_xy);
+            this.listenTo(this, 'drag_xy_stop', this.drag_xy_stop);
+            this.listenTo(this, 'drag_resize', this.drag_resize);
             // listen to change to this model - update PanelModel
-            this.listenTo(this, 'dragStop', this.dragStop);
+            this.listenTo(this, 'drag_resize_stop', this.drag_resize_stop);
         },
 
         // return the SVG x, y, w, h (converting from figureModel)
@@ -362,14 +423,30 @@
             return {'x':x>>0, 'y':y>>0, 'width':w>>0, 'height':h>>0};
         },
 
-        // called on trigger from the RectView, we simply convert coordinates and delegate to panelModel
-        drag: function(xywh) {
-            var coords = this.getModelCoords({'x':xywh[0], 'y':xywh[1], 'width':xywh[2], 'height':xywh[3]})
-            this.panelModel.trigger('drag', [coords.x, coords.y, coords.width, coords.height]);
+        // called on trigger from the RectView, on drag of the whole rect OR handle for resize.
+        // we simply convert coordinates and delegate to figureModel
+        drag_xy: function(xy, save) {
+            var zoom = this.figureModel.get('curr_zoom') * 0.01,
+                dx = xy[0]/zoom,
+                dy = xy[1]/zoom;
+
+            this.figureModel.drag_xy(dx, dy, save);
         },
 
-        // Needed to update the Model on changes to Rect (drag stop etc)
-        dragStop: function(xywh) {
+        // As above, but this time we're saving the changes to the Model
+        drag_xy_stop: function(xy) {
+            this.drag_xy(xy, true);
+        },
+
+        // Called on trigger from the RectView on resize. 
+        // Need to convert from Svg coords to Model and notify the PanelModel without saving.
+        drag_resize: function(xywh) {
+            var coords = this.getModelCoords({'x':xywh[0], 'y':xywh[1], 'width':xywh[2], 'height':xywh[3]})
+            this.panelModel.drag_resize(coords.x, coords.y, coords.width, coords.height);
+        },
+
+        // As above, but need to update the Model on changes to Rect (drag stop etc)
+        drag_resize_stop: function(xywh) {
             var coords = this.getModelCoords({'x':xywh[0], 'y':xywh[1], 'width':xywh[2], 'height':xywh[3]})
             this.panelModel.set(coords);
         },
@@ -388,6 +465,12 @@
         // While the Panel is being dragged (by the multi-select Rect), we need to keep updating
         // from the 'multiselectDrag' trigger on the model. RectView renders on change
         renderFromTrigger:function(xywh) {
+            var c = this.getSvgCoords({
+                'x': xywh[0],
+                'y': xywh[1],
+                'width': xywh[2],
+                'height': xywh[3]
+            });
             this.set( this.getSvgCoords({
                 'x': xywh[0],
                 'y': xywh[1],
@@ -429,10 +512,15 @@
             this.figureModel = opts.figureModel;
 
             // listen to a trigger on this Model (triggered from Rect)
-            this.listenTo(this, 'drag', this.drag);
-            this.listenTo(this, 'dragStop', this.dragStop);
+            this.listenTo(this, 'drag_xy', this.drag_xy);
+            this.listenTo(this, 'drag_xy_stop', this.drag_xy_stop);
+            this.listenTo(this, 'drag_resize', this.drag_resize);
+            this.listenTo(this, 'drag_resize_stop', this.drag_resize_stop);
             this.listenTo(this.figureModel, 'change:selection', this.updateSelection);
             this.listenTo(this.figureModel, 'change:curr_zoom', this.updateSelection);
+
+            // also listen for drag_xy coming from a selected panel
+            this.listenTo(this.figureModel, 'drag_xy', this.update_xy);
         },
 
 
@@ -478,14 +566,48 @@
             this.set('selected', true);
         },
 
-        // RectView drag is delegated to Panels to update coords (don't save)
-        drag: function(xywh) {
 
-            this.notifyModelofDrag(xywh, false);
+        // Called when we are notified of drag_xy on one of the Panels
+        update_xy: function(dxdy) {
+            if (! this.get('selected')) return;     // if we're not visible, ignore
+
+            var svgCoords = this.getSvgCoords({
+                'x': dxdy[0],
+                'y': dxdy[1],
+                'width': 0,
+                'height': 0,
+            });
+            this.set({'x':svgCoords.x, 'y':svgCoords.y});
+        },
+
+        // RectView drag is delegated to Panels to update coords (don't save)
+        drag_xy: function(dxdy, save) {
+            // we just get [x,y] but we need [x,y,w,h]...
+            var x = dxdy[0] + this.get('x'),
+                y = dxdy[1] + this.get('y');
+            var xywh = [x, y, this.get('width'), this.get('height')];
+            this.notifyModelofDrag(xywh, save);
+        },
+
+        // As above, but Save is true since we're done dragging
+        drag_xy_stop: function(dxdy, save) {
+            this.drag_xy(dxdy, true);
+            // Have to keep our proxy model in sync
+            this.set({
+                'x': dxdy[0] + this.get('x'),
+                'y': dxdy[1] + this.get('y')
+            });
+        },
+
+        // While the multi-select RectView is being dragged, we need to calculate the new coords
+        // of all selected Panels, based on the start-coords and the current coords of
+        // the multi-select Rect.
+        drag_resize: function(xywh, save) {
+            this.notifyModelofDrag(xywh, save);
         },
 
         // RectView dragStop is delegated to Panels to update coords (with save 'true')
-        dragStop: function(xywh) {
+        drag_resize_stop: function(xywh) {
             this.notifyModelofDrag(xywh, true);
 
             this.set({
@@ -513,11 +635,13 @@
                 'height': xywh[3]
             });
 
-            var selected = this.figureModel.getSelected();
-            for (var i=0; i<selected.length; i++) {
-                selected[i].multiselectdrag(startCoords.x, startCoords.y, startCoords.width, startCoords.height,
+            // var selected = this.figureModel.getSelected();
+            // for (var i=0; i<selected.length; i++) {
+            //     selected[i].multiselectdrag(startCoords.x, startCoords.y, startCoords.width, startCoords.height,
+            //         dragCoords.x, dragCoords.y, dragCoords.width, dragCoords.height, save);
+            this.figureModel.multiselectdrag(startCoords.x, startCoords.y, startCoords.width, startCoords.height,
                     dragCoords.x, dragCoords.y, dragCoords.width, dragCoords.height, save);
-            };
+            // };
         },
 
         // Ignore mousedown
