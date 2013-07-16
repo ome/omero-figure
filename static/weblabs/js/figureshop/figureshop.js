@@ -168,7 +168,7 @@
     // var SelectionView = Backbone.View.extend({
     var FigureView = Backbone.View.extend({
 
-        el: $("#paper"),
+        el: $("#body"),
 
         initialize: function(opts) {
 
@@ -185,21 +185,6 @@
 
             // If a panel is added...
             this.model.panels.on("add", this.addOne, this);
-
-
-            // Add a Panel - TODO, use 'events' to listen for this click
-            $("#add_panel").click(function() {
-                var imgId = prompt("Please enter Image ID:");
-
-                if (parseInt(imgId) > 0) {
-                    var c = self.getCentre(),
-                        w = 512,
-                        h = 512,
-                        x = c.x - (w/2),
-                        y = c.y - (h/2);
-                    self.model.panels.add({imageId: parseInt(imgId), x:x, y:y, width:512, height:512});
-                }
-            });
 
             // Select a different size paper
             $("#paper_size_chooser").change(function(){
@@ -222,7 +207,20 @@
         },
 
         events: {
-            // "click #add_panel": "addPanel"   // Won't work. #add_panel is not within #paper
+            "click .add_panel": "addPanel"
+        },
+
+        addPanel: function() {
+            var imgId = prompt("Please enter Image ID:");
+
+            if (parseInt(imgId) > 0) {
+                var c = this.getCentre(),
+                    w = 512,
+                    h = 512,
+                    x = c.x - (w/2),
+                    y = c.y - (h/2);
+                this.model.panels.add({imageId: parseInt(imgId), x:x, y:y, width:512, height:512});
+            }
         },
 
         // User has zoomed the UI - work out new sizes etc...
@@ -318,7 +316,7 @@
         // Add a panel to the view
         addOne: function(panel) {
             var view = new PanelView({model:panel});    // uiState:this.uiState
-            this.$el.append(view.render().el);
+            this.$paper.append(view.render().el);
         },
 
         // Render is called on init()
@@ -334,7 +332,7 @@
                 paper_left = (canvas_w - paper_w)/2,
                 paper_top = (canvas_h - paper_h)/2;
 
-            this.$el.css({'width': paper_w, 'height': paper_h,
+            this.$paper.css({'width': paper_w, 'height': paper_h,
                     'left': paper_left, 'top': paper_top});
             $("#canvas").css({'width': this.model.get('canvas_width'),
                     'height': this.model.get('canvas_height')});
