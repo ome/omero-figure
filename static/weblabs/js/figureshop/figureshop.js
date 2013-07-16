@@ -186,6 +186,21 @@
             // If a panel is added...
             this.model.panels.on("add", this.addOne, this);
 
+
+            // Add a Panel - TODO, use 'events' to listen for this click
+            $("#add_panel").click(function() {
+                var imgId = prompt("Please enter Image ID:");
+
+                if (parseInt(imgId) > 0) {
+                    var c = self.getCentre(),
+                        w = 512,
+                        h = 512,
+                        x = c.x - (w/2),
+                        y = c.y - (h/2);
+                    self.model.panels.add({imageId: parseInt(imgId), x:x, y:y, width:512, height:512});
+                }
+            });
+
             // Select a different size paper
             $("#paper_size_chooser").change(function(){
                 var wh = $(this).val().split(","),
@@ -206,6 +221,10 @@
 
         },
 
+        events: {
+            // "click #add_panel": "addPanel"   // Won't work. #add_panel is not within #paper
+        },
+
         // User has zoomed the UI - work out new sizes etc...
         // We zoom the main content 'canvas' using css transform: scale()
         // But also need to resize the canvas_wrapper manually.
@@ -217,7 +236,7 @@
                 scale = "scale("+zoom+", "+zoom+")";
 
             // We want to stay centered on the same spot...
-            var curr_centre = this.getCentre();
+            var curr_centre = this.getCentre(true);
 
             // Scale canvas via css
             this.$canvas.css({"transform": scale, "-webkit-transform": scale});
@@ -244,16 +263,20 @@
 
         // Centre the viewport on the middle of the paper
         reCentre: function() {
-            var canvas_w = this.model.get('canvas_width'),
-                canvas_h = this.model.get('canvas_height');
-            this.setCentre( [canvas_w/2, canvas_h/2] );
+            var paper_w = this.model.get('paper_width'),
+                paper_h = this.model.get('paper_height');
+            this.setCentre( {'x':paper_w/2, 'y':paper_h/2} );
         },
 
         // Get the coordinates on the paper of the viewport center.
         // Used after zoom update (but BEFORE the UI has changed)
-        getCentre: function() {
+        getCentre: function(previous) {
             // Need to know the zoom BEFORE the update
-            var curr_zoom = this.model.previous('curr_zoom');
+            var m = this.model,
+                curr_zoom = m.get('curr_zoom');
+            if (previous) {
+                curr_zoom = m.previous('curr_zoom');
+            }
             if (curr_zoom == undefined) {
                 return;
             }
@@ -266,15 +289,21 @@
                 cx = -offst_left + viewport_w/2,
                 cy = -offst_top + viewport_h/2,
                 zm_fraction = curr_zoom * 0.01;
-            return [cx/zm_fraction, cy/zm_fraction];
+
+            var paper_left = (m.get('canvas_width') - m.get('paper_width'))/2,
+                paper_top = (m.get('canvas_height') - m.get('paper_height'))/2;
+            return {'x':(cx/zm_fraction)-paper_left, 'y':(cy/zm_fraction)-paper_top};
         },
 
         // Scroll viewport to place a specified paper coordinate at the centre
         setCentre: function(cx_cy, speed) {
-            var curr_zoom = this.model.get('curr_zoom'),
+            var m = this.model,
+                paper_left = (m.get('canvas_width') - m.get('paper_width'))/2,
+                paper_top = (m.get('canvas_height') - m.get('paper_height'))/2;
+            var curr_zoom = m.get('curr_zoom'),
                 zm_fraction = curr_zoom * 0.01,
-                cx = cx_cy[0] * zm_fraction,
-                cy = cx_cy[1] * zm_fraction,
+                cx = (cx_cy.x+paper_left) * zm_fraction,
+                cy = (cx_cy.y+paper_top) * zm_fraction,
                 viewport_w = this.$main.width(),
                 viewport_h = this.$main.height(),
                 offst_left = cx - viewport_w/2,
@@ -295,13 +324,13 @@
         // Render is called on init()
         // Update any changes to sizes of paper or canvas
         render: function() {
-            var zoom = this.model.get('curr_zoom') * 0.01,
-                self = this;
+            var m = this.model,
+                zoom = m.get('curr_zoom') * 0.01;
 
-            var paper_w = this.model.get('paper_width'),
-                paper_h = this.model.get('paper_height'),
-                canvas_w = this.model.get('canvas_width'),
-                canvas_h = this.model.get('canvas_height'),
+            var paper_w = m.get('paper_width'),
+                paper_h = m.get('paper_height'),
+                canvas_w = m.get('canvas_width'),
+                canvas_h = m.get('canvas_height'),
                 paper_left = (canvas_w - paper_w)/2,
                 paper_top = (canvas_h - paper_h)/2;
 
