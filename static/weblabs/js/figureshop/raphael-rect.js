@@ -165,6 +165,7 @@ var RectView = Backbone.View.extend({
 
         // Finally, we need to render when model changes
         this.model.on('change', this.render, this);
+        this.model.on('destroy', this.destroy, this);
 
     },
 

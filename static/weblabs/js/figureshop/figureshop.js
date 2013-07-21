@@ -99,9 +99,6 @@
 
         initialize: function() {
             this.panels = new PanelList();      //this.get("shapes"));
-
-            // trigger on 'drag' will move all selected panels
-            this.listenTo(this, 'drag', this.multiselectdrag_xy);
         },
 
 
@@ -159,6 +156,15 @@
             return this.panels.getSelected();
         },
 
+        // Go through all selected and destroy them - trigger selection change
+        deleteSelected: function() {
+            var selected = this.getSelected();
+            for (var i=0; i<selected.length; i++) {
+                selected[i].destroy();
+            };
+            this.trigger('change:selection');
+        }
+
     });
 
 
@@ -208,6 +214,15 @@
 
         events: {
             "click .add_panel": "addPanel"
+        },
+
+        keyboardEvents: {
+            'backspace': 'deleteSelectedPanels'
+        },
+
+        deleteSelectedPanels: function(ev) {
+            this.model.deleteSelected();
+            return false;
         },
 
         addPanel: function() {
@@ -362,11 +377,6 @@
             // "click .img_panel": "select_panel"
         },
 
-        // TODO
-        remove: function() {
-            // TODO: remove from DOM, remove event handlers etc.
-        },
-
         // During drag, we resize etc
         drag_resize: function(xywh) {
             this.$img_panel.css({
@@ -415,9 +425,10 @@
             // Refresh c
             this.listenTo(this.figureModel, 'change:curr_zoom', this.renderFromModel);
             this.listenTo(this.panelModel, 'change:x change:y change:width change:height', this.renderFromModel);
-            // when PanelModel is being dragged, but NOT by this ProxyRectModel
+            // when PanelModel is being dragged, but NOT by this ProxyRectModel...
             this.listenTo(this.panelModel, 'drag_resize', this.renderFromTrigger);
             this.listenTo(this.panelModel, 'change:selected', this.renderSelection);
+            this.panelModel.on('destroy', this.clear, this);
             // listen to a trigger on this Model (triggered from Rect)
             this.listenTo(this, 'drag_xy', this.drag_xy);
             this.listenTo(this, 'drag_xy_stop', this.drag_xy_stop);
@@ -518,6 +529,10 @@
             } else {
                 this.figureModel.setSelected(this.panelModel);
             }
+        },
+
+        clear: function() {
+            this.destroy();
         }
 
     });
