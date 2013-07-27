@@ -30,23 +30,9 @@
         var view = new FigureView( {model: figureModel});   // uiState: uiState
         var svgView = new SvgView( {model: figureModel});
 
-        figureModel.panels.add({imageId: 1, x: 100, y:100, width:512, height:512});
-        figureModel.panels.add({imageId: 2, x: 120, y:120, width:256, height:256});
-        figureModel.panels.add({imageId: 4, x: -650, y:100, width:512, height:512});
-
-        var panel = new Panel({imageId: 6, x: 100, y:650, width:512, height:512});
-        figureModel.panels.add(panel);
-
-
-        // Show drag handles etc
-        // new SelectionView({model: uiState});
-
-
-        setTimeout(function(){
-            figureModel.panels.add({imageId: 5,x: 650, y:650, width:1024, height:512});
-            figureModel.set('curr_zoom', 20);
-        }, 1000);
-
+        // Load Panels from localStorage (if any)
+        figureModel.panels.fetch();
+        figureModel.clearSelected();    // reset selection (all saved as 'true')
 
         $("#zoom_slider").slider({
             max: 100,
@@ -184,6 +170,7 @@
     <script src="{% static 'weblabs/3rdparty/json2.js' %}"></script>
     <script src="{% static 'weblabs/3rdparty/underscore.js' %}"></script>
     <script src="{% static 'weblabs/3rdparty/backbone.js' %}"></script>
+    <script src="{% static 'weblabs/3rdparty/backbone-localstorage.js' %}"></script>
     <script src="{% static 'weblabs/3rdparty/raphael-min.js' %}"></script>
     <script src="{% static 'weblabs/3rdparty/mousetrap/mousetrap.min.js' %}"></script>
     <script src="{% static 'weblabs/3rdparty/backbone.mousetrap/backbone.mousetrap.js' %}"></script>

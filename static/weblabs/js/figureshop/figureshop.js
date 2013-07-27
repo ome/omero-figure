@@ -42,7 +42,7 @@
 
             // Either set the new coordinates...
             if (save) {
-                this.set( {'x':newX, 'y':newY, 'width':newW, 'height':newH} );
+                this.save( {'x':newX, 'y':newY, 'width':newW, 'height':newH} );
             } else {
                 // ... Or update the UI Panels
                 // both svg and DOM views listen for this...
@@ -64,7 +64,7 @@
 
             // Either set the new coordinates...
             if (save) {
-                this.set( {'x':newX, 'y':newY} );
+                this.save( {'x':newX, 'y':newY} );
             } else {
                 // ... Or update the UI Panels
                 // both svg and DOM views listen for this...
@@ -85,7 +85,9 @@
             return this.filter(function(panel){
                 return panel.get('selected'); 
             });
-        }
+        },
+
+        localStorage: new Backbone.LocalStorage("figureShop-backbone")
     });
 
 
@@ -234,7 +236,7 @@
                     h = 512,
                     x = c.x - (w/2),
                     y = c.y - (h/2);
-                this.model.panels.add({imageId: parseInt(imgId), x:x, y:y, width:512, height:512});
+                this.model.panels.create({imageId: parseInt(imgId), x:x, y:y, width:512, height:512});
             }
         },
 
@@ -486,7 +488,7 @@
         // As above, but need to update the Model on changes to Rect (drag stop etc)
         drag_resize_stop: function(xywh) {
             var coords = this.getModelCoords({'x':xywh[0], 'y':xywh[1], 'width':xywh[2], 'height':xywh[3]})
-            this.panelModel.set(coords);
+            this.panelModel.save(coords);
         },
 
         // Called when the FigureModel zooms or the PanelModel changes coords.
