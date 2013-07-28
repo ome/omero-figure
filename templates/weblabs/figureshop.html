@@ -30,10 +30,6 @@
         var view = new FigureView( {model: figureModel});   // uiState: uiState
         var svgView = new SvgView( {model: figureModel});
 
-        // Load Panels from localStorage (if any)
-        figureModel.panels.fetch();
-        figureModel.clearSelected();    // reset selection (all saved as 'true')
-
         $("#zoom_slider").slider({
             max: 100,
             min: 10,
@@ -45,6 +41,17 @@
 
         // Do this after other setup above
         figureModel.set('curr_zoom', 20);
+
+        // Undo Model and View
+        var undoManager = new UndoManager(),
+            undoView = new UndoView({model:undoManager});
+        // Listen for changes to ROIs (and Shapes)
+        undoManager.listenToCollection(figureModel.panels);
+
+
+        // Finally, load Panels from localStorage (if any)
+        figureModel.panels.fetch();
+        figureModel.clearSelected();    // reset selection (all saved as 'true')
     });
 
     </script>
@@ -138,6 +145,10 @@
 
     <header>HEADER
         <div style="float:right; padding-right:20px">
+            <span id="undoControls">
+                <button id="undo" class="undo" value="undo">Undo</button>
+                <button id="redo" class="redo" value="redo">Redo</button>
+            </span>
             <button class="add_panel" title="Add a panel">+</button>
             <select id="paper_size_chooser">
                 <option value="2000,3000">custom 2000 x 3000</option>
@@ -176,6 +187,7 @@
     <script src="{% static 'weblabs/3rdparty/backbone.mousetrap/backbone.mousetrap.js' %}"></script>
 
     <script type="text/javascript" src="{% static 'weblabs/js/figureshop/figureshop.js' %}"></script>
+    <script type="text/javascript" src="{% static 'weblabs/js/figureshop/undo.js' %}"></script>
     <script type="text/javascript" src="{% static 'weblabs/js/figureshop/raphael-rect.js' %}"></script>
 
 </body>
