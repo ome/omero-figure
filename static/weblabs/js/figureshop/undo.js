@@ -8,7 +8,8 @@ var UndoManager = Backbone.Model.extend({
             undo_pointer: -1
         };
     },
-    initialize: function() {
+    initialize: function(opts) {
+        this.figureModel = opts.figureModel;    // need for setting selection etc
         this.undoQueue = [];
         this.undoInProgress = false;
         //this.undo_pointer = -1;
@@ -52,6 +53,9 @@ var UndoManager = Backbone.Model.extend({
         });
     },
 
+    // Might need to undo/redo multiple panels/objects
+    undo_functions: [],
+    redo_functions: [],
     addListener: function(model) {
         var self = this;
         model.on("change", function(m) {
@@ -68,23 +72,62 @@ var UndoManager = Backbone.Model.extend({
                     redo_attrs[a] = m.get(a);
                 }
             }
+
+            // in case we only got 'ignorable' changes
             if (_.size(redo_attrs) == 0) {
                 return;
             }
 
-            self.postEdit( {
-                name: "Undo...",
-                undo: function() {
-                    self.undoInProgress = true;
+            if (self.undo_functions.length == 0) {
+                self.undo_functions.push(function(){
                     m.save(undo_attrs);
-                    self.undoInProgress = false;
-                },
-                redo: function() {
-                    self.undoInProgress = true;
+                    self.figureModel.setSelected(m, true);
+                });
+
+                self.redo_functions.push(function(){
                     m.save(redo_attrs);
+                    self.figureModel.setSelected(m, true);
+                });
+            } else {
+                self.undo_functions.push(function(){
+                    m.save(undo_attrs);
+                    self.figureModel.addSelected(m);
+                });
+
+                self.redo_functions.push(function(){
+                    m.save(redo_attrs);
+                    self.figureModel.addSelected(m);
+                });
+            }
+
+            var createUndo = function(callList) {
+                var undos = [];
+                for (var u=0; u<callList.length; u++) {
+                    undos.push(callList[u]);
+                }
+                return function() {
+                    self.undoInProgress = true;
+                    for (var u=0; u<undos.length; u++) {
+                        undos[u]();
+                    }
                     self.undoInProgress = false;
                 }
-            });
+            }
+
+            // if we get multiple changes in rapid succession, 
+            if (typeof self.createEditTimeout != 'undefined') {
+                clearTimeout(self.createEditTimeout);
+            }
+            self.createEditTimeout = setTimeout(function() {
+                self.postEdit( {
+                    name: "Undo...",
+                    undo: createUndo(self.undo_functions),
+                    redo: createUndo(self.redo_functions)
+                });
+                self.undo_functions = [];
+                self.redo_functions = [];
+            }, 10);
+
         });
     }
 });

@@ -43,7 +43,7 @@
         figureModel.set('curr_zoom', 20);
 
         // Undo Model and View
-        var undoManager = new UndoManager(),
+        var undoManager = new UndoManager({'figureModel':figureModel}),
             undoView = new UndoView({model:undoManager});
         // Listen for changes to ROIs (and Shapes)
         undoManager.listenToCollection(figureModel.panels);
