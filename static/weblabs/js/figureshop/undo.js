@@ -13,6 +13,9 @@ var UndoManager = Backbone.Model.extend({
         this.undoQueue = [];
         this.undoInProgress = false;
         //this.undo_pointer = -1;
+        // Might need to undo/redo multiple panels/objects
+        this.undo_functions = [];
+        this.redo_functions = [];
     },
     canUndo: function() {
         return this.get('undo_pointer') >= 0;
@@ -49,86 +52,92 @@ var UndoManager = Backbone.Model.extend({
     listenToCollection: function(collection) {
         var self = this;
         collection.on('add', function(m) {
-            self.addListener(m);
+            self.listenToModel(m);
         });
     },
 
-    // Might need to undo/redo multiple panels/objects
-    undo_functions: [],
-    redo_functions: [],
-    addListener: function(model) {
+    listenToModel: function(model) {
+        model.on("change", this.handleChange, this);
+    },
+
+    // Here we do most of the work, buiding Undo/Redo Edits when something changes
+    handleChange: function(m) {
         var self = this;
-        model.on("change", function(m) {
-            if (self.undoInProgress) {
-                return;     // Don't undo the undo!
-            }
 
-            var undo_attrs = {},
-                redo_attrs = {},
-                a;
-            for (a in m.changed) {
-                if (a != "selected") {
-                    undo_attrs[a] = m.previous(a);
-                    redo_attrs[a] = m.get(a);
+        // Make sure we don't listen to changes coming from Undo/Redo
+        if (self.undoInProgress) {
+            return;     // Don't undo the undo!
+        }
+
+        var undo_attrs = {},
+            redo_attrs = {},
+            a;
+        for (a in m.changed) {
+            if (a != "selected") {
+                undo_attrs[a] = m.previous(a);
+                redo_attrs[a] = m.get(a);
+            }
+        }
+
+        // in case we only got 'ignorable' changes
+        if (_.size(redo_attrs) == 0) {
+            return;
+        }
+
+        // We add each change to undo_functions array, which may contain several
+        // changes that happen at "the same time" (E.g. multi-drag)
+        // If we're adding the first item, use setSelected(true) to only select that item
+        if (self.undo_functions.length == 0) {
+            self.undo_functions.push(function(){
+                m.save(undo_attrs);
+                self.figureModel.setSelected(m, true);
+            });
+            self.redo_functions.push(function(){
+                m.save(redo_attrs);
+                self.figureModel.setSelected(m, true);
+            });
+        } else {
+            self.undo_functions.push(function(){
+                m.save(undo_attrs);
+                self.figureModel.addSelected(m);
+            });
+            self.redo_functions.push(function(){
+                m.save(redo_attrs);
+                self.figureModel.addSelected(m);
+            });
+        }
+
+        // This is used to copy the undo/redo_functions lists
+        // into undo / redo operations to go into our Edit below
+        var createUndo = function(callList) {
+            var undos = [];
+            for (var u=0; u<callList.length; u++) {
+                undos.push(callList[u]);
+            }
+            return function() {
+                self.undoInProgress = true;
+                for (var u=0; u<undos.length; u++) {
+                    undos[u]();
                 }
+                self.undoInProgress = false;
             }
+        }
 
-            // in case we only got 'ignorable' changes
-            if (_.size(redo_attrs) == 0) {
-                return;
-            }
-
-            if (self.undo_functions.length == 0) {
-                self.undo_functions.push(function(){
-                    m.save(undo_attrs);
-                    self.figureModel.setSelected(m, true);
-                });
-
-                self.redo_functions.push(function(){
-                    m.save(redo_attrs);
-                    self.figureModel.setSelected(m, true);
-                });
-            } else {
-                self.undo_functions.push(function(){
-                    m.save(undo_attrs);
-                    self.figureModel.addSelected(m);
-                });
-
-                self.redo_functions.push(function(){
-                    m.save(redo_attrs);
-                    self.figureModel.addSelected(m);
-                });
-            }
-
-            var createUndo = function(callList) {
-                var undos = [];
-                for (var u=0; u<callList.length; u++) {
-                    undos.push(callList[u]);
-                }
-                return function() {
-                    self.undoInProgress = true;
-                    for (var u=0; u<undos.length; u++) {
-                        undos[u]();
-                    }
-                    self.undoInProgress = false;
-                }
-            }
-
-            // if we get multiple changes in rapid succession, 
-            if (typeof self.createEditTimeout != 'undefined') {
-                clearTimeout(self.createEditTimeout);
-            }
-            self.createEditTimeout = setTimeout(function() {
-                self.postEdit( {
-                    name: "Undo...",
-                    undo: createUndo(self.undo_functions),
-                    redo: createUndo(self.redo_functions)
-                });
-                self.undo_functions = [];
-                self.redo_functions = [];
-            }, 10);
-
-        });
+        // if we get multiple changes in rapid succession,
+        // clear any existing timeout and re-create.
+        if (typeof self.createEditTimeout != 'undefined') {
+            clearTimeout(self.createEditTimeout);
+        }
+        // Only the last change will call createEditTimeout
+        self.createEditTimeout = setTimeout(function() {
+            self.postEdit( {
+                name: "Undo...",
+                undo: createUndo(self.undo_functions),
+                redo: createUndo(self.redo_functions)
+            });
+            self.undo_functions = [];
+            self.redo_functions = [];
+        }, 10);
     }
 });
 
