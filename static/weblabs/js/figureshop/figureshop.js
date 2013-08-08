@@ -2,6 +2,27 @@
 
     // ----------------------- Backbone MODEL --------------------------------------------
 
+    var Channel = Backbone.Model.extend({
+        initialize: function() {
+            // console.log("Channel init", this.get('label'));
+        }
+    });
+
+    var ChannelList = Backbone.Collection.extend({
+        model: Channel,
+
+        // E.g: 1|141:1627$0000FF,2|361:3078$00FF00,3|439:1600$FF0000
+        toRenderString: function() {
+            var cStrings = [];
+            this.each(function(ch, i){
+                if (ch.get('active')) {
+                    cStrings.push(1+i + "|"+ ch.get('window').start + ":" + ch.get('window').end + "$" + ch.get('color'));
+                }
+            });
+            return cStrings.join(",");
+        }
+    });
+
     // ------------------------ Panel -----------------------------------------
     // Simple place-holder for each Panel. Will have E.g. imageId, rendering options etc
     // Attributes can be added as we need them.
@@ -16,6 +37,9 @@
         },
 
         initialize: function() {
+
+            // Manually create channels - backbone.relational could handle this
+            this.channels = new ChannelList(this.get("channels"));
 
             this.on('change', function(event){
                 console.log("** Panel Model Change", event.changed);
@@ -228,6 +252,7 @@
         },
 
         addPanel: function() {
+            var self = this;
             var imgId = prompt("Please enter Image ID:");
 
             if (parseInt(imgId) > 0) {
@@ -236,7 +261,18 @@
                     h = 512,
                     x = c.x - (w/2),
                     y = c.y - (h/2);
-                this.model.panels.create({imageId: parseInt(imgId), x:x, y:y, width:512, height:512});
+                // Get the json data for the image...
+                $.getJSON('/webgateway/imgData/' + imgId + '/', function(data){
+                    // manipulate it a bit, add x & y etc...
+                    data.imageId = data.id;
+                    data.id = undefined;
+                    data.width = data.size.width;
+                    data.height = data.size.height;
+                    data.x = x;
+                    data.y = y;
+                    // create Panel
+                    self.model.panels.create(data);
+                });
             }
         },
 
@@ -371,6 +407,8 @@
             // we render on Changes in the model OR selected shape etc.
             this.model.on('destroy', this.remove, this);
             this.listenTo(this.model, 'change:x change:y change:width change:height', this.render);
+            // This could be handled by backbone.relational, but do it manually for now...
+            this.listenTo(this.model.channels, 'change', this.render);
             // During drag, model isn't updated, but we trigger 'drag'
             this.model.on('drag_resize', this.drag_resize, this);
         },
@@ -393,8 +431,10 @@
 
         render: function() {
             // Have to handle potential nulls, since the template doesn't like them!
-            var json = this.model.toJSON(),
-                html = this.template(json);
+            var json = this.model.toJSON();
+            // need to add the render string, E.g: 1|110:398$00FF00,2|...
+            json.channels = this.model.channels.toRenderString();
+            var html = this.template(json);
             this.$el.html(html);
             this.$el.css({'top': this.model.get('y')+'px',
                             'left': this.model.get('x')+'px'});
