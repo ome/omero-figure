@@ -400,7 +400,6 @@
     // A Panel is a <div>, added to the #paper by the FigureView below.
     var PanelView = Backbone.View.extend({
         tagName: "div",
-        className: "panel",
         template: _.template($('#figure_panel_template').html()),
 
         initialize: function(opts) {

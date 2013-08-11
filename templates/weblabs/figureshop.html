@@ -10,8 +10,7 @@
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width">
 
-    <link rel="stylesheet" href="{% static 'weblabs/3rdparty/h5bp/css/normalize.css' %}">
-    <link rel="stylesheet" href="{% static 'weblabs/3rdparty/h5bp/css/main.css' %}">
+    <link rel="stylesheet" href="{% static 'weblabs/3rdparty/bootstrap3/css/bootstrap.css' %}">
 
     {% include "webgateway/base/includes/script_src_jquery.html" %}
     {% include "webgateway/base/includes/jquery-ui.html" %}
@@ -52,6 +51,14 @@
         // Finally, load Panels from localStorage (if any)
         figureModel.panels.fetch();
         figureModel.clearSelected();    // reset selection (all saved as 'true')
+
+
+        $(".modal-dialog").draggable();
+
+        $('#previewInfoTabs a').click(function (e) {
+            e.preventDefault();
+            $(this).tab('show');
+        });
     });
 
     </script>
@@ -137,6 +144,25 @@
             height: 14px;
             border-radius: 5px;
         }
+
+        /* Over-riding Bootstrap Styles */
+        .modal-header {
+            padding: 10px;
+        }
+        .modal-body {
+            padding: 15px;
+        }
+        .nav > li > a {
+            padding: 7px 15px;
+        }
+        .non-modal-dialog {
+            position:relative;
+            left:auto;
+            margin-right:20px;
+            padding-top:0px;
+            top:40px;
+            width:375px;
+        }
     </style>
 
 </head>
@@ -173,6 +199,26 @@
     </footer>
 
 
+    <!-- Hacked Bootstrap's modal dialog to be non-modal -->
+    <div class="modal-dialog non-modal-dialog">
+        <div class="modal-content">
+
+            <ul class="nav nav-tabs" id="previewInfoTabs">
+                <li><a href="#infoTab">Info</a></li>
+                <li class="active"><a href="#previewTab">Preview</a></li>
+            </ul>
+
+            <div class="tab-content">
+                <div class="tab-pane" id="infoTab">Profile</div>
+                <div class="tab-pane active" id="previewTab">Preview</div>
+            </div>
+
+        </div>
+    </div>
+
+
+    <!-- Templates for Backbone Views -->
+
     <script id="figure_panel_template" type="text/template">
         <img class="img_panel" src="/webgateway/render_image/<%= imageId %>/?c=<%= channels %>" 
             style="width:<%= width %>px; height:<%= height %>px" />
@@ -185,6 +231,7 @@
     <script src="{% static 'weblabs/3rdparty/raphael-min.js' %}"></script>
     <script src="{% static 'weblabs/3rdparty/mousetrap/mousetrap.min.js' %}"></script>
     <script src="{% static 'weblabs/3rdparty/backbone.mousetrap/backbone.mousetrap.js' %}"></script>
+    <script src="{% static 'weblabs/3rdparty/bootstrap3/js/bootstrap.js' %}"></script>
 
     <script type="text/javascript" src="{% static 'weblabs/js/figureshop/figureshop.js' %}"></script>
     <script type="text/javascript" src="{% static 'weblabs/js/figureshop/undo.js' %}"></script>
