@@ -2,7 +2,24 @@
 
     // ----------------------- Backbone MODEL --------------------------------------------
 
+
+    // Channel stores the same data as we get in 'channels' from Image json
     var Channel = Backbone.Model.extend({
+
+        defaults: {
+            active: false,
+            window: {"start": 0, "min": 0.0, "max": 255.0, "end": 255},
+            color: "FFFFFF",
+            label: "Channel"
+            // emissionWave: undefined
+        },
+
+        url: "fake",
+
+        toggleActive: function() {
+            this.save({active: !this.get("active")});
+        },
+
         initialize: function() {
             // console.log("Channel init", this.get('label'));
         }
@@ -41,9 +58,21 @@
             // Manually create channels - backbone.relational could handle this
             this.channels = new ChannelList(this.get("channels"));
 
+            // When Channels change, need to save()
+            // Maybe this could be handled by backbone.relational
+            this.listenTo(this.channels, 'change', this.save);
+
             this.on('change', function(event){
                 console.log("** Panel Model Change", event.changed);
             });
+        },
+
+        // Need to override toJSON to include the latest channels data
+        // Maybe this could be handled by backbone.relational
+        toJSON: function() {
+            var js = Backbone.Model.prototype.toJSON.apply(this, arguments);
+            js.channels = this.channels.toJSON();
+            return js;
         },
 
         // When a multi-select rectangle is drawn around several Panels
@@ -81,6 +110,10 @@
 
         // Drag moving - notify the PanelView & SvgModel with/without saving
         drag_xy: function(dx, dy, save) {
+            // Ignore any drag_stop events from simple clicks (no drag)
+            if (dx == 0 && dy == 0) {
+                return;
+            }
             var newX = this.get('x') + dx,
                 newY = this.get('y') + dy,
                 w = this.get('width'),
@@ -432,7 +465,7 @@
             // Have to handle potential nulls, since the template doesn't like them!
             var json = this.model.toJSON();
             // need to add the render string, E.g: 1|110:398$00FF00,2|...
-            json.channels = this.model.channels.toRenderString();
+            json.renderString = this.model.channels.toRenderString();
             var html = this.template(json);
             this.$el.html(html);
             this.$el.css({'top': this.model.get('y')+'px',
@@ -444,6 +477,59 @@
         }
     });
 
+
+    // The 'Right Panel' is the floating Info, Preview etc display.
+    // It listens to selection changes on the FigureModel and updates it's display
+    // By creating new Sub-Views
+
+    var RightPanelView = Backbone.View.extend({
+
+        initialize: function(opts) {
+            // we render on selection Changes in the model
+            this.listenTo(this.model, 'change:selection', this.render);
+
+            // this.render();
+        },
+
+        render: function() {
+            var selected = this.model.getSelected();
+            if (this.ctv) {
+                this.ctv.remove();
+            }
+            if (selected.length == 1) {
+                this.ctv = new ChannelToggleView({model: selected[0]});
+                $("#channelToggle").empty().append(this.ctv.render().el)
+            }
+        }
+    });
+
+
+    // Coloured Buttons to Toggle Channels on/off.
+    var ChannelToggleView = Backbone.View.extend({
+        tagName: "div",
+        template: _.template($('#channel_toggle_template').html()),
+
+        initialize: function(opts) {
+            // we render on Changes in the model OR selected shape etc.
+            this.listenTo(this.model.channels, 'change', this.render);
+        },
+
+        events: {
+            "click .channel-btn": "toggle_channel"
+        },
+
+        toggle_channel: function(e) {
+            var idx = e.currentTarget.getAttribute('data-index');
+            this.model.channels.at(idx).toggleActive();
+        },
+
+        render: function() {
+            var json = {'channels': this.model.channels.toJSON()};
+            var html = this.template(json);
+            this.$el.html(html);
+            return this;
+        }
+    });
 
     // -------------- Selection Overlay Views ----------------------
 

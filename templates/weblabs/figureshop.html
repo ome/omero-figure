@@ -11,6 +11,7 @@
     <meta name="viewport" content="width=device-width">
 
     <link rel="stylesheet" href="{% static 'weblabs/3rdparty/bootstrap3/css/bootstrap.css' %}">
+    <link rel="stylesheet" href="{% static 'weblabs/css/figureshop.css' %}">
 
     {% include "webgateway/base/includes/script_src_jquery.html" %}
     {% include "webgateway/base/includes/jquery-ui.html" %}
@@ -28,6 +29,7 @@
 
         var view = new FigureView( {model: figureModel});   // uiState: uiState
         var svgView = new SvgView( {model: figureModel});
+        new RightPanelView({model: figureModel});
 
         $("#zoom_slider").slider({
             max: 100,
@@ -64,86 +66,6 @@
     </script>
 
     <style type="text/css">
-        body {
-            padding: 0px;
-        }
-        header {
-            background: gray;
-            height: 30px;
-            width: 100%;
-            position: fixed;
-            top: 0px;
-        }
-
-        main {
-            position: fixed;
-            top: 30px;
-            bottom: 30px;
-            width: 100%;
-            overflow: auto;
-            background-color: #bbb;
-        }
-
-        #canvas_wrapper {
-            overflow: hidden;
-            position: relative;
-            margin: auto;
-        }
-
-        #canvas_wrapper svg {
-            z-index: 10;
-        }
-
-        #canvas {
-            z-index: 1;
-            background-color: #EFF1F4;
-            position: absolute;
-            /*transform: scale(0.25, 0.25);*/
-        }
-
-        #paper {
-            position: absolute;
-            border: solid gray 2px;
-            background: white;
-        }
-
-        #paper div {
-            position: absolute;
-        }
-
-        .img_panel{
-            /*position: absolute;*/
-        }
-
-        footer {
-            background: gray;
-            height: 30px;
-            width: 100%;
-            position: fixed;
-            bottom: 0px;
-        }
-
-        footer input {
-            position: absolute;
-            left: 155px;
-            top: 3px;
-        }
-
-        footer .ui-slider {
-            border: 1px solid #aaa;
-            height: 6px;
-            left: 15px;
-            position: absolute;
-            top: 11px;
-            width: 120px;
-            background: #bbb;
-        }
-        #zoom_slider .ui-slider-handle {
-            background: #ddd;
-            border: 1px solid white;
-            height: 14px;
-            border-radius: 5px;
-        }
 
         /* Over-riding Bootstrap Styles */
         .modal-header {
@@ -162,6 +84,13 @@
             padding-top:0px;
             top:40px;
             width:375px;
+        }
+        .tab-pane {
+            padding: 10px;
+        }
+        .btn-group > .btn + .dropdown-toggle {
+            padding-left: 3px;
+            padding-right: 3px;
         }
     </style>
 
@@ -209,8 +138,10 @@
             </ul>
 
             <div class="tab-content">
-                <div class="tab-pane" id="infoTab">Profile</div>
-                <div class="tab-pane active" id="previewTab">Preview</div>
+                <div class="tab-pane" id="infoTab">Info...</div>
+                <div class="tab-pane active" id="previewTab">
+                    <div id="channelToggle"></div>
+                </div>
             </div>
 
         </div>
@@ -220,9 +151,28 @@
     <!-- Templates for Backbone Views -->
 
     <script id="figure_panel_template" type="text/template">
-        <img class="img_panel" src="/webgateway/render_image/<%= imageId %>/?c=<%= channels %>" 
+        <img class="img_panel" src="/webgateway/render_image/<%= imageId %>/?c=<%= renderString %>" 
             style="width:<%= width %>px; height:<%= height %>px" />
     </script>
+
+    <script id="channel_toggle_template" type="text/template">
+        <% _.each(channels, function(c, i) { %>
+            <div class="btn-group" style="padding:2px">
+                <button type="button" class="btn btn-default channel-btn <% if(c.active) { %>ch-btn-down<% } else { %>ch-btn-up<% }%>"
+                        data-index="<%= i %>"
+                        style="background-color:#<%= c.color %>">
+                    &nbsp
+                </button>
+                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                    <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a href="#">Color Picker</a></li>
+                </ul>
+            </div><br>
+        <% }); %>
+    </script>
+
 
     <script src="{% static 'weblabs/3rdparty/json2.js' %}"></script>
     <script src="{% static 'weblabs/3rdparty/underscore.js' %}"></script>
