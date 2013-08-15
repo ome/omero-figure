@@ -164,6 +164,8 @@
         // This can come from multi-select Rect OR any selected Panel
         // Need to notify ALL panels and Multi-select Rect.
         drag_xy: function(dx, dy, save) {
+            if (dx == 0 && dy == 0) return;
+
             var minX = 10000,
                 minY = 10000,
                 xy;
