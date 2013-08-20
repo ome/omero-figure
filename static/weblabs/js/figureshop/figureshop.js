@@ -4,41 +4,41 @@
 
 
     // Channel stores the same data as we get in 'channels' from Image json
-    var Channel = Backbone.Model.extend({
+    // var Channel = Backbone.Model.extend({
 
-        defaults: {
-            active: false,
-            window: {"start": 0, "min": 0.0, "max": 255.0, "end": 255},
-            color: "FFFFFF",
-            label: "Channel"
-            // emissionWave: undefined
-        },
+    //     defaults: {
+    //         active: false,
+    //         window: {"start": 0, "min": 0.0, "max": 255.0, "end": 255},
+    //         color: "FFFFFF",
+    //         label: "Channel"
+    //         // emissionWave: undefined
+    //     },
 
-        url: "fake",
+    //     url: "fake",
 
-        toggleActive: function() {
-            this.save({active: !this.get("active")});
-        },
+    //     toggleActive: function() {
+    //         this.save({active: !this.get("active")});
+    //     },
 
-        initialize: function() {
-            // console.log("Channel init", this.get('label'));
-        }
-    });
+    //     initialize: function() {
+    //         // console.log("Channel init", this.get('label'));
+    //     }
+    // });
 
-    var ChannelList = Backbone.Collection.extend({
-        model: Channel,
+    // var ChannelList = Backbone.Collection.extend({
+    //     model: Channel,
 
-        // E.g: 1|141:1627$0000FF,2|361:3078$00FF00,3|439:1600$FF0000
-        toRenderString: function() {
-            var cStrings = [];
-            this.each(function(ch, i){
-                if (ch.get('active')) {
-                    cStrings.push(1+i + "|"+ ch.get('window').start + ":" + ch.get('window').end + "$" + ch.get('color'));
-                }
-            });
-            return cStrings.join(",");
-        }
-    });
+    //     // E.g: 1|141:1627$0000FF,2|361:3078$00FF00,3|439:1600$FF0000
+    //     toRenderString: function() {
+    //         var cStrings = [];
+    //         this.each(function(ch, i){
+    //             if (ch.get('active')) {
+    //                 cStrings.push(1+i + "|"+ ch.get('window').start + ":" + ch.get('window').end + "$" + ch.get('color'));
+    //             }
+    //         });
+    //         return cStrings.join(",");
+    //     }
+    // });
 
     // ------------------------ Panel -----------------------------------------
     // Simple place-holder for each Panel. Will have E.g. imageId, rendering options etc
@@ -56,11 +56,11 @@
         initialize: function() {
 
             // Manually create channels - backbone.relational could handle this
-            this.channels = new ChannelList(this.get("channels"));
+            // this.channels = new ChannelList(this.get("channels"));
 
             // When Channels change, need to save()
             // Maybe this could be handled by backbone.relational
-            this.listenTo(this.channels, 'change', this.save);
+            // this.listenTo(this.channels, 'change', this.set);
 
             this.on('change', function(event){
                 console.log("** Panel Model Change", event.changed);
@@ -69,11 +69,11 @@
 
         // Need to override toJSON to include the latest channels data
         // Maybe this could be handled by backbone.relational
-        toJSON: function() {
-            var js = Backbone.Model.prototype.toJSON.apply(this, arguments);
-            js.channels = this.channels.toJSON();
-            return js;
-        },
+        // toJSON: function() {
+        //     var js = Backbone.Model.prototype.toJSON.apply(this, arguments);
+        //     js.channels = this.channels.toJSON();
+        //     return js;
+        // },
 
         // When a multi-select rectangle is drawn around several Panels
         // a resize of the rectangle x1, y1, w1, h1 => x2, y2, w2, h2
@@ -441,8 +441,9 @@
             // we render on Changes in the model OR selected shape etc.
             this.model.on('destroy', this.remove, this);
             this.listenTo(this.model, 'change:x change:y change:width change:height', this.render);
+            this.listenTo(this.model, 'change:channels', this.render);
             // This could be handled by backbone.relational, but do it manually for now...
-            this.listenTo(this.model.channels, 'change', this.render);
+            // this.listenTo(this.model.channels, 'change', this.render);
             // During drag, model isn't updated, but we trigger 'drag'
             this.model.on('drag_resize', this.drag_resize, this);
         },
@@ -467,7 +468,22 @@
             // Have to handle potential nulls, since the template doesn't like them!
             var json = this.model.toJSON();
             // need to add the render string, E.g: 1|110:398$00FF00,2|...
-            json.renderString = this.model.channels.toRenderString();
+
+            var cStrings = [];
+            _.each(this.model.get('channels'), function(c, i){
+                if (c.active) {
+                    cStrings.push(1+i + "|" + c.window.start + ":" + c.window.end + "$" + c.color)
+                }
+            });
+    //         this.each(function(ch, i){
+    //             if (ch.get('active')) {
+    //                 cStrings.push(1+i + "|"+ ch.get('window').start + ":" + ch.get('window').end + "$" + ch.get('color'));
+    //             }
+    //         });
+    //         return cStrings.join(",");
+
+
+            json.renderString = cStrings.join(",");
             var html = this.template(json);
             this.$el.html(html);
             this.$el.css({'top': this.model.get('y')+'px',
@@ -513,7 +529,7 @@
 
         initialize: function(opts) {
             // we render on Changes in the model OR selected shape etc.
-            this.listenTo(this.model.channels, 'change', this.render);
+            this.listenTo(this.model, 'change:channels', this.render);
         },
 
         events: {
@@ -521,12 +537,16 @@
         },
 
         toggle_channel: function(e) {
-            var idx = e.currentTarget.getAttribute('data-index');
-            this.model.channels.at(idx).toggleActive();
+            var idx = e.currentTarget.getAttribute('data-index'),
+                chs = this.model.get('channels');
+            console.log("toggle_channel", !chs[idx].active);
+            chs[idx].active = !chs[idx].active;
+            this.model.save('channels', chs);
+            this.model.trigger('change:channels');
         },
 
         render: function() {
-            var json = {'channels': this.model.channels.toJSON()};
+            var json = {'channels': this.model.get('channels')};
             var html = this.template(json);
             this.$el.html(html);
             return this;
