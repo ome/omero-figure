@@ -538,11 +538,11 @@
 
         toggle_channel: function(e) {
             var idx = e.currentTarget.getAttribute('data-index'),
-                chs = this.model.get('channels');
+                chs = _.clone(this.model.get('channels'));
             console.log("toggle_channel", !chs[idx].active);
             chs[idx].active = !chs[idx].active;
             this.model.save('channels', chs);
-            this.model.trigger('change:channels');
+            // this.model.trigger('change:channels');
         },
 
         render: function() {

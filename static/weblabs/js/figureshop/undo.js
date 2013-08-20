@@ -57,7 +57,7 @@ var UndoManager = Backbone.Model.extend({
     },
 
     listenToModel: function(model) {
-        model.on("change change:channels", this.handleChange, this);
+        model.on("change", this.handleChange, this);
         // model.channels.on("change", this.handleChange, this);
     },
 
