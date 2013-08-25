@@ -3,43 +3,6 @@
     // ----------------------- Backbone MODEL --------------------------------------------
 
 
-    // Channel stores the same data as we get in 'channels' from Image json
-    // var Channel = Backbone.Model.extend({
-
-    //     defaults: {
-    //         active: false,
-    //         window: {"start": 0, "min": 0.0, "max": 255.0, "end": 255},
-    //         color: "FFFFFF",
-    //         label: "Channel"
-    //         // emissionWave: undefined
-    //     },
-
-    //     url: "fake",
-
-    //     toggleActive: function() {
-    //         this.save({active: !this.get("active")});
-    //     },
-
-    //     initialize: function() {
-    //         // console.log("Channel init", this.get('label'));
-    //     }
-    // });
-
-    // var ChannelList = Backbone.Collection.extend({
-    //     model: Channel,
-
-    //     // E.g: 1|141:1627$0000FF,2|361:3078$00FF00,3|439:1600$FF0000
-    //     toRenderString: function() {
-    //         var cStrings = [];
-    //         this.each(function(ch, i){
-    //             if (ch.get('active')) {
-    //                 cStrings.push(1+i + "|"+ ch.get('window').start + ":" + ch.get('window').end + "$" + ch.get('color'));
-    //             }
-    //         });
-    //         return cStrings.join(",");
-    //     }
-    // });
-
     // ------------------------ Panel -----------------------------------------
     // Simple place-holder for each Panel. Will have E.g. imageId, rendering options etc
     // Attributes can be added as we need them.
@@ -475,12 +438,6 @@
                     cStrings.push(1+i + "|" + c.window.start + ":" + c.window.end + "$" + c.color)
                 }
             });
-    //         this.each(function(ch, i){
-    //             if (ch.get('active')) {
-    //                 cStrings.push(1+i + "|"+ ch.get('window').start + ":" + ch.get('window').end + "$" + ch.get('color'));
-    //             }
-    //         });
-    //         return cStrings.join(",");
 
 
             json.renderString = cStrings.join(",");
@@ -538,11 +495,16 @@
 
         toggle_channel: function(e) {
             var idx = e.currentTarget.getAttribute('data-index'),
-                chs = _.clone(this.model.get('channels'));
-            console.log("toggle_channel", !chs[idx].active);
+                oldChs = this.model.get('channels');
+            // Need to clone the list of channels...
+            var chs = [];
+            for (var i=0; i<oldChs.length; i++) {
+                chs.push( $.extend(true, {}, oldChs[i]) );
+            }
+            // ... then set new active ...
             chs[idx].active = !chs[idx].active;
+            // ... so that we get the changed event triggering OK
             this.model.save('channels', chs);
-            // this.model.trigger('change:channels');
         },
 
         render: function() {

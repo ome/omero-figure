@@ -58,14 +58,11 @@ var UndoManager = Backbone.Model.extend({
 
     listenToModel: function(model) {
         model.on("change", this.handleChange, this);
-        // model.channels.on("change", this.handleChange, this);
     },
 
     // Here we do most of the work, buiding Undo/Redo Edits when something changes
     handleChange: function(m) {
-        // if (m.attributes.localStorage) return;
 
-        console.log("---handleChange", typeof m, m);
         var self = this;
 
         // Make sure we don't listen to changes coming from Undo/Redo
