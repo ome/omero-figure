@@ -474,6 +474,9 @@
             if (selected.length == 1) {
                 this.ctv = new ChannelToggleView({model: selected[0]});
                 $("#channelToggle").empty().append(this.ctv.render().el)
+            } else if (selected.length > 1) {
+                this.ctv = new ChannelToggleView({models: selected});
+                $("#channelToggle").empty().append(this.ctv.render().el)
             }
         }
     });
@@ -485,8 +488,13 @@
         template: _.template($('#channel_toggle_template').html()),
 
         initialize: function(opts) {
-            // we render on Changes in the model OR selected shape etc.
-            this.listenTo(this.model, 'change:channels', this.render);
+            // This View may apply to a single PanelModel or a list
+            if (this.model) {
+                this.listenTo(this.model, 'change:channels', this.render);
+            }
+            else if (opts.models) {
+                this.models = opts.models;
+            }
         },
 
         events: {
@@ -508,9 +516,42 @@
         },
 
         render: function() {
-            var json = {'channels': this.model.get('channels')};
-            var html = this.template(json);
-            this.$el.html(html);
+            if (this.model) {
+                var json = {'channels': this.model.get('channels')};
+                var html = this.template(json);
+                this.$el.html(html);
+            } else if (this.models) {
+
+                // Comare channels from each Panel Model to see if they are
+                // compatible, and compile a summary json.
+                var json = [],
+                    compatible = true;
+
+                _.each(this.models, function(m, i){
+                    var chs = m.get('channels');
+                    // start with a copy of the first image channels
+                    if (json.length == 0) {
+                        _.each(chs, function(c) {
+                            json.push($.extend(true, {}, c));
+                        });
+                    } else{
+                        // compare json summary so far with this channels
+                        if (json.length != chs.length) {
+                            compatible = false;
+                        }
+                        _.each(chs, function(c, i) {
+                            if (json[i].active != c.active) {
+                                json[i].active = undefined;
+                            }
+                        });
+                    }
+
+                });
+                if (compatible) {
+                    var html = this.template({'channels':json});
+                    this.$el.html(html);
+                }
+            }
             return this;
         }
     });

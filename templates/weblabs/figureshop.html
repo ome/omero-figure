@@ -158,7 +158,8 @@
     <script id="channel_toggle_template" type="text/template">
         <% _.each(channels, function(c, i) { %>
             <div class="btn-group" style="padding:2px">
-                <button type="button" class="btn btn-default channel-btn <% if(c.active) { %>ch-btn-down<% } else { %>ch-btn-up<% }%>"
+                <button type="button"
+    class="btn btn-default channel-btn <% if(c.active) { %>ch-btn-down<% } else if (typeof c.active == 'boolean') { %>ch-btn-up<% } else { %>ch-btn-flat<% }%>"
                         data-index="<%= i %>"
                         style="background-color:#<%= c.color %>">
                     &nbsp
