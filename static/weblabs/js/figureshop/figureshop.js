@@ -18,27 +18,12 @@
 
         initialize: function() {
 
-            // Manually create channels - backbone.relational could handle this
-            // this.channels = new ChannelList(this.get("channels"));
-
-            // When Channels change, need to save()
-            // Maybe this could be handled by backbone.relational
-            // this.listenTo(this.channels, 'change', this.set);
-
             this.on('change', function(event){
                 console.log("** Panel Model Change", event.changed);
             });
         },
 
-        // Need to override toJSON to include the latest channels data
-        // Maybe this could be handled by backbone.relational
-        // toJSON: function() {
-        //     var js = Backbone.Model.prototype.toJSON.apply(this, arguments);
-        //     js.channels = this.channels.toJSON();
-        //     return js;
-        // },
-
-        toggle_channel: function(cIndex, active){
+        save_channel: function(cIndex, attr, value) {
 
             var oldChs = this.get('channels');
             // Need to clone the list of channels...
@@ -46,13 +31,18 @@
             for (var i=0; i<oldChs.length; i++) {
                 chs.push( $.extend(true, {}, oldChs[i]) );
             }
-            if (typeof active == "undefined"){
-                active = !chs[cIndex].active;
-            }
-            // ... then set new active ...
-            chs[cIndex].active = active;
+            // ... then set new value ...
+            chs[cIndex][attr] = value;
             // ... so that we get the changed event triggering OK
             this.save('channels', chs);
+        },
+
+        toggle_channel: function(cIndex, active){
+
+            if (typeof active == "undefined"){
+                active = !this.get('channels')[cIndex].active;
+            }
+            this.save_channel(cIndex, 'active', active);
         },
 
         // When a multi-select rectangle is drawn around several Panels
@@ -519,7 +509,20 @@
         },
 
         events: {
-            "click .channel-btn": "toggle_channel"
+            "click .channel-btn": "toggle_channel",
+            "click .dropdown-menu a": "pick_colour"
+        },
+
+        pick_colour: function(e) {
+            var colour = e.currentTarget.getAttribute('data-colour'),
+                idx = $(e.currentTarget).parent().parent().attr('data-index');
+            if (this.model) {
+                this.model.save_channel(idx, 'color', colour);
+            } else if (this.models) {
+                _.each(this.models, function(m){
+                    m.save_channel(idx, 'color', colour);
+                });
+            }
         },
 
         toggle_channel: function(e) {
@@ -564,7 +567,11 @@
                         if (json.length != chs.length) {
                             compatible = false;
                         }
+                        // if attributes don't match - show 'null' state
                         _.each(chs, function(c, i) {
+                            if (json[i].color != c.color) {
+                                json[i].color = 'ccc';
+                            }
                             if (json[i].active != c.active) {
                                 json[i].active = undefined;
                             }

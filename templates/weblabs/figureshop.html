@@ -167,8 +167,27 @@
                 <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                     <span class="caret"></span>
                 </button>
-                <ul class="dropdown-menu">
-                    <li><a href="#">Color Picker</a></li>
+                <ul class="dropdown-menu" data-index="<%= i %>">
+                    <li class="dropdown-header">Channel Colour</li>
+                    <li class="divider"></li>
+                    <li><a data-colour="0000FF" href="#">
+                        <span style="background-color:#00f">&nbsp &nbsp &nbsp</span>&nbsp Blue
+                    </a></li>
+                    <li><a data-colour="00FF00" href="#">
+                        <span style="background-color:#0f0">&nbsp &nbsp &nbsp</span>&nbsp Green
+                    </a></li>
+                    <li><a data-colour="FF0000" href="#">
+                        <span style="background-color:#f00">&nbsp &nbsp &nbsp</span>&nbsp Red
+                    </a></li>
+                    <li><a data-colour="FFFF00" href="#">
+                        <span style="background-color:#ff0">&nbsp &nbsp &nbsp</span>&nbsp Yellow
+                    </a></li>
+                    <li><a data-colour="FFFFFF" href="#">
+                        <span style="background-color:#fff">&nbsp &nbsp &nbsp</span>&nbsp White
+                    </a></li>
+                    <li><a data-colour="FF00FF" href="#">
+                        <span style="background-color:#f0f">&nbsp &nbsp &nbsp</span>&nbsp Magenta
+                    </a></li>
                 </ul>
             </div><br>
         <% }); %>
