@@ -38,6 +38,23 @@
         //     return js;
         // },
 
+        toggle_channel: function(cIndex, active){
+
+            var oldChs = this.get('channels');
+            // Need to clone the list of channels...
+            var chs = [];
+            for (var i=0; i<oldChs.length; i++) {
+                chs.push( $.extend(true, {}, oldChs[i]) );
+            }
+            if (typeof active == "undefined"){
+                active = !chs[cIndex].active;
+            }
+            // ... then set new active ...
+            chs[cIndex].active = active;
+            // ... so that we get the changed event triggering OK
+            this.save('channels', chs);
+        },
+
         // When a multi-select rectangle is drawn around several Panels
         // a resize of the rectangle x1, y1, w1, h1 => x2, y2, w2, h2
         // will resize the Panels within it in proportion.
@@ -502,17 +519,21 @@
         },
 
         toggle_channel: function(e) {
-            var idx = e.currentTarget.getAttribute('data-index'),
-                oldChs = this.model.get('channels');
-            // Need to clone the list of channels...
-            var chs = [];
-            for (var i=0; i<oldChs.length; i++) {
-                chs.push( $.extend(true, {}, oldChs[i]) );
+            var idx = e.currentTarget.getAttribute('data-index');
+
+            if (this.model) {
+                this.model.toggle_channel(idx);
+            } else if (this.models) {
+                // 'flat' means that some panels have this channel on, some off
+                var flat = $(e.currentTarget).hasClass('ch-btn-flat');
+                _.each(this.models, function(m){
+                    if(flat) {
+                        m.toggle_channel(idx, true);
+                    } else {
+                        m.toggle_channel(idx);
+                    }
+                });
             }
-            // ... then set new active ...
-            chs[idx].active = !chs[idx].active;
-            // ... so that we get the changed event triggering OK
-            this.model.save('channels', chs);
         },
 
         render: function() {
