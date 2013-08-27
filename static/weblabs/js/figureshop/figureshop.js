@@ -511,6 +511,10 @@
             }
             else if (opts.models) {
                 this.models = opts.models;
+                var self = this;
+                _.each(this.models, function(m){
+                    self.listenTo(m, 'change:channels', self.render);
+                });
             }
         },
 
