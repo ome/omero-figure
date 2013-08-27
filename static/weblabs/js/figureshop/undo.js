@@ -158,17 +158,24 @@ var UndoView = Backbone.View.extend({
     },
     
     initialize: function() {
-        this.$el = $("#undoControls");
+        this.$el = $("#figure-actions");
       this.model.on('change', this.render, this);
-      this.undoBtn = this.$(".undo");
-      this.redoBtn = this.$(".redo");
+      this.undoEl = $("#undo");
+      this.redoEl = $("#redo");
       this.render();
     },
     
     render: function() {
-        //this.$el.html("<button class='undo'>Undo</button>");
-        this.undoBtn.attr('disabled', !this.model.canUndo());
-        this.redoBtn.attr('disabled', !this.model.canRedo());
+        if (this.model.canUndo()) {
+            this.undoEl.removeClass('disabled');
+        } else {
+            this.undoEl.addClass('disabled');
+        }
+        if (this.model.canRedo()) {
+            this.redoEl.removeClass('disabled');
+        } else {
+            this.redoEl.addClass('disabled');
+        }
         return this;
     },
     

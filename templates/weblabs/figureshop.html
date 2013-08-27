@@ -74,15 +74,12 @@
         .modal-body {
             padding: 15px;
         }
-        .nav > li > a {
-            padding: 7px 15px;
-        }
         .non-modal-dialog {
             position:relative;
             left:auto;
             margin-right:20px;
             padding-top:0px;
-            top:40px;
+            top:55px;
             width:375px;
         }
         .tab-pane {
@@ -92,26 +89,73 @@
             padding-left: 3px;
             padding-right: 3px;
         }
+        .navbar-brand {
+            padding: 12px;
+        }
+        .navbar-nav > li > a {
+            padding-bottom: 12px;
+            padding-top: 12px;
+        }
+        .navbar {
+            min-height: 40px;
+        }
+        .navbar>div.container {
+            max-width: 100%;
+        }
     </style>
 
 </head>
 
 <body id="body">
 
-    <header>HEADER
-        <div style="float:right; padding-right:20px">
-            <span id="undoControls">
-                <button id="undo" class="undo" value="undo">Undo</button>
-                <button id="redo" class="redo" value="redo">Redo</button>
-            </span>
-            <button class="add_panel" title="Add a panel">+</button>
-            <select id="paper_size_chooser">
-                <option value="2000,3000">custom 2000 x 3000</option>
-                <option value="612.0,792.0">letter (300 dpi)</option>
-                <option value="595.27559055118104,841.88976377952747">A4 (300 dpi)</option>
-            </select>
+    <div class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="#">OMERO</a>
+            </div>
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    <li class="active dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Figure <b class="caret"></b></a>
+                        <ul id="figure-actions" class="active dropdown-menu">
+                            <li><a href="#">Action</a></li>
+                            <li class="divider"></li>
+                            <!-- We add <a> to undo/redo to enable. See undo.js -->
+                            <li id="undo">
+                                <a href="#" class="undo">Undo ⌘Z</a>
+                            </li>
+                            <li id="redo">
+                                <a href="#" class="redo">Redo ⌘Y</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li><a href="#about">About</a></li>
+                </ul>
+
+                <form class="navbar-form navbar-right">
+
+                    <div class="btn-group" style="margin-right:100px">
+                        <button type="button" class="btn btn-sm add_panel">Add Panel</button>
+<!--                         <button type="button" class="btn btn-sm">Middle</button>
+                        <button type="button" class="btn btn-sm">Right</button> -->
+                    </div>
+
+<!--                     <select id="paper_size_chooser">
+                        <option value="2000,3000">custom 2000 x 3000</option>
+                        <option value="612.0,792.0">letter (300 dpi)</option>
+                        <option value="595.27559055118104,841.88976377952747">A4 (300 dpi)</option>
+                    </select> -->
+
+                    <button type="submit" class="btn btn-success btn-sm">Create Figure pdf</button>
+                </form>
+            </div><!--/.navbar-collapse -->
         </div>
-    </header>
+    </div>
 
     <main>
         <div id="canvas_wrapper" class="canvas_wrapper">
