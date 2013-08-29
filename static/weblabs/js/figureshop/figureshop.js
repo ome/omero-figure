@@ -130,6 +130,32 @@
             this.panels = new PanelList();      //this.get("shapes"));
         },
 
+        align_left: function() {
+            var selected = this.getSelected(),
+                x_vals = [];
+            for (var i=0; i<selected.length; i++) {
+                x_vals.push(selected[i].get('x'));
+            };
+            var min_x = Math.min.apply(window, x_vals);
+
+            for (var i=0; i<selected.length; i++) {
+                selected[i].set('x', min_x);
+            };
+        },
+
+        align_top: function() {
+            var selected = this.getSelected(),
+                y_vals = [];
+            for (var i=0; i<selected.length; i++) {
+                y_vals.push(selected[i].get('y'));
+            };
+            var min_y = Math.min.apply(window, y_vals);
+
+            for (var i=0; i<selected.length; i++) {
+                selected[i].set('y', min_y);
+            };
+        },
+
 
         // This can come from multi-select Rect OR any selected Panel
         // Need to notify ALL panels and Multi-select Rect.
@@ -208,6 +234,9 @@
         el: $("#body"),
 
         initialize: function(opts) {
+
+            // Delegate some responsibility to other views
+            new AlignmentToolbarView({model: this.model});
 
             // set up various elements and we need repeatedly
             this.$main = $('main');
@@ -396,6 +425,51 @@
                     'height': this.model.get('canvas_height')});
 
             return this;
+        }
+    });
+
+
+    var AlignmentToolbarView = Backbone.View.extend({
+
+        el: $("#alignment-toolbar"),
+
+        model:FigureModel,
+
+        events: {
+            "click .aleft": "align_left",
+            "click .agrid": "align_grid",
+            "click .asize": "align_size",
+            "click .atop": "align_top",
+
+        },
+
+        initialize: function() {
+            this.listenTo(this.model, 'change:selection', this.render);
+            this.$buttons = $("button", this.$el);
+        },
+
+        align_left: function() {
+            this.model.align_left();
+        },
+
+        align_grid: function() {
+            console.log("align grid");
+        },
+
+        align_size: function() {
+            console.log("align size");
+        },
+
+        align_top: function() {
+            this.model.align_top();
+        },
+
+        render: function() {
+            if (this.model.getSelected().length > 1) {
+                this.$buttons.removeAttr("disabled");
+            } else {
+                this.$buttons.attr("disabled", "disabled");
+            }
         }
     });
 

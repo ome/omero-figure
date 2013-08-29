@@ -61,6 +61,8 @@
             e.preventDefault();
             $(this).tab('show');
         });
+
+        $('.btn-sm').tooltip({container: 'body', placement:'bottom', toggle:"tooltip"});
     });
 
     </script>
@@ -81,6 +83,7 @@
             padding-top:0px;
             top:55px;
             width:375px;
+            z-index:50;
         }
         .tab-pane {
             padding: 10px;
@@ -96,11 +99,34 @@
             padding-bottom: 12px;
             padding-top: 12px;
         }
+        .navbar-fixed-top {
+            z-index:50;
+        }
         .navbar {
             min-height: 40px;
         }
         .navbar>div.container {
             max-width: 100%;
+        }
+        /** Add my class to boost size of font icons **/
+        .icon-buttons {
+            margin-right: 20px;
+        }
+        .icon-buttons .glyphicon {
+            font-size: 14px;
+        }
+        .icon-buttons .btn-sm {
+            padding: 4px 9px;
+        }
+        .rotate-font .glyphicon {
+            -webkit-transform: rotate(-90deg);
+            -moz-transform: rotate(-90deg);
+            -ms-transform: rotate(-90deg);
+            -o-transform: rotate(-90deg);
+            filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=3);
+        }
+        .rotate-font.btn-sm {
+            padding: 6px 11px 2px 7px;
         }
     </style>
 
@@ -139,6 +165,23 @@
 
                 <form class="navbar-form navbar-right">
 
+                    <!-- Buttons for Alignment of Panels. see AlignmentToolbarView -->
+                    <div id="alignment-toolbar" class="btn-group icon-buttons">
+                        <button type="button" class="aleft btn btn-default btn-sm" title="Align Left" disabled="disabled">
+                            <span class="glyphicon glyphicon-align-left"></span>
+                        </button>
+                        <button type="button" class="agrid btn btn-default btn-sm" title="Align To Grid" disabled="disabled">
+                            <span class="glyphicon glyphicon-th"></span>
+                        </button>
+                        <button type="button" class="asize btn btn-default btn-sm" title="Align Sizes" disabled="disabled">
+                            <span class="glyphicon glyphicon-fullscreen"></span>
+                        </button>
+                        <button type="button" class="atop btn btn-default btn-sm rotate-font" title="Align Top" disabled="disabled">
+                            <span class="glyphicon glyphicon-align-right"></span>
+                        </button>
+                    </div>
+
+                    <!-- Add a New Panel Button -->
                     <div class="btn-group" style="margin-right:100px">
                         <button type="button" class="btn btn-sm add_panel">Add Panel</button>
 <!--                         <button type="button" class="btn btn-sm">Middle</button>

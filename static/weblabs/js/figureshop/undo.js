@@ -144,7 +144,7 @@ var UndoManager = Backbone.Model.extend({
 
 var UndoView = Backbone.View.extend({
     
-    el: $("#undoControls"),
+    el: $("#figure-actions"),
     
     events: {
       "click .undo": "undo",
@@ -158,7 +158,6 @@ var UndoView = Backbone.View.extend({
     },
     
     initialize: function() {
-        this.$el = $("#figure-actions");
       this.model.on('change', this.render, this);
       this.undoEl = $("#undo");
       this.redoEl = $("#redo");
