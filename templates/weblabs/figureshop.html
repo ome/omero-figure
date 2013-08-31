@@ -100,7 +100,7 @@
             padding-top: 12px;
         }
         .navbar-fixed-top {
-            z-index:50;
+            z-index:100;
         }
         .navbar {
             min-height: 40px;
@@ -173,12 +173,25 @@
                         <button type="button" class="agrid btn btn-default btn-sm" title="Align To Grid" disabled="disabled">
                             <span class="glyphicon glyphicon-th"></span>
                         </button>
-                        <button type="button" class="asize btn btn-default btn-sm" title="Align Sizes" disabled="disabled">
-                            <span class="glyphicon glyphicon-fullscreen"></span>
-                        </button>
                         <button type="button" class="atop btn btn-default btn-sm rotate-font" title="Align Top" disabled="disabled">
                             <span class="glyphicon glyphicon-align-right"></span>
                         </button>
+                        <button type="button" class="btn btn-default btn-sm dropdown-toggle" title="Align Sizes"
+                            disabled="disabled" data-toggle="dropdown">
+                            <span class="glyphicon glyphicon-fullscreen"></span>
+                            <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu" role="menu">
+                            <li><a href="#" class="awidth">
+                                <span class="glyphicon glyphicon-resize-horizontal"></span> Align Width</a>
+                            </li>
+                            <li><a href="#" class="aheight">
+                                <span class="glyphicon glyphicon-resize-vertical"></span> Align Height</a>
+                            </li>
+                            <li><a href="#" class="asize">
+                                <span class="glyphicon glyphicon-fullscreen"></span> Width &amp; Height</a>
+                            </li>
+                        </ul>
                     </div>
 
                     <!-- Add a New Panel Button -->

@@ -100,6 +100,11 @@
 
             // we return new X and Y so FigureModel knows where panels are
             return {'x':newX, 'y':newY}
+        },
+
+        get_centre: function() {
+            return {'x':this.get('x') + (this.get('width')/2),
+                'y':this.get('y') + (this.get('height')/2)}
         }
 
     });
@@ -156,6 +161,102 @@
             };
         },
 
+        align_grid: function() {
+            var sel = this.getSelected(),
+                top_left = this.get_top_left_panel(sel),
+                top_x = top_left.get('x'),
+                top_y = top_left.get('y'),
+                grid = [],
+                row = [top_left],
+                next_panel;
+
+            // populate the grid, getting neighbouring panel each time
+            c = top_left.get_centre();
+            next_panel = this.get_panel_at(c.x + top_left.get('width'), c.y, sel);
+            while (next_panel) {
+                row.push(next_panel);
+                c = next_panel.get_centre();
+                next_panel = this.get_panel_at(c.x + next_panel.get('width'), c.y, sel);
+
+                // if next_panel is not found, reached end of row. Try start new row...
+                if (typeof next_panel == 'undefined') {
+                    grid.push(row);
+                    // next_panel is below the first of the current row
+                    c = row[0].get_centre();
+                    next_panel = this.get_panel_at(c.x, c.y + row[0].get('height'), sel);
+                    if (next_panel) {
+                        row = [];
+                    }
+                }
+            }
+
+            var spacer = top_left.get('width')/20,
+                row,
+                new_x = top_x,
+                new_y = top_y,
+                max_h = 0;
+            for (var r=0; r<grid.length; r++) {
+                row = grid[r];
+                for (var c=0; c<row.length; c++) {
+                    panel = row[c];
+                    panel.save({'x':new_x, 'y':new_y});
+                    max_h = Math.max(max_h, panel.get('height'));
+                    new_x = new_x + spacer + panel.get('width');
+                }
+                new_y = new_y + spacer + max_h;
+                new_x = top_x;
+            }
+        },
+
+        get_panel_at: function(x, y, panels) {
+            for(var i=0; i<panels.length; i++) {
+                p = panels[i];
+                if ((p.get('x') < x && (p.get('x')+p.get('width')) > x)
+                        && (p.get('y') < y && (p.get('y')+p.get('height')) > y)) {
+                    return p;
+                }
+            }
+        },
+
+        get_top_left_panel: function(panels) {
+            // top-left panel is one where x + y is least
+            var p, top_left;
+            for(var i=0; i<panels.length; i++) {
+                p = panels[i];
+                if (i == 0) {
+                    top_left = p;
+                } else {
+                    if ((p.get('x') + p.get('y')) < (top_left.get('x') + top_left.get('y'))) {
+                        top_left = p;
+                    }
+                }
+            }
+            return top_left;
+        },
+
+        align_size: function(width, height) {
+            var sel = this.getSelected(),
+                ref = this.get_top_left_panel(sel),
+                ref_width = width ? ref.get('width') : false,
+                ref_height = height ? ref.get('height') : false,
+                new_w, new_h,
+                p;
+
+            for (var i=0; i<sel.length; i++) {
+                p = sel[i];
+                if (ref_width && ref_height) {
+                    new_w = ref_width;
+                    new_h = ref_height;
+                } else if (ref_width) {
+                    new_w = ref_width;
+                    new_h = (ref_width/p.get('width')) * p.get('height');
+                } else if (ref_height) {
+                    new_h = ref_height;
+                    new_w = (ref_height/p.get('height')) * p.get('width');
+                }
+                p.save({'width':new_w, 'height':new_h});
+            }
+        },
 
         // This can come from multi-select Rect OR any selected Panel
         // Need to notify ALL panels and Multi-select Rect.
@@ -193,6 +294,13 @@
                 item.set('selected', true);
                 this.trigger('change:selection');
             }
+        },
+
+        select_all:function() {
+            this.panels.each(function(p){
+                p.set('selected', true);
+            });
+            this.trigger('change:selection');
         },
 
         addSelected: function(item) {
@@ -277,7 +385,13 @@
         },
 
         keyboardEvents: {
-            'backspace': 'deleteSelectedPanels'
+            'backspace': 'deleteSelectedPanels',
+            'command+a': 'select_all'
+        },
+
+        select_all: function() {
+            this.model.select_all();
+            return false;
         },
 
         deleteSelectedPanels: function(ev) {
@@ -438,9 +552,11 @@
         events: {
             "click .aleft": "align_left",
             "click .agrid": "align_grid",
-            "click .asize": "align_size",
             "click .atop": "align_top",
 
+            "click .awidth": "align_width",
+            "click .aheight": "align_height",
+            "click .asize": "align_size",
         },
 
         initialize: function() {
@@ -453,11 +569,17 @@
         },
 
         align_grid: function() {
-            console.log("align grid");
+            this.model.align_grid();
         },
 
+        align_width: function() {
+            this.model.align_size(true, false);
+        },
+        align_height: function() {
+            this.model.align_size(false, true);
+        },
         align_size: function() {
-            console.log("align size");
+            this.model.align_size(true, true);
         },
 
         align_top: function() {
