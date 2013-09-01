@@ -416,6 +416,8 @@
                     data.id = undefined;
                     data.width = data.size.width;
                     data.height = data.size.height;
+                    data.orig_width = data.width;
+                    data.orig_height = data.height;
                     data.x = x;
                     data.y = y;
                     // create Panel
@@ -606,12 +608,14 @@
         initialize: function(opts) {
             // we render on Changes in the model OR selected shape etc.
             this.model.on('destroy', this.remove, this);
-            this.listenTo(this.model, 'change:x change:y change:width change:height', this.render);
-            this.listenTo(this.model, 'change:channels', this.render);
+            this.listenTo(this.model, 'change:x change:y change:width change:height', this.render_layout);
+            this.listenTo(this.model, 'change:channels', this.render_image);
             // This could be handled by backbone.relational, but do it manually for now...
             // this.listenTo(this.model.channels, 'change', this.render);
             // During drag, model isn't updated, but we trigger 'drag'
             this.model.on('drag_resize', this.drag_resize, this);
+
+            this.render();
         },
 
         events: {
@@ -620,36 +624,82 @@
 
         // During drag, we resize etc
         drag_resize: function(xywh) {
-            this.$img_panel.css({
-                'width': xywh[2]+'px',
-                'height': xywh[3]+'px'
-            });
-            this.$el.css({
-                'left': xywh[0]+'px',
-                'top': xywh[1]+'px'
-            });
+            var x = xywh[0],
+                y = xywh[1],
+                w = xywh[2],
+                h = xywh[3];
+            this.update_resize(x, y, w, h);
         },
 
-        render: function() {
-            // Have to handle potential nulls, since the template doesn't like them!
-            var json = this.model.toJSON();
-            // need to add the render string, E.g: 1|110:398$00FF00,2|...
+        render_layout: function() {
+            var x = this.model.get('x'),
+                y = this.model.get('y'),
+                w = this.model.get('width'),
+                h = this.model.get('height');
 
+            this.update_resize(x, y, w, h);
+        },
+
+        update_resize: function(x, y, w, h) {
+
+            this.$el.css({'top': y +'px',
+                        'left': x +'px',
+                        'width': w +'px',
+                        'height': h +'px'});
+
+            // viewport x, y, w, h etc - Must maintain original width/height ratio
+            var vp_x = this.model.get('vp_x'),
+                vp_y = this.model.get('vp_y'),
+                orig_w = this.model.get('orig_width'),
+                orig_h = this.model.get('orig_height');
+            if (typeof vp_x == 'undefined') {
+                var vp_x = 0,
+                    vp_y = 0,
+                    vp_w = w,
+                    vp_h = h,
+                    vp_ratio = w / h,
+                    orig_ratio = orig_w / orig_h;
+                if (Math.abs(orig_ratio - vp_ratio) < 0.01) {
+                    // ignore...
+                // if viewport is wider than orig, offset y
+                } else if (orig_ratio < vp_ratio) {
+                    vp_h = vp_w / orig_ratio;
+                    vp_y = (vp_h - h)/2;
+                } else {
+                    vp_w = vp_h * orig_ratio;
+                    vp_x = (vp_w - w)/2;
+                }
+            }
+
+            this.$img_panel.css({'left':-vp_x, 'top':-vp_y, 'width':vp_w, 'height':vp_h})
+        },
+
+        render_image: function() {
             var cStrings = [];
             _.each(this.model.get('channels'), function(c, i){
                 if (c.active) {
                     cStrings.push(1+i + "|" + c.window.start + ":" + c.window.end + "$" + c.color)
                 }
             });
+            var renderString = cStrings.join(","),
+                imageId = this.model.get('imageId');
 
+            this.$img_panel.attr('src', '/webgateway/render_image/' + imageId + '/?c=' + renderString);
+        },
 
-            json.renderString = cStrings.join(",");
+        render: function() {
+
+            // Have to handle potential nulls, since the template doesn't like them!
+            var json = {'imageId': this.model.get('imageId')};
+            // need to add the render string, E.g: 1|110:398$00FF00,2|...
+
             var html = this.template(json);
             this.$el.html(html);
-            this.$el.css({'top': this.model.get('y')+'px',
-                            'left': this.model.get('x')+'px'});
 
             this.$img_panel = $(".img_panel", this.$el);    // cache for later
+
+            this.render_image();
+            this.render_layout();
 
             return this;
         }

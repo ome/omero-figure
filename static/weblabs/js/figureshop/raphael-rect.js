@@ -41,8 +41,9 @@ var RectView = Backbone.View.extend({
             return function (dx, dy, mouseX, mouseY, event) {
                 // on DRAG...
 
-                // If shift-drag on corner handle, retain aspect ratio. dx/dy = aspect
-                if (event.shiftKey && this.h_id.length === 2) {     // E.g. handle is corner 'ne' etc
+                // If drag on corner handle, retain aspect ratio. dx/dy = aspect
+                var keep_ratio = true;  // event.shiftKey - used to be dependent on shift
+                if (keep_ratio && this.h_id.length === 2) {     // E.g. handle is corner 'ne' etc
                     if (this.h_id === 'se' || this.h_id === 'nw') {
                         if (Math.abs(dx/dy) > this.aspect) {
                             dy = dx/this.aspect;

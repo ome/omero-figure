@@ -44,10 +44,11 @@
 
     #paper div {
         position: absolute;
+        overflow: hidden;
     }
 
     .img_panel{
-        /*position: absolute;*/
+        position: absolute;
     }
 
     footer {
