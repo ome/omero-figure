@@ -233,13 +233,14 @@
         <div class="modal-content">
 
             <ul class="nav nav-tabs" id="previewInfoTabs">
-                <li><a href="#infoTab">Info</a></li>
-                <li class="active"><a href="#previewTab">Preview</a></li>
+                <li class="active"><a href="#infoTab">Info</a></li>
+                <li><a href="#previewTab">Preview</a></li>
             </ul>
 
             <div class="tab-content">
-                <div class="tab-pane" id="infoTab">Info...</div>
-                <div class="tab-pane active" id="previewTab">
+                <div class="tab-pane active" id="infoTab"></div>
+
+                <div class="tab-pane" id="previewTab">
                     <div id="channelToggle"></div>
                 </div>
             </div>
@@ -249,6 +250,48 @@
 
 
     <!-- Templates for Backbone Views -->
+
+    <script id="info_panel_template" type="text/template">
+        <p><%= name %></p>
+
+
+
+            <div class="clearfix"></div>
+
+            <table class="table">
+                <tbody>
+                    <tr><td>Image</td></tr>
+                    <tr><td>
+                        <div class="col-lg-6"><small><strong>Image ID</strong>:</small></div>
+                        <div class="col-lg-6"><small><%= imageId %></small></div>
+
+                        <div class="col-lg-6"><small><strong>Dimensions (XY)</strong>:</small></div>
+                        <div class="col-lg-6"><small><%= orig_width %> x <%= orig_height %></small></div>
+
+                        <div class="col-lg-6"><small><strong>Z-sections/Timepoints</strong>:</small></div>
+                        <div class="col-lg-6"><small><%= sizeZ %> x <%= sizeT %></small></div>
+                    </td></tr>
+
+                    <tr><td>Panel</td></tr>
+                    <tr><td>
+                        <div class="col-lg-3" style="text-align: right"><small><strong>X</strong>:</small></div>
+                        <div class="col-lg-3"><small><%= x %></small></div>
+
+                        <div class="col-lg-3" style="text-align: right"><small><strong>Width</strong>:</small></div>
+                        <div class="col-lg-3"><small><%= width %></small></div>
+
+                        <div class="col-lg-3" style="text-align: right"><small><strong>Y</strong>:</small></div>
+                        <div class="col-lg-3"><small><%= y %></small></div>
+
+                        <div class="col-lg-3" style="text-align: right"><small><strong>Height</strong>:</small></div>
+                        <div class="col-lg-3"><small><%= height %></small></div>
+                    </td></tr>
+                </tbody>
+            </table>
+
+            <div class="clearfix"></div>
+
+    </script>
 
     <script id="figure_panel_template" type="text/template">
         <img class="img_panel" />

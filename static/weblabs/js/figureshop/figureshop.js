@@ -413,9 +413,12 @@
                 $.getJSON('/webgateway/imgData/' + imgId + '/', function(data){
                     // manipulate it a bit, add x & y etc...
                     data.imageId = data.id;
+                    data.name = data.meta.imageName;
                     data.id = undefined;
                     data.width = data.size.width;
                     data.height = data.size.height;
+                    data.sizeZ = data.size.z
+                    data.sizeT = data.size.t
                     data.orig_width = data.width;
                     data.orig_height = data.height;
                     data.x = x;
@@ -721,6 +724,15 @@
 
         render: function() {
             var selected = this.model.getSelected();
+
+            if (this.ipv) {
+                this.ipv.remove();
+            }
+            if (selected.length == 1) {
+                this.ipv = new InfoPanelView({model: selected[0]}).render();
+                $("#infoTab").append(this.ipv.render().el)
+            }
+
             if (this.ctv) {
                 this.ctv.remove();
             }
@@ -732,6 +744,26 @@
                 $("#channelToggle").empty().append(this.ctv.render().el)
             }
         }
+    });
+
+
+    var InfoPanelView = Backbone.View.extend({
+
+        template: _.template($("#info_panel_template").html()),
+
+        initialize: function() {
+            if (this.model) {
+                this.listenTo(this.model, 'change:x change:y change:width change:height', this.render);
+            }
+        },
+
+        render: function() {
+            var json = this.model.toJSON(),
+                html = this.template(json);
+            this.$el.html(html);
+            return this;
+        }
+
     });
 
 
