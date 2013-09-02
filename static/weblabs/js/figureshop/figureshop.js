@@ -168,13 +168,10 @@
                 top_y = top_left.get('y'),
                 grid = [],
                 row = [top_left],
-                next_panel;
+                next_panel = top_left;
 
             // populate the grid, getting neighbouring panel each time
-            c = top_left.get_centre();
-            next_panel = this.get_panel_at(c.x + top_left.get('width'), c.y, sel);
             while (next_panel) {
-                row.push(next_panel);
                 c = next_panel.get_centre();
                 next_panel = this.get_panel_at(c.x + next_panel.get('width'), c.y, sel);
 
@@ -184,9 +181,10 @@
                     // next_panel is below the first of the current row
                     c = row[0].get_centre();
                     next_panel = this.get_panel_at(c.x, c.y + row[0].get('height'), sel);
-                    if (next_panel) {
-                        row = [];
-                    }
+                    row = [];
+                }
+                if (next_panel) {
+                    row.push(next_panel);
                 }
             }
 
