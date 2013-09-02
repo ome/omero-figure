@@ -750,17 +750,29 @@
     var InfoPanelView = Backbone.View.extend({
 
         template: _.template($("#info_panel_template").html()),
+        xywh_template: _.template($("#xywh_panel_template").html()),
 
         initialize: function() {
             if (this.model) {
                 this.listenTo(this.model, 'change:x change:y change:width change:height', this.render);
+                this.listenTo(this.model, 'drag_resize', this.drag_resize);
             }
         },
 
+        // just update x,y,w,h by rendering ONE template
+        drag_resize: function(xywh) {
+            $("#xywh_table").remove();
+            var json = {'x': xywh[0], 'y':xywh[1], 'width':xywh[2], 'height':xywh[3]},
+                xywh_html = this.xywh_template(json);
+            this.$el.append(xywh_html);
+        },
+
+        // render BOTH templates
         render: function() {
             var json = this.model.toJSON(),
-                html = this.template(json);
-            this.$el.html(html);
+                html = this.template(json),
+                xywh_html = this.xywh_template(json);
+            this.$el.html(html + xywh_html);
             return this;
         }
 
