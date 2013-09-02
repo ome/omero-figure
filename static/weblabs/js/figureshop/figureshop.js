@@ -729,6 +729,9 @@
             if (selected.length == 1) {
                 this.ipv = new InfoPanelView({model: selected[0]}).render();
                 $("#infoTab").append(this.ipv.render().el)
+            } else if (selected.length > 1) {
+                this.ipv = new InfoPanelView({models: selected});
+                $("#infoTab").append(this.ipv.render().el)
             }
 
             if (this.ctv) {
@@ -750,10 +753,16 @@
         template: _.template($("#info_panel_template").html()),
         xywh_template: _.template($("#xywh_panel_template").html()),
 
-        initialize: function() {
+        initialize: function(opts) {
             if (this.model) {
                 this.listenTo(this.model, 'change:x change:y change:width change:height', this.render);
                 this.listenTo(this.model, 'drag_resize', this.drag_resize);
+            } else if (opts.models) {
+                this.models = opts.models;
+                var self = this;
+                _.each(this.models, function(m){
+                    self.listenTo(m, 'change:x change:y change:width change:height', self.render);
+                });
             }
         },
 
@@ -767,10 +776,43 @@
 
         // render BOTH templates
         render: function() {
-            var json = this.model.toJSON(),
-                html = this.template(json),
-                xywh_html = this.xywh_template(json);
-            this.$el.html(html + xywh_html);
+            var json;
+            if (this.model) {
+                json = this.model.toJSON();
+                json.width = json.width.toFixed(0);
+                json.height = json.height.toFixed(0);
+            } else if (this.models) {
+                var title = this.models.length + " Panels Selected...";
+                _.each(this.models, function(m, i){
+                    // start with json data from first Panel
+                    if (!json) {
+                        json = m.toJSON();
+                        json.name = title;
+                        json.width = json.width.toFixed(0);
+                        json.height = json.height.toFixed(0);
+                    } else {
+                        // compare json summary so far with this Panel
+                        var this_json = m.toJSON(),
+                            attrs = ["imageId", "orig_width", "orig_height", "sizeT", "sizeZ"];
+                        _.each(attrs, function(a){
+                            if (json[a] != this_json[a]) {
+                                json[a] = "-";
+                            }
+                        });
+                        // Show the min x & y. Format & compare width & height
+                        json.x = Math.min(json.x, this_json.x);
+                        json.y = Math.min(json.y, this_json.y);
+                        if (json.width != this_json.width.toFixed(0)) json.width = "-";
+                        if (json.height != this_json.height.toFixed(0)) json.height = "-";
+                    }
+                });
+            }
+
+            if (json) {
+                var html = this.template(json),
+                    xywh_html = this.xywh_template(json);
+                this.$el.html(html + xywh_html);
+            }
             return this;
         }
 
