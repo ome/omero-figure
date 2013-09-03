@@ -133,6 +133,10 @@
 
         initialize: function() {
             this.panels = new PanelList();      //this.get("shapes"));
+
+            // wrap selection notification in a 'debounce', so that many rapid
+            // selection changes only trigger a single re-rendering 
+            this.notifySelectionChange = _.debounce( this.notifySelectionChange, 10);
         },
 
         align_left: function() {
@@ -290,7 +294,7 @@
             if ((!item.get('selected')) || clearOthers) {
                 this.clearSelected(false);
                 item.set('selected', true);
-                this.trigger('change:selection');
+                this.notifySelectionChange();
             }
         },
 
@@ -298,12 +302,12 @@
             this.panels.each(function(p){
                 p.set('selected', true);
             });
-            this.trigger('change:selection');
+            this.notifySelectionChange();
         },
 
         addSelected: function(item) {
             item.set('selected', true);
-            this.trigger('change:selection');
+            this.notifySelectionChange();
         },
 
         clearSelected: function(trigger) {
@@ -311,7 +315,7 @@
                 p.set('selected', false);
             });
             if (trigger !== false) {
-                this.trigger('change:selection');
+                this.notifySelectionChange();
             }
         },
 
@@ -325,6 +329,10 @@
             for (var i=0; i<selected.length; i++) {
                 selected[i].destroy();
             };
+            this.notifySelectionChange();
+        },
+
+        notifySelectionChange: function() {
             this.trigger('change:selection');
         }
 
