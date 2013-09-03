@@ -87,25 +87,22 @@ var UndoManager = Backbone.Model.extend({
 
         // We add each change to undo_functions array, which may contain several
         // changes that happen at "the same time" (E.g. multi-drag)
-        // If we're adding the first item, use setSelected(true) to only select that item
-        if (self.undo_functions.length == 0) {
-            self.undo_functions.push(function(){
-                m.save(undo_attrs);
-                self.figureModel.setSelected(m, true);
-            });
-            self.redo_functions.push(function(){
-                m.save(redo_attrs);
-                self.figureModel.setSelected(m, true);
-            });
-        } else {
-            self.undo_functions.push(function(){
-                m.save(undo_attrs);
-                self.figureModel.addSelected(m);
-            });
-            self.redo_functions.push(function(){
-                m.save(redo_attrs);
-                self.figureModel.addSelected(m);
-            });
+        self.undo_functions.push(function(){
+            m.save(undo_attrs);
+        });
+        self.redo_functions.push(function(){
+            m.save(redo_attrs);
+        });
+
+        // this could maybe moved to FigureModel itself
+        var set_selected = function(selected) {
+            for (var i=0; i<selected.length; i++) {
+                if (i == 0) {
+                    self.figureModel.setSelected(selected[i], true);
+                } else {
+                    self.figureModel.addSelected(selected[i]);
+                }
+            }
         }
 
         // This is used to copy the undo/redo_functions lists
@@ -115,11 +112,14 @@ var UndoManager = Backbone.Model.extend({
             for (var u=0; u<callList.length; u++) {
                 undos.push(callList[u]);
             }
+            // get the currently selected panels
+            var selected = self.figureModel.getSelected();
             return function() {
                 self.undoInProgress = true;
                 for (var u=0; u<undos.length; u++) {
                     undos[u]();
                 }
+                set_selected(selected);     // restore selection
                 self.undoInProgress = false;
             }
         }
