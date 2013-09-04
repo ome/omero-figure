@@ -49,10 +49,35 @@ var UndoManager = Backbone.Model.extend({
         this.set('undo_pointer', pointer+1); // trigger change event
     },
 
+    // START here - Listen to 'add' events...
     listenToCollection: function(collection) {
         var self = this;
         collection.on('add', function(m) {
+            // start listening for change events on the model
             self.listenToModel(m);
+            if (!self.undoInProgress){
+                // post an 'undo'
+                self.handleAdd(m, collection);
+            }
+        });
+    },
+
+    handleAdd: function(m, collection) {
+        var self = this;
+        self.postEdit( {
+            name: "Undo Add",
+            undo: function() {
+                self.undoInProgress = true;
+                m.destroy();
+                self.figureModel.notifySelectionChange();
+                self.undoInProgress = false;
+            },
+            redo: function() {
+                self.undoInProgress = true;
+                collection.add(m);
+                self.figureModel.notifySelectionChange();
+                self.undoInProgress = false;
+            }
         });
     },
 
@@ -70,11 +95,14 @@ var UndoManager = Backbone.Model.extend({
             return;     // Don't undo the undo!
         }
 
+        // Ignore changes to certain attributes
+        var ignore_attrs = ["selected", "id"];  // change in id when new Panel is saved
+
         var undo_attrs = {},
             redo_attrs = {},
             a;
         for (a in m.changed) {
-            if (a != "selected") {
+            if (ignore_attrs.indexOf(a) < 0) {
                 undo_attrs[a] = m.previous(a);
                 redo_attrs[a] = m.get(a);
             }
