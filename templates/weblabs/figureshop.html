@@ -43,16 +43,15 @@
         // Do this after other setup above
         figureModel.set('curr_zoom', 20);
 
+        // load Panels from localStorage (if any)
+        figureModel.panels.fetch();
+        figureModel.clearSelected();    // reset selection (all saved as 'true')
+
         // Undo Model and View
         var undoManager = new UndoManager({'figureModel':figureModel}),
             undoView = new UndoView({model:undoManager});
-        // Listen for changes to ROIs (and Shapes)
+        // Finally, start listening for changes to panels
         undoManager.listenToCollection(figureModel.panels);
-
-
-        // Finally, load Panels from localStorage (if any)
-        figureModel.panels.fetch();
-        figureModel.clearSelected();    // reset selection (all saved as 'true')
 
 
         $(".modal-dialog").draggable();

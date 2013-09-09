@@ -52,12 +52,41 @@ var UndoManager = Backbone.Model.extend({
     // START here - Listen to 'add' events...
     listenToCollection: function(collection) {
         var self = this;
+        // Add listener to changes in current models
+        collection.each(function(m){
+            self.listenToModel(m);
+        });
         collection.on('add', function(m) {
             // start listening for change events on the model
             self.listenToModel(m);
             if (!self.undoInProgress){
                 // post an 'undo'
                 self.handleAdd(m, collection);
+            }
+        });
+        collection.on('remove', function(m) {
+            if (!self.undoInProgress){
+                // post an 'undo'
+                self.handleRemove(m, collection);
+            }
+        });
+    },
+
+    handleRemove: function(m, collection) {
+        var self = this;
+        self.postEdit( {
+            name: "Undo Remove",
+            undo: function() {
+                self.undoInProgress = true;
+                collection.add(m);
+                self.figureModel.notifySelectionChange();
+                self.undoInProgress = false;
+            },
+            redo: function() {
+                self.undoInProgress = true;
+                m.destroy();
+                self.figureModel.notifySelectionChange();
+                self.undoInProgress = false;
             }
         });
     },
