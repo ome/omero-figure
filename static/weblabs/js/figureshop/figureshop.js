@@ -734,10 +734,7 @@
             if (this.ipv) {
                 this.ipv.remove();
             }
-            if (selected.length == 1) {
-                this.ipv = new InfoPanelView({model: selected[0]}).render();
-                $("#infoTab").append(this.ipv.render().el)
-            } else if (selected.length > 1) {
+            if (selected.length > 0) {
                 this.ipv = new InfoPanelView({models: selected});
                 $("#infoTab").append(this.ipv.render().el)
             }
@@ -745,10 +742,7 @@
             if (this.ctv) {
                 this.ctv.remove();
             }
-            if (selected.length == 1) {
-                this.ctv = new ChannelToggleView({model: selected[0]});
-                $("#channelToggle").empty().append(this.ctv.render().el)
-            } else if (selected.length > 1) {
+            if (selected.length > 0) {
                 this.ctv = new ChannelToggleView({models: selected});
                 $("#channelToggle").empty().append(this.ctv.render().el)
             }
@@ -762,16 +756,19 @@
         xywh_template: _.template($("#xywh_panel_template").html()),
 
         initialize: function(opts) {
-            if (this.model) {
-                this.listenTo(this.model, 'change:x change:y change:width change:height', this.render);
-                this.listenTo(this.model, 'drag_resize', this.drag_resize);
-            } else if (opts.models) {
+            // if (opts.models) {
+            if (opts.models.length > 1) {
                 this.models = opts.models;
                 var self = this;
                 _.each(this.models, function(m){
                     self.listenTo(m, 'change:x change:y change:width change:height', self.render);
                 });
+            } else if (opts.models.length == 1) {
+                this.model = opts.models[0];
+                this.listenTo(this.model, 'change:x change:y change:width change:height', this.render);
+                this.listenTo(this.model, 'drag_resize', this.drag_resize);
             }
+            // } 
         },
 
         // just update x,y,w,h by rendering ONE template
@@ -834,15 +831,15 @@
 
         initialize: function(opts) {
             // This View may apply to a single PanelModel or a list
-            if (this.model) {
-                this.listenTo(this.model, 'change:channels', this.render);
-            }
-            else if (opts.models) {
+            if (opts.models.length > 1) {
                 this.models = opts.models;
                 var self = this;
                 _.each(this.models, function(m){
                     self.listenTo(m, 'change:channels', self.render);
                 });
+            } else if (opts.models.length == 1) {
+                this.model = opts.models[0];
+                this.listenTo(this.model, 'change:channels', this.render);
             }
         },
 
