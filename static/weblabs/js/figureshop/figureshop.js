@@ -105,6 +105,16 @@
         get_centre: function() {
             return {'x':this.get('x') + (this.get('width')/2),
                 'y':this.get('y') + (this.get('height')/2)}
+        },
+
+        get_query_string: function() {
+            var cStrings = [];
+            _.each(this.get('channels'), function(c, i){
+                if (c.active) {
+                    cStrings.push(1+i + "|" + c.window.start + ":" + c.window.end + "$" + c.color)
+                }
+            });
+            return cStrings.join(",");
         }
 
     });
@@ -684,13 +694,7 @@
         },
 
         render_image: function() {
-            var cStrings = [];
-            _.each(this.model.get('channels'), function(c, i){
-                if (c.active) {
-                    cStrings.push(1+i + "|" + c.window.start + ":" + c.window.end + "$" + c.color)
-                }
-            });
-            var renderString = cStrings.join(","),
+            var renderString = this.model.get_query_string(),
                 imageId = this.model.get('imageId');
 
             this.$img_panel.attr('src', '/webgateway/render_image/' + imageId + '/?c=' + renderString);
@@ -730,6 +734,14 @@
 
         render: function() {
             var selected = this.model.getSelected();
+
+            if (this.vp) {
+                this.vp.remove();
+            }
+            if (selected.length > 0) {
+                this.vp = new ImageViewerView({models: selected});
+                $("#viewportContainer").append(this.vp.render().el)
+            }
 
             if (this.ipv) {
                 this.ipv.remove();
@@ -823,6 +835,94 @@
 
     });
 
+
+    var ImageViewerView = Backbone.View.extend({
+
+        template: _.template($('#viewport_template').html()),
+
+        initialize: function(opts) {
+
+            // this.$vp_frame = $("#vp_frame");
+            // this.$vp_img = $("#vp_img");
+
+            // this.full_size = this.$vp_frame.parent().width();
+            this.full_size = 250;
+
+            if (opts.models.length > 1) {
+                this.models = opts.models;
+                var self = this;
+                _.each(this.models, function(m){
+                    self.listenTo(m, 'change:width change:height change:channels', self.render);
+                });
+            } else if (opts.models.length == 1) {
+                this.model = opts.models[0];
+                this.listenTo(this.model, 'change:width change:height change:channels', this.render);
+                // this.listenTo(this.model, 'drag_resize', this.drag_resize);
+            }
+
+            this.render();
+        },
+
+        render: function() {
+            if (this.model) {
+                var model = this.model,
+                    w = model.get('width'),
+                    h = model.get('height'),
+                    wh = w/h,
+                    frame_w, frame_h;
+                if (w == h) {
+                    frame_h = frame_w = this.full_size;
+                }
+                else if (w < h) {
+                    frame_h = this.full_size;
+                    frame_w = this.full_size * wh;
+                } else {
+                    frame_w = this.full_size;
+                    frame_h = this.full_size / wh;
+                }
+
+
+                var zoom = model.get('zoom'),
+                    orig_w = model.get('orig_width'),
+                    orig_h = model.get('orig_height');
+                zoom = zoom || 100;
+
+                var img_x = 0,
+                    img_y = 0,
+                    img_w = frame_w * (zoom/100),
+                    img_h = frame_h * (zoom/100),
+                    orig_ratio = orig_w / orig_h;
+                if (Math.abs(orig_ratio - wh) < 0.01) {
+                    // ignore...
+                // if viewport is wider than orig, offset y
+                } else if (orig_ratio < wh) {
+                    img_h = img_w / orig_ratio;
+                } else {
+                    img_w = img_h * orig_ratio;
+                }
+                img_y = (img_h - frame_h)/2;
+                img_x = (img_w - frame_w)/2;
+
+                // this.$img_panel.css({'left':-vp_x, 'top':-vp_y, 'width':vp_w, 'height':vp_h})
+
+                // Image src...
+                var renderString = model.get_query_string(),
+                    imageId = model.get('imageId');
+
+                var json = {'src': '/webgateway/render_image/' + imageId + '/?c=' + renderString,
+                    'frame_w': frame_w,
+                    'frame_h': frame_h,
+                    'left':-img_x, 'top':-img_y, 'width':img_w, 'height':img_h
+                };
+                var html = this.template(json);
+                this.$el.html(html);
+            } else if (this.models) {
+                // TODO: handle multi-panel selection!!
+            }
+
+            return this;
+        }
+    });
 
     // Coloured Buttons to Toggle Channels on/off.
     var ChannelToggleView = Backbone.View.extend({
