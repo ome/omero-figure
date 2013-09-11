@@ -13,6 +13,7 @@
             y: 100,
             width: 512,
             height: 512,
+            zoom: 100,
             selected: false
         },
 
@@ -115,7 +116,35 @@
                 }
             });
             return cStrings.join(",");
-        }
+        },
+
+        // used by the PanelView and ImageViewerView to get the size and
+        // offset of the img within it's frame
+        get_vp_img_css: function(zoom, frame_w, frame_h) {
+
+            var orig_w = this.get('orig_width'),
+                orig_h = this.get('orig_height');
+            zoom = zoom || 100;
+
+            var img_x = 0,
+                img_y = 0,
+                img_w = frame_w * (zoom/100),
+                img_h = frame_h * (zoom/100),
+                orig_ratio = orig_w / orig_h,
+                wh = frame_w / frame_h;
+            if (Math.abs(orig_ratio - wh) < 0.01) {
+                // ignore...
+            // if viewport is wider than orig, offset y
+            } else if (orig_ratio < wh) {
+                img_h = img_w / orig_ratio;
+            } else {
+                img_w = img_h * orig_ratio;
+            }
+            img_y = (img_h - frame_h)/2;
+            img_x = (img_w - frame_w)/2;
+
+            return {'left':-img_x, 'top':-img_y, 'width':img_w, 'height':img_h};
+        },
 
     });
 
@@ -627,7 +656,7 @@
         initialize: function(opts) {
             // we render on Changes in the model OR selected shape etc.
             this.model.on('destroy', this.remove, this);
-            this.listenTo(this.model, 'change:x change:y change:width change:height', this.render_layout);
+            this.listenTo(this.model, 'change:x change:y change:width change:height change:zoom', this.render_layout);
             this.listenTo(this.model, 'change:channels', this.render_image);
             // This could be handled by backbone.relational, but do it manually for now...
             // this.listenTo(this.model.channels, 'change', this.render);
@@ -661,36 +690,16 @@
 
         update_resize: function(x, y, w, h) {
 
+            // update layout of panel on the canvas
             this.$el.css({'top': y +'px',
                         'left': x +'px',
                         'width': w +'px',
                         'height': h +'px'});
 
-            // viewport x, y, w, h etc - Must maintain original width/height ratio
-            var vp_x = this.model.get('vp_x'),
-                vp_y = this.model.get('vp_y'),
-                orig_w = this.model.get('orig_width'),
-                orig_h = this.model.get('orig_height');
-            if (typeof vp_x == 'undefined') {
-                var vp_x = 0,
-                    vp_y = 0,
-                    vp_w = w,
-                    vp_h = h,
-                    vp_ratio = w / h,
-                    orig_ratio = orig_w / orig_h;
-                if (Math.abs(orig_ratio - vp_ratio) < 0.01) {
-                    // ignore...
-                // if viewport is wider than orig, offset y
-                } else if (orig_ratio < vp_ratio) {
-                    vp_h = vp_w / orig_ratio;
-                    vp_y = (vp_h - h)/2;
-                } else {
-                    vp_w = vp_h * orig_ratio;
-                    vp_x = (vp_w - w)/2;
-                }
-            }
-
-            this.$img_panel.css({'left':-vp_x, 'top':-vp_y, 'width':vp_w, 'height':vp_h})
+            // update the img within the panel
+            var zoom = this.model.get('zoom'),
+                vp_css = this.model.get_vp_img_css(zoom, w, h);
+            this.$img_panel.css(vp_css);
         },
 
         render_image: function() {
@@ -739,8 +748,8 @@
                 this.vp.remove();
             }
             if (selected.length > 0) {
-                this.vp = new ImageViewerView({models: selected});
-                $("#viewportContainer").append(this.vp.render().el)
+                this.vp = new ImageViewerView({models: selected}); // auto-renders on init
+                $("#viewportContainer").append(this.vp.el)
             }
 
             if (this.ipv) {
@@ -842,30 +851,52 @@
 
         initialize: function(opts) {
 
-            // this.$vp_frame = $("#vp_frame");
-            // this.$vp_img = $("#vp_img");
+            // prevent rapid repetative rendering, when listening to multiple panels
+            this.render = _.debounce(this.render);
 
-            // this.full_size = this.$vp_frame.parent().width();
             this.full_size = 250;
 
-            if (opts.models.length > 1) {
-                this.models = opts.models;
-                var self = this;
-                _.each(this.models, function(m){
-                    self.listenTo(m, 'change:width change:height change:channels', self.render);
-                });
-            } else if (opts.models.length == 1) {
-                this.model = opts.models[0];
-                this.listenTo(this.model, 'change:width change:height change:channels', this.render);
-                // this.listenTo(this.model, 'drag_resize', this.drag_resize);
-            }
+            this.models = opts.models;
+            var self = this,
+                zoom_sum = 0;
+
+            _.each(this.models, function(m){
+                self.listenTo(m, 'change:width change:height change:channels change:zoom', self.render);
+                zoom_sum += m.get('zoom');
+            });
+
+            var zoom_avg = zoom_sum/ this.models.length;
+
+            $("#vp_zoom_slider").slider({
+                max: 500,
+                min: 100,
+                value: zoom_avg,
+                slide: function(event, ui) {
+                    if (self.models.length == 1) {
+                        self.update_img_css(ui.value);
+                    }
+                },
+                stop: function( event, ui ) {
+                    _.each(self.models, function(m){
+                        m.set('zoom', ui.value);
+                    });
+                }
+            });
 
             this.render();
         },
 
+
+        update_img_css: function(zoom) {
+
+            var frame_w = this.$vp_frame.width() + 2,
+                frame_h = this.$vp_frame.height() + 2;
+            this.$vp_img.css( this.models[0].get_vp_img_css(zoom, frame_w, frame_h) );
+        },
+
         render: function() {
-            if (this.model) {
-                var model = this.model,
+            if (this.models.length == 1) {
+                var model = this.models[0],
                     w = model.get('width'),
                     h = model.get('height'),
                     wh = w/h,
@@ -881,41 +912,23 @@
                     frame_h = this.full_size / wh;
                 }
 
+                var zoom = model.get('zoom') || 100;
 
-                var zoom = model.get('zoom'),
-                    orig_w = model.get('orig_width'),
-                    orig_h = model.get('orig_height');
-                zoom = zoom || 100;
-
-                var img_x = 0,
-                    img_y = 0,
-                    img_w = frame_w * (zoom/100),
-                    img_h = frame_h * (zoom/100),
-                    orig_ratio = orig_w / orig_h;
-                if (Math.abs(orig_ratio - wh) < 0.01) {
-                    // ignore...
-                // if viewport is wider than orig, offset y
-                } else if (orig_ratio < wh) {
-                    img_h = img_w / orig_ratio;
-                } else {
-                    img_w = img_h * orig_ratio;
-                }
-                img_y = (img_h - frame_h)/2;
-                img_x = (img_w - frame_w)/2;
-
-                // this.$img_panel.css({'left':-vp_x, 'top':-vp_y, 'width':vp_w, 'height':vp_h})
+                var json = model.get_vp_img_css(zoom, frame_w, frame_h);
 
                 // Image src...
                 var renderString = model.get_query_string(),
                     imageId = model.get('imageId');
 
-                var json = {'src': '/webgateway/render_image/' + imageId + '/?c=' + renderString,
-                    'frame_w': frame_w,
-                    'frame_h': frame_h,
-                    'left':-img_x, 'top':-img_y, 'width':img_w, 'height':img_h
-                };
+                json['src'] = '/webgateway/render_image/' + imageId + '/?c=' + renderString;
+                json['frame_w'] = frame_w;
+                json['frame_h'] = frame_h;
+
                 var html = this.template(json);
                 this.$el.html(html);
+
+                this.$vp_frame = $(".vp_frame", this.$el);  // cache for later
+                this.$vp_img = $(".vp_img", this.$el);
             } else if (this.models) {
                 // TODO: handle multi-panel selection!!
             }

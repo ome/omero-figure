@@ -77,6 +77,23 @@
         .no-padding {
             padding: 0px;
         }
+        .tab-footer {
+            border-top: solid #dddddd 1px;
+            margin-top:15px;
+        }
+        .tab-footer .ui-slider {
+            margin: 15px 5px 6px;
+            background: none repeat scroll 0 0 #BBBBBB;
+            border: 1px solid #AAAAAA;
+            height: 1px;
+            width: 120px;
+        }
+        .tab-footer .ui-slider-handle {
+            background: none repeat scroll 0 0 #DDDDDD;
+            border: 1px solid #aaa;
+            height: 14px;
+            top: -7px;
+        }
         /* Over-riding Bootstrap Styles */
         .modal-header {
             padding: 10px;
@@ -252,7 +269,13 @@
                     <div class="col-lg-2 no-padding" id="channelToggle"></div>
                     <div class="col-lg-10 no-padding" id="viewportContainer"></div>
                     <div class='clearfix'></div>
-                    <div style="border-top: solid #dddddd 1px; margin-top:15px">Footer</div>
+                    <div class='tab-footer'>
+                        <div class="col-lg-2" style="padding:5px">Zoom:</div>
+                        <div class="col-lg-10 no-padding">
+                            <div id="vp_zoom_slider"></div>
+                        </div>
+                        <div class='clearfix'></div>
+                    </div>
                 </div>
             </div>
 
