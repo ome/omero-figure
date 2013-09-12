@@ -872,9 +872,7 @@
                 min: 100,
                 value: zoom_avg,
                 slide: function(event, ui) {
-                    if (self.models.length == 1) {
-                        self.update_img_css(ui.value);
-                    }
+                    self.update_img_css(ui.value);
                 },
                 stop: function( event, ui ) {
                     _.each(self.models, function(m){
@@ -897,51 +895,61 @@
 
         update_img_css: function(zoom) {
 
-            var frame_w = this.$vp_frame.width() + 2,
-                frame_h = this.$vp_frame.height() + 2;
-            this.$vp_img.css( this.models[0].get_vp_img_css(zoom, frame_w, frame_h) );
-            this.$vp_zoom_value.text(zoom + "%");
+            if (this.$vp_img) {
+                var frame_w = this.$vp_frame.width() + 2,
+                    frame_h = this.$vp_frame.height() + 2;
+                this.$vp_img.css( this.models[0].get_vp_img_css(zoom, frame_w, frame_h) );
+                this.$vp_zoom_value.text(zoom + "%");
+            }
         },
 
         render: function() {
-            if (this.models.length == 1) {
-                var model = this.models[0],
-                    w = model.get('width'),
-                    h = model.get('height'),
-                    wh = w/h,
-                    frame_w, frame_h;
-                if (w == h) {
-                    frame_h = frame_w = this.full_size;
+
+            if (this.models.length == 0);
+
+            // only show viewport if original w / h ratio is same for all models
+            var model = this.models[0];
+            var orig_wh,
+                sum_wh = 0,
+                sum_zoom = 0,
+                same_wh = true;
+            _.each(this.models, function(m){
+                var wh = m.get('orig_width') / m.get('orig_height');
+                if (!orig_wh) {
+                    orig_wh = wh;
+                } else if (orig_wh != wh) {
+                    same_wh = false;
                 }
-                else if (w < h) {
-                    frame_h = this.full_size;
-                    frame_w = this.full_size * wh;
-                } else {
-                    frame_w = this.full_size;
-                    frame_h = this.full_size / wh;
-                }
+                sum_wh += (m.get('width')/ m.get('height'));
+                sum_zoom += m.get('zoom');
+            });
+            // Only continue if panels are all same w/h ratio
+            if (!same_wh) return;
 
-                var zoom = model.get('zoom') || 100;
-
-                var json = model.get_vp_img_css(zoom, frame_w, frame_h);
-
-                // Image src...
-                var renderString = model.get_query_string(),
-                    imageId = model.get('imageId');
-
-                json['src'] = '/webgateway/render_image/' + imageId + '/?c=' + renderString;
-                json['frame_w'] = frame_w;
-                json['frame_h'] = frame_h;
-
-                var html = this.template(json);
-                this.$el.html(html);
-
-                this.$vp_frame = $(".vp_frame", this.$el);  // cache for later
-                this.$vp_img = $(".vp_img", this.$el);
-                this.$vp_zoom_value.text(zoom + "%");
-            } else if (this.models) {
-                // TODO: handle multi-panel selection!!
+            // get average viewport frame w/h & zoom
+            var wh = sum_wh/this.models.length,
+                zoom = sum_zoom/this.models.length;
+            if (wh <= 1) {
+                frame_h = this.full_size;
+                frame_w = this.full_size * wh;
+            } else {
+                frame_w = this.full_size;
+                frame_h = this.full_size / wh;
             }
+            var json = model.get_vp_img_css(zoom, frame_w, frame_h);
+
+            // Image src...
+            var renderString = model.get_query_string(),
+                imageId = model.get('imageId');
+            json['src'] = '/webgateway/render_image/' + imageId + '/?c=' + renderString;
+            json['frame_w'] = frame_w;
+            json['frame_h'] = frame_h;
+            var html = this.template(json);
+            this.$el.html(html);
+
+            this.$vp_frame = $(".vp_frame", this.$el);  // cache for later
+            this.$vp_img = $(".vp_img", this.$el);
+            this.$vp_zoom_value.text(zoom + "%");
 
             return this;
         }
