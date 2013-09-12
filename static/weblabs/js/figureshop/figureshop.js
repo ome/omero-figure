@@ -868,7 +868,7 @@
             var zoom_avg = zoom_sum/ this.models.length;
 
             $("#vp_zoom_slider").slider({
-                max: 500,
+                max: 800,
                 min: 100,
                 value: zoom_avg,
                 slide: function(event, ui) {
@@ -882,6 +882,7 @@
                     });
                 }
             });
+            this.$vp_zoom_value = $("#vp_zoom_value");
 
             this.render();
         },
@@ -892,6 +893,7 @@
             var frame_w = this.$vp_frame.width() + 2,
                 frame_h = this.$vp_frame.height() + 2;
             this.$vp_img.css( this.models[0].get_vp_img_css(zoom, frame_w, frame_h) );
+            this.$vp_zoom_value.text(zoom + "%");
         },
 
         render: function() {
@@ -929,6 +931,7 @@
 
                 this.$vp_frame = $(".vp_frame", this.$el);  // cache for later
                 this.$vp_img = $(".vp_img", this.$el);
+                this.$vp_zoom_value.text(zoom + "%");
             } else if (this.models) {
                 // TODO: handle multi-panel selection!!
             }
