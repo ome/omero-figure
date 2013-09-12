@@ -745,7 +745,7 @@
             var selected = this.model.getSelected();
 
             if (this.vp) {
-                this.vp.remove();
+                this.vp.clear().remove();
             }
             if (selected.length > 0) {
                 this.vp = new ImageViewerView({models: selected}); // auto-renders on init
@@ -878,7 +878,7 @@
                 },
                 stop: function( event, ui ) {
                     _.each(self.models, function(m){
-                        m.set('zoom', ui.value);
+                        m.save('zoom', ui.value);
                     });
                 }
             });
@@ -887,6 +887,13 @@
             this.render();
         },
 
+        // called by the parent View before .remove()
+        clear: function() {
+            // clean up zoom slider etc
+            $( "#vp_zoom_slider" ).slider( "destroy" );
+            this.$vp_zoom_value.text('');
+            return this;
+        },
 
         update_img_css: function(zoom) {
 
