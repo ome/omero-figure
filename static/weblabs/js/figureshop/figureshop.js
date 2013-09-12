@@ -912,6 +912,7 @@
             var orig_wh,
                 sum_wh = 0,
                 sum_zoom = 0,
+                img_srcs = [],
                 same_wh = true;
             _.each(this.models, function(m){
                 var wh = m.get('orig_width') / m.get('orig_height');
@@ -922,6 +923,9 @@
                 }
                 sum_wh += (m.get('width')/ m.get('height'));
                 sum_zoom += m.get('zoom');
+                var renderString = m.get_query_string(),
+                    imageId = m.get('imageId');
+                img_srcs.push('/webgateway/render_image/' + imageId + '/?c=' + renderString);
             });
             // Only continue if panels are all same w/h ratio
             if (!same_wh) return;
@@ -938,10 +942,8 @@
             }
             var json = model.get_vp_img_css(zoom, frame_w, frame_h);
 
-            // Image src...
-            var renderString = model.get_query_string(),
-                imageId = model.get('imageId');
-            json['src'] = '/webgateway/render_image/' + imageId + '/?c=' + renderString;
+            json['opacity'] = 1 / img_srcs.length;
+            json['img_srcs'] = img_srcs;
             json['frame_w'] = frame_w;
             json['frame_h'] = frame_h;
             var html = this.template(json);

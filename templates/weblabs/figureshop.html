@@ -68,6 +68,9 @@
 
     <style type="text/css">
 
+        .vp_img {
+            position:absolute;
+        }
         .vp_frame {
             position:relative;
             overflow:hidden;
@@ -288,9 +291,11 @@
 
     <script id="viewport_template" type="text/template">
         <div class="vp_frame" style="width:<%= frame_w %>px; height:<%= frame_h %>px">
+            <% _.each(img_srcs, function(src, i) { %>
             <img class="vp_img"
-                style="position:absolute; left:<%= left %>px; top:<%= top %>px; width:<%= width %>px; height:<%= height %>px;"
+                style="opacity:<%= opacity %>; left:<%= left %>px; top:<%= top %>px; width:<%= width %>px; height:<%= height %>px;"
                 src="<%= src %>" />
+            <% }); %>
         </div>
     </script>
 
