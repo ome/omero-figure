@@ -291,10 +291,10 @@
 
     <script id="viewport_template" type="text/template">
         <div class="vp_frame" style="width:<%= frame_w %>px; height:<%= frame_h %>px">
-            <% _.each(img_srcs, function(src, i) { %>
+            <% _.each(imgs_css, function(css, i) { %>
             <img class="vp_img"
-                style="opacity:<%= opacity %>; left:<%= left %>px; top:<%= top %>px; width:<%= width %>px; height:<%= height %>px;"
-                src="<%= src %>" />
+                style="opacity:<%= opacity %>; left:<%= css.left %>px; top:<%= css.top %>px; width:<%= css.width %>px; height:<%= css.height %>px;"
+                src="<%= css.src %>" />
             <% }); %>
         </div>
     </script>

@@ -45,6 +45,7 @@
     #paper div {
         position: absolute;
         overflow: hidden;
+        background: #ddd;
     }
 
     .img_panel{

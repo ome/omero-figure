@@ -14,6 +14,8 @@
             width: 512,
             height: 512,
             zoom: 100,
+            dx: 0,    // pan x & y within viewport
+            dy: 0,
             selected: false
         },
 
@@ -120,10 +122,12 @@
 
         // used by the PanelView and ImageViewerView to get the size and
         // offset of the img within it's frame
-        get_vp_img_css: function(zoom, frame_w, frame_h) {
+        get_vp_img_css: function(zoom, frame_w, frame_h, dx, dy) {
 
             var orig_w = this.get('orig_width'),
                 orig_h = this.get('orig_height');
+            dx = dx || this.get('dx');
+            dy = dy || this.get('dy');
             zoom = zoom || 100;
 
             var img_x = 0,
@@ -143,7 +147,10 @@
             img_y = (img_h - frame_h)/2;
             img_x = (img_w - frame_w)/2;
 
-            return {'left':-img_x, 'top':-img_y, 'width':img_w, 'height':img_h};
+            img_x = ((dx * frame_w) / orig_w) - img_x;
+            img_y = ((dy * frame_h) / orig_h) - img_y;
+
+            return {'left':img_x, 'top':img_y, 'width':img_w, 'height':img_h};
         },
 
     });
@@ -656,7 +663,9 @@
         initialize: function(opts) {
             // we render on Changes in the model OR selected shape etc.
             this.model.on('destroy', this.remove, this);
-            this.listenTo(this.model, 'change:x change:y change:width change:height change:zoom', this.render_layout);
+            this.listenTo(this.model, 
+                'change:x change:y change:width change:height change:zoom change:dx change:dy',
+                this.render_layout);
             this.listenTo(this.model, 'change:channels', this.render_image);
             // This could be handled by backbone.relational, but do it manually for now...
             // this.listenTo(this.model.channels, 'change', this.render);
@@ -865,16 +874,17 @@
                 zoom_sum += m.get('zoom');
             });
 
-            var zoom_avg = zoom_sum/ this.models.length;
+            this.zoom_avg = zoom_sum/ this.models.length;
 
             $("#vp_zoom_slider").slider({
                 max: 800,
                 min: 100,
-                value: zoom_avg,
+                value: self.zoom_avg,
                 slide: function(event, ui) {
-                    self.update_img_css(ui.value);
+                    self.update_img_css(ui.value, 0, 0);
                 },
                 stop: function( event, ui ) {
+                    self.zoom_avg = ui.value;
                     _.each(self.models, function(m){
                         m.save('zoom', ui.value);
                     });
@@ -885,6 +895,36 @@
             this.render();
         },
 
+        events: {
+            "mousedown .vp_img": "mousedown",
+            "mousemove .vp_img": "mousemove",
+            "mouseup .vp_img": "mouseup",
+        },
+
+        mousedown: function(event) {
+            this.dragging = true;
+            this.dragstart_x = event.clientX;
+            this.dragstart_y = event.clientY;
+            return false;
+        },
+
+        mouseup: function(event) {
+            var dx = event.clientX - this.dragstart_x,
+                dy = event.clientY - this.dragstart_y;
+            this.update_img_css(this.zoom_avg, dx, dy, true);
+            this.dragging = false;
+            return false;
+        },
+
+        mousemove: function(event) {
+            if (this.dragging) {
+                var dx = event.clientX - this.dragstart_x,
+                    dy = event.clientY - this.dragstart_y;
+                this.update_img_css(this.zoom_avg, dx, dy);
+            }
+            return false;
+        },
+
         // called by the parent View before .remove()
         clear: function() {
             // clean up zoom slider etc
@@ -893,13 +933,26 @@
             return this;
         },
 
-        update_img_css: function(zoom) {
+        update_img_css: function(zoom, dx, dy, save) {
 
             if (this.$vp_img) {
                 var frame_w = this.$vp_frame.width() + 2,
                     frame_h = this.$vp_frame.height() + 2;
-                this.$vp_img.css( this.models[0].get_vp_img_css(zoom, frame_w, frame_h) );
+                dx = (dx / frame_w) * this.models[0].get('orig_width');
+                dy = (dy / frame_h) * this.models[0].get('orig_height');
+                dx += this.dx;
+                dy += this.dy;
+                this.$vp_img.css( this.models[0].get_vp_img_css(zoom, frame_w, frame_h, dx, dy) );
                 this.$vp_zoom_value.text(zoom + "%");
+
+                if (save) {
+                    this.dx = dx;
+                    this.dy = dy;
+                    _.each(this.models, function(m){
+                        m.save('dx', dx);
+                        m.save('dy', dy);
+                    });
+                }
             }
         },
 
@@ -912,8 +965,12 @@
             var orig_wh,
                 sum_wh = 0,
                 sum_zoom = 0,
-                img_srcs = [],
+                sum_dx = 0,
+                sum_dy = 0,
+                imgs_css = [],
                 same_wh = true;
+
+            // first, work out frame w & h - use average w/h ratio of all selected panels
             _.each(this.models, function(m){
                 var wh = m.get('orig_width') / m.get('orig_height');
                 if (!orig_wh) {
@@ -923,9 +980,6 @@
                 }
                 sum_wh += (m.get('width')/ m.get('height'));
                 sum_zoom += m.get('zoom');
-                var renderString = m.get_query_string(),
-                    imageId = m.get('imageId');
-                img_srcs.push('/webgateway/render_image/' + imageId + '/?c=' + renderString);
             });
             // Only continue if panels are all same w/h ratio
             if (!same_wh) return;
@@ -940,10 +994,26 @@
                 frame_w = this.full_size;
                 frame_h = this.full_size / wh;
             }
-            var json = model.get_vp_img_css(zoom, frame_w, frame_h);
 
-            json['opacity'] = 1 / img_srcs.length;
-            json['img_srcs'] = img_srcs;
+            // Now get img src & positioning css for each panel, 
+            _.each(this.models, function(m){
+                sum_dx += m.get('dx');
+                sum_dy += m.get('dy');
+                var renderString = m.get_query_string(),
+                    imageId = m.get('imageId'),
+                    img_css = model.get_vp_img_css(m.get('zoom'), frame_w, frame_h, m.get('dx'), m.get('dy'));
+                img_css['src'] = '/webgateway/render_image/' + imageId + '/?c=' + renderString;
+                imgs_css.push(img_css);
+            });
+
+            // save these average offsets in hand for dragging (apply to all panels)
+            this.dx = sum_dx/this.models.length,
+            this.dy = sum_dy/this.models.length;
+
+            var json = {};
+
+            json['opacity'] = 1 / imgs_css.length;
+            json['imgs_css'] = imgs_css;
             json['frame_w'] = frame_w;
             json['frame_h'] = frame_h;
             var html = this.template(json);
