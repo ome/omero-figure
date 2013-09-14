@@ -449,7 +449,6 @@
             _.each(s, function(m) {
                 var copy = m.toJSON();
                 delete copy.id;
-                delete copy.selected;
                 cd.push(copy);
             });
         },
@@ -458,6 +457,7 @@
             if (!this.clipboard_data) return;
 
             var self = this;
+            this.model.clearSelected();
 
             // first work out the bounding box of clipboard panels
             var top, left, bottom, right;
@@ -493,6 +493,8 @@
                 m.y = m.y + offset_y;
                 self.model.panels.create(m);
             });
+            // only pasted panels are selected - simply trigger...
+            this.model.notifySelectionChange();
         },
 
         clipboard_data: undefined,
