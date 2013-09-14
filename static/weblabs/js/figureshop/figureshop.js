@@ -438,8 +438,64 @@
 
         keyboardEvents: {
             'backspace': 'deleteSelectedPanels',
-            'command+a': 'select_all'
+            'command+a': 'select_all',
+            'command+c': 'copy_selected_panels',
+            'command+v': 'paste_panels'
         },
+
+        copy_selected_panels: function() {
+            var s = this.model.getSelected();
+            this.clipboard_data = cd = [];
+            _.each(s, function(m) {
+                var copy = m.toJSON();
+                delete copy.id;
+                delete copy.selected;
+                cd.push(copy);
+            });
+        },
+
+        paste_panels: function() {
+            if (!this.clipboard_data) return;
+
+            var self = this;
+
+            // first work out the bounding box of clipboard panels
+            var top, left, bottom, right;
+            _.each(this.clipboard_data, function(m, i) {
+                var t = m.y,
+                    l = m.x,
+                    b = t + m.height,
+                    r = l + m.width;
+                if (i == 0) {
+                    top = t; left = l; bottom = b; right = r;
+                } else {
+                    top = Math.min(top, t);
+                    left = Math.min(left, l);
+                    bottom = Math.max(bottom, b);
+                    right = Math.max(right, r);
+                }
+            });
+            var height = bottom - top,
+                width = right - left,
+                offset_x = 0,
+                offset_y = 0;
+
+            // if pasting a 'row', paste below. Paste 'column' to right.
+            if (width > height) {
+                offset_y = height + height/20;  // add a spacer
+            } else {
+                offset_x = width + width/20;
+            }
+
+            // apply offset to clipboard data & paste
+            _.each(this.clipboard_data, function(m) {
+                m.x = m.x + offset_x;
+                m.y = m.y + offset_y;
+                self.model.panels.create(m);
+            });
+        },
+
+        clipboard_data: undefined,
 
         select_all: function() {
             this.model.select_all();
