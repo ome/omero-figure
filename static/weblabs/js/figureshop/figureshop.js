@@ -126,8 +126,8 @@
 
             var orig_w = this.get('orig_width'),
                 orig_h = this.get('orig_height');
-            dx = dx || this.get('dx');
-            dy = dy || this.get('dy');
+            if (typeof dx == 'undefined') dx = this.get('dx');
+            if (typeof dy == 'undefined') dy = this.get('dy');
             zoom = zoom || 100;
 
             var img_x = 0,
@@ -521,20 +521,22 @@
                     y = c.y - (h/2);
                 // Get the json data for the image...
                 $.getJSON('/webgateway/imgData/' + imgId + '/', function(data){
-                    // manipulate it a bit, add x & y etc...
-                    data.imageId = data.id;
-                    data.name = data.meta.imageName;
-                    data.id = undefined;
-                    data.width = data.size.width;
-                    data.height = data.size.height;
-                    data.sizeZ = data.size.z
-                    data.sizeT = data.size.t
-                    data.orig_width = data.width;
-                    data.orig_height = data.height;
-                    data.x = x;
-                    data.y = y;
+                    // just pick what we need, add x & y etc...
+                    var n = {
+                        'imageId': data.id,
+                        'name': data.meta.imageName,
+                        'width': data.size.width,
+                        'height': data.size.height,
+                        'sizeZ': data.size.z,
+                        'sizeT': data.size.t,
+                        'channels': data.channels,
+                        'orig_width': data.size.width,
+                        'orig_height': data.size.height,
+                        'x': x,
+                        'y': y
+                    }
                     // create Panel
-                    self.model.panels.create(data);
+                    self.model.panels.create(n);
                 });
             }
         },
@@ -562,9 +564,9 @@
                 scaled_h = canvas_h * zoom;
             this.$canvas_wrapper.css({'width':scaled_w+"px", 'height': scaled_h+"px"});
             // and offset the canvas to stay visible
-            var margin_top = (canvas_h - scaled_h)/2,
-                margin_left = (canvas_w - scaled_w)/2;
-            this.$canvas.css({'top': "-"+margin_top+"px", "left": "-"+margin_left+"px"});
+            var margin_top = (scaled_h - canvas_h)/2,
+                margin_left = (scaled_w - canvas_w)/2;
+            this.$canvas.css({'top': margin_top+"px", "left": margin_left+"px"});
 
             // ...apply centre from before zooming
             if (curr_centre) {
@@ -1496,7 +1498,7 @@
 
             // If a panel is added...
             this.model.panels.on("add", this.addOne, this);
-            // TODO remove on destroy
+            this.listenTo(this.model, 'change:curr_zoom', this.setZoom);
 
             var multiSelectRect = new MultiSelectRectModel({figureModel: this.model}),
                 rv = new RectView({'model':multiSelectRect, 'paper':this.raphael_paper});
@@ -1518,8 +1520,8 @@
         // We simply re-size the Raphael svg itself - Shapes have their own zoom listeners
         setZoom: function() {
             var zoom = this.model.get('curr_zoom') * 0.01,
-                newWidth = parseInt(this.orig_width * zoom),
-                newHeight = parseInt(this.orig_height * zoom);
+                newWidth = this.model.get('canvas_width') * zoom,
+                newHeight = this.model.get('canvas_height') * zoom;
 
             this.raphael_paper.setSize(newWidth, newHeight);
         },

@@ -32,16 +32,16 @@
         new RightPanelView({model: figureModel});
 
         $("#zoom_slider").slider({
-            max: 100,
+            max: 200,
             min: 10,
-            value: 20,
+            value: 50,
             slide: function(event, ui) {
                 figureModel.set('curr_zoom', ui.value);
             }
         });
 
         // Do this after other setup above
-        figureModel.set('curr_zoom', 20);
+        figureModel.set('curr_zoom', 50);
 
         // load Panels from localStorage (if any)
         figureModel.panels.fetch();
