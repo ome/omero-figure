@@ -18,11 +18,32 @@
     <link rel="stylesheet" href="{% static "3rdparty/jquery-ui-1.8.19/themes/base/jquery.ui.base.css" %}" type="text/css" />
     <script>
 
+    // http://www.sitepoint.com/javascript-json-serialization/
+    JSON.stringify = JSON.stringify || function (obj) {
+        var t = typeof (obj);
+        if (t != "object" || obj === null) {
+            // simple data type
+            if (t == "string") obj = '"'+obj+'"';
+            return String(obj);
+        }
+        else {
+            // recurse array or object
+            var n, v, json = [], arr = (obj && obj.constructor == Array);
+            for (n in obj) {
+                v = obj[n]; t = typeof(v);
+                if (t == "string") v = '"'+v+'"';
+                else if (t == "object" && v !== null) v = JSON.stringify(v);
+                json.push((arr ? "" : '"' + n + '":') + String(v));
+            }
+            return (arr ? "[" : "{") + String(json) + (arr ? "]" : "}");
+        }
+    };
+
     $(document).ready(function() {
 
 
         var figureModel = new FigureModel( {'canvas_width': 10000, 'canvas_height': 6000,
-                'paper_width': 2000, 'paper_height': 3000});
+                'paper_width': 612, 'paper_height': 792});
 
         // UI Model (not saved - just used to coordinate UI status)
         // var uiState = new UiState( {model:figureModel} )
