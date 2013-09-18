@@ -31,10 +31,11 @@ def applyRdefs(image, channels):
     for i, c in enumerate(channels):
         if c['active']:
             cIdxs.append(i+1)
-            windows.append( (c['window']['start'], c['window']['end']) )
+            windows.append( [c['window']['start'], c['window']['end']] )
             colors.append( c['color'] )
 
-    image.setActiveChannels(cIdxs) # windows, colors)
+    print "setActiveChannels", cIdxs, windows, colors
+    image.setActiveChannels(cIdxs, windows, colors)
 
 
 def get_vp_img_css (panel):
@@ -91,7 +92,7 @@ def get_vp_img_css (panel):
     return {'x':tile_x, 'y':tile_y, 'width':tile_w, 'height':tile_h}
 
 
-def drawPanel(conn, c, panel, idx):
+def drawPanel(conn, c, panel, pageHeight, idx):
 
     imageId = panel['imageId']
     channels = panel['channels']
@@ -99,6 +100,9 @@ def drawPanel(conn, c, panel, idx):
     y = panel['y']
     width = panel['width']
     height = panel['height']
+
+    # Since coordinate system is 'bottom-up', convert from 'top-down'
+    y = pageHeight - height - y;
 
     image = conn.getObject("Image", imageId)
     applyRdefs(image, channels)
@@ -135,7 +139,7 @@ def create_pdf(conn, scriptParams):
 
     for i, panel in enumerate(panels_json):
 
-        drawPanel(conn, c, panel, i)
+        drawPanel(conn, c, panel, pageHeight, i)
 
     # complete page and save
     c.showPage()

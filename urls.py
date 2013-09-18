@@ -47,4 +47,5 @@ urlpatterns = patterns('django.views.generic.simple',
 
     # FigureShop
     url( r'^figureshop/', views.figureshop, name='weblabs_figureshop' ),
+    url( r'^make_web_figure/', views.make_web_figure, name='make_web_figure'),
 )
