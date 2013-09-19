@@ -154,6 +154,23 @@
 
     <style type="text/css">
 
+        /* Transformation to font-based icons */
+        .label-top-left .glyphicon {
+            transform: rotate(-90deg)
+        }
+        .label-bottom-left .glyphicon {
+            transform: rotate(-180deg)
+        }
+        .label-bottom-right .glyphicon {
+            transform: rotate(90deg)
+        }
+        .label-top .glyphicon {
+            transform: rotate(-90deg)
+        }
+        .label-left .glyphicon {
+            transform: rotate(-180deg)
+        }
+
         .vp_img {
             position:absolute;
         }
@@ -202,7 +219,7 @@
         .tab-pane {
             padding: 10px;
         }
-        .btn-group > .btn + .dropdown-toggle {
+        .btn-group > .btn.dropdown-toggle, .input-group-btn > .btn.dropdown-toggle {
             padding-left: 3px;
             padding-right: 3px;
         }
@@ -360,6 +377,7 @@
             <ul class="nav nav-tabs" id="previewInfoTabs">
                 <li><a href="#infoTab">Info</a></li>
                 <li class="active"><a href="#previewTab">Preview</a></li>
+                <li><a href="#labelsTab">Labels</a></li>
             </ul>
 
             <div class="tab-content">
@@ -377,6 +395,91 @@
                         <div id="vp_zoom_value" class="col-lg-4" style="padding:5px"></div>
                         <div class='clearfix'></div>
                     </div>
+                </div>
+
+
+                <div class="tab-pane" id="labelsTab">
+<!--                     <div class="btn-group">
+                        <button id="add_label" class="btn btn-success btn-sm" title="Add Label To Selected Panels">
+                            Add Label
+                        </button>
+                        <button id="add_smart_label" class="btn btn-success btn-sm dropdown-toggle" title="Smart Label..." data-toggle="dropdown">
+                            <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu" role="menu">
+                            <li><a href="#">Image Name</a></li>
+                            <li><a href="#">Channel Names</a></li>
+                        </ul>
+                    </div> -->
+
+                    <form class="form-inline" role="form">
+
+                        <div class="input-group pull-left" style="width:170px; margin-right: 4px">
+                            <input type="text" class="form-control input-sm" placeholder="Label">
+                            <div class="input-group-btn">
+                                <button type="button" class="btn btn-default btn-sm dropdown-toggle"
+                                        data-toggle="dropdown" title="Label from data...">
+                                    <span class="caret"></span>
+                                </button>
+                                <ul class="dropdown-menu pull-right">
+                                    <li><a href="#">Image Name</a></li>
+                                    <li><a href="#">Channel Names</a></li>
+                                    <li><a href="#">Dataset Name</a></li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-default btn-sm dropdown-toggle" title="Font Size"
+                                data-toggle="dropdown">
+                                12
+                                <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu" role="menu">
+                                <li><a href="#">12</a></li>
+                                <li><a href="#">14</a></li>
+                                <li><a href="#">16</a></li>
+                                <li><a href="#">18</a></li>
+                                <li><a href="#">22</a></li>
+                                <li><a href="#">26</a></li>
+                                <li><a href="#">30</a></li>
+                            </ul>
+                        </div>
+
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-default btn-sm dropdown-toggle label-top-left" title="Position"
+                                data-toggle="dropdown">
+                                <span class="glyphicon glyphicon-new-window"></span>
+                                <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu" role="menu">
+                                <li role="presentation" class="dropdown-header">Inside Corners</li>
+                                <li><a href="#" class="label-top-left">
+                                    <span class="glyphicon glyphicon-new-window"></span> Top Left</a>
+                                </li>
+                                <li><a href="#" class="label-top-right">
+                                    <span class="glyphicon glyphicon-new-window"></span> Top Right</a>
+                                </li>
+                                <li><a href="#" class="label-bottom-left">
+                                    <span class="glyphicon glyphicon-new-window"></span> Bottom Left</a>
+                                </li>
+                                <li><a href="#" class="label-bottom-right">
+                                    <span class="glyphicon glyphicon-new-window"></span> Bottom Right</a>
+                                </li>
+
+                                <li role="presentation" class="divider"></li>
+                                <li role="presentation" class="dropdown-header">Outside Edges</li>
+                                <li><a href="#" class="label-top">
+                                    <span class="glyphicon glyphicon-log-out"></span> Top</a>
+                                </li>
+                                <li><a href="#" class="label-left">
+                                    <span class="glyphicon glyphicon-log-out"></span> Left</a>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <button type="submit" class="btn btn-sm btn-success pull-right">Add Label</button>
+                    </form>
                 </div>
             </div>
 
