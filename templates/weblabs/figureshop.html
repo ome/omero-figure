@@ -155,20 +155,27 @@
     <style type="text/css">
 
         /* Transformation to font-based icons */
-        .label-top-left .glyphicon {
+        .label-top-left {
             transform: rotate(-90deg)
         }
-        .label-bottom-left .glyphicon {
-            transform: rotate(-180deg)
+        .label-bottom-left {
+            transform: rotate(-180deg);
+            position: relative;
+            top: 5px;
         }
-        .label-bottom-right .glyphicon {
+        .label-bottom-right {
             transform: rotate(90deg)
         }
-        .label-top .glyphicon {
+        .label-top {
             transform: rotate(-90deg)
         }
-        .label-left .glyphicon {
+        .label-left {
             transform: rotate(-180deg)
+        }
+        .label-right {
+        }
+        .label-bottom {
+            transform: rotate(90deg)
         }
 
         .vp_img {
@@ -399,87 +406,7 @@
 
 
                 <div class="tab-pane" id="labelsTab">
-<!--                     <div class="btn-group">
-                        <button id="add_label" class="btn btn-success btn-sm" title="Add Label To Selected Panels">
-                            Add Label
-                        </button>
-                        <button id="add_smart_label" class="btn btn-success btn-sm dropdown-toggle" title="Smart Label..." data-toggle="dropdown">
-                            <span class="caret"></span>
-                        </button>
-                        <ul class="dropdown-menu" role="menu">
-                            <li><a href="#">Image Name</a></li>
-                            <li><a href="#">Channel Names</a></li>
-                        </ul>
-                    </div> -->
 
-                    <form class="form-inline" role="form">
-
-                        <div class="input-group pull-left" style="width:170px; margin-right: 4px">
-                            <input type="text" class="form-control input-sm" placeholder="Label">
-                            <div class="input-group-btn">
-                                <button type="button" class="btn btn-default btn-sm dropdown-toggle"
-                                        data-toggle="dropdown" title="Label from data...">
-                                    <span class="caret"></span>
-                                </button>
-                                <ul class="dropdown-menu pull-right">
-                                    <li><a href="#">Image Name</a></li>
-                                    <li><a href="#">Channel Names</a></li>
-                                    <li><a href="#">Dataset Name</a></li>
-                                </ul>
-                            </div>
-                        </div>
-
-                        <div class="btn-group">
-                            <button type="button" class="btn btn-default btn-sm dropdown-toggle" title="Font Size"
-                                data-toggle="dropdown">
-                                12
-                                <span class="caret"></span>
-                            </button>
-                            <ul class="dropdown-menu" role="menu">
-                                <li><a href="#">12</a></li>
-                                <li><a href="#">14</a></li>
-                                <li><a href="#">16</a></li>
-                                <li><a href="#">18</a></li>
-                                <li><a href="#">22</a></li>
-                                <li><a href="#">26</a></li>
-                                <li><a href="#">30</a></li>
-                            </ul>
-                        </div>
-
-                        <div class="btn-group">
-                            <button type="button" class="btn btn-default btn-sm dropdown-toggle label-top-left" title="Position"
-                                data-toggle="dropdown">
-                                <span class="glyphicon glyphicon-new-window"></span>
-                                <span class="caret"></span>
-                            </button>
-                            <ul class="dropdown-menu" role="menu">
-                                <li role="presentation" class="dropdown-header">Inside Corners</li>
-                                <li><a href="#" class="label-top-left">
-                                    <span class="glyphicon glyphicon-new-window"></span> Top Left</a>
-                                </li>
-                                <li><a href="#" class="label-top-right">
-                                    <span class="glyphicon glyphicon-new-window"></span> Top Right</a>
-                                </li>
-                                <li><a href="#" class="label-bottom-left">
-                                    <span class="glyphicon glyphicon-new-window"></span> Bottom Left</a>
-                                </li>
-                                <li><a href="#" class="label-bottom-right">
-                                    <span class="glyphicon glyphicon-new-window"></span> Bottom Right</a>
-                                </li>
-
-                                <li role="presentation" class="divider"></li>
-                                <li role="presentation" class="dropdown-header">Outside Edges</li>
-                                <li><a href="#" class="label-top">
-                                    <span class="glyphicon glyphicon-log-out"></span> Top</a>
-                                </li>
-                                <li><a href="#" class="label-left">
-                                    <span class="glyphicon glyphicon-log-out"></span> Left</a>
-                                </li>
-                            </ul>
-                        </div>
-
-                        <button type="submit" class="btn btn-sm btn-success pull-right">Add Label</button>
-                    </form>
                 </div>
             </div>
 
@@ -488,6 +415,118 @@
 
 
     <!-- Templates for Backbone Views -->
+
+    <script id="labels_template" type="text/templage">
+        <form class="new-label-form form-inline" role="form">
+
+            <div class="input-group pull-left" style="width:170px; margin-right: 4px">
+                <input type="text" class="label-text form-control input-sm" placeholder="Label">
+                <div class="input-group-btn">
+                    <button type="button" class="btn btn-default btn-sm dropdown-toggle"
+                            data-toggle="dropdown" title="Label from data...">
+                        <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu pull-right">
+                        <li><a href="#" data-label="image-name">Image Name</a></li>
+                        <li><a href="#" data-label="channels">Channel Names</a></li>
+                        <li><a href="#" data-label="dataset">Dataset Name</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="btn-group">
+                <button type="button" class="font-size btn btn-default btn-sm dropdown-toggle" title="Font Size"
+                    data-toggle="dropdown">
+                    <span>12</span>
+                    <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu" role="menu">
+                    <li><a href="#"><span>12</span></a></li>
+                    <li><a href="#"><span>14</span></a></li>
+                    <li><a href="#"><span>16</span></a></li>
+                    <li><a href="#"><span>18</span></a></li>
+                    <li><a href="#"><span>22</span></a></li>
+                    <li><a href="#"><span>26</span></a></li>
+                    <li><a href="#"><span>30</span></a></li>
+                </ul>
+            </div>
+
+            <div class="btn-group">
+                <button type="button" class="label-position btn btn-default btn-sm dropdown-toggle" 
+                        title="Position" data-toggle="dropdown">
+                    <span class="glyphicon glyphicon-log-out label-top"></span>
+                    <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu" role="menu">
+                    <li role="presentation" class="dropdown-header">Inside Corners</li>
+                    <li><a href="#">
+                        <span class="label-top-left glyphicon glyphicon-new-window"></span>
+                        Top Left</a>
+                    </li>
+                    <li><a href="#">
+                        <span class="label-top-right glyphicon glyphicon-new-window"></span>
+                        Top Right</a>
+                    </li>
+                    <li><a href="#">
+                        <span class="label-bottom-left glyphicon glyphicon-new-window"></span>
+                        Bottom Left</a>
+                    </li>
+                    <li><a href="#">
+                        <span class="label-bottom-right glyphicon glyphicon-new-window"></span>
+                        Bottom Right</a>
+                    </li>
+
+                    <li role="presentation" class="divider"></li>
+                    <li role="presentation" class="dropdown-header">Outside Edges</li>
+                    <li><a href="#">
+                        <span class="label-left glyphicon glyphicon-log-out"></span> Left</a>
+                    </li>
+                    <li><a href="#">
+                        <span class="label-top glyphicon glyphicon-log-out"></span> Top</a>
+                    </li>
+                    <li><a href="#">
+                        <span class="label-right glyphicon glyphicon-log-out"></span> Right</a>
+                    </li>
+                    <li><a href="#">
+                        <span class="label-bottom glyphicon glyphicon-log-out"></span> Bottom</a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="btn-group">
+                <button type="button" class="label-color btn btn-default btn-sm dropdown-toggle" title="Font Size"
+                    data-toggle="dropdown">
+                    <span data-color="000000" style="background-color:#000">&nbsp &nbsp &nbsp</span>
+                    <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu" role="menu">
+                    <li><a href="#">
+                        <span data-color="000000" style="background-color:#000">&nbsp &nbsp &nbsp</span>&nbsp Black
+                    </a></li>
+                    <li><a href="#">
+                        <span data-color="0000FF" style="background-color:#00f">&nbsp &nbsp &nbsp</span>&nbsp Blue
+                    </a></li>
+                    <li><a href="#">
+                        <span data-color="00FF00" style="background-color:#0f0">&nbsp &nbsp &nbsp</span>&nbsp Green
+                    </a></li>
+                    <li><a href="#">
+                        <span data-color="FF0000" style="background-color:#f00">&nbsp &nbsp &nbsp</span>&nbsp Red
+                    </a></li>
+                    <li><a href="#">
+                        <span data-color="FFFF00" style="background-color:#ff0">&nbsp &nbsp &nbsp</span>&nbsp Yellow
+                    </a></li>
+                    <li><a href="#">
+                        <span data-color="FFFFFF" style="background-color:#fff">&nbsp &nbsp &nbsp</span>&nbsp White
+                    </a></li>
+                    <li><a href="#">
+                        <span data-color="FF00FF" style="background-color:#f0f">&nbsp &nbsp &nbsp</span>&nbsp Magenta
+                    </a></li>
+                </ul>
+            </div>
+
+            <button type="submit" class="btn btn-sm btn-success pull-right">Add</button>
+        </form>
+    </script>
 
     <script id="viewport_template" type="text/template">
         <div class="vp_frame" style="width:<%= frame_w %>px; height:<%= frame_h %>px">

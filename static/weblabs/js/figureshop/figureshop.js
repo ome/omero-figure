@@ -836,8 +836,71 @@
                 this.ctv = new ChannelToggleView({models: selected});
                 $("#channelToggle").empty().append(this.ctv.render().el)
             }
+
+            if (this.lbv) {
+                this.lbv.remove();
+            }
+            if (selected.length > 0) {
+                this.lbv = new LabelsPanelView({models: selected});
+                $("#labelsTab").empty().append(this.lbv.render().el)
+            }
         }
     });
+
+
+    var LabelsPanelView = Backbone.View.extend({
+
+        template: _.template($("#labels_template").html()),
+
+        initialize: function(opts) {
+            this.models = opts.models;
+            var self = this;
+            _.each(this.models, function(m){
+                self.listenTo(m, 'change:labels', self.render);
+            });
+        },
+
+        events: {
+            "submit .new-label-form": "handle_new_label",
+            "click .dropdown-menu a": "select_dropdown_option",
+        },
+
+        // Handles all the various drop-down menus in the New Label form
+        select_dropdown_option: function(event) {
+            var $a = $(event.target),
+                $span = $a.children('span');
+            // For the Label Text, handle this differently...
+            if ($a.attr('data-label')) {
+                $('.label-text', this.$el).val( $a.attr('data-label') );
+                return;
+            }
+            // All others, we take the <span> from the <a> and place it in the <button>
+            if ($span.length == 0) $span = $a;  // in case we clicked on <span>
+            var $li = $span.parent().parent(),
+                $button = $li.parent().prev();
+            $span = $span.clone();
+            $('span:first', $button).replaceWith($span);
+        },
+
+        // submission of the New Label form
+        handle_new_label: function(event) {
+            var $form = $(event.target),
+                label_text = $('.label-text', $form).val(),
+                font_size = $('.font-size', $form).text(),
+                position = $('.label-position span:first', $form).attr('class').split(' ')[0],
+                color = $('.label-color span:first').attr('data-color');
+            console.log(label_text, font_size, position, color);
+        },
+
+        render: function() {
+
+            var json = {},
+                html = this.template(json);
+            this.$el.html(html);
+            return this;
+        }
+
+    })
 
 
     var InfoPanelView = Backbone.View.extend({
