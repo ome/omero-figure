@@ -154,27 +154,89 @@
 
     <style type="text/css">
 
-        /* Transformation to font-based icons */
-        .label-top-left {
+        .label_layout {
+            position:absolute;
+        }
+        .label_layout div {
+            margin: 2px 5px;
+            font-size: 12px;
+        }
+/*        .label_center {
+            width: 100%;
+            text-align:center;
+        }*/
+        .label_middle, .label_middle table, .label_middle td {
+            height:100%;
+            width:100%;
+        }
+        .label_middle td {
+            vertical-align: middle;
+        }
+
+        /* Classes here are generated in templates from 'top' etc See labelicon classes below */
+        .label_top {
+            bottom: 100%;
+            width: 100%;
+            text-align:center;
+        }
+        .label_bottom {
+            top: 100%;
+            width: 100%;
+            text-align:center;
+        }
+        .label_left {
+            right: 100%;
+            text-align: right;
+        }
+        .label_right {
+            left: 100%;
+            text-align: left;
+            width: 100%;
+        }
+        .label_topleft {
+            top: 0px;
+            left: 0px;
+            text-align: left;
+        }
+        .label_topright {
+            top: 0px;
+            right: 0px;
+            text-align: right;
+        }
+        .label_bottomleft {
+            bottom: 0px;
+            left: 0px;
+            text-align: left;
+        }
+        .label_bottomright {
+            bottom: 0px;
+            right: 0px;
+            text-align: right;
+        }
+
+        /* Transformation to font-based icons - These are split('-') to get position: 'top' etc */
+        .labelicon-topleft {
             transform: rotate(-90deg)
         }
-        .label-bottom-left {
+        .labelicon-bottomleft {
             transform: rotate(-180deg);
             position: relative;
             top: 5px;
         }
-        .label-bottom-right {
+        .labelicon-bottomright {
             transform: rotate(90deg)
         }
-        .label-top {
+        .labelicon-top {
             transform: rotate(-90deg)
         }
-        .label-left {
+        .labelicon-left {
+            position: relative;
+            top: 5px;
             transform: rotate(-180deg)
         }
-        .label-right {
+        .labelicon-right {
         }
-        .label-bottom {
+        .labelicon-bottom {
             transform: rotate(90deg)
         }
 
@@ -407,6 +469,116 @@
 
                 <div class="tab-pane" id="labelsTab">
 
+                    <form class="new-label-form form-inline" role="form">
+
+                        <div class="input-group pull-left" style="width:170px; margin-right: 4px">
+                            <input type="text" class="label-text form-control input-sm" placeholder="Label">
+                            <div class="input-group-btn">
+                                <button type="button" class="btn btn-default btn-sm dropdown-toggle"
+                                        data-toggle="dropdown" title="Label from data...">
+                                    <span class="caret"></span>
+                                </button>
+                                <ul class="dropdown-menu pull-right">
+                                    <li><a href="#" data-label="image-name">Image Name</a></li>
+                                    <li><a href="#" data-label="channels">Channel Names</a></li>
+                                    <li><a href="#" data-label="dataset">Dataset Name</a></li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="btn-group">
+                            <button type="button" class="font-size btn btn-default btn-sm dropdown-toggle" title="Font Size"
+                                data-toggle="dropdown">
+                                <span>12</span>
+                                <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu" role="menu">
+                                <li><a href="#"><span>10</span></a></li>
+                                <li><a href="#"><span>12</span></a></li>
+                                <li><a href="#"><span>14</span></a></li>
+                                <li><a href="#"><span>16</span></a></li>
+                                <li><a href="#"><span>18</span></a></li>
+                                <li><a href="#"><span>22</span></a></li>
+                                <li><a href="#"><span>26</span></a></li>
+                                <li><a href="#"><span>30</span></a></li>
+                            </ul>
+                        </div>
+
+                        <div class="btn-group">
+                            <button type="button" class="label-position btn btn-default btn-sm dropdown-toggle" 
+                                    title="Position" data-toggle="dropdown">
+                                <span class="labelicon-top glyphicon glyphicon-log-out"></span>
+                                <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu" role="menu">
+                                <li role="presentation" class="dropdown-header">Inside Corners</li>
+                                <li><a href="#">
+                                    <span class="labelicon-topleft glyphicon glyphicon-new-window"></span>
+                                    Top Left</a>
+                                </li>
+                                <li><a href="#">
+                                    <span class="labelicon-topright glyphicon glyphicon-new-window"></span>
+                                    Top Right</a>
+                                </li>
+                                <li><a href="#">
+                                    <span class="labelicon-bottomleft glyphicon glyphicon-new-window"></span>
+                                    Bottom Left</a>
+                                </li>
+                                <li><a href="#">
+                                    <span class="labelicon-bottomright glyphicon glyphicon-new-window"></span>
+                                    Bottom Right</a>
+                                </li>
+
+                                <li role="presentation" class="divider"></li>
+                                <li role="presentation" class="dropdown-header">Outside Edges</li>
+                                <li><a href="#">
+                                    <span class="labelicon-left glyphicon glyphicon-log-out"></span> Left</a>
+                                </li>
+                                <li><a href="#">
+                                    <span class="labelicon-top glyphicon glyphicon-log-out"></span> Top</a>
+                                </li>
+                                <li><a href="#">
+                                    <span class="labelicon-right glyphicon glyphicon-log-out"></span> Right</a>
+                                </li>
+                                <li><a href="#">
+                                    <span class="labelicon-bottom glyphicon glyphicon-log-out"></span> Bottom</a>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="btn-group">
+                            <button type="button" class="label-color btn btn-default btn-sm dropdown-toggle" title="Font Size"
+                                data-toggle="dropdown">
+                                <span data-color="000000" style="background-color:#000">&nbsp &nbsp &nbsp</span>
+                                <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu" role="menu">
+                                <li><a href="#">
+                                    <span data-color="000000" style="background-color:#000">&nbsp &nbsp &nbsp</span>&nbsp Black
+                                </a></li>
+                                <li><a href="#">
+                                    <span data-color="0000FF" style="background-color:#00f">&nbsp &nbsp &nbsp</span>&nbsp Blue
+                                </a></li>
+                                <li><a href="#">
+                                    <span data-color="00FF00" style="background-color:#0f0">&nbsp &nbsp &nbsp</span>&nbsp Green
+                                </a></li>
+                                <li><a href="#">
+                                    <span data-color="FF0000" style="background-color:#f00">&nbsp &nbsp &nbsp</span>&nbsp Red
+                                </a></li>
+                                <li><a href="#">
+                                    <span data-color="FFFF00" style="background-color:#ff0">&nbsp &nbsp &nbsp</span>&nbsp Yellow
+                                </a></li>
+                                <li><a href="#">
+                                    <span data-color="FFFFFF" style="background-color:#fff">&nbsp &nbsp &nbsp</span>&nbsp White
+                                </a></li>
+                                <li><a href="#">
+                                    <span data-color="FF00FF" style="background-color:#f0f">&nbsp &nbsp &nbsp</span>&nbsp Magenta
+                                </a></li>
+                            </ul>
+                        </div>
+
+                        <button type="submit" class="btn btn-sm btn-success pull-right">Add</button>
+                    </form>
                 </div>
             </div>
 
@@ -417,115 +589,7 @@
     <!-- Templates for Backbone Views -->
 
     <script id="labels_template" type="text/templage">
-        <form class="new-label-form form-inline" role="form">
 
-            <div class="input-group pull-left" style="width:170px; margin-right: 4px">
-                <input type="text" class="label-text form-control input-sm" placeholder="Label">
-                <div class="input-group-btn">
-                    <button type="button" class="btn btn-default btn-sm dropdown-toggle"
-                            data-toggle="dropdown" title="Label from data...">
-                        <span class="caret"></span>
-                    </button>
-                    <ul class="dropdown-menu pull-right">
-                        <li><a href="#" data-label="image-name">Image Name</a></li>
-                        <li><a href="#" data-label="channels">Channel Names</a></li>
-                        <li><a href="#" data-label="dataset">Dataset Name</a></li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="btn-group">
-                <button type="button" class="font-size btn btn-default btn-sm dropdown-toggle" title="Font Size"
-                    data-toggle="dropdown">
-                    <span>12</span>
-                    <span class="caret"></span>
-                </button>
-                <ul class="dropdown-menu" role="menu">
-                    <li><a href="#"><span>12</span></a></li>
-                    <li><a href="#"><span>14</span></a></li>
-                    <li><a href="#"><span>16</span></a></li>
-                    <li><a href="#"><span>18</span></a></li>
-                    <li><a href="#"><span>22</span></a></li>
-                    <li><a href="#"><span>26</span></a></li>
-                    <li><a href="#"><span>30</span></a></li>
-                </ul>
-            </div>
-
-            <div class="btn-group">
-                <button type="button" class="label-position btn btn-default btn-sm dropdown-toggle" 
-                        title="Position" data-toggle="dropdown">
-                    <span class="glyphicon glyphicon-log-out label-top"></span>
-                    <span class="caret"></span>
-                </button>
-                <ul class="dropdown-menu" role="menu">
-                    <li role="presentation" class="dropdown-header">Inside Corners</li>
-                    <li><a href="#">
-                        <span class="label-top-left glyphicon glyphicon-new-window"></span>
-                        Top Left</a>
-                    </li>
-                    <li><a href="#">
-                        <span class="label-top-right glyphicon glyphicon-new-window"></span>
-                        Top Right</a>
-                    </li>
-                    <li><a href="#">
-                        <span class="label-bottom-left glyphicon glyphicon-new-window"></span>
-                        Bottom Left</a>
-                    </li>
-                    <li><a href="#">
-                        <span class="label-bottom-right glyphicon glyphicon-new-window"></span>
-                        Bottom Right</a>
-                    </li>
-
-                    <li role="presentation" class="divider"></li>
-                    <li role="presentation" class="dropdown-header">Outside Edges</li>
-                    <li><a href="#">
-                        <span class="label-left glyphicon glyphicon-log-out"></span> Left</a>
-                    </li>
-                    <li><a href="#">
-                        <span class="label-top glyphicon glyphicon-log-out"></span> Top</a>
-                    </li>
-                    <li><a href="#">
-                        <span class="label-right glyphicon glyphicon-log-out"></span> Right</a>
-                    </li>
-                    <li><a href="#">
-                        <span class="label-bottom glyphicon glyphicon-log-out"></span> Bottom</a>
-                    </li>
-                </ul>
-            </div>
-
-            <div class="btn-group">
-                <button type="button" class="label-color btn btn-default btn-sm dropdown-toggle" title="Font Size"
-                    data-toggle="dropdown">
-                    <span data-color="000000" style="background-color:#000">&nbsp &nbsp &nbsp</span>
-                    <span class="caret"></span>
-                </button>
-                <ul class="dropdown-menu" role="menu">
-                    <li><a href="#">
-                        <span data-color="000000" style="background-color:#000">&nbsp &nbsp &nbsp</span>&nbsp Black
-                    </a></li>
-                    <li><a href="#">
-                        <span data-color="0000FF" style="background-color:#00f">&nbsp &nbsp &nbsp</span>&nbsp Blue
-                    </a></li>
-                    <li><a href="#">
-                        <span data-color="00FF00" style="background-color:#0f0">&nbsp &nbsp &nbsp</span>&nbsp Green
-                    </a></li>
-                    <li><a href="#">
-                        <span data-color="FF0000" style="background-color:#f00">&nbsp &nbsp &nbsp</span>&nbsp Red
-                    </a></li>
-                    <li><a href="#">
-                        <span data-color="FFFF00" style="background-color:#ff0">&nbsp &nbsp &nbsp</span>&nbsp Yellow
-                    </a></li>
-                    <li><a href="#">
-                        <span data-color="FFFFFF" style="background-color:#fff">&nbsp &nbsp &nbsp</span>&nbsp White
-                    </a></li>
-                    <li><a href="#">
-                        <span data-color="FF00FF" style="background-color:#f0f">&nbsp &nbsp &nbsp</span>&nbsp Magenta
-                    </a></li>
-                </ul>
-            </div>
-
-            <button type="submit" class="btn btn-sm btn-success pull-right">Add</button>
-        </form>
     </script>
 
     <script id="viewport_template" type="text/template">
@@ -580,8 +644,32 @@
 
     </script>
 
+    <!-- The content of <div class='imagePanel'> for each panel -->
     <script id="figure_panel_template" type="text/template">
-        <img class="img_panel" />
+        <div style="overflow: hidden; width:100%; height:100%; position:absolute">
+            <img class="img_panel" />
+        </div>
+    </script>
+
+    <!-- One of these added to each position 'top', 'topleft' etc within Panel $el -->
+    <script id="label_template" type="text/template">
+        <div class="label_layout label_<%= position %>">
+            <% _.each(labels, function(l, i) { %>
+                <div style='color:#<%= l.color %>; font-size:<%= l.size %>px'><%= l.text %></div>
+            <% }); %>
+        </div>
+    </script>
+    <!-- Alternative label_template - uses table to valign middle for 'left' & 'right' labels -->
+    <script id="label_table_template" type="text/template">
+        <div class="label_layout label_middle label_<%= position %>">
+            <table>
+                <tr><td>
+                    <% _.each(labels, function(l, i) { %>
+                        <div style='color:#<%= l.color %>; font-size:<%= l.size %>px'><%= l.text %></div>
+                    <% }); %>
+                </td></tr>
+            </table>
+        </div>
     </script>
 
     <script id="channel_toggle_template" type="text/template">

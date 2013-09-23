@@ -42,9 +42,8 @@
         background: white;
     }
 
-    #paper div {
+    #paper .imagePanel {
         position: absolute;
-        overflow: hidden;
         background: #ddd;
     }
 

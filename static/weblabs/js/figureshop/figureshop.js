@@ -16,6 +16,7 @@
             zoom: 100,
             dx: 0,    // pan x & y within viewport
             dy: 0,
+            labels: [],
             selected: false
         },
 
@@ -24,6 +25,19 @@
             this.on('change', function(event){
                 console.log("** Panel Model Change", event.changed);
             });
+        },
+
+        add_label: function(label) {
+            var oldLabs = this.get('labels');
+            // Need to clone the list of labels...
+            var labs = [];
+            for (var i=0; i<oldLabs.length; i++) {
+                labs.push( $.extend(true, {}, oldLabs[i]) );
+            }
+            // ... then add new label ...
+            labs.push($.extend(true, {}, label));
+            // ... so that we get the changed event triggering OK
+            this.save('labels', labs);
         },
 
         save_channel: function(cIndex, attr, value) {
@@ -718,7 +732,10 @@
     // A Panel is a <div>, added to the #paper by the FigureView below.
     var PanelView = Backbone.View.extend({
         tagName: "div",
+        className: "imagePanel",
         template: _.template($('#figure_panel_template').html()),
+        label_template: _.template($('#label_template').html()),
+        label_table_template: _.template($('#label_table_template').html()),
 
         initialize: function(opts) {
             // we render on Changes in the model OR selected shape etc.
@@ -727,6 +744,7 @@
                 'change:x change:y change:width change:height change:zoom change:dx change:dy',
                 this.render_layout);
             this.listenTo(this.model, 'change:channels', this.render_image);
+            this.listenTo(this.model, 'change:labels', this.render_labels);
             // This could be handled by backbone.relational, but do it manually for now...
             // this.listenTo(this.model.channels, 'change', this.render);
             // During drag, model isn't updated, but we trigger 'drag'
@@ -778,6 +796,38 @@
             this.$img_panel.attr('src', '/webgateway/render_image/' + imageId + '/?c=' + renderString);
         },
 
+        render_labels: function() {
+
+            $('.label_layout', this.$el).remove();  // clear existing labels
+
+            var labels = this.model.get('labels'),
+                self = this,
+                positions = {
+                    'top':[], 'bottom':[], 'left':[], 'right':[],
+                    'topleft':[], 'topright':[],
+                    'bottomleft':[], 'bottomright':[]
+                };
+
+            // group labels by position
+            _.each(labels, function(l) {
+                positions[l.position].push(l);
+            });
+
+            // Render template for each position and append to Panel.$el
+            _.each(positions, function(lbls, p) {
+                var json = {'position':p, 'labels':lbls};
+                if (lbls.length == 0) return;
+                if (p == 'left' || p == 'right') {
+                    var html = self.label_table_template(json)
+                } else {
+                    var html = self.label_template(json);
+                }
+                self.$el.append(html);
+            });
+
+            return this;
+        },
+
         render: function() {
 
             // Have to handle potential nulls, since the template doesn't like them!
@@ -791,6 +841,7 @@
 
             this.render_image();
             this.render_layout();
+            this.render_labels();
 
             return this;
         }
@@ -808,6 +859,7 @@
             this.listenTo(this.model, 'change:selection', this.render);
 
             // this.render();
+            new LabelsPanelView({model: this.model})
         },
 
         render: function() {
@@ -837,13 +889,6 @@
                 $("#channelToggle").empty().append(this.ctv.render().el)
             }
 
-            if (this.lbv) {
-                this.lbv.remove();
-            }
-            if (selected.length > 0) {
-                this.lbv = new LabelsPanelView({models: selected});
-                $("#labelsTab").empty().append(this.lbv.render().el)
-            }
         }
     });
 
@@ -852,12 +897,13 @@
 
         template: _.template($("#labels_template").html()),
 
+        model: FigureModel,
+
+        el: $("#labelsTab"),
+
         initialize: function(opts) {
-            this.models = opts.models;
-            var self = this;
-            _.each(this.models, function(m){
-                self.listenTo(m, 'change:labels', self.render);
-            });
+            this.listenTo(this.model, 'change:selection', this.render);
+            this.render();
         },
 
         events: {
@@ -886,17 +932,32 @@
         handle_new_label: function(event) {
             var $form = $(event.target),
                 label_text = $('.label-text', $form).val(),
-                font_size = $('.font-size', $form).text(),
+                font_size = $('.font-size', $form).text().trim(),
                 position = $('.label-position span:first', $form).attr('class').split(' ')[0],
                 color = $('.label-color span:first').attr('data-color');
-            console.log(label_text, font_size, position, color);
+            position = position.split('-')[1];
+            var label = {
+                text: label_text,
+                size: parseInt(font_size),
+                position: position,
+                color: color
+            };
+
+            var selected = this.model.getSelected();
+            _.each(selected, function(m) {
+                m.add_label(label);
+            });
+            return false;
         },
 
         render: function() {
 
-            var json = {},
-                html = this.template(json);
-            this.$el.html(html);
+            // html is already in place for 'New Label' form - simply show/hide
+            if (this.model.getSelected().length == 0) {
+                $(".new-label-form", this.$el).hide();
+            } else {
+                $(".new-label-form", this.$el).show();
+            }
             return this;
         }
 
