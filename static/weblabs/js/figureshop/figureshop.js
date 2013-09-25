@@ -814,16 +814,17 @@
             });
 
             // Render template for each position and append to Panel.$el
+            var html = "";
             _.each(positions, function(lbls, p) {
                 var json = {'position':p, 'labels':lbls};
                 if (lbls.length == 0) return;
                 if (p == 'left' || p == 'right') {
-                    var html = self.label_table_template(json)
+                    html += self.label_table_template(json)
                 } else {
-                    var html = self.label_template(json);
+                    html += self.label_template(json);
                 }
-                self.$el.append(html);
             });
+            self.$el.append(html);
 
             return this;
         },
@@ -895,8 +896,6 @@
 
     var LabelsPanelView = Backbone.View.extend({
 
-        template: _.template($("#labels_template").html()),
-
         model: FigureModel,
 
         el: $("#labelsTab"),
@@ -952,16 +951,85 @@
 
         render: function() {
 
+            var selected = this.model.getSelected();
+
             // html is already in place for 'New Label' form - simply show/hide
-            if (this.model.getSelected().length == 0) {
+            if (selected.length == 0) {
                 $(".new-label-form", this.$el).hide();
             } else {
                 $(".new-label-form", this.$el).show();
             }
+
+            // show selected panels labels below
+            var old = this.sel_labels_panel;
+
+            if (selected.length > 0) {
+                this.sel_labels_panel = new SelectedPanelsLabelsView({models: selected});
+                this.sel_labels_panel.render();
+                $("#selected_panels_labels").empty().append(this.sel_labels_panel.$el);
+            }
+            if (old) {
+                old.remove();
+            }
+
             return this;
         }
 
-    })
+    });
+
+
+    // Created new for each selection change
+    var SelectedPanelsLabelsView = Backbone.View.extend({
+
+        template: _.template($("#labels_template").html()),
+
+        initialize: function(opts) {
+
+
+            // prevent rapid repetative rendering, when listening to multiple panels
+            this.render = _.debounce(this.render);
+
+            this.models = opts.models;
+            var self = this;
+
+            _.each(this.models, function(m){
+                self.listenTo(m, 'change:labels', self.render);
+            });
+
+            // this.render();
+        },
+
+        render: function() {
+
+            var self = this,
+                positions = {'top':{}, 'bottom':{}, 'left':{}, 'right':{},
+                    'topleft':{}, 'topright':{}, 'bottomleft':{}, 'bottomright':{}};
+            _.each(this.models, function(m, i){
+                // group labels by position
+                _.each(m.get('labels'), function(l) {
+                    // remove duplicates by mapping to unique key
+                    var key = l.text + l.size + l.color;
+                    positions[l.position][key] = l;
+                });
+            });
+
+            this.$el.empty();
+
+            // Render template for each position and append to $el
+            var html = "";
+            _.each(positions, function(lbls, p) {
+
+                lbls = _.map(lbls, function(label, key){ return label; });
+
+                var json = {'position':p, 'labels':lbls};
+                if (lbls.length == 0) return;
+                html += self.template(json);
+            });
+            self.$el.append(html);
+
+            return this;
+        }
+    });
 
 
     var InfoPanelView = Backbone.View.extend({

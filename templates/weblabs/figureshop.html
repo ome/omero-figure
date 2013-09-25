@@ -584,6 +584,8 @@
 
                         <button type="submit" class="btn btn-sm btn-success pull-right">Add</button>
                     </form>
+
+                    <div id="selected_panels_labels"></div>
                 </div>
             </div>
 
@@ -594,7 +596,16 @@
     <!-- Templates for Backbone Views -->
 
     <script id="labels_template" type="text/templage">
-
+        <div class="">
+            <h4><%= position %></h4>
+            <% _.each(labels, function(l, i) { %>
+                <div>
+                    <input value='<%= l.text %>' />
+                    <%= l.size %>
+                    <span style='background-color:#<%= l.color %>;'>&nbsp &nbsp</span>
+                </div>
+            <% }); %>
+        </div>
     </script>
 
     <script id="viewport_template" type="text/template">
