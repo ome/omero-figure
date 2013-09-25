@@ -92,6 +92,101 @@ def get_vp_img_css (panel):
     return {'x':tile_x, 'y':tile_y, 'width':tile_w, 'height':tile_h}
 
 
+def drawLabels(conn, c, panel, pageHeight):
+
+    labels = panel['labels']
+    x = panel['x']
+    y = panel['y']
+    width = panel['width']
+    height = panel['height']
+
+    spacer = 5
+
+    # group by 'position':
+    positions = {'top':[], 'bottom':[], 'left':[], 'right':[],
+        'topleft':[], 'topright':[], 'bottomleft':[], 'bottomright':[]}
+
+    print "sorting labels..."
+    for l in labels:
+        print l
+        pos = l['position']
+        if pos in positions:
+            positions[pos].append(l)
+
+    def drawLab(c, label, lx, ly, align='left'):
+        label_h = label['size']
+        c.setFont("Helvetica", label_h)
+        color = label['color']
+        red = int(color[0:2],16)
+        green = int(color[2:4],16)
+        blue = int(color[4:6],16)
+        c.setFillColorRGB(red, green, blue)
+        if align == 'left':
+            c.drawString(lx, pageHeight - label_h - ly, label['text'])
+        elif align == 'right':
+            c.drawRightString(lx, pageHeight - label_h - ly, label['text'])
+        elif align == 'center':
+            c.drawCentredString(lx, pageHeight - label_h - ly, label['text'])
+
+        return label_h
+
+    # Render each position:
+    for key, labels in positions.items():
+        if key == 'topleft':
+            lx = x + spacer
+            ly = y + spacer
+            for l in labels:
+                label_h = drawLab(c, l, lx, ly)
+                ly += label_h + spacer
+        elif key == 'topright':
+            lx = x + width - spacer
+            ly = y + spacer
+            for l in labels:
+                label_h = drawLab(c, l, lx, ly, align='right')
+                ly += label_h + spacer
+        elif key == 'bottomleft':
+            lx = x + spacer
+            ly = y + height
+            labels.reverse()  # last item goes bottom
+            for l in labels:
+                ly = ly - l['size'] - spacer
+                drawLab(c, l, lx, ly)
+        elif key == 'bottomright':
+            lx = x + width - spacer
+            ly = y + height
+            labels.reverse()  # last item goes bottom
+            for l in labels:
+                ly = ly - l['size'] - spacer
+                drawLab(c, l, lx, ly, align='right')
+        elif key == 'top':
+            lx = x + (width/2)
+            ly = y
+            labels.reverse()
+            for l in labels:
+                ly = ly - l['size'] - spacer
+                drawLab(c, l, lx, ly, align='center')
+        elif key == 'bottom':
+            lx = x + (width/2)
+            ly = y + height + spacer
+            for l in labels:
+                label_h = drawLab(c, l, lx, ly, align='center')
+                ly += label_h + spacer
+        elif key == 'left':
+            lx = x - spacer
+            total_h = sum([l['size'] for l in labels]) + spacer * (len(labels)-1)
+            ly = y + (height-total_h)/2
+            for l in labels:
+                label_h = drawLab(c, l, lx, ly, align='right')
+                ly += label_h + spacer
+        elif key == 'right':
+            lx = x + width + spacer
+            total_h = sum([l['size'] for l in labels]) + spacer * (len(labels)-1)
+            ly = y + (height-total_h)/2
+            for l in labels:
+                label_h = drawLab(c, l, lx, ly)
+                ly += label_h + spacer
+
+
 def drawPanel(conn, c, panel, pageHeight, idx):
 
     imageId = panel['imageId']
@@ -140,6 +235,7 @@ def create_pdf(conn, scriptParams):
     for i, panel in enumerate(panels_json):
 
         drawPanel(conn, c, panel, pageHeight, i)
+        drawLabels(conn, c, panel, pageHeight)
 
     # complete page and save
     c.showPage()
