@@ -40,6 +40,32 @@
             this.save('labels', labs);
         },
 
+        get_label_key: function(label) {
+            return label.text + '_' + label.size + '_' + label.color + '_' + label.position
+        },
+
+        // labels_map is {labelKey: {size:s, text:t, position:p, color:c}}
+        // where labelKey specifies the label to edit. "l.text + '_' + l.size + '_' + l.color + '_' + l.position"
+        edit_labels: function(labels_map) {
+
+            var oldLabs = this.get('labels');
+            // Need to clone the list of labels...
+            var labs = [],
+                lbl, lbl_key;
+            for (var i=0; i<oldLabs.length; i++) {
+                lbl = oldLabs[i];
+                lbl_key = this.get_label_key(lbl);
+                if (labels_map.hasOwnProperty(lbl_key)) {
+                    lbl = $.extend(true, {}, labels_map[lbl_key]);
+                } else {
+                    lbl = $.extend(true, {}, lbl);
+                }
+                labs.push( lbl );
+            }
+            // ... so that we get the changed event triggering OK
+            this.save('labels', labs);
+        },
+
         save_channel: function(cIndex, attr, value) {
 
             var oldChs = this.get('channels');
@@ -933,7 +959,7 @@
                 label_text = $('.label-text', $form).val(),
                 font_size = $('.font-size', $form).text().trim(),
                 position = $('.label-position span:first', $form).attr('class').split(' ')[0],
-                color = $('.label-color span:first').attr('data-color');
+                color = $('.label-color span:first', $form).attr('data-color');
             position = position.split('-')[1];
             var label = {
                 text: label_text,
@@ -981,10 +1007,9 @@
     // Created new for each selection change
     var SelectedPanelsLabelsView = Backbone.View.extend({
 
-        template: _.template($("#labels_template").html()),
+        template: _.template($("#labels_form_template").html()),
 
         initialize: function(opts) {
-
 
             // prevent rapid repetative rendering, when listening to multiple panels
             this.render = _.debounce(this.render);
@@ -995,8 +1020,32 @@
             _.each(this.models, function(m){
                 self.listenTo(m, 'change:labels', self.render);
             });
+        },
 
-            // this.render();
+        events: {
+            "submit .edit-label-form": "handle_label_edit",
+        },
+
+        // Use the label 'key' to specify which labels to update
+        handle_label_edit: function(event) {
+
+            var $form = $(event.target),
+                label_text = $('.label-text', $form).val(),
+                font_size = $('.font-size', $form).text().trim(),
+                position = $('.label-position span:first', $form).attr('class').split(' ')[0],
+                color = $('.label-color span:first', $form).attr('data-color'),
+                key = $form.attr('data-key');
+
+            var position = position.split('-')[1],      // class is labelicon-top
+                new_label = {text:label_text, size:font_size, position:position, color:color};
+
+            var newlbls = {};
+            newlbls[key] = new_label;
+
+            _.each(this.models, function(m, i){
+                m.edit_labels(newlbls);
+            });
+            return false;
         },
 
         render: function() {
@@ -1008,8 +1057,10 @@
                 // group labels by position
                 _.each(m.get('labels'), function(l) {
                     // remove duplicates by mapping to unique key
-                    var key = l.text + l.size + l.color;
-                    positions[l.position][key] = l;
+                    var key = m.get_label_key(l),
+                        ljson = $.extend(true, {}, l);
+                        ljson.key = key;
+                    positions[l.position][key] = ljson;
                 });
             });
 

@@ -154,6 +154,14 @@
 
     <style type="text/css">
 
+        .edit-label-form button.close {
+            color: #FF0000;
+            left: 3px;
+            top: 2px;
+            margin-left: 4px;
+            opacity: 0.5;
+            position: relative;
+        }
         .label_layout {
             position:absolute;
         }
@@ -469,6 +477,7 @@
 
                 <div class="tab-pane" id="labelsTab">
 
+                    <h5>Add Labels</h5>
                     <form class="new-label-form form-inline" role="form">
 
                         <div class="input-group pull-left" style="width:170px; margin-right: 4px">
@@ -585,6 +594,9 @@
                         <button type="submit" class="btn btn-sm btn-success pull-right">Add</button>
                     </form>
 
+                    <hr />
+
+                    <h5>Edit Labels</h5>
                     <div id="selected_panels_labels"></div>
                 </div>
             </div>
@@ -595,15 +607,130 @@
 
     <!-- Templates for Backbone Views -->
 
-    <script id="labels_template" type="text/templage">
+    <script id="labels_form_template" type="text/template">
         <div class="">
-            <h4><%= position %></h4>
+
             <% _.each(labels, function(l, i) { %>
-                <div>
-                    <input value='<%= l.text %>' />
-                    <%= l.size %>
-                    <span style='background-color:#<%= l.color %>;'>&nbsp &nbsp</span>
-                </div>
+
+                <form class="edit-label-form form-inline" role="form" data-key="<%= l.key %>">
+
+                    <div class="input-group pull-left" style="width:140px; margin-right: 4px">
+                        <input type="text" class="label-text form-control input-sm" 
+                                placeholder="Label" value="<%= l.text %>" />
+                        <div class="input-group-btn">
+                            <button type="button" class="btn btn-default btn-sm dropdown-toggle"
+                                    data-toggle="dropdown" title="Label from data...">
+                                <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu pull-right">
+                                <li><a href="#" data-label="image-name">Image Name</a></li>
+                                <li><a href="#" data-label="channels">Channel Names</a></li>
+                                <li><a href="#" data-label="dataset">Dataset Name</a></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="btn-group">
+                        <button type="button" class="font-size btn btn-default btn-sm dropdown-toggle" title="Font Size"
+                            data-toggle="dropdown" style="width:33px">
+                            <span><%= l.size %></span>
+                            <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu" role="menu">
+                            <li><a href="#"><span>6</span></a></li>
+                            <li><a href="#"><span>7</span></a></li>
+                            <li><a href="#"><span>8</span></a></li>
+                            <li><a href="#"><span>9</span></a></li>
+                            <li><a href="#"><span>10</span></a></li>
+                            <li><a href="#"><span>11</span></a></li>
+                            <li><a href="#"><span>12</span></a></li>
+                            <li><a href="#"><span>14</span></a></li>
+                            <li><a href="#"><span>18</span></a></li>
+                            <li><a href="#"><span>21</span></a></li>
+                            <li><a href="#"><span>24</span></a></li>
+                            <li><a href="#"><span>36</span></a></li>
+                            <li><a href="#"><span>48</span></a></li>
+                        </ul>
+                    </div>
+
+                    <div class="btn-group">
+                        <button type="button" class="label-position btn btn-default btn-sm dropdown-toggle" 
+                                title="Position" data-toggle="dropdown">
+                            <span class="labelicon-<%= position %> glyphicon 
+                                <% if (_.contains(['top','bottom','left','right'],position)) print('glyphicon-log-out'); else {print('glyphicon-new-window')} %>"></span>
+                            <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu" role="menu">
+                            <li role="presentation" class="dropdown-header">Inside Corners</li>
+                            <li><a href="#">
+                                <span class="labelicon-topleft glyphicon glyphicon-new-window"></span>
+                                Top Left</a>
+                            </li>
+                            <li><a href="#">
+                                <span class="labelicon-topright glyphicon glyphicon-new-window"></span>
+                                Top Right</a>
+                            </li>
+                            <li><a href="#">
+                                <span class="labelicon-bottomleft glyphicon glyphicon-new-window"></span>
+                                Bottom Left</a>
+                            </li>
+                            <li><a href="#">
+                                <span class="labelicon-bottomright glyphicon glyphicon-new-window"></span>
+                                Bottom Right</a>
+                            </li>
+
+                            <li role="presentation" class="divider"></li>
+                            <li role="presentation" class="dropdown-header">Outside Edges</li>
+                            <li><a href="#">
+                                <span class="labelicon-left glyphicon glyphicon-log-out"></span> Left</a>
+                            </li>
+                            <li><a href="#">
+                                <span class="labelicon-top glyphicon glyphicon-log-out"></span> Top</a>
+                            </li>
+                            <li><a href="#">
+                                <span class="labelicon-right glyphicon glyphicon-log-out"></span> Right</a>
+                            </li>
+                            <li><a href="#">
+                                <span class="labelicon-bottom glyphicon glyphicon-log-out"></span> Bottom</a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="btn-group">
+                        <button type="button" class="label-color btn btn-default btn-sm dropdown-toggle" title="Font Size"
+                            data-toggle="dropdown">
+                            <span data-color="<%= l.color %>" style="background-color:#<%= l.color %>">&nbsp &nbsp &nbsp</span>
+                            <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu" role="menu">
+                            <li><a href="#">
+                                <span data-color="000000" style="background-color:#000">&nbsp &nbsp &nbsp</span>&nbsp Black
+                            </a></li>
+                            <li><a href="#">
+                                <span data-color="0000FF" style="background-color:#00f">&nbsp &nbsp &nbsp</span>&nbsp Blue
+                            </a></li>
+                            <li><a href="#">
+                                <span data-color="00FF00" style="background-color:#0f0">&nbsp &nbsp &nbsp</span>&nbsp Green
+                            </a></li>
+                            <li><a href="#">
+                                <span data-color="FF0000" style="background-color:#f00">&nbsp &nbsp &nbsp</span>&nbsp Red
+                            </a></li>
+                            <li><a href="#">
+                                <span data-color="FFFF00" style="background-color:#ff0">&nbsp &nbsp &nbsp</span>&nbsp Yellow
+                            </a></li>
+                            <li><a href="#">
+                                <span data-color="FFFFFF" style="background-color:#fff">&nbsp &nbsp &nbsp</span>&nbsp White
+                            </a></li>
+                            <li><a href="#">
+                                <span data-color="FF00FF" style="background-color:#f0f">&nbsp &nbsp &nbsp</span>&nbsp Magenta
+                            </a></li>
+                        </ul>
+                    </div>
+
+                    <button type="button" class="close" aria-hidden="true">&times;</button>
+                    <button type="submit" class="btn btn-sm btn-default pull-right">OK</button>
+                </form>
+
             <% }); %>
         </div>
     </script>
