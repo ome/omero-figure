@@ -931,10 +931,18 @@
 
         model: FigureModel,
 
+        template: _.template($("#labels_form_inner_template").html()),
+
         el: $("#labelsTab"),
 
         initialize: function(opts) {
             this.listenTo(this.model, 'change:selection', this.render);
+
+            // one-off build 'New Label' form, with same template as used for 'Edit Label' forms
+            var json = {'l': {'text':'', 'size':12, 'color':'000000'}, 'position':'top', 'edit':false}
+            $('.new-label-form', this.$el).html(this.template(json));
+            $('.btn-sm').tooltip({container: 'body', placement:'bottom', toggle:"tooltip"});
+
             this.render();
         },
 
@@ -943,7 +951,7 @@
             "click .dropdown-menu a": "select_dropdown_option",
         },
 
-        // Handles all the various drop-down menus in the New Label form
+        // Handles all the various drop-down menus in the 'New' AND 'Edit Label' forms
         select_dropdown_option: function(event) {
             var $a = $(event.target),
                 $span = $a.children('span');
@@ -965,9 +973,9 @@
             var $form = $(event.target),
                 label_text = $('.label-text', $form).val(),
                 font_size = $('.font-size', $form).text().trim(),
-                position = $('.label-position span:first', $form).attr('class').split(' ')[0],
+                position = $('.label-position span:first', $form).attr('data-position'),
                 color = $('.label-color span:first', $form).attr('data-color');
-            position = position.split('-')[1];
+
             var label = {
                 text: label_text,
                 size: parseInt(font_size),
@@ -1015,6 +1023,7 @@
     var SelectedPanelsLabelsView = Backbone.View.extend({
 
         template: _.template($("#labels_form_template").html()),
+        inner_template: _.template($("#labels_form_inner_template").html()),
 
         initialize: function(opts) {
 
@@ -1054,12 +1063,11 @@
             var $form = $(event.target),
                 label_text = $('.label-text', $form).val(),
                 font_size = $('.font-size', $form).text().trim(),
-                position = $('.label-position span:first', $form).attr('class').split(' ')[0],
+                position = $('.label-position span:first', $form).attr('data-position'),
                 color = $('.label-color span:first', $form).attr('data-color'),
                 key = $form.attr('data-key');
 
-            var position = position.split('-')[1],      // class is labelicon-top
-                new_label = {text:label_text, size:font_size, position:position, color:color};
+            var new_label = {text:label_text, size:font_size, position:position, color:color};
 
             var newlbls = {};
             newlbls[key] = new_label;
@@ -1096,6 +1104,7 @@
 
                 var json = {'position':p, 'labels':lbls};
                 if (lbls.length == 0) return;
+                json['inner_template'] = self.inner_template;
                 html += self.template(json);
             });
             self.$el.append(html);
