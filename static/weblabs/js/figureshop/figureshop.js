@@ -44,7 +44,7 @@
             return label.text + '_' + label.size + '_' + label.color + '_' + label.position
         },
 
-        // labels_map is {labelKey: {size:s, text:t, position:p, color:c}}
+        // labels_map is {labelKey: {size:s, text:t, position:p, color:c}} or {labelKey: false} to delete
         // where labelKey specifies the label to edit. "l.text + '_' + l.size + '_' + l.color + '_' + l.position"
         edit_labels: function(labels_map) {
 
@@ -55,12 +55,19 @@
             for (var i=0; i<oldLabs.length; i++) {
                 lbl = oldLabs[i];
                 lbl_key = this.get_label_key(lbl);
+                // for existing label that matches...
                 if (labels_map.hasOwnProperty(lbl_key)) {
-                    lbl = $.extend(true, {}, labels_map[lbl_key]);
+                    if (labels_map[lbl_key]) {
+                        // replace with the new label
+                        lbl = $.extend(true, {}, labels_map[lbl_key]);
+                        labs.push( lbl );
+                    }
+                    // else 'false' are ignored (deleted)
                 } else {
+                    // otherwise leave un-edited
                     lbl = $.extend(true, {}, lbl);
+                    labs.push( lbl );
                 }
-                labs.push( lbl );
             }
             // ... so that we get the changed event triggering OK
             this.save('labels', labs);
@@ -1024,6 +1031,21 @@
 
         events: {
             "submit .edit-label-form": "handle_label_edit",
+            "click .delete-label": "handle_label_delete",
+        },
+
+        handle_label_delete: function(event) {
+
+            var $form = $(event.target).parent(),
+                key = $form.attr('data-key'),
+                deleteMap = {};
+
+            deleteMap[key] = false;
+
+            _.each(this.models, function(m, i){
+                m.edit_labels(deleteMap);
+            });
+            return false;
         },
 
         // Use the label 'key' to specify which labels to update
