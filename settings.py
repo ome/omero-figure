@@ -3,5 +3,5 @@
 from django.conf import settings
 
 # We can directly manipulate the settings
-# E.g. add plugins to RIGHT_PLUGINS list
-settings.RIGHT_PLUGINS.append(["3D", "weblabs/webclient_plugins/right_plugin.rotation_3d.js.html", "rotation_3d_tab"])
+# E.g. add links to TOP_LINKS list
+settings.TOP_LINKS.append(["OMERO.Figure", "webfigure_index"])

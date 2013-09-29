@@ -1,4 +1,4 @@
-weblabs
-=======
+webfigure
+=========
 
-OMERO.web app for trying out new ideas
+OMERO.web app for creating figures from images in OMERO.
