@@ -27,17 +27,40 @@
             });
         },
 
-        add_label: function(label) {
+        // takes a list of labels, E.g [{'text':"t", 'size':10, 'color':'FF0000', 'position':"top"}]
+        add_labels: function(labels) {
             var oldLabs = this.get('labels');
             // Need to clone the list of labels...
             var labs = [];
             for (var i=0; i<oldLabs.length; i++) {
                 labs.push( $.extend(true, {}, oldLabs[i]) );
             }
-            // ... then add new label ...
-            labs.push($.extend(true, {}, label));
+            // ... then add new labels ...
+            for (var i=0; i<labels.length; i++) {
+                // check that we're not adding a white label outside panel (on a white background)
+                if (_.contains(['top','bottom','left','right'], labels[i].position)
+                        && labels[i].color == "FFFFFF") {
+                    labels[i].color = "000000";
+                }
+                labs.push( $.extend(true, {}, labels[i]) );
+            }
             // ... so that we get the changed event triggering OK
             this.save('labels', labs);
+        },
+
+        create_labels_from_channels: function(options) {
+            var newLabels = [];
+            _.each(this.get('channels'), function(c){
+                if (c.active) {
+                    newLabels.push({
+                        'text': c.label,
+                        'size': options.size,
+                        'position': options.position,
+                        'color': options.color || c.color
+                    });
+                }
+            });
+            this.add_labels(newLabels);
         },
 
         get_label_key: function(label) {
@@ -976,6 +999,23 @@
                 position = $('.label-position span:first', $form).attr('data-position'),
                 color = $('.label-color span:first', $form).attr('data-color');
 
+            if (label_text.length == 0) {
+                alert("Please enter some text for the label");
+                return false;
+            }
+
+            var selected = this.model.getSelected();
+
+            if (label_text == '[channels]' || label_text == '[channels + colors]') {
+
+                // if we didn't choose 'color' from channels, use picked color
+                var ch_color = (label_text.indexOf('colors') == -1 ? color : false);
+                _.each(selected, function(m) {
+                    m.create_labels_from_channels({color:ch_color, position:position, size:font_size});
+                });
+                return false;
+            }
+
             var label = {
                 text: label_text,
                 size: parseInt(font_size),
@@ -983,9 +1023,8 @@
                 color: color
             };
 
-            var selected = this.model.getSelected();
             _.each(selected, function(m) {
-                m.add_label(label);
+                m.add_labels([label]);
             });
             return false;
         },
@@ -1382,17 +1421,17 @@
 
         events: {
             "click .channel-btn": "toggle_channel",
-            "click .dropdown-menu a": "pick_colour"
+            "click .dropdown-menu a": "pick_color"
         },
 
-        pick_colour: function(e) {
-            var colour = e.currentTarget.getAttribute('data-colour'),
+        pick_color: function(e) {
+            var color = e.currentTarget.getAttribute('data-color'),
                 idx = $(e.currentTarget).parent().parent().attr('data-index');
             if (this.model) {
-                this.model.save_channel(idx, 'color', colour);
+                this.model.save_channel(idx, 'color', color);
             } else if (this.models) {
                 _.each(this.models, function(m){
-                    m.save_channel(idx, 'color', colour);
+                    m.save_channel(idx, 'color', color);
                 });
             }
         },
