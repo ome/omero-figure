@@ -507,20 +507,22 @@
         <div class="input-group pull-left">
             <input type="text" class="label-text form-control input-sm" 
                     placeholder="Label" value="<%= l.text %>" />
-            <div class="input-group-btn">
-                <button type="button" class="btn btn-default btn-sm dropdown-toggle"
-                        data-toggle="dropdown" title="Label from data...">
-                    <span class="caret"></span>
-                </button>
-                <ul class="dropdown-menu pull-right">
-                    <li role="presentation" class="dropdown-header">Create Label(s) From:</li>
-                    <li role="presentation" class="divider"></li>
-                    <li><a href="#" data-label="[image-name]">Image Name</a></li>
-                    <li><a href="#" data-label="[dataset]">Dataset Name</a></li>
-                    <li><a href="#" data-label="[channels]">Channels</a></li>
-                    <li><a href="#" data-label="[channels + colors]">Channels (with Colors)</a></li>
-                </ul>
-            </div>
+            <% if (!edit){ %>
+                <div class="input-group-btn">
+                    <button type="button" class="btn btn-default btn-sm dropdown-toggle"
+                            data-toggle="dropdown" title="Label from data...">
+                        <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu pull-right">
+                        <li role="presentation" class="dropdown-header">Create Label(s) From:</li>
+                        <li role="presentation" class="divider"></li>
+                        <li><a href="#" data-label="[image-name]">Image Name</a></li>
+                        <li><a href="#" data-label="[dataset]">Dataset Name</a></li>
+                        <li><a href="#" data-label="[channels]">Channels</a></li>
+                        <li><a href="#" data-label="[channels + colors]">Channels (with Colors)</a></li>
+                    </ul>
+                </div>
+            <% } %>
         </div>
 
         <div class="btn-group">

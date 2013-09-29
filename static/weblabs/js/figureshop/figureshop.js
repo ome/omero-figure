@@ -980,7 +980,7 @@
                 $span = $a.children('span');
             // For the Label Text, handle this differently...
             if ($a.attr('data-label')) {
-                $('.label-text', this.$el).val( $a.attr('data-label') );
+                $('.new-label-form .label-text', this.$el).val( $a.attr('data-label') );
                 return;
             }
             // All others, we take the <span> from the <a> and place it in the <button>
@@ -1024,6 +1024,10 @@
             };
 
             _.each(selected, function(m) {
+                if (label_text === "[image-name]") {
+                    var pathnames = m.get('name').split('/');
+                    label.text = pathnames[pathnames.length-1];
+                }
                 m.add_labels([label]);
             });
             return false;
