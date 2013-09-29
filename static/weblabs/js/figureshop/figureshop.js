@@ -603,7 +603,9 @@
                         'orig_width': data.size.width,
                         'orig_height': data.size.height,
                         'x': x,
-                        'y': y
+                        'y': y,
+                        'datasetName': data.meta.datasetName,
+                        'datasetId': data.meta.datasetId,
                     }
                     // create Panel
                     self.model.panels.create(n);
@@ -1027,6 +1029,8 @@
                 if (label_text === "[image-name]") {
                     var pathnames = m.get('name').split('/');
                     label.text = pathnames[pathnames.length-1];
+                } else if (label_text === "[dataset-name]") {
+                    label.text = m.get('datasetId') ? m.get('datasetName') : "No/Many Datasets";
                 }
                 m.add_labels([label]);
             });
