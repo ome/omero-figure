@@ -580,36 +580,72 @@
         },
 
         addPanel: function() {
-            var self = this;
-            var imgId = prompt("Please enter Image ID:");
 
-            if (parseInt(imgId) > 0) {
-                var c = this.getCentre(),
-                    w = 512,
-                    h = 512,
-                    x = c.x - (w/2),
-                    y = c.y - (h/2);
-                // Get the json data for the image...
-                $.getJSON('/webgateway/imgData/' + imgId + '/', function(data){
-                    // just pick what we need, add x & y etc...
-                    var n = {
-                        'imageId': data.id,
-                        'name': data.meta.imageName,
-                        'width': data.size.width,
-                        'height': data.size.height,
-                        'sizeZ': data.size.z,
-                        'sizeT': data.size.t,
-                        'channels': data.channels,
-                        'orig_width': data.size.width,
-                        'orig_height': data.size.height,
-                        'x': x,
-                        'y': y,
-                        'datasetName': data.meta.datasetName,
-                        'datasetId': data.meta.datasetId,
-                    }
-                    // create Panel
-                    self.model.panels.create(n);
-                });
+            var self = this,
+                iIds;
+            var idInput = prompt("Please enter Image ID(s):");
+
+            if (!idInput || idInput.length == 0)    return;
+
+            this.model.clearSelected();
+
+            // test for E.g: http://localhost:8000/webclient/?show=image-25|image-26|image-27
+            if (idInput.indexOf('?') > 10) {
+                var iIds = idInput.split('image-').slice(1);
+            } else {
+                iIds = idInput.split(',');
+            }
+
+            // approx work out number of columns to layout new panels
+            var colCount = Math.ceil(Math.sqrt(iIds.length)),
+                rowCount = Math.ceil(iIds.length/colCount),
+                col = 0,
+                row = 0,
+                px, py, spacer;
+
+            for (var i=0; i<iIds.length; i++) {
+                var imgId = iIds[i];
+
+                if (parseInt(imgId) > 0) {
+                    var c = this.getCentre();
+                    // Get the json data for the image...
+                    $.getJSON('/webgateway/imgData/' + parseInt(imgId) + '/', function(data){
+                        // just pick what we need, add x & y etc...
+                        // Need to work out where to start (px,py) now that we know size of panel
+                        // (assume all panels are same size)
+                        px = px || c.x - (colCount * data.size.width)/2;
+                        py = py || c.y - (rowCount * data.size.height)/2;
+                        spacer = spacer || data.size.width/20;
+                        var n = {
+                            'imageId': data.id,
+                            'name': data.meta.imageName,
+                            'width': data.size.width,
+                            'height': data.size.height,
+                            'sizeZ': data.size.z,
+                            'sizeT': data.size.t,
+                            'channels': data.channels,
+                            'orig_width': data.size.width,
+                            'orig_height': data.size.height,
+                            'x': px,
+                            'y': py,
+                            'datasetName': data.meta.datasetName,
+                            'datasetId': data.meta.datasetId,
+                        }
+                        // create Panel (and select it)
+                        self.model.panels.create(n).set('selected', true);
+                        self.model.notifySelectionChange();
+
+                        // update px, py for next panel
+                        col += 1;
+                        px += data.size.width + spacer;
+                        if (col == colCount) {
+                            row += 1;
+                            col = 0;
+                            py += data.size.height + spacer;
+                            px = undefined; // recalculate next time
+                        }
+                    });
+                }
             }
         },
 
