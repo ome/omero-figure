@@ -172,22 +172,28 @@
             }
 
             // we return new X and Y so FigureModel knows where panels are
-            return {'x':newX, 'y':newY}
+            return {'x':newX, 'y':newY};
         },
 
         get_centre: function() {
             return {'x':this.get('x') + (this.get('width')/2),
-                'y':this.get('y') + (this.get('height')/2)}
+                'y':this.get('y') + (this.get('height')/2)};
         },
 
-        get_query_string: function() {
+        get_img_src: function() {
             var cStrings = [];
             _.each(this.get('channels'), function(c, i){
                 if (c.active) {
-                    cStrings.push(1+i + "|" + c.window.start + ":" + c.window.end + "$" + c.color)
+                    cStrings.push(1+i + "|" + c.window.start + ":" + c.window.end + "$" + c.color);
                 }
             });
-            return cStrings.join(",");
+            var renderString = cStrings.join(","),
+                imageId = this.get('imageId'),
+                theZ = this.get('theZ'),
+                theT = this.get('theT');
+
+            return '/webgateway/render_image/' + imageId +
+                    "/" + theZ + "/" + theT + '/?c=' + renderString;
         },
 
         // used by the PanelView and ImageViewerView to get the size and
@@ -622,7 +628,9 @@
                             'width': data.size.width,
                             'height': data.size.height,
                             'sizeZ': data.size.z,
+                            'theZ': data.rdefs.defaultZ,
                             'sizeT': data.size.t,
+                            'theT': data.rdefs.defaultT,
                             'channels': data.channels,
                             'orig_width': data.size.width,
                             'orig_height': data.size.height,
@@ -837,7 +845,7 @@
             this.listenTo(this.model, 
                 'change:x change:y change:width change:height change:zoom change:dx change:dy',
                 this.render_layout);
-            this.listenTo(this.model, 'change:channels', this.render_image);
+            this.listenTo(this.model, 'change:channels change:theZ', this.render_image);
             this.listenTo(this.model, 'change:labels', this.render_labels);
             // This could be handled by backbone.relational, but do it manually for now...
             // this.listenTo(this.model.channels, 'change', this.render);
@@ -884,10 +892,8 @@
         },
 
         render_image: function() {
-            var renderString = this.model.get_query_string(),
-                imageId = this.model.get('imageId');
-
-            this.$img_panel.attr('src', '/webgateway/render_image/' + imageId + '/?c=' + renderString);
+            var src = this.model.get_img_src();
+            this.$img_panel.attr('src', src);
         },
 
         render_labels: function() {
@@ -1275,6 +1281,8 @@
 
         template: _.template($('#viewport_template').html()),
 
+        className: "imageViewer",
+
         initialize: function(opts) {
 
             // prevent rapid repetative rendering, when listening to multiple panels
@@ -1284,14 +1292,21 @@
 
             this.models = opts.models;
             var self = this,
-                zoom_sum = 0;
+                zoom_sum = 0,
+                theZ_sum = 0;
+            this.sizeZ = this.models[0].get('sizeZ');
 
             _.each(this.models, function(m){
-                self.listenTo(m, 'change:width change:height change:channels change:zoom', self.render);
+                self.listenTo(m, 'change:width change:height change:channels change:zoom change:theZ', self.render);
                 zoom_sum += m.get('zoom');
+                theZ_sum += m.get('theZ');
+                if (self.sizeZ != m.get('sizeZ')) {
+                    self.sizeZ = undefined;
+                }
             });
 
             this.zoom_avg = zoom_sum/ this.models.length;
+            this.theZ_avg = theZ_sum/ this.models.length;
 
             $("#vp_zoom_slider").slider({
                 max: 800,
@@ -1308,6 +1323,28 @@
                 }
             });
             this.$vp_zoom_value = $("#vp_zoom_value");
+
+            var disabled = false,
+                sizeZ = self.sizeZ;
+            if (!self.sizeZ) {
+                disabled = true;
+                sizeZ = 1;
+            }
+            $("#vp_z_slider").slider({
+                orientation: "vertical",
+                max: sizeZ,
+                disabled: disabled,
+                min: 1,             // model is 0-based, UI is 1-based
+                value: self.theZ_avg,
+                slide: function(event, ui) {
+                    $("#vp_z_value").text(ui.value + "/" + self.sizeZ);
+                },
+                stop: function( event, ui ) {
+                    _.each(self.models, function(m){
+                        m.save('theZ', ui.value - 1);
+                    });
+                }
+            });
 
             this.render();
         },
@@ -1346,6 +1383,7 @@
         clear: function() {
             // clean up zoom slider etc
             $( "#vp_zoom_slider" ).slider( "destroy" );
+            $("#vp_z_slider").slider("destroy");
             this.$vp_zoom_value.text('');
             return this;
         },
@@ -1382,6 +1420,8 @@
             var orig_wh,
                 sum_wh = 0,
                 sum_zoom = 0,
+                sum_theZ = 0,
+                max_theZ = 0,
                 sum_dx = 0,
                 sum_dy = 0,
                 imgs_css = [],
@@ -1397,13 +1437,16 @@
                 }
                 sum_wh += (m.get('width')/ m.get('height'));
                 sum_zoom += m.get('zoom');
+                sum_theZ += m.get('theZ');
+                max_theZ = Math.max(max_theZ, m.get('theZ'));
             });
             // Only continue if panels are all same w/h ratio
             if (!same_wh) return;
 
             // get average viewport frame w/h & zoom
             var wh = sum_wh/this.models.length,
-                zoom = sum_zoom/this.models.length;
+                zoom = sum_zoom/this.models.length,
+                theZ = sum_theZ/this.models.length;
             if (wh <= 1) {
                 frame_h = this.full_size;
                 frame_w = this.full_size * wh;
@@ -1416,10 +1459,9 @@
             _.each(this.models, function(m){
                 sum_dx += m.get('dx');
                 sum_dy += m.get('dy');
-                var renderString = m.get_query_string(),
-                    imageId = m.get('imageId'),
+                var src = m.get_img_src(),
                     img_css = model.get_vp_img_css(m.get('zoom'), frame_w, frame_h, m.get('dx'), m.get('dy'));
-                img_css['src'] = '/webgateway/render_image/' + imageId + '/?c=' + renderString;
+                img_css['src'] = src;
                 imgs_css.push(img_css);
             });
 
@@ -1433,6 +1475,11 @@
             json['imgs_css'] = imgs_css;
             json['frame_w'] = frame_w;
             json['frame_h'] = frame_h;
+            json['sizeZ'] = this.sizeZ || "-";
+            json['theZ'] = theZ+1;
+            if (max_theZ != theZ) {
+                json['theZ'] = "-";
+            }
             var html = this.template(json);
             this.$el.html(html);
 

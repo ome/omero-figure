@@ -254,14 +254,29 @@
             transform: rotate(90deg)
         }
 
+        .imageViewer {
+            height: 250px;
+        }
         .vp_img {
             position:absolute;
         }
         .vp_frame {
-            position:relative;
-            overflow:hidden;
+            position: absolute;
+            left: 20px;
+            overflow: hidden;
             border: solid black 1px;
             background: #ddd;
+        }
+        #vp_z_label {
+            position:absolute;
+            top: 0px;
+            left: 0px;
+            padding: 0px 2px;
+        }
+        #vp_z_value {
+            position: absolute;
+            bottom: 0px;
+            right: 95%;
         }
         .no-padding {
             padding: 0px;
@@ -270,18 +285,34 @@
             border-top: solid #dddddd 1px;
             margin-top:15px;
         }
-        .tab-footer .ui-slider {
+        .tab-pane .ui-slider {
             margin: 15px 5px 6px;
             background: none repeat scroll 0 0 #BBBBBB;
             border: 1px solid #AAAAAA;
-            height: 1px;
-            width: 150px;
         }
-        .tab-footer .ui-slider-handle {
+        .tab-pane .ui-slider-handle {
             background: none repeat scroll 0 0 #DDDDDD;
             border: 1px solid #aaa;
             height: 14px;
+        }
+        .tab-pane .ui-slider-horizontal {
+            height: 1px;
+            width: 150px;
+        }
+        .tab-pane .ui-slider-horizontal .ui-slider-handle {
             top: -7px;
+        }
+        .tab-pane .ui-slider-vertical {
+            width: 1px;
+            height: 198px;
+            margin-right: 10px;
+            margin-top: 25px;
+        }
+        .tab-pane .ui-slider-vertical .ui-slider-handle {
+            left: -7px;
+        }
+        .ui-slider-disabled a {
+            display: none;
         }
         /* Over-riding Bootstrap Styles */
         .modal-header {
@@ -468,7 +499,9 @@
 
                 <div class="tab-pane active" id="previewTab">
                     <div class="col-lg-2 no-padding" id="channelToggle"></div>
-                    <div class="col-lg-10 no-padding" id="viewportContainer"></div>
+                    <div class="col-lg-10 no-padding" id="viewportContainer">
+                        <div id="vp_z_slider" class="pull-left"></div>
+                    </div>
                     <div class='clearfix'></div>
                     <div class='tab-footer'>
                         <div class="col-lg-2" style="padding:5px">Zoom:</div>
@@ -649,6 +682,8 @@
     </script>
 
     <script id="viewport_template" type="text/template">
+        <div id="vp_z_label">Z</div>
+        <div id="vp_z_value"><%= theZ %>/<%= sizeZ %></div>
         <div class="vp_frame" style="width:<%= frame_w %>px; height:<%= frame_h %>px">
             <% _.each(imgs_css, function(css, i) { %>
             <img class="vp_img"
