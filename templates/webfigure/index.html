@@ -255,7 +255,7 @@
         }
 
         .imageViewer {
-            height: 250px;
+            height: 270px;
         }
         .vp_img {
             position:absolute;
@@ -275,8 +275,18 @@
         }
         #vp_z_value {
             position: absolute;
-            bottom: 0px;
+            bottom: 20px;
             right: 95%;
+        }
+        #vp_t_label {
+            position: absolute;
+            left: 20px;
+            bottom: 0px;
+        }
+        #vp_t_value {
+            position: absolute;
+            left: 240px;
+            bottom: 0px;
         }
         .no-padding {
             padding: 0px;
@@ -313,6 +323,12 @@
         }
         .ui-slider-disabled a {
             display: none;
+        }
+        #vp_t_slider {
+            position: absolute;
+            bottom: 2px;
+            left: 35px;
+            width: 190px;
         }
         /* Over-riding Bootstrap Styles */
         .modal-header {
@@ -501,6 +517,7 @@
                     <div class="col-lg-2 no-padding" id="channelToggle"></div>
                     <div class="col-lg-10 no-padding" id="viewportContainer">
                         <div id="vp_z_slider" class="pull-left"></div>
+                        <div id="vp_t_slider"></div>
                     </div>
                     <div class='clearfix'></div>
                     <div class='tab-footer'>
@@ -684,6 +701,8 @@
     <script id="viewport_template" type="text/template">
         <div id="vp_z_label">Z</div>
         <div id="vp_z_value"><%= theZ %>/<%= sizeZ %></div>
+        <div id="vp_t_label">T</div>
+        <div id="vp_t_value"><%= theT %>/<%= sizeT %></div>
         <div class="vp_frame" style="width:<%= frame_w %>px; height:<%= frame_h %>px">
             <% _.each(imgs_css, function(css, i) { %>
             <img class="vp_img"

@@ -841,7 +841,7 @@
             this.listenTo(this.model, 
                 'change:x change:y change:width change:height change:zoom change:dx change:dy',
                 this.render_layout);
-            this.listenTo(this.model, 'change:channels change:theZ', this.render_image);
+            this.listenTo(this.model, 'change:channels change:theZ change:theT', this.render_image);
             this.listenTo(this.model, 'change:labels', this.render_labels);
             // This could be handled by backbone.relational, but do it manually for now...
             // this.listenTo(this.model.channels, 'change', this.render);
@@ -1289,20 +1289,27 @@
             this.models = opts.models;
             var self = this,
                 zoom_sum = 0,
-                theZ_sum = 0;
+                theZ_sum = 0,
+                theT_sum = 0;
             this.sizeZ = this.models[0].get('sizeZ');
+            this.sizeT = this.models[0].get('sizeT');
 
             _.each(this.models, function(m){
-                self.listenTo(m, 'change:width change:height change:channels change:zoom change:theZ', self.render);
+                self.listenTo(m, 'change:width change:height change:channels change:zoom change:theZ change:theT', self.render);
                 zoom_sum += m.get('zoom');
                 theZ_sum += m.get('theZ');
+                theT_sum += m.get('theT');
                 if (self.sizeZ != m.get('sizeZ')) {
                     self.sizeZ = undefined;
+                }
+                if (self.sizeT != m.get('sizeT')) {
+                    self.sizeT = undefined;
                 }
             });
 
             this.zoom_avg = zoom_sum/ this.models.length;
             this.theZ_avg = theZ_sum/ this.models.length;
+            this.theT_avg = theT_sum/ this.models.length;
 
             $("#vp_zoom_slider").slider({
                 max: 800,
@@ -1320,24 +1327,45 @@
             });
             this.$vp_zoom_value = $("#vp_zoom_value");
 
-            var disabled = false,
+            var Z_disabled = false,
                 sizeZ = self.sizeZ;
-            if (!self.sizeZ) {
-                disabled = true;
+            if (!sizeZ || sizeZ === 1) {    // undefined or 1
+                Z_disabled = true;
                 sizeZ = 1;
             }
             $("#vp_z_slider").slider({
                 orientation: "vertical",
                 max: sizeZ,
-                disabled: disabled,
+                disabled: Z_disabled,
                 min: 1,             // model is 0-based, UI is 1-based
-                value: self.theZ_avg,
+                value: self.theZ_avg + 1,
                 slide: function(event, ui) {
                     $("#vp_z_value").text(ui.value + "/" + self.sizeZ);
                 },
                 stop: function( event, ui ) {
                     _.each(self.models, function(m){
                         m.save('theZ', ui.value - 1);
+                    });
+                }
+            });
+
+            var T_disabled = false,
+                sizeT = self.sizeT;
+            if (!sizeT || sizeT === 1) {    // undefined or 1
+                T_disabled = true;
+                sizeT = 1;
+            }
+            $("#vp_t_slider").slider({
+                max: sizeT,
+                disabled: T_disabled,
+                min: 1,             // model is 0-based, UI is 1-based
+                value: self.theT_avg + 1,
+                slide: function(event, ui) {
+                    $("#vp_t_value").text(ui.value + "/" + self.sizeT);
+                },
+                stop: function( event, ui ) {
+                    _.each(self.models, function(m){
+                        m.save('theT', ui.value - 1);
                     });
                 }
             });
@@ -1380,6 +1408,7 @@
             // clean up zoom slider etc
             $( "#vp_zoom_slider" ).slider( "destroy" );
             $("#vp_z_slider").slider("destroy");
+            $("#vp_t_slider").slider("destroy");
             this.$vp_zoom_value.text('');
             return this;
         },
@@ -1418,6 +1447,8 @@
                 sum_zoom = 0,
                 sum_theZ = 0,
                 max_theZ = 0,
+                sum_theT = 0,
+                max_theT = 0,
                 sum_dx = 0,
                 sum_dy = 0,
                 imgs_css = [],
@@ -1434,7 +1465,9 @@
                 sum_wh += (m.get('width')/ m.get('height'));
                 sum_zoom += m.get('zoom');
                 sum_theZ += m.get('theZ');
+                sum_theT += m.get('theT');
                 max_theZ = Math.max(max_theZ, m.get('theZ'));
+                max_theT = Math.max(max_theT, m.get('theT'));
             });
             // Only continue if panels are all same w/h ratio
             if (!same_wh) return;
@@ -1442,7 +1475,8 @@
             // get average viewport frame w/h & zoom
             var wh = sum_wh/this.models.length,
                 zoom = sum_zoom/this.models.length,
-                theZ = sum_theZ/this.models.length;
+                theZ = sum_theZ/this.models.length,
+                theT = sum_theT/this.models.length;
             if (wh <= 1) {
                 frame_h = this.full_size;
                 frame_w = this.full_size * wh;
@@ -1473,8 +1507,13 @@
             json.frame_h = frame_h;
             json.sizeZ = this.sizeZ || "-";
             json.theZ = theZ+1;
+            json.sizeT = this.sizeT || "-";
+            json.theT = theT+1;
             if (max_theZ != theZ) {
                 json.theZ = "-";
+            }
+            if (max_theT != theT) {
+                json.theT = "-";
             }
             var html = this.template(json);
             this.$el.html(html);
