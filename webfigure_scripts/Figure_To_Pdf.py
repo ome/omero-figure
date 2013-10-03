@@ -40,7 +40,7 @@ def applyRdefs(image, channels):
 
 def get_vp_img_css (panel):
 
-    zoom = panel['zoom']
+    zoom = float(panel['zoom'])
     frame_w = panel['width']
     frame_h = panel['height']
     dx = panel['dx']
@@ -110,6 +110,7 @@ def drawLabels(conn, c, panel, pageHeight):
     for l in labels:
         print l
         pos = l['position']
+        l['size'] = int(l['size'])   # make sure 'size' is number
         if pos in positions:
             positions[pos].append(l)
 
@@ -206,8 +207,8 @@ def drawPanel(conn, c, panel, pageHeight, idx):
 
     print "TILE", tile
 
-    z = image._re.getDefaultZ()
-    t = image._re.getDefaultT()
+    z = panel['theZ']     # image._re.getDefaultZ()
+    t = panel['theT']     # image._re.getDefaultT()
 
     # pilImg = image.renderImage(z, t)
     imgData = image.renderJpegRegion (z, t, tile['x'], tile['y'], tile['width'], tile['height'], compression=1.0)
