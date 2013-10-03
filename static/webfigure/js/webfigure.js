@@ -22,27 +22,24 @@
 
         initialize: function() {
 
-            this.on('change', function(event){
-                console.log("** Panel Model Change", event.changed);
-            });
         },
 
         // takes a list of labels, E.g [{'text':"t", 'size':10, 'color':'FF0000', 'position':"top"}]
         add_labels: function(labels) {
-            var oldLabs = this.get('labels');
+            var oldLabs = this.get("labels");
             // Need to clone the list of labels...
             var labs = [];
             for (var i=0; i<oldLabs.length; i++) {
                 labs.push( $.extend(true, {}, oldLabs[i]) );
             }
             // ... then add new labels ...
-            for (var i=0; i<labels.length; i++) {
+            for (var j=0; j<labels.length; j++) {
                 // check that we're not adding a white label outside panel (on a white background)
-                if (_.contains(['top','bottom','left','right'], labels[i].position)
-                        && labels[i].color == "FFFFFF") {
-                    labels[i].color = "000000";
+                if (_.contains(["top", "bottom", "left", "right"], labels[j].position) &&
+                        labels[j].color == "FFFFFF") {
+                    labels[j].color = "000000";
                 }
-                labs.push( $.extend(true, {}, labels[i]) );
+                labs.push( $.extend(true, {}, labels[j]) );
             }
             // ... so that we get the changed event triggering OK
             this.save('labels', labs);
@@ -64,7 +61,7 @@
         },
 
         get_label_key: function(label) {
-            return label.text + '_' + label.size + '_' + label.color + '_' + label.position
+            return label.text + '_' + label.size + '_' + label.color + '_' + label.position;
         },
 
         // labels_map is {labelKey: {size:s, text:t, position:p, color:c}} or {labelKey: false} to delete
@@ -126,10 +123,10 @@
 
             var shift_x = function(startX) {
                 return ((startX - x1)/w1) * w2 + x2;
-            }
+            };
             var shift_y = function(startY) {
                 return ((startY - y1)/h1) * h2 + y2;
-            }
+            };
 
             var newX = shift_x( this.get('x') ),
                 newY = shift_y( this.get('y') ),
@@ -154,7 +151,7 @@
         // Drag moving - notify the PanelView & SvgModel with/without saving
         drag_xy: function(dx, dy, save) {
             // Ignore any drag_stop events from simple clicks (no drag)
-            if (dx == 0 && dy == 0) {
+            if (dx === 0 && dy === 0) {
                 return;
             }
             var newX = this.get('x') + dx,
@@ -266,12 +263,12 @@
                 x_vals = [];
             for (var i=0; i<selected.length; i++) {
                 x_vals.push(selected[i].get('x'));
-            };
+            }
             var min_x = Math.min.apply(window, x_vals);
 
-            for (var i=0; i<selected.length; i++) {
-                selected[i].set('x', min_x);
-            };
+            for (var j=0; j<selected.length; j++) {
+                selected[j].set('x', min_x);
+            }
         },
 
         align_top: function() {
@@ -279,12 +276,12 @@
                 y_vals = [];
             for (var i=0; i<selected.length; i++) {
                 y_vals.push(selected[i].get('y'));
-            };
+            }
             var min_y = Math.min.apply(window, y_vals);
 
-            for (var i=0; i<selected.length; i++) {
-                selected[i].set('y', min_y);
-            };
+            for (var j=0; j<selected.length; j++) {
+                selected[j].set('y', min_y);
+            }
         },
 
         align_grid: function() {
@@ -315,7 +312,6 @@
             }
 
             var spacer = top_left.get('width')/20,
-                row,
                 new_x = top_x,
                 new_y = top_y,
                 max_h = 0;
@@ -335,8 +331,8 @@
         get_panel_at: function(x, y, panels) {
             for(var i=0; i<panels.length; i++) {
                 p = panels[i];
-                if ((p.get('x') < x && (p.get('x')+p.get('width')) > x)
-                        && (p.get('y') < y && (p.get('y')+p.get('height')) > y)) {
+                if ((p.get('x') < x && (p.get('x')+p.get('width')) > x) &&
+                        (p.get('y') < y && (p.get('y')+p.get('height')) > y)) {
                     return p;
                 }
             }
@@ -347,7 +343,7 @@
             var p, top_left;
             for(var i=0; i<panels.length; i++) {
                 p = panels[i];
-                if (i == 0) {
+                if (i === 0) {
                     top_left = p;
                 } else {
                     if ((p.get('x') + p.get('y')) < (top_left.get('x') + top_left.get('y'))) {
@@ -385,7 +381,7 @@
         // This can come from multi-select Rect OR any selected Panel
         // Need to notify ALL panels and Multi-select Rect.
         drag_xy: function(dx, dy, save) {
-            if (dx == 0 && dy == 0) return;
+            if (dx === 0 && dy === 0) return;
 
             var minX = 10000,
                 minY = 10000,
@@ -394,9 +390,9 @@
             var selected = this.getSelected();
             for (var i=0; i<selected.length; i++) {
                 xy = selected[i].drag_xy(dx, dy, save);
-                minX = Math.min(minX, xy['x']);
-                minY = Math.min(minY, xy['y']);
-            };
+                minX = Math.min(minX, xy.x);
+                minY = Math.min(minY, xy.y);
+            }
             // Notify the Multi-select Rect of it's new X and Y
             this.trigger('drag_xy', [minX, minY, save]);
         },
@@ -408,7 +404,7 @@
             var selected = this.getSelected();
             for (var i=0; i<selected.length; i++) {
                 selected[i].multiselectdrag(x1, y1, w1, h1, x2, y2, w2, h2, save);
-            };
+            }
         },
 
         // If already selected, do nothing (unless clearOthers is true)
@@ -450,7 +446,7 @@
             var selected = this.getSelected();
             for (var i=0; i<selected.length; i++) {
                 selected[i].destroy();
-            };
+            }
             this.notifySelectionChange();
         },
 
@@ -542,7 +538,7 @@
                     l = m.x,
                     b = t + m.height,
                     r = l + m.width;
-                if (i == 0) {
+                if (i === 0) {
                     top = t; left = l; bottom = b; right = r;
                 } else {
                     top = Math.min(top, t);
@@ -591,13 +587,13 @@
                 iIds;
             var idInput = prompt("Please enter Image ID(s):");
 
-            if (!idInput || idInput.length == 0)    return;
+            if (!idInput || idInput.length === 0)    return;
 
             this.model.clearSelected();
 
             // test for E.g: http://localhost:8000/webclient/?show=image-25|image-26|image-27
             if (idInput.indexOf('?') > 10) {
-                var iIds = idInput.split('image-').slice(1);
+                iIds = idInput.split('image-').slice(1);
             } else {
                 iIds = idInput.split(',');
             }
@@ -612,10 +608,10 @@
             for (var i=0; i<iIds.length; i++) {
                 var imgId = iIds[i];
 
-                if (parseInt(imgId) > 0) {
+                if (parseInt(imgId, 10) > 0) {
                     var c = this.getCentre();
                     // Get the json data for the image...
-                    $.getJSON('/webgateway/imgData/' + parseInt(imgId) + '/', function(data){
+                    $.getJSON('/webgateway/imgData/' + parseInt(imgId, 10) + '/', function(data){
                         // just pick what we need, add x & y etc...
                         // Need to work out where to start (px,py) now that we know size of panel
                         // (assume all panels are same size)
@@ -638,7 +634,7 @@
                             'y': py,
                             'datasetName': data.meta.datasetName,
                             'datasetId': data.meta.datasetId,
-                        }
+                        };
                         // create Panel (and select it)
                         self.model.panels.create(n).set('selected', true);
                         self.model.notifySelectionChange();
@@ -663,8 +659,8 @@
         setZoom: function() {
             var curr_zoom = this.model.get('curr_zoom'),
                 zoom = curr_zoom * 0.01,
-                newWidth = parseInt(this.orig_width * zoom),
-                newHeight = parseInt(this.orig_height * zoom),
+                newWidth = parseInt(this.orig_width * zoom, 10),
+                newHeight = parseInt(this.orig_height * zoom, 10),
                 scale = "scale("+zoom+", "+zoom+")";
 
             // We want to stay centered on the same spot...
@@ -709,7 +705,7 @@
             if (previous) {
                 curr_zoom = m.previous('curr_zoom');
             }
-            if (curr_zoom == undefined) {
+            if (curr_zoom === undefined) {
                 return;
             }
             var viewport_w = this.$main.width(),
@@ -739,8 +735,8 @@
                 viewport_w = this.$main.width(),
                 viewport_h = this.$main.height(),
                 offst_left = cx - viewport_w/2,
-                offst_top = cy - viewport_h/2,
-                speed = speed || 0;
+                offst_top = cy - viewport_h/2;
+            speed = speed || 0;
             this.$main.animate({
                 scrollLeft: offst_left,
                 scrollTop: offst_top
@@ -917,9 +913,9 @@
             var html = "";
             _.each(positions, function(lbls, p) {
                 var json = {'position':p, 'labels':lbls};
-                if (lbls.length == 0) return;
+                if (lbls.length === 0) return;
                 if (p == 'left' || p == 'right') {
-                    html += self.label_table_template(json)
+                    html += self.label_table_template(json);
                 } else {
                     html += self.label_template(json);
                 }
@@ -960,7 +956,7 @@
             this.listenTo(this.model, 'change:selection', this.render);
 
             // this.render();
-            new LabelsPanelView({model: this.model})
+            new LabelsPanelView({model: this.model});
         },
 
         render: function() {
@@ -971,7 +967,7 @@
             }
             if (selected.length > 0) {
                 this.vp = new ImageViewerView({models: selected}); // auto-renders on init
-                $("#viewportContainer").append(this.vp.el)
+                $("#viewportContainer").append(this.vp.el);
             }
 
             if (this.ipv) {
@@ -979,7 +975,7 @@
             }
             if (selected.length > 0) {
                 this.ipv = new InfoPanelView({models: selected});
-                $("#infoTab").append(this.ipv.render().el)
+                $("#infoTab").append(this.ipv.render().el);
             }
 
             if (this.ctv) {
@@ -987,7 +983,7 @@
             }
             if (selected.length > 0) {
                 this.ctv = new ChannelToggleView({models: selected});
-                $("#channelToggle").empty().append(this.ctv.render().el)
+                $("#channelToggle").empty().append(this.ctv.render().el);
             }
 
         }
@@ -1006,7 +1002,7 @@
             this.listenTo(this.model, 'change:selection', this.render);
 
             // one-off build 'New Label' form, with same template as used for 'Edit Label' forms
-            var json = {'l': {'text':'', 'size':12, 'color':'000000'}, 'position':'top', 'edit':false}
+            var json = {'l': {'text':'', 'size':12, 'color':'000000'}, 'position':'top', 'edit':false};
             $('.new-label-form', this.$el).html(this.template(json));
             $('.btn-sm').tooltip({container: 'body', placement:'bottom', toggle:"tooltip"});
 
@@ -1028,7 +1024,7 @@
                 return;
             }
             // All others, we take the <span> from the <a> and place it in the <button>
-            if ($span.length == 0) $span = $a;  // in case we clicked on <span>
+            if ($span.length === 0) $span = $a;  // in case we clicked on <span>
             var $li = $span.parent().parent(),
                 $button = $li.parent().prev();
             $span = $span.clone();
@@ -1043,7 +1039,7 @@
                 position = $('.label-position span:first', $form).attr('data-position'),
                 color = $('.label-color span:first', $form).attr('data-color');
 
-            if (label_text.length == 0) {
+            if (label_text.length === 0) {
                 alert("Please enter some text for the label");
                 return false;
             }
@@ -1062,7 +1058,7 @@
 
             var label = {
                 text: label_text,
-                size: parseInt(font_size),
+                size: parseInt(font_size, 10),
                 position: position,
                 color: color
             };
@@ -1084,7 +1080,7 @@
             var selected = this.model.getSelected();
 
             // html is already in place for 'New Label' form - simply show/hide
-            if (selected.length == 0) {
+            if (selected.length === 0) {
                 $(".new-label-form", this.$el).hide();
             } else {
                 $(".new-label-form", this.$el).show();
@@ -1192,8 +1188,8 @@
                 lbls = _.map(lbls, function(label, key){ return label; });
 
                 var json = {'position':p, 'labels':lbls};
-                if (lbls.length == 0) return;
-                json['inner_template'] = self.inner_template;
+                if (lbls.length === 0) return;
+                json.inner_template = self.inner_template;
                 html += self.template(json);
             });
             self.$el.append(html);
@@ -1413,7 +1409,7 @@
 
         render: function() {
 
-            if (this.models.length == 0);
+            if (this.models.length === 0);
 
             // only show viewport if original w / h ratio is same for all models
             var model = this.models[0];
@@ -1461,24 +1457,24 @@
                 sum_dy += m.get('dy');
                 var src = m.get_img_src(),
                     img_css = model.get_vp_img_css(m.get('zoom'), frame_w, frame_h, m.get('dx'), m.get('dy'));
-                img_css['src'] = src;
+                img_css.src = src;
                 imgs_css.push(img_css);
             });
 
             // save these average offsets in hand for dragging (apply to all panels)
-            this.dx = sum_dx/this.models.length,
+            this.dx = sum_dx/this.models.length;
             this.dy = sum_dy/this.models.length;
 
             var json = {};
 
-            json['opacity'] = 1 / imgs_css.length;
-            json['imgs_css'] = imgs_css;
-            json['frame_w'] = frame_w;
-            json['frame_h'] = frame_h;
-            json['sizeZ'] = this.sizeZ || "-";
-            json['theZ'] = theZ+1;
+            json.opacity = 1 / imgs_css.length;
+            json.imgs_css = imgs_css;
+            json.frame_w = frame_w;
+            json.frame_h = frame_h;
+            json.sizeZ = this.sizeZ || "-";
+            json.theZ = theZ+1;
             if (max_theZ != theZ) {
-                json['theZ'] = "-";
+                json.theZ = "-";
             }
             var html = this.template(json);
             this.$el.html(html);
@@ -1546,21 +1542,22 @@
         },
 
         render: function() {
+            var json, html;
             if (this.model) {
-                var json = {'channels': this.model.get('channels')};
-                var html = this.template(json);
+                json = {'channels': this.model.get('channels')};
+                html = this.template(json);
                 this.$el.html(html);
             } else if (this.models) {
 
                 // Comare channels from each Panel Model to see if they are
                 // compatible, and compile a summary json.
-                var json = [],
-                    compatible = true;
+                json = [];
+                var compatible = true;
 
                 _.each(this.models, function(m, i){
                     var chs = m.get('channels');
                     // start with a copy of the first image channels
-                    if (json.length == 0) {
+                    if (json.length === 0) {
                         _.each(chs, function(c) {
                             json.push($.extend(true, {}, c));
                         });
@@ -1568,21 +1565,22 @@
                         // compare json summary so far with this channels
                         if (json.length != chs.length) {
                             compatible = false;
+                        } else {
+                            // if attributes don't match - show 'null' state
+                            _.each(chs, function(c, i) {
+                                if (json[i].color != c.color) {
+                                    json[i].color = 'ccc';
+                                }
+                                if (json[i].active != c.active) {
+                                    json[i].active = undefined;
+                                }
+                            });
                         }
-                        // if attributes don't match - show 'null' state
-                        _.each(chs, function(c, i) {
-                            if (json[i].color != c.color) {
-                                json[i].color = 'ccc';
-                            }
-                            if (json[i].active != c.active) {
-                                json[i].active = undefined;
-                            }
-                        });
                     }
 
                 });
                 if (compatible) {
-                    var html = this.template({'channels':json});
+                    html = this.template({'channels':json});
                     this.$el.html(html);
                 }
             }
@@ -1626,8 +1624,8 @@
         // return the SVG x, y, w, h (converting from figureModel)
         getSvgCoords: function(coords) {
             var zoom = this.figureModel.get('curr_zoom') * 0.01,
-                paper_top = (this.figureModel.get('canvas_height') - this.figureModel.get('paper_height'))/2;
-                paper_left = (this.figureModel.get('canvas_width') - this.figureModel.get('paper_width'))/2;
+                paper_top = (this.figureModel.get('canvas_height') - this.figureModel.get('paper_height'))/2,
+                paper_left = (this.figureModel.get('canvas_width') - this.figureModel.get('paper_width'))/2,
                 rect_x = (paper_left + 1 + coords.x) * zoom,
                 rect_y = (paper_top + 1 + coords.y) * zoom,
                 rect_w = coords.width * zoom,
@@ -1638,8 +1636,8 @@
         // return the Model x, y, w, h (converting from SVG coords)
         getModelCoords: function(coords) {
             var zoom = this.figureModel.get('curr_zoom') * 0.01,
-                paper_top = (this.figureModel.get('canvas_height') - this.figureModel.get('paper_height'))/2;
-                paper_left = (this.figureModel.get('canvas_width') - this.figureModel.get('paper_width'))/2;
+                paper_top = (this.figureModel.get('canvas_height') - this.figureModel.get('paper_height'))/2,
+                paper_left = (this.figureModel.get('canvas_width') - this.figureModel.get('paper_width'))/2,
                 x = (coords.x/zoom) - paper_left - 1,
                 y = (coords.y/zoom) - paper_top - 1,
                 w = coords.width/zoom,
@@ -1665,13 +1663,13 @@
         // Called on trigger from the RectView on resize. 
         // Need to convert from Svg coords to Model and notify the PanelModel without saving.
         drag_resize: function(xywh) {
-            var coords = this.getModelCoords({'x':xywh[0], 'y':xywh[1], 'width':xywh[2], 'height':xywh[3]})
+            var coords = this.getModelCoords({'x':xywh[0], 'y':xywh[1], 'width':xywh[2], 'height':xywh[3]});
             this.panelModel.drag_resize(coords.x, coords.y, coords.width, coords.height);
         },
 
         // As above, but need to update the Model on changes to Rect (drag stop etc)
         drag_resize_stop: function(xywh) {
-            var coords = this.getModelCoords({'x':xywh[0], 'y':xywh[1], 'width':xywh[2], 'height':xywh[3]})
+            var coords = this.getModelCoords({'x':xywh[0], 'y':xywh[1], 'width':xywh[2], 'height':xywh[3]});
             this.panelModel.save(coords);
         },
 
@@ -1756,7 +1754,7 @@
         updateSelection: function() {
 
             var min_x = 100000, max_x = -10000,
-                min_y = 100000, max_y = -10000
+                min_y = 100000, max_y = -10000;
 
             var selected = this.figureModel.getSelected();
             if (selected.length < 2){
@@ -1781,7 +1779,7 @@
                 max_x = Math.max(max_x, x+w);
                 min_y = Math.min(min_y, y);
                 max_y = Math.max(max_y, y+h);
-            };
+            }
 
             this.set( this.getSvgCoords({
                 'x': min_x,
