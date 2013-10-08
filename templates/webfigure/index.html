@@ -563,7 +563,7 @@
 
     <script id="scalebar_panel_template" type="text/template">
 
-        <div class="scalebar label_<%= position %>" style="height: 2px; width: <%= width %>px; position: absolute; margin:20px; background-color: #<%= color %>"></div>
+        <div class="scalebar label_<%= position %>" style="height: 2px; width: <%= width %>px; position: absolute; margin:5%; background-color: #<%= color %>"></div>
 
     </script>
 
@@ -573,9 +573,9 @@
 
         <div class="pixel_size_input form-group checkbox checkbox-inline" style="position:absolute; top:-30px; left:100px">
             <label for="pixel_size_input">Pixel Size:</label>
-            <input class="form-control input-sm" id="pixel_size_input" placeholder="Pixel Size (um)" 
+            <input class="form-control input-sm" id="pixel_size_input" placeholder="Pixel Size (&#181;)" 
                     style="width:50px; display:none" value="<%= pixel_size %>">
-            <label><%= pixel_size.toFixed(3) %> um</label>
+            <label><%= pixel_size.toFixed(3) %> &#181;m</label>
         </div>
 
         <div class="input-group pull-left">
@@ -584,7 +584,7 @@
         </div>
 
         <div class="form-group"><div class="checkbox checkbox-inline">
-            <label>um</label>
+            <label>&#181;m</label>
             </div>
         </div>
 

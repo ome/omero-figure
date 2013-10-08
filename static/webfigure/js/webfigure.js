@@ -31,6 +31,17 @@
             this.save('scalebar', sb);
         },
 
+        save_scalebar: function(new_sb) {
+            // update only the attributes of scalebar we're passed
+            if (new_sb.length) {
+                var pix_size = this.get('pixel_size');
+                new_sb.pixels = new_sb.length / pix_size;
+            }
+            var old_sb = $.extend(true, {}, this.get('scalebar') || {});
+            var sb = $.extend(true, old_sb, new_sb);
+            this.save('scalebar', sb);
+        },
+
         // takes a list of labels, E.g [{'text':"t", 'size':10, 'color':'FF0000', 'position':"top"}]
         add_labels: function(labels) {
             var oldLabs = this.get("labels");
@@ -1300,21 +1311,17 @@
 
             var $form = $('#scalebar_form form');
 
-            var length = parseInt($('.scalebar-length', $form).val(), 10),
-                units = $('.scalebar-units span:first', $form).text().trim(),
+            var length = $('.scalebar-length', $form).val(),
                 position = $('.label-position span:first', $form).attr('data-position'),
                 color = $('.label-color span:first', $form).attr('data-color');
 
             _.each(this.models, function(m, i){
-                var pix_size = m.get('pixel_size'),
-                    sb_pixels = length / pix_size;
+                var sb = {show: true};
+                if (length != '-') sb.length = parseInt(length, 10);
+                if (position != '-') sb.position = position;
+                if (color != '-') sb.color = color;
 
-                m.save('scalebar', {length: length, 
-                        units: units,
-                        position: position,
-                        color: color,
-                        pixels:sb_pixels,
-                        show: true});
+                m.save_scalebar(sb);
             });
             return false;
         },
