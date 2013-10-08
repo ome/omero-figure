@@ -24,6 +24,13 @@
 
         },
 
+        hide_scalebar: function() {
+            // keep all scalebar properties, except 'show'
+            var sb = $.extend(true, {}, this.get('scalebar'));
+            sb.show = false;
+            this.save('scalebar', sb);
+        },
+
         // takes a list of labels, E.g [{'text':"t", 'size':10, 'color':'FF0000', 'position':"top"}]
         add_labels: function(labels) {
             var oldLabs = this.get("labels");
@@ -634,6 +641,7 @@
                             'y': py,
                             'datasetName': data.meta.datasetName,
                             'datasetId': data.meta.datasetId,
+                            'pixel_size': data.pixel_size.x,
                         };
                         // create Panel (and select it)
                         self.model.panels.create(n).set('selected', true);
@@ -834,6 +842,7 @@
         template: _.template($('#figure_panel_template').html()),
         label_template: _.template($('#label_template').html()),
         label_table_template: _.template($('#label_table_template').html()),
+        scalebar_template: _.template($('#scalebar_panel_template').html()),
 
         initialize: function(opts) {
             // we render on Changes in the model OR selected shape etc.
@@ -841,6 +850,7 @@
             this.listenTo(this.model, 
                 'change:x change:y change:width change:height change:zoom change:dx change:dy',
                 this.render_layout);
+            this.listenTo(this.model, 'change:scalebar', this.render_scalebar);
             this.listenTo(this.model, 'change:channels change:theZ change:theT', this.render_image);
             this.listenTo(this.model, 'change:labels', this.render_labels);
             // This could be handled by backbone.relational, but do it manually for now...
@@ -885,6 +895,15 @@
             var zoom = this.model.get('zoom'),
                 vp_css = this.model.get_vp_img_css(zoom, w, h);
             this.$img_panel.css(vp_css);
+
+            // update length of scalebar
+            var sb = this.model.get('scalebar');
+            if (sb && sb.show) {
+                // this.$scalebar.css('width':);
+                var panel_scale = vp_css.width / this.model.get('orig_width'),
+                    sb_width = panel_scale * sb.pixels;
+                this.$scalebar.css('width', sb_width);
+            }
         },
 
         render_image: function() {
@@ -925,6 +944,27 @@
             return this;
         },
 
+        render_scalebar: function() {
+
+            if (this.$scalebar) {
+                this.$scalebar.remove();
+            }
+            var sb = this.model.get('scalebar');
+            if (sb && sb.show) {
+                var sb_json = {};
+                sb_json.position = sb.position;
+                sb_json.color = sb.color;
+                sb_json.width = sb.pixels;  // TODO * scale
+
+                var sb_html = this.scalebar_template(sb_json);
+                this.$el.append(sb_html);
+            }
+            this.$scalebar = $(".scalebar", this.$el);
+
+            // update scalebar size wrt current sizes
+            this.render_layout();
+        },
+
         render: function() {
 
             // Have to handle potential nulls, since the template doesn't like them!
@@ -937,8 +977,8 @@
             this.$img_panel = $(".img_panel", this.$el);    // cache for later
 
             this.render_image();
-            this.render_layout();
             this.render_labels();
+            this.render_scalebar();     // also calls render_layout()
 
             return this;
         }
@@ -1098,6 +1138,22 @@
                 old.remove();
             }
 
+            // show scalebar form for selected panels
+            var old_sb = this.scalebar_form;
+            // if (old_sb) {
+            //     old_sb.remove();
+            // }
+            var $scalebar_form = $("#scalebar_form");
+
+            if (selected.length > 0) {
+                this.scalebar_form = new ScalebarFormView({models: selected});
+                this.scalebar_form.render();
+                $scalebar_form.empty().append(this.scalebar_form.$el);
+            }
+            if (old_sb) {
+                old_sb.remove();
+            }
+
             return this;
         }
 
@@ -1193,6 +1249,120 @@
                 html += self.template(json);
             });
             self.$el.append(html);
+
+            return this;
+        }
+    });
+
+
+    // Created new for each selection change
+    var ScalebarFormView = Backbone.View.extend({
+
+        template: _.template($("#scalebar_form_template").html()),
+
+        initialize: function(opts) {
+
+            // prevent rapid repetative rendering, when listening to multiple panels
+            this.render = _.debounce(this.render);
+
+            this.models = opts.models;
+            var self = this;
+
+            _.each(this.models, function(m){
+                self.listenTo(m, 'change:scalebar change:pixel_size', self.render);
+            });
+
+            // this.$el = $("#scalebar_form");
+        },
+
+        events: {
+            "submit .scalebar_form": "update_scalebar",
+            "click .dropdown-menu a": "dropdown_clicked",
+            "click .hide_scalebar": "hide_scalebar",
+        },
+
+        dropdown_clicked: function() {
+            // allow dropdown to update (see select_dropdown_option()) then update
+            var self = this;
+            setTimeout(function() {
+                self.update_scalebar.apply(self);
+            }, 50);
+        },
+
+        hide_scalebar: function() {
+            _.each(this.models, function(m, i){
+                m.hide_scalebar();
+            });
+        },
+
+        // called when form changes
+        update_scalebar: function(event) {
+
+            var $form = $('#scalebar_form form');
+
+            var length = parseInt($('.scalebar-length', $form).val(), 10),
+                units = $('.scalebar-units span:first', $form).text().trim(),
+                position = $('.label-position span:first', $form).attr('data-position'),
+                color = $('.label-color span:first', $form).attr('data-color');
+
+            _.each(this.models, function(m, i){
+                var pix_size = m.get('pixel_size'),
+                    sb_pixels = length / pix_size;
+
+                m.save('scalebar', {length: length, 
+                        units: units,
+                        position: position,
+                        color: color,
+                        pixels:sb_pixels,
+                        show: true});
+            });
+            return false;
+        },
+
+        render: function() {
+
+            var json = {show: false},
+                hidden = false,
+                sb;
+
+            _.each(this.models, function(m, i){
+                // start with json data from first Panel
+                if (!json.pixel_size) {
+                    json.pixel_size = m.get('pixel_size');
+                } else {
+                    pix_sze = m.get('pixel_size');
+                    if (json.pixel_size != pix_sze) json.pixel_size = '-';
+                }
+                sb = m.get('scalebar');
+                // ignore scalebars if not visible
+                if (sb) {
+                    if (!json.length) {
+                        json.length = sb.length;
+                        json.units = sb.units;
+                        json.position = sb.position;
+                        json.color = sb.color;
+                    }
+                    else {
+                        if (json.length != sb.length) json.length = '-';
+                        if (json.units != sb.units) json.units = '-';
+                        if (json.position != sb.position) json.position = '-';
+                        if (json.color != sb.color) json.color = '-';
+                    }
+                }
+                // if any panels don't have scalebar - we allow to add
+                if(!sb || !sb.show) hidden = true;
+            });
+
+            if (this.models.length === 0 || hidden) {
+                json.show = true;
+            }
+            json.length = json.length || 10;
+            json.units = json.units || 'um';
+            json.position = json.position || 'bottomright';
+            json.color = json.color || 'FFFFFF';
+
+            var html = this.template(json);
+            this.$el.html(html);
 
             return this;
         }

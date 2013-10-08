@@ -159,12 +159,17 @@
             margin-right: 4px;
         }
 
+        .scalebar_form .input-group {
+            width:50px;
+            margin-right: 4px;
+        }
+
         .edit-label-form .input-group {
             width:140px;
             margin-right: 4px;
         }
 
-        .edit-label-form button.close {
+        .form-inline button.close {
             color: #FF0000;
             left: 3px;
             top: 2px;
@@ -533,6 +538,11 @@
 
                 <div class="tab-pane" id="labelsTab">
 
+                    <h5>Scalebar</h5>
+                    <div id="scalebar_form"></div>
+
+                    <hr />
+
                     <h5>Add Labels</h5>
                     <form class="new-label-form form-inline" role="form">
 
@@ -550,6 +560,111 @@
 
 
     <!-- Templates for Backbone Views -->
+
+    <script id="scalebar_panel_template" type="text/template">
+
+        <div class="scalebar label_<%= position %>" style="height: 2px; width: <%= width %>px; position: absolute; margin:20px; background-color: #<%= color %>"></div>
+
+    </script>
+
+    <script id="scalebar_form_template" type="text/template">
+
+        <form class="scalebar_form form-inline" style="position:relative">
+
+        <div class="pixel_size_input form-group checkbox checkbox-inline" style="position:absolute; top:-30px; left:100px">
+            <label for="pixel_size_input">Pixel Size:</label>
+            <input class="form-control input-sm" id="pixel_size_input" placeholder="Pixel Size (um)" 
+                    style="width:50px; display:none" value="<%= pixel_size %>">
+            <label><%= pixel_size.toFixed(3) %> um</label>
+        </div>
+
+        <div class="input-group pull-left">
+            <input type="text" class="scalebar-length form-control input-sm" 
+                    placeholder="Length" value="<%= length %>" />
+        </div>
+
+        <div class="form-group"><div class="checkbox checkbox-inline">
+            <label>um</label>
+            </div>
+        </div>
+
+        <div class="btn-group">
+            <button type="button" class="label-position btn btn-default btn-sm dropdown-toggle" 
+                    title="Position" data-toggle="dropdown">
+                <span data-position="<%= position %>" class="labelicon-<%= position %> glyphicon 
+                    <% if (_.contains(['top','bottom','left','right'],position)) print('glyphicon-log-out'); else {print('glyphicon-new-window')} %>"></span>
+                <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu" role="menu">
+                <li role="presentation" class="dropdown-header">Inside Corners</li>
+                <li><a href="#">
+                    <span data-position="topleft" class="labelicon-topleft glyphicon glyphicon-new-window"></span>
+                    Top Left</a>
+                </li>
+                <li><a href="#">
+                    <span data-position="topright" class="labelicon-topright glyphicon glyphicon-new-window"></span>
+                    Top Right</a>
+                </li>
+                <li><a href="#">
+                    <span data-position="bottomleft" class="labelicon-bottomleft glyphicon glyphicon-new-window"></span>
+                    Bottom Left</a>
+                </li>
+                <li><a href="#">
+                    <span data-position="bottomright" class="labelicon-bottomright glyphicon glyphicon-new-window"></span>
+                    Bottom Right</a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="btn-group">
+            <button type="button" class="label-color btn btn-default btn-sm dropdown-toggle" title="Label Color"
+                data-toggle="dropdown">
+                <span data-color="<%= color %>" style="background-color:#<%= color %>">&nbsp &nbsp &nbsp</span>
+                <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu" role="menu">
+                <li><a href="#">
+                    <span data-color="000000" style="background-color:#000">&nbsp &nbsp &nbsp</span>&nbsp Black
+                </a></li>
+                <li><a href="#">
+                    <span data-color="0000FF" style="background-color:#00f">&nbsp &nbsp &nbsp</span>&nbsp Blue
+                </a></li>
+                <li><a href="#">
+                    <span data-color="00FF00" style="background-color:#0f0">&nbsp &nbsp &nbsp</span>&nbsp Green
+                </a></li>
+                <li><a href="#">
+                    <span data-color="FF0000" style="background-color:#f00">&nbsp &nbsp &nbsp</span>&nbsp Red
+                </a></li>
+                <li><a href="#">
+                    <span data-color="FFFF00" style="background-color:#ff0">&nbsp &nbsp &nbsp</span>&nbsp Yellow
+                </a></li>
+                <li><a href="#">
+                    <span data-color="FFFFFF" style="background-color:#fff">&nbsp &nbsp &nbsp</span>&nbsp White
+                </a></li>
+                <li><a href="#">
+                    <span data-color="FF00FF" style="background-color:#f0f">&nbsp &nbsp &nbsp</span>&nbsp Magenta
+                </a></li>
+            </ul>
+        </div>
+
+        <div class="form-group">
+            <div class="checkbox checkbox-inline">
+                <label title="Show length label above scalebar">
+                    <input name="show_label" type="checkbox"> Label
+                </label>
+            </div>
+        </div>
+
+        <% if (show){ %>
+            <button type="submit" class="show_scalebar btn btn-sm btn-success pull-right">Show</button>
+        <% } else { %>
+            <!-- hidden 'submit' so that 'enter' still submits form -->
+            <button type="submit" class="show_scalebar btn btn-sm btn-success pull-right" style="display:none">Show</button>
+            <button aria-hidden="true" class="close hide_scalebar delete-label" title="Remove Scalebar" type="button">×</button>
+        <% } %>
+        </form>
+
+    </script>
 
 
     <script id="labels_form_inner_template" type="text/template">
