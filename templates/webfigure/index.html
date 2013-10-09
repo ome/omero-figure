@@ -154,6 +154,16 @@
 
     <style type="text/css">
 
+        .pixel_size_div {
+            position: absolute;
+            top: -27px;
+            left: 100px;
+        }
+
+        .pixel_size_display {
+            cursor: pointer;
+        }
+
         .new-label-form .input-group {
             width:160px;
             margin-right: 4px;
@@ -569,14 +579,24 @@
 
     <script id="scalebar_form_template" type="text/template">
 
-        <form class="scalebar_form form-inline" style="position:relative">
+        <div class="pixel_size_form" style="position:relative">
+            <div class="pixel_size_div">
+                Pixel Size:
+                <input class="input-sm form-control pixel_size_input" placeholder="Pixel Size (&#181;)"
+                        style="width:100px; display:none" value="<%= pixel_size %>">
+                <span class="pixel_size_display">
+                    <% if (pixel_size == 0)
+                        {print('<span style="color:red">NOT SET</span>')}
+                    else if (typeof pixel_size === 'number')
+                        {print(pixel_size.toFixed(3) + " &#181;m")}
+                    else
+                        {print(pixel_size + " &#181;m")} %>
+                </span>
+            </div>
 
-        <div class="pixel_size_input form-group checkbox checkbox-inline" style="position:absolute; top:-30px; left:100px">
-            <label for="pixel_size_input">Pixel Size:</label>
-            <input class="form-control input-sm" id="pixel_size_input" placeholder="Pixel Size (&#181;)" 
-                    style="width:50px; display:none" value="<%= pixel_size %>">
-            <label><%= pixel_size.toFixed(3) %> &#181;m</label>
         </div>
+
+        <form class="scalebar_form form-inline">
 
         <div class="input-group pull-left">
             <input type="text" class="scalebar-length form-control input-sm" 
@@ -645,14 +665,6 @@
                     <span data-color="FF00FF" style="background-color:#f0f">&nbsp &nbsp &nbsp</span>&nbsp Magenta
                 </a></li>
             </ul>
-        </div>
-
-        <div class="form-group">
-            <div class="checkbox checkbox-inline">
-                <label title="Show length label above scalebar">
-                    <input name="show_label" type="checkbox"> Label
-                </label>
-            </div>
         </div>
 
         <% if (show){ %>

@@ -33,10 +33,6 @@
 
         save_scalebar: function(new_sb) {
             // update only the attributes of scalebar we're passed
-            if (new_sb.length) {
-                var pix_size = this.get('pixel_size');
-                new_sb.pixels = new_sb.length / pix_size;
-            }
             var old_sb = $.extend(true, {}, this.get('scalebar') || {});
             var sb = $.extend(true, old_sb, new_sb);
             this.save('scalebar', sb);
@@ -861,7 +857,7 @@
             this.listenTo(this.model, 
                 'change:x change:y change:width change:height change:zoom change:dx change:dy',
                 this.render_layout);
-            this.listenTo(this.model, 'change:scalebar', this.render_scalebar);
+            this.listenTo(this.model, 'change:scalebar change:pixel_size', this.render_scalebar);
             this.listenTo(this.model, 'change:channels change:theZ change:theT', this.render_image);
             this.listenTo(this.model, 'change:labels', this.render_labels);
             // This could be handled by backbone.relational, but do it manually for now...
@@ -911,8 +907,9 @@
             var sb = this.model.get('scalebar');
             if (sb && sb.show) {
                 // this.$scalebar.css('width':);
+                var sb_pixels = sb.length / this.model.get('pixel_size');
                 var panel_scale = vp_css.width / this.model.get('orig_width'),
-                    sb_width = panel_scale * sb.pixels;
+                    sb_width = panel_scale * sb_pixels;
                 this.$scalebar.css('width', sb_width);
             }
         },
@@ -1290,6 +1287,40 @@
             "submit .scalebar_form": "update_scalebar",
             "click .dropdown-menu a": "dropdown_clicked",
             "click .hide_scalebar": "hide_scalebar",
+            "click .pixel_size_display": "edit_pixel_size",
+            "keypress .pixel_size_input"  : "enter_pixel_size",
+            "blur .pixel_size_input"  : "save_pixel_size",
+        },
+
+        // simply show / hide editing field
+        edit_pixel_size: function() {
+            $('.pixel_size_display', this.$el).hide();
+            $(".pixel_size_input", this.$el).css('display','inline-block').focus();
+        },
+        done_pixel_size: function() {
+            $('.pixel_size_display', this.$el).show();
+            $(".pixel_size_input", this.$el).css('display','none').focus();
+        },
+
+        // If you hit `enter`, set pixel_size
+        enter_pixel_size: function(e) {
+            if (e.keyCode == 13) {
+                this.save_pixel_size(e);
+            }
+        },
+
+        // on 'blur' or 'enter' we save...
+        save_pixel_size: function(e) {
+            // save will re-render, but only if number has changed - in case not...
+            this.done_pixel_size();
+
+            var val = $(e.target).val();
+            if (val.length === 0) return;
+            var pixel_size = parseFloat(val);
+            if (isNaN(pixel_size)) return;
+            _.each(this.models, function(m, i){
+                m.save('pixel_size', pixel_size);
+            });
         },
 
         dropdown_clicked: function() {
@@ -1338,7 +1369,8 @@
                     json.pixel_size = m.get('pixel_size');
                 } else {
                     pix_sze = m.get('pixel_size');
-                    if (json.pixel_size != pix_sze) json.pixel_size = '-';
+                    // account for floating point imprecision when comparing
+                    if (json.pixel_size.toFixed(10) != pix_sze.toFixed(10)) json.pixel_size = '-';
                 }
                 sb = m.get('scalebar');
                 // ignore scalebars if not visible
