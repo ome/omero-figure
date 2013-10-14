@@ -38,7 +38,7 @@ def applyRdefs(image, channels):
     image.setActiveChannels(cIdxs, windows, colors)
 
 
-def get_vp_img_css (panel):
+def get_panel_region_xywh (panel):
 
     zoom = float(panel['zoom'])
     frame_w = panel['width']
@@ -188,6 +188,65 @@ def drawLabels(conn, c, panel, pageHeight):
                 ly += label_h + spacer
 
 
+def drawScalebar(c, panel, region_width, pageHeight):
+
+    x = panel['x']
+    y = panel['y']
+    width = panel['width']
+    height = panel['height']
+    if not ('scalebar' in panel and 'show' in panel['scalebar'] and panel['scalebar']['show']):
+        return
+
+    if not ('pixel_size' in panel and panel['pixel_size'] > 0):
+        print "Can't show scalebar - pixel_size is not defined for panel"
+
+    sb = panel['scalebar']
+
+    spacer = 0.05 * max(height, width)
+
+    c.setLineWidth(2)
+    color = sb['color']
+    red = int(color[0:2],16)
+    green = int(color[2:4],16)
+    blue = int(color[4:6],16)
+    c.setStrokeColorRGB(red, green, blue)
+
+
+    def draw_sb(sb_x, sb_y, align='left'):
+
+        print "Adding Scalebar of %s microns. Pixel size is %s microns" % (sb['length'], panel['pixel_size'])
+        pixels_length = sb['length'] / panel['pixel_size']
+        scale_to_canvas = panel['width'] / region_width
+        canvas_length = pixels_length * scale_to_canvas
+        print 'Scalebar length (panel pixels):', pixels_length
+        print 'Scale by %s to page coordinate length: %s' % (scale_to_canvas, canvas_length)
+        sb_y = pageHeight - sb_y
+        if align == 'left':
+            c.line(sb_x, sb_y, sb_x + canvas_length, sb_y)
+        else:
+            c.line(sb_x, sb_y, sb_x - canvas_length, sb_y)
+
+    position = sb['position']
+    print 'position', position
+
+    if position == 'topleft':
+        lx = x + spacer
+        ly = y + spacer
+        draw_sb(lx, ly)
+    elif position == 'topright':
+        lx = x + width - spacer
+        ly = y + spacer
+        draw_sb(lx, ly, align="right")
+    elif position == 'bottomleft':
+        lx = x + spacer
+        ly = y + height - spacer
+        draw_sb(lx, ly)
+    elif position == 'bottomright':
+        lx = x + width - spacer
+        ly = y + height - spacer
+        draw_sb(lx, ly, align="right")
+
+
 def drawPanel(conn, c, panel, pageHeight, idx):
 
     imageId = panel['imageId']
@@ -203,7 +262,7 @@ def drawPanel(conn, c, panel, pageHeight, idx):
     image = conn.getObject("Image", imageId)
     applyRdefs(image, channels)
 
-    tile = get_vp_img_css (panel)
+    tile = get_panel_region_xywh (panel)
 
     print "TILE", tile
 
@@ -218,6 +277,8 @@ def drawPanel(conn, c, panel, pageHeight, idx):
     pilImg.save(tempName)
 
     c.drawImage(tempName, x, y, width, height) 
+
+    drawScalebar(c, panel, tile['width'], pageHeight)
 
 
 def create_pdf(conn, scriptParams):
