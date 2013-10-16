@@ -1077,6 +1077,7 @@
                 $button = $li.parent().prev();
             $span = $span.clone();
             $('span:first', $button).replaceWith($span);
+            $button.trigger('change');      // can listen for this if we want to 'submit' etc
         },
 
         // submission of the New Label form
@@ -1189,6 +1190,7 @@
 
         events: {
             "submit .edit-label-form": "handle_label_edit",
+            "change .btn": "dropdown_btn_changed",
             "click .delete-label": "handle_label_delete",
         },
 
@@ -1204,6 +1206,11 @@
                 m.edit_labels(deleteMap);
             });
             return false;
+        },
+
+        // Automatically submit the form when a dropdown is changed
+        dropdown_btn_changed: function(event) {
+            $(event.target).closest('form').submit();
         },
 
         // Use the label 'key' to specify which labels to update
@@ -1285,7 +1292,7 @@
 
         events: {
             "submit .scalebar_form": "update_scalebar",
-            "click .dropdown-menu a": "dropdown_clicked",
+            "change .btn": "dropdown_btn_changed",
             "click .hide_scalebar": "hide_scalebar",
             "click .pixel_size_display": "edit_pixel_size",
             "keypress .pixel_size_input"  : "enter_pixel_size",
@@ -1323,12 +1330,9 @@
             });
         },
 
-        dropdown_clicked: function() {
-            // allow dropdown to update (see select_dropdown_option()) then update
-            var self = this;
-            setTimeout(function() {
-                self.update_scalebar.apply(self);
-            }, 50);
+        // Automatically submit the form when a dropdown is changed
+        dropdown_btn_changed: function(event) {
+            $(event.target).closest('form').submit();
         },
 
         hide_scalebar: function() {
