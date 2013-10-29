@@ -1,13 +1,13 @@
 
     body {
-        padding: 0px;
+        padding: 0;
     }
     header {
         background: gray;
         height: 30px;
         width: 100%;
         position: fixed;
-        top: 0px;
+        top: 0;
     }
 
     main {
@@ -56,12 +56,12 @@
         height: 30px;
         width: 100%;
         position: fixed;
-        bottom: 0px;
+        bottom: 0;
     }
 
     footer input {
         position: absolute;
-        left: 155px;
+        left: 250px;
         top: 3px;
     }
 
@@ -71,7 +71,7 @@
         left: 15px;
         position: absolute;
         top: 11px;
-        width: 120px;
+        width: 220px;
         background: #bbb;
     }
     #zoom_slider .ui-slider-handle {

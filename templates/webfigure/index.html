@@ -53,7 +53,7 @@
         new RightPanelView({model: figureModel});
 
         $("#zoom_slider").slider({
-            max: 200,
+            max: 400,
             min: 10,
             value: 50,
             slide: function(event, ui) {
@@ -313,7 +313,8 @@
         .tab-pane .ui-slider {
             margin: 15px 5px 6px;
             background: none repeat scroll 0 0 #BBBBBB;
-            border: 1px solid #AAAAAA;
+            border: 4px solid #fff;
+            cursor: pointer;
         }
         .tab-pane .ui-slider-handle {
             background: none repeat scroll 0 0 #DDDDDD;
@@ -321,14 +322,14 @@
             height: 14px;
         }
         .tab-pane .ui-slider-horizontal {
-            height: 1px;
+            height: 10px;
             width: 150px;
         }
         .tab-pane .ui-slider-horizontal .ui-slider-handle {
             top: -7px;
         }
         .tab-pane .ui-slider-vertical {
-            width: 1px;
+            width: 10px;
             height: 198px;
             margin-right: 10px;
             margin-top: 25px;
