@@ -515,6 +515,7 @@
 
             // respond to zoom changes
             this.listenTo(this.model, 'change:curr_zoom', this.setZoom);
+            this.listenTo(this.model, 'change:selection', this.renderSelectionChange);
 
             // refresh current UI
             this.setZoom();
@@ -522,18 +523,21 @@
 
             // 'Auto-render' on init.
             this.render();
+            this.renderSelectionChange();
 
         },
 
         events: {
-            "click .add_panel": "addPanel"
+            "click .add_panel": "addPanel",
+            "click .delete_panel": "deleteSelectedPanels"
         },
 
         keyboardEvents: {
             'backspace': 'deleteSelectedPanels',
-            'command+a': 'select_all',
-            'command+c': 'copy_selected_panels',
-            'command+v': 'paste_panels'
+            'del': 'deleteSelectedPanels',
+            'mod+a': 'select_all',
+            'mod+c': 'copy_selected_panels',
+            'mod+v': 'paste_panels'
         },
 
         copy_selected_panels: function() {
@@ -689,7 +693,7 @@
             var curr_centre = this.getCentre(true);
 
             // Scale canvas via css
-            this.$canvas.css({"transform": scale, "-webkit-transform": scale});
+            this.$canvas.css({"transform": scale, "-webkit-transform": scale, "-ms-transform": scale});
 
             // Scale canvas wrapper manually
             var canvas_w = this.model.get('canvas_width'),
@@ -769,6 +773,15 @@
         addOne: function(panel) {
             var view = new PanelView({model:panel});    // uiState:this.uiState
             this.$paper.append(view.render().el);
+        },
+
+        renderSelectionChange: function() {
+            var $delete_panel = $('.delete_panel', this.$el);
+            if (this.model.getSelected().length > 0) {
+                $delete_panel.removeAttr("disabled");
+            } else {
+                $delete_panel.attr("disabled", "disabled");
+            }
         },
 
         // Render is called on init()
@@ -1854,8 +1867,10 @@
                         var start = (ch.window.start / self.models.length) << 0,
                             end = (ch.window.end / self.models.length) << 0,
                             min = Math.min(ch.window.min, start),
-                            max = Math.max(ch.window.max, end);
-                        var $div = $("<div><span class='ch_start'>" + start +"</span><div class='ch_slider' style='background-color:#"+ch.color+"'></div><span class='ch_end'>" + end +"</span></div>")
+                            max = Math.max(ch.window.max, end),
+                            color = ch.color;
+                        if (color == "FFFFFF") color = "ccc";  // white slider would be invisible
+                        var $div = $("<div><span class='ch_start'>" + start +"</span><div class='ch_slider' style='background-color:#"+color+"'></div><span class='ch_end'>" + end +"</span></div>")
                             .appendTo($channel_sliders);
 
                         $div.find('.ch_slider').slider({
@@ -2048,7 +2063,7 @@
                 min_y = 100000, max_y = -10000;
 
             var selected = this.figureModel.getSelected();
-            if (selected.length < 2){
+            if (selected.length < 1){
 
                 this.set({
                     'x': 0,
@@ -2194,7 +2209,8 @@
             this.listenTo(this.model, 'change:curr_zoom', this.setZoom);
 
             var multiSelectRect = new MultiSelectRectModel({figureModel: this.model}),
-                rv = new RectView({'model':multiSelectRect, 'paper':this.raphael_paper});
+                rv = new RectView({'model':multiSelectRect, 'paper':this.raphael_paper,
+                        'handle_wh':7, 'handles_toFront': true});
             rv.selected_line_attrs = {'stroke-width': 1, 'stroke':'#4b80f9'};
         },
 
@@ -2202,7 +2218,8 @@
         addOne: function(m) {
 
             var rectModel = new ProxyRectModel({panel: m, figure:this.model});
-            new RectView({'model':rectModel, 'paper':this.raphael_paper});
+            new RectView({'model':rectModel, 'paper':this.raphael_paper, 
+                    'handle_wh':5, 'disable_handles': true});
         },
 
         // TODO
