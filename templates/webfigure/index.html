@@ -88,8 +88,15 @@
             $(this).tab('show');
         });
 
-        $('.btn-sm, .navbar-header').tooltip({container: 'body', placement:'bottom', toggle:"tooltip"});
-
+        // If we're on Windows, update tool-tips for keyboard short cuts:
+        if (navigator.platform.toUpperCase().indexOf('WIN') > -1) {
+            $('.btn-sm').each(function(){
+                var $this = $(this);
+                    $this.attr('data-original-title', $this.attr('data-original-title').replace("⌘", "Ctrl+"));
+            });
+        }
+        // refresh tooltips
+       $('.btn-sm, .navbar-header').tooltip({container: 'body', placement:'bottom', toggle:"tooltip"});
 
         // Heavy lifting of PDF generation handled by OMERO.script...
         $("#create_figure_pdf").click(function(){
@@ -452,6 +459,10 @@
             filter: FlipH;
             -ms-filter: "FlipH";
         }
+
+        .colorpicker span, .label-color span:first-child {
+            border: solid 1px #bbb;
+        }
     </style>
 
 </head>
@@ -615,8 +626,8 @@
                 <div class="tab-pane" id="infoTab"></div>
 
                 <div class="tab-pane active" id="previewTab">
-                    <div class="col-lg-2 no-padding" id="channelToggle"></div>
-                    <div class="col-lg-10 no-padding" id="viewportContainer">
+                    <div class="col-sm-2 no-padding" id="channelToggle"></div>
+                    <div class="col-sm-10 no-padding" id="viewportContainer">
                         <div id="vp_z_slider" class="pull-left"></div>
                         <div id="vp_t_slider"></div>
                     </div>
@@ -624,11 +635,11 @@
                     <div id="channel_sliders"></div>
                     <div class='clearfix'></div>
                     <div class='tab-footer'>
-                        <div class="col-lg-2" style="padding:5px">Zoom:</div>
-                        <div class="col-lg-6 no-padding">
+                        <div class="col-sm-2" style="padding:5px">Zoom:</div>
+                        <div class="col-sm-6 no-padding">
                             <div id="vp_zoom_slider"></div>
                         </div>
-                        <div id="vp_zoom_value" class="col-lg-4" style="padding:5px"></div>
+                        <div id="vp_zoom_value" class="col-sm-4" style="padding:5px"></div>
                         <div class='clearfix'></div>
                     </div>
                 </div>
@@ -730,7 +741,7 @@
                 <span data-color="<%= color %>" style="background-color:#<%= color %>">&nbsp &nbsp &nbsp</span>
                 <span class="caret"></span>
             </button>
-            <ul class="dropdown-menu" role="menu">
+            <ul class="dropdown-menu colorpicker" role="menu">
                 <li><a href="#">
                     <span data-color="000000" style="background-color:#000">&nbsp &nbsp &nbsp</span>&nbsp Black
                 </a></li>
@@ -862,7 +873,7 @@
                 <span data-color="<%= l.color %>" style="background-color:#<%= l.color %>">&nbsp &nbsp &nbsp</span>
                 <span class="caret"></span>
             </button>
-            <ul class="dropdown-menu" role="menu">
+            <ul class="dropdown-menu colorpicker" role="menu">
                 <li><a href="#">
                     <span data-color="000000" style="background-color:#000">&nbsp &nbsp &nbsp</span>&nbsp Black
                 </a></li>
@@ -934,14 +945,14 @@
             <tbody>
                 <tr><td>Image</td></tr>
                 <tr><td>
-                    <div class="col-lg-6"><small><strong>Image ID</strong>:</small></div>
-                    <div class="col-lg-6"><small><%= imageId %></small></div>
+                    <div class="col-sm-6"><small><strong>Image ID</strong>:</small></div>
+                    <div class="col-sm-6"><small><%= imageId %></small></div>
 
-                    <div class="col-lg-6"><small><strong>Dimensions (XY)</strong>:</small></div>
-                    <div class="col-lg-6"><small><%= orig_width %> x <%= orig_height %></small></div>
+                    <div class="col-sm-6"><small><strong>Dimensions (XY)</strong>:</small></div>
+                    <div class="col-sm-6"><small><%= orig_width %> x <%= orig_height %></small></div>
 
-                    <div class="col-lg-6"><small><strong>Z-sections/Timepoints</strong>:</small></div>
-                    <div class="col-lg-6"><small><%= sizeZ %> x <%= sizeT %></small></div>
+                    <div class="col-sm-6"><small><strong>Z-sections/Timepoints</strong>:</small></div>
+                    <div class="col-sm-6"><small><%= sizeZ %> x <%= sizeT %></small></div>
                 </td></tr>
             </tbody>
         </table>
@@ -951,17 +962,17 @@
             <tbody>
                 <tr><td>Panel</td></tr>
                 <tr><td>
-                    <div class="col-lg-3" style="text-align: right"><small><strong>X</strong>:</small></div>
-                    <div class="col-lg-3"><small><% print(x.toFixed(0)) %></small></div>
+                    <div class="col-sm-3" style="text-align: right"><small><strong>X</strong>:</small></div>
+                    <div class="col-sm-3"><small><% print(x.toFixed(0)) %></small></div>
 
-                    <div class="col-lg-3" style="text-align: right"><small><strong>Width</strong>:</small></div>
-                    <div class="col-lg-3"><small><% print(width) %></small></div>
+                    <div class="col-sm-3" style="text-align: right"><small><strong>Width</strong>:</small></div>
+                    <div class="col-sm-3"><small><% print(width) %></small></div>
 
-                    <div class="col-lg-3" style="text-align: right"><small><strong>Y</strong>:</small></div>
-                    <div class="col-lg-3"><small><% print(y.toFixed(0)) %></small></div>
+                    <div class="col-sm-3" style="text-align: right"><small><strong>Y</strong>:</small></div>
+                    <div class="col-sm-3"><small><% print(y.toFixed(0)) %></small></div>
 
-                    <div class="col-lg-3" style="text-align: right"><small><strong>Height</strong>:</small></div>
-                    <div class="col-lg-3"><small><% print(height) %></small></div>
+                    <div class="col-sm-3" style="text-align: right"><small><strong>Height</strong>:</small></div>
+                    <div class="col-sm-3"><small><% print(height) %></small></div>
                 </td></tr>
             </tbody>
         </table>
@@ -1008,7 +1019,7 @@
                 <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                     <span class="caret"></span>
                 </button>
-                <ul class="dropdown-menu" data-index="<%= i %>">
+                <ul class="dropdown-menu colorpicker" data-index="<%= i %>">
                     <li class="dropdown-header">Channel Color</li>
                     <li class="divider"></li>
                     <li><a data-color="0000FF" href="#">
