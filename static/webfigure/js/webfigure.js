@@ -259,7 +259,7 @@
             });
         },
 
-        localStorage: new Backbone.LocalStorage("figureShop-backbone")
+        // localStorage: new Backbone.LocalStorage("figureShop-backbone")
     });
 
 
@@ -268,7 +268,8 @@
     var FigureModel = Backbone.Model.extend({
 
         defaults: {
-            'curr_zoom': 100
+            'curr_zoom': 100,
+            'unsaved': false,
         },
 
         initialize: function() {
@@ -277,6 +278,64 @@
             // wrap selection notification in a 'debounce', so that many rapid
             // selection changes only trigger a single re-rendering 
             this.notifySelectionChange = _.debounce( this.notifySelectionChange, 10);
+        },
+
+        load_from_OMERO: function(fileId, success) {
+
+            var load_url = BASE_WEBFIGURE_URL + "load_web_figure/" + fileId + "/",
+                self = this;
+
+
+            $.getJSON(load_url, function(data){
+
+                _.each(data.panels, function(p){
+                    self.panels.create(p);
+                });
+
+                self.set({'fileId': fileId,
+                        'unsaved': false,
+                        'figureName': data.figureName,
+                    });
+                self.trigger("reset_undo_redo");
+            });
+        },
+
+        save_to_OMERO: function(options, success) {
+
+            // Turn panels into json
+            var p_json = [],
+                self = this;
+            this.panels.each(function(m) {
+                p_json.push(m.toJSON());
+            });
+
+            // figureName should be in options, but just in case...
+            var figureName = options.figureName || "WebFigure_" + Date();
+
+            var figureJSON = {
+                panels: p_json,
+                paper_width: this.get('paper_width'),
+                paper_height: this.get('paper_height'),
+                figureName: figureName,
+            };
+
+            var url = $(".save_figure", this.$el).attr('data-url'),
+                data = options || {};
+
+            if (this.get('fileId')) {
+                data.fileId = this.get('fileId');
+            }
+            data.figureJSON = JSON.stringify(figureJSON);
+
+            // Save
+            $.post( url, data)
+                .done(function( data ) {
+                    self.set({'fileId': +data, 'unsaved': false, 'figureName': figureName});
+
+                    if (success) {
+                        success(data);
+                    }
+                });
         },
 
         align_left: function() {
@@ -471,6 +530,18 @@
             this.notifySelectionChange();
         },
 
+        delete_all: function() {
+            // make list that won't change as we destroy
+            var ps = [];
+            this.panels.each(function(p){
+                ps.push(p);
+            });
+            for (var i=ps.length-1; i>=0; i--) {
+                ps[i].destroy();
+            }
+            this.notifySelectionChange();
+        },
+
         notifySelectionChange: function() {
             this.trigger('change:selection');
         }
@@ -499,6 +570,7 @@
             this.$paper = $("#paper");
             this.$copyBtn = $(".copy.btn");
             this.$pasteBtn = $(".paste.btn");
+            this.$saveBtn = $(".save_figure.btn");
 
             var self = this;
 
@@ -516,9 +588,18 @@
                 self.model.set({'paper_width':w, 'paper_height':h});
             });
 
+            // Don't leave the page with unsaved changes!
+            window.onbeforeunload = function() {
+                if (self.model.get("unsaved")) {
+                    return "Leave page with unsved changes?";
+                }
+            };
+
             // respond to zoom changes
             this.listenTo(this.model, 'change:curr_zoom', this.setZoom);
             this.listenTo(this.model, 'change:selection', this.renderSelectionChange);
+            this.listenTo(this.model, 'change:unsaved', this.renderUnsaved);
+            this.listenTo(this.model, 'change:figureName', this.renderFigureName);
 
             // refresh current UI
             this.setZoom();
@@ -535,6 +616,8 @@
             "click .delete_panel": "deleteSelectedPanels",
             "click .copy.btn": "copy_selected_panels",
             "click .paste.btn": "paste_panels",
+            "click .save_figure": "save_figure",
+            "click .new_figure": "goto_newfigure",
         },
 
         keyboardEvents: {
@@ -542,7 +625,45 @@
             'del': 'deleteSelectedPanels',
             'mod+a': 'select_all',
             'mod+c': 'copy_selected_panels',
-            'mod+v': 'paste_panels'
+            'mod+v': 'paste_panels',
+            'mod+s': 'save_figure',
+            'mod+n': 'goto_newfigure',
+        },
+
+        goto_newfigure: function() {
+            window.location.hash = "";
+            return false;
+        },
+
+        save_figure: function() {
+
+            // Turn panels into json
+            var figureModel = this.model;
+
+            var options = {};
+            if (figureModel.get('fileId')) {
+                options.fileId = figureModel.get('fileId');
+            } else {
+                var d = new Date(),
+                    dt = d.getFullYear() + "-" + (d.getMonth()+1) + "-" +d.getDate(),
+                    tm = d.getHours() + ":" + d.getMinutes() + ":" + d.getSeconds(),
+                    defaultName = "WebFigure_" + dt + "_" + tm;
+                var figureName = prompt("Enter Figure Name", defaultName);
+
+                if (figureName) {
+                    options.figureName = figureName;
+                } else {
+                    // Abort saving
+                    return false;
+                }
+            }
+
+            // Save
+            figureModel.save_to_OMERO(options, function(data){
+                window.location.hash = "figure/"+data;
+            });
+
+            return false;
         },
 
         copy_selected_panels: function() {
@@ -706,6 +827,25 @@
         addOne: function(panel) {
             var view = new PanelView({model:panel});    // uiState:this.uiState
             this.$paper.append(view.render().el);
+        },
+
+        renderFigureName: function() {
+
+            var title = "WebFigure",
+                figureName = this.model.get('figureName');
+            if ((figureName) && (figureName.length > 0)) {
+                title += " - " + figureName;
+            }
+            $('title').text(title);
+        },
+
+        renderUnsaved: function() {
+
+            if (this.model.get('unsaved')) {
+                this.$saveBtn.addClass('btn-success').removeClass('btn-default').removeAttr('disabled');
+            } else {
+                this.$saveBtn.addClass('btn-default').removeClass('btn-success').attr('disabled', 'disabled');
+            }
         },
 
         renderSelectionChange: function() {
@@ -884,24 +1024,30 @@
 
         align_left: function() {
             this.model.align_left();
+            return false;
         },
 
         align_grid: function() {
             this.model.align_grid();
+            return false;
         },
 
         align_width: function() {
             this.model.align_size(true, false);
+            return false;
         },
         align_height: function() {
             this.model.align_size(false, true);
+            return false;
         },
         align_size: function() {
             this.model.align_size(true, true);
+            return false;
         },
 
         align_top: function() {
             this.model.align_top();
+            return false;
         },
 
         render: function() {
@@ -1842,6 +1988,7 @@
                     m.save_channel(idx, 'color', color);
                 });
             }
+            return false;
         },
 
         toggle_channel: function(e) {
@@ -1860,6 +2007,7 @@
                     }
                 });
             }
+            return false;
         },
 
         clear: function() {
