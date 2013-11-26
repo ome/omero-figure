@@ -16,14 +16,24 @@
     {% include "webgateway/base/includes/script_src_jquery.html" %}
     {% include "webgateway/base/includes/jquery-ui.html" %}
     <link rel="stylesheet" href="{% static "3rdparty/jquery-ui-1.8.19/themes/base/jquery.ui.base.css" %}" type="text/css" />
+
+
     <script>
 
-    var BASE_WEBFIGURE_URL = "{% url webfigure_index %}";
+    var BASE_WEBFIGURE_URL = "{% url webfigure_index %}",
+        SAVE_WEBFIGURE_URL = "{% url save_web_figure %}",
+        LIST_WEBFIGURES_URL = "{% url list_web_figures %}",
+        DELETE_WEBFIGURE_URL = "{% url delete_web_figure %}",
+        MAKE_WEBFIGURE_URL = "{% url make_web_figure %}",
+        ACTIVITIES_JSON_URL = "{% url activities_json %}",
+        WEBINDEX_URL = "{% url webindex %}";
 
     $(document).ready(function() {
 
-
-
+        // keep-alive ping every minute, so that OMERO session doesn't die
+        setInterval(function (){
+            $.get("{% url keepalive_ping %}");
+        }, 60000);
 
         // load Panels from localStorage (if any)
         // figureModel.panels.fetch({
@@ -35,70 +45,6 @@
         // });
         // figureModel.clearSelected();    // reset selection (all saved as 'true')
 
-
-        // Heavy lifting of PDF generation handled by OMERO.script...
-        $("#create_figure_pdf").click(function(){
-
-            // Status is indicated by showing / hiding 3 buttons
-            var $create_figure_pdf = $(this),
-                $pdf_inprogress = $("#pdf_inprogress"),
-                $pdf_download = $("#pdf_download");
-            $create_figure_pdf.hide();
-            $pdf_download.hide();
-            $pdf_inprogress.show();
-
-            // Turn panels into json
-            var p_json = [];
-            figureModel.panels.each(function(m) {
-                p_json.push(m.toJSON());
-            });
-
-            var url = "{% url make_web_figure %}",
-                data = {
-                pageWidth: figureModel.get('paper_width'),
-                pageHeight: figureModel.get('paper_height'),
-                panelsJSON: JSON.stringify(p_json)
-            }
-
-            // Start the Figure_To_Pdf.py script
-            $.post( url, data)
-                .done(function( data ) {
-
-                    // {"status": "in progress", "jobId": "ProcessCallback/64be7a9e-2abb-4a48-9c5e-6d0938e1a3e2 -t:tcp -h 192.168.1.64 -p 64592"}
-                    var jobId = data.jobId;
-
-                    // Now we keep polling for script completion, every second...
-
-                    var i = setInterval(function (){
-
-                        $.getJSON("{% url activities_json %}", function(act_data) {
-
-                                var pdf_job = act_data[jobId];
-
-                                // We're waiting for this flag...
-                                if (pdf_job.status == "finished") {
-                                    clearInterval(i);
-
-                                    // Update UI
-                                    $create_figure_pdf.show();
-                                    $pdf_inprogress.hide();
-                                    var fa_id = pdf_job.results.File_Annotation.id,
-                                        fa_download = "{% url webindex %}annotation/" + fa_id + "/";
-                                    $pdf_download.attr('href', fa_download).show();
-                                }
-
-                                if (act_data.inprogress == 0) {
-                                    clearInterval(i);
-                                }
-
-                            }).error(function() {
-                                clearInterval(i);
-                            });
-
-                    }, 1000);
-                });
-            return false;
-        });
     });
 
     </script>
@@ -133,6 +79,26 @@
             </div>
         </div>
     </div><!-- /.modal -->
+    <!-- Modal -->
+    <div class="modal" id="openFigureModal" tabindex="-1" role="dialog" aria-labelledby="addImagesLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title">Open Figure</h4>
+                </div>
+                <form class="openFigureForm" role="form">
+                    <div class="modal-body">
+                        <ul id="figure_files"></ul>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary" data-dismiss="modal" disabled="disabled">Open</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div><!-- /.modal -->
 
     <div class="navbar navbar-inverse navbar-fixed-top">
         <div class="container">
@@ -147,35 +113,51 @@
                         </ul>
                     </li> -->
                     <!-- <li><a href="#about">About</a></li> -->
+
+                    <li class="active dropdown" id="file_actions">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">File <b class="caret"></b></a>
+                        <ul id="figure-actions" class="active dropdown-menu">
+                            <li class="new_figure">
+                                <a href="#">New ⌘N</a>
+                            </li>
+                            <li class="open_figure">
+                                <a href="#">Open ⌘O</a>
+                            </li>
+                            <li class="save_figure disabled">
+                                <a href="#">Save ⌘S</a>
+                            </li>
+                            <li class="delete_figure">
+                                <a href="#">Delete Figure</a>
+                            </li>
+                         </ul>
+                    </li>
+
+                    <li class="active dropdown" id="edit_actions">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Edit <b class="caret"></b></a>
+                        <ul id="figure-actions" class="active dropdown-menu">
+                            <!-- We add <a> to undo/redo to enable. See undo.js -->
+                            <li class="undo disabled">
+                                <a href="#">Undo ⌘Z</a>
+                            </li>
+                            <li class="redo disabled">
+                                <a href="#">Redo ⌘Y</a>
+                            </li>
+                            <li class="copy disabled">
+                                <a href="#">Copy ⌘C</a>
+                            </li>
+                            <li class="paste disabled">
+                                <a href="#">Paste ⌘V</a>
+                            </li>
+
+                         </ul>
+                    </li>
+
                 </ul>
 
                 <form class="navbar-form navbar-left">
-                    <div class="btn-group">
-                        <button type="button" class="copy btn btn-default btn-sm" title="Copy ⌘C" disabled="disabled">
-                            <span class="glyphicon glyphicon-file"></span>
-                        </button>
-                        <button type="button" class="paste btn btn-default btn-sm" title="Paste ⌘V" disabled="disabled">
-                            <span class="glyphicon glyphicon-book"></span>
-                        </button>
-                    </div>
 
-                    <!-- Buttons for Undo / Redo - see undo.js -->
-                    <div class="btn-group" id="undoRedo">
-                        <button type="button" class="undo btn btn-default btn-sm" title="Undo ⌘Z" disabled="disabled">
-                            <span class="glyphicon glyphicon-share-alt"></span>
-                        </button>
-                        <button type="button" class="redo btn btn-default btn-sm" title="Redo ⌘Y" disabled="disabled">
-                            <span class="glyphicon glyphicon-share-alt"></span>
-                        </button>
-                    </div>
-
-                    <button class="save_figure btn btn-default btn-sm" title="Save Figure to OMERO" 
-                            data-url="{% url save_web_figure %}" disabled="disabled">
+                    <button class="save_figure btn btn-default btn-sm" title="Save Figure to OMERO" disabled="disabled">
                         Save
-                    </button>
-
-                    <button class="new_figure btn btn-success btn-sm" title="Start New Figure">
-                        New
                     </button>
                 </form>
 
@@ -692,6 +674,10 @@
         <% }); %>
     </script>
 
+    <script type="text/template" id="figure_file_item">
+        <% if(imageId > 0) { print("<img src='/webgateway/render_thumbnail/" + imageId + "/' />") } %> <%= id %> <a href="#figure/<%= id %>"><%= name %></a> (<%= ownerFullName %>)
+    </script>
+
 
     <script src="{% static 'webfigure/3rdparty/json2.js' %}"></script>
     <script src="{% static 'webfigure/3rdparty/underscore.js' %}"></script>
@@ -706,6 +692,7 @@
     <script type="text/javascript" src="{% static 'webfigure/js/undo.js' %}"></script>
     <script type="text/javascript" src="{% static 'webfigure/js/raphael-rect.js' %}"></script>
     <script type="text/javascript" src="{% static 'webfigure/js/util.js' %}"></script>
+    <script type="text/javascript" src="{% static 'webfigure/js/files.js' %}"></script>
     <script type="text/javascript" src="{% static 'webfigure/js/app.js' %}"></script>
 
 </body>
