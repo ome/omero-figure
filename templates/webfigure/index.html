@@ -260,7 +260,7 @@
                         <div id="vp_z_slider" class="pull-left"></div>
                         <div id="vp_t_slider"></div>
                     </div>
-                    <div class='clearfix'></div>
+                    <div class='clearfix' style="padding-bottom:3px"></div>
                     <div id="channel_sliders"></div>
                     <div class='clearfix'></div>
                     <div class='tab-footer'>
@@ -424,7 +424,10 @@
                         <li><a href="#" data-label="[image-name]">Image Name</a></li>
                         <li><a href="#" data-label="[dataset-name]">Dataset Name</a></li>
                         <li><a href="#" data-label="[channels]">Channels</a></li>
-                        <li><a href="#" data-label="[channels + colors]">Channels (with Colors)</a></li>
+                        <li><a href="#" data-label="[time-secs]">Time (secs)</a></li>
+                        <li><a href="#" data-label="[time-mins]">Time (mins)</a></li>
+                        <li><a href="#" data-label="[time-hrs:mins:secs]">Time (hrs:mins:secs)</a></li>
+                        <li><a href="#" data-label="[time-hrs:mins]">Time (hrs:mins)</a></li>
                     </ul>
                 </div>
             <% } %>
@@ -557,6 +560,7 @@
         <div id="vp_z_value"><%= theZ %>/<%= sizeZ %></div>
         <div id="vp_t_label">T</div>
         <div id="vp_t_value"><%= theT %>/<%= sizeT %></div>
+        <div id="vp_deltaT"><%= deltaT %></div>
         <div class="vp_frame" style="width:<%= frame_w %>px; height:<%= frame_h %>px">
             <% _.each(imgs_css, function(css, i) { %>
             <img class="vp_img"

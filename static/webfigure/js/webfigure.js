@@ -17,6 +17,7 @@
             dx: 0,    // pan x & y within viewport
             dy: 0,
             labels: [],
+            deltaT: [],     // list of deltaTs (secs) for tIndexes of movie
             selected: false
         },
 
@@ -74,6 +75,36 @@
                 }
             });
             this.add_labels(newLabels);
+        },
+
+        create_labels_from_time: function(options) {
+            var pad = function(digit) {
+                var d = digit + "";
+                return d.length === 1 ? ("0"+d) : d;
+            };
+            var theT = this.get('theT'),
+                deltaT = this.get('deltaT')[theT] || 0,
+                text = "", h, m, s;
+            if (options.format === "secs") {
+                text = deltaT + " secs";
+            } else if (options.format === "mins") {
+                text = Math.round(deltaT / 60) + "mins";
+            } else if (options.format === "hrs:mins") {
+                h = (deltaT / 3600) >> 0;
+                m = pad(Math.round((deltaT % 3600) / 60));
+                text = h + ":" + m;
+            } else if (options.format === "hrs:mins:secs") {
+                h = (deltaT / 3600) >> 0;
+                m = pad(((deltaT % 3600) / 60) >> 0);
+                s = pad(deltaT % 60);
+                text = h + ":" + m + ":" + s;
+            }
+            this.add_labels([{
+                    'text': text,
+                    'size': options.size,
+                    'position': options.position,
+                    'color': options.color
+            }]);
         },
 
         get_label_key: function(label) {
@@ -213,7 +244,7 @@
                 theT = this.get('theT');
 
             return '/webgateway/render_image/' + imageId +
-                    "/" + theZ + "/" + theT + '/?c=' + renderString;
+                    "/" + theZ + "/" + theT + '/?c=' + renderString + "&m=c";
         },
 
         // used by the PanelView and ImageViewerView to get the size and
@@ -247,6 +278,21 @@
             img_y = ((dy * frame_h) / orig_h) - img_y;
 
             return {'left':img_x, 'top':img_y, 'width':img_w, 'height':img_h};
+        },
+
+        // True if coords (x,y,width, height) overlap with panel
+        regionOverlaps: function(coords) {
+
+            var px = this.get('x'),
+                px2 = px + this.get('width'),
+                py = this.get('y'),
+                py2 = py + this.get('height'),
+                cx = coords.x,
+                cx2 = cx + coords.width,
+                cy = coords.y,
+                cy2 = cy + coords.height;
+            // overlap needs overlap on x-axis...
+            return ((px < cx2) && (cx < px2) && (py < cy2) && (cy < py2));
         },
 
     });
@@ -283,7 +329,6 @@
         },
 
         syncOverride: function(method, model, options, error) {
-            console.log('syncOverride', arguments);
             this.set("unsaved", true);
         },
 
@@ -296,6 +341,7 @@
             $.getJSON(load_url, function(data){
 
                 _.each(data.panels, function(p){
+                    p.selected = false;
                     self.panels.create(p);
                 });
 
@@ -550,6 +596,15 @@
             if (trigger !== false) {
                 this.notifySelectionChange();
             }
+        },
+
+        selectByRegion: function(coords) {
+            this.panels.each(function(p){
+                if (p.regionOverlaps(coords)) {
+                    p.set('selected', true);
+                }
+            });
+            this.notifySelectionChange();
         },
 
         getSelected: function() {
@@ -1056,13 +1111,22 @@
                 if (parseInt(imgId, 10) > 0) {
                     var c = this.figureView.getCentre();
                     // Get the json data for the image...
-                    $.getJSON('/webgateway/imgData/' + parseInt(imgId, 10) + '/', function(data){
+                    $.getJSON('/webfigure/imgData/' + parseInt(imgId, 10) + '/', function(data){
                         // just pick what we need, add x & y etc...
                         // Need to work out where to start (px,py) now that we know size of panel
                         // (assume all panels are same size)
                         px = px || c.x - (colCount * data.size.width)/2;
                         py = py || c.y - (rowCount * data.size.height)/2;
                         spacer = spacer || data.size.width/20;
+                        var channels = data.channels;
+                        if (data.rdefs.model === "greyscale") {
+                            // we don't support greyscale, but instead set active channel grey
+                            _.each(channels, function(ch){
+                                if (ch.active) {
+                                    ch.color = "FFFFFF";
+                                }
+                            });
+                        }
                         var n = {
                             'imageId': data.id,
                             'name': data.meta.imageName,
@@ -1072,7 +1136,7 @@
                             'theZ': data.rdefs.defaultZ,
                             'sizeT': data.size.t,
                             'theT': data.rdefs.defaultT,
-                            'channels': data.channels,
+                            'channels': channels,
                             'orig_width': data.size.width,
                             'orig_height': data.size.height,
                             'x': px,
@@ -1080,6 +1144,7 @@
                             'datasetName': data.meta.datasetName,
                             'datasetId': data.meta.datasetId,
                             'pixel_size': data.pixel_size.x,
+                            'deltaT': data.deltaT,
                         };
                         // create Panel (and select it)
                         self.model.panels.create(n).set('selected', true);
@@ -1392,7 +1457,6 @@
             // For the Label Text, handle this differently...
             if ($a.attr('data-label')) {
                 $('.new-label-form .label-text', this.$el).val( $a.attr('data-label') );
-                return false;
             }
             // All others, we take the <span> from the <a> and place it in the <button>
             if ($span.length === 0) $span = $a;  // in case we clicked on <span>
@@ -1418,12 +1482,21 @@
 
             var selected = this.model.getSelected();
 
-            if (label_text == '[channels]' || label_text == '[channels + colors]') {
-
-                // if we didn't choose 'color' from channels, use picked color
-                var ch_color = (label_text.indexOf('colors') == -1 ? color : false);
+            if (label_text == '[channels]') {
                 _.each(selected, function(m) {
-                    m.create_labels_from_channels({color:ch_color, position:position, size:font_size});
+                    m.create_labels_from_channels({position:position, size:font_size});
+                });
+                return false;
+            }
+
+            if (label_text.slice(0, 5) == '[time') {
+                var format = label_text.slice(6, -1);   // 'secs', 'hrs:mins' etc
+                _.each(selected, function(m) {
+                    m.create_labels_from_time({format: format,
+                            position:position,
+                            size:font_size,
+                            color: color
+                    });
                 });
                 return false;
             }
@@ -1897,7 +1970,15 @@
                 min: 1,             // model is 0-based, UI is 1-based
                 value: self.theT_avg + 1,
                 slide: function(event, ui) {
-                    $("#vp_t_value").text(ui.value + "/" + self.sizeT);
+                    var theT = ui.value;
+                    $("#vp_t_value").text(theT + "/" + self.sizeT);
+                    var dt = self.models[0].get('deltaT')[theT-1];
+                    _.each(self.models, function(m){
+                        if (m.get('deltaT')[theT-1] != dt) {
+                            dt = undefined;
+                        }
+                    });
+                    $("#vp_deltaT").text(self.formatTime(dt));
                 },
                 stop: function( event, ui ) {
                     _.each(self.models, function(m){
@@ -1972,6 +2053,26 @@
             }
         },
 
+        formatTime: function(seconds) {
+
+            var mins, secs, hours;
+            if (typeof seconds === 'undefined') {
+                return "";
+            }
+            else if (seconds < 60) {
+                return seconds + " secs";
+            } else if (seconds < 3600) {
+                mins = (seconds / 60) >> 0;
+                secs = (seconds % 60) >> 0;
+                return mins + "min " + secs + "s";
+            } else {
+                hours = (seconds / 3600) >> 0;
+                mins = (seconds % 3600 / 60) >> 0;
+                secs = (seconds % 60) >> 0;
+                return hours + "h " + mins + "min " + secs + "s";
+            }
+        },
+
         render: function() {
 
             if (this.models.length === 0);
@@ -1985,6 +2086,8 @@
                 max_theZ = 0,
                 sum_theT = 0,
                 max_theT = 0,
+                sum_deltaT = 0,
+                max_deltaT = 0,
                 sum_dx = 0,
                 sum_dy = 0,
                 imgs_css = [],
@@ -2001,9 +2104,13 @@
                 sum_wh += (m.get('width')/ m.get('height'));
                 sum_zoom += m.get('zoom');
                 sum_theZ += m.get('theZ');
-                sum_theT += m.get('theT');
+                var theT = m.get('theT'),
+                    dT = m.get('deltaT')[theT] || 0;
+                sum_theT += theT;
+                sum_deltaT += dT;
                 max_theZ = Math.max(max_theZ, m.get('theZ'));
-                max_theT = Math.max(max_theT, m.get('theT'));
+                max_theT = Math.max(max_theT, theT);
+                max_deltaT = Math.max(max_deltaT, dT);
             });
             // Only continue if panels are all same w/h ratio
             if (!same_wh) return;
@@ -2013,6 +2120,7 @@
                 zoom = sum_zoom/this.models.length,
                 theZ = sum_theZ/this.models.length,
                 theT = sum_theT/this.models.length;
+                deltaT = sum_deltaT/this.models.length;
             if (wh <= 1) {
                 frame_h = this.full_size;
                 frame_w = this.full_size * wh;
@@ -2045,11 +2153,17 @@
             json.theZ = theZ+1;
             json.sizeT = this.sizeT || "-";
             json.theT = theT+1;
+            json.deltaT = deltaT;
             if (max_theZ != theZ) {
                 json.theZ = "-";
             }
             if (max_theT != theT) {
                 json.theT = "-";
+            }
+            if (max_deltaT != deltaT || this.sizeT == 1) {
+                json.deltaT = "";
+            } else {
+                json.deltaT = this.formatTime(deltaT);
             }
             var html = this.template(json);
             this.$el.html(html);
@@ -2209,6 +2323,19 @@
     // the PanelModel.
     // The SVG RectView (Raphael) notifies this Model via trigger 'drag' & 'dragStop'
     // and this is delegated to the PanelModel via trigger or set respectively.
+
+    // Used by a couple of different models below
+    var getModelCoords = function(coords) {
+        var zoom = this.figureModel.get('curr_zoom') * 0.01,
+            paper_top = (this.figureModel.get('canvas_height') - this.figureModel.get('paper_height'))/2,
+            paper_left = (this.figureModel.get('canvas_width') - this.figureModel.get('paper_width'))/2,
+            x = (coords.x/zoom) - paper_left - 1,
+            y = (coords.y/zoom) - paper_top - 1,
+            w = coords.width/zoom,
+            h = coords.height/zoom;
+        return {'x':x>>0, 'y':y>>0, 'width':w>>0, 'height':h>>0};
+    };
+
     var ProxyRectModel = Backbone.Model.extend({
 
         initialize: function(opts) {
@@ -2245,16 +2372,7 @@
         },
 
         // return the Model x, y, w, h (converting from SVG coords)
-        getModelCoords: function(coords) {
-            var zoom = this.figureModel.get('curr_zoom') * 0.01,
-                paper_top = (this.figureModel.get('canvas_height') - this.figureModel.get('paper_height'))/2,
-                paper_left = (this.figureModel.get('canvas_width') - this.figureModel.get('paper_width'))/2,
-                x = (coords.x/zoom) - paper_left - 1,
-                y = (coords.y/zoom) - paper_top - 1,
-                w = coords.width/zoom,
-                h = coords.height/zoom;
-            return {'x':x>>0, 'y':y>>0, 'width':w>>0, 'height':h>>0};
-        },
+        getModelCoords: getModelCoords,
 
         // called on trigger from the RectView, on drag of the whole rect OR handle for resize.
         // we simply convert coordinates and delegate to figureModel
@@ -2498,15 +2616,75 @@
             var self = this,
                 canvas_width = this.model.get('canvas_width'),
                 canvas_height = this.model.get('canvas_height');
+            this.figureModel = this.model;  // since getModelCoords() expects this.figureModel
 
             // Create <svg> canvas
             this.raphael_paper = Raphael("canvas_wrapper", canvas_width, canvas_height);
 
             // this.panelRects = new ProxyRectModelList();
+            self.$dragOutline = $("<div style='border: dotted #0a0a0a 1px; position:absolute; z-index:1'></div>")
+                .appendTo("#canvas_wrapper");
+            self.outlineStyle = self.$dragOutline.get(0).style;
 
-            // Add global click handler
-            $("#canvas_wrapper>svg").mousedown(function(event){
-                self.handleClick(event);
+
+            // Add global mouse event handlers
+            self.dragging = false;
+            self.drag_start_x = 0;
+            self.drag_start_y = 0;
+            $("#canvas_wrapper>svg")
+                .mousedown(function(event){
+                    self.dragging = true;
+                    var parentOffset = $(this).parent().offset(); 
+                    //or $(this).offset(); if you really just want the current element's offset
+                    self.left = self.drag_start_x = event.pageX - parentOffset.left;
+                    self.top = self.drag_start_y = event.pageY - parentOffset.top;
+                    self.dx = 0;
+                    self.dy = 0;
+                    self.$dragOutline.css({
+                            'left': self.drag_start_x,
+                            'top': self.drag_start_y,
+                            'width': 0,
+                            'height': 0
+                        }).show();
+                    // return false;
+            })
+                .mousemove(function(event){
+                    if (self.dragging) {
+                        var parentOffset = $(this).parent().offset(); 
+                        //or $(this).offset(); if you really just want the current element's offset
+                        self.left = self.drag_start_x;
+                        self.top = self.drag_start_y;
+                        self.dx = event.pageX - parentOffset.left - self.drag_start_x;
+                        self.dy = event.pageY - parentOffset.top - self.drag_start_y;
+                        if (self.dx < 0) {
+                            self.left = self.left + self.dx;
+                            self.dx = Math.abs(self.dx);
+                        }
+                        if (self.dy < 0) {
+                            self.top = self.top + self.dy;
+                            self.dy = Math.abs(self.dy);
+                        }
+                        self.$dragOutline.css({
+                            'left': self.left,
+                            'top': self.top,
+                            'width': self.dx,
+                            'height': self.dy
+                        });
+                        // .show();
+                        // self.outlineStyle.left = left + 'px';
+                        // self.outlineStyle.top = top + 'px';
+                        // self.outlineStyle.width = dx + 'px';
+                        // self.outlineStyle.height = dy + 'px';
+                    }
+                    // return false;
+            })
+                .mouseup(function(event){
+                    if (self.dragging) {
+                        self.handleClick(event);
+                        self.$dragOutline.hide();
+                    }
+                    self.dragging = false;
+                    // return false;
             });
 
             // If a panel is added...
@@ -2541,9 +2719,18 @@
             this.raphael_paper.setSize(newWidth, newHeight);
         },
 
-        // Any mouse click (mousedown) that isn't captured by Panel Rect clears selection
+        getModelCoords: getModelCoords,
+
+        // Any mouse click (mouseup) or dragStop that isn't captured by Panel Rect clears selection
         handleClick: function(event) {
-            this.model.clearSelected();
+            if (!event.shiftKey) {
+                this.model.clearSelected();
+            }
+            // select panels overlapping with drag outline
+            if (this.dx > 0 || this.dy > 0) {
+                var coords = this.getModelCoords({x: this.left, y: this.top, width:this.dx, height:this.dy});
+                this.model.selectByRegion(coords);
+            }
         }
     });
 
