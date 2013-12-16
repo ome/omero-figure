@@ -87,15 +87,24 @@
                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
                     <h4 class="modal-title">Open Figure</h4>
                 </div>
-                <form class="openFigureForm" role="form">
+                
                     <div class="modal-body">
-                        <ul id="figure_files"></ul>
+                        <table class="table table-condensed">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>Name</th>
+                                    <th>Created</th>
+                                    <th>Owner</th>
+                                </tr>
+                            </thead>
+                            <tbody id="figure_files">
+                            </tbody>
+                        </table>
                     </div>
-                    <div class="modal-footer">
+                    <div class="modal-footer" style="margin-top:0px">
                         <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary" data-dismiss="modal" disabled="disabled">Open</button>
                     </div>
-                </form>
             </div>
         </div>
     </div><!-- /.modal -->
@@ -125,6 +134,9 @@
                             </li>
                             <li class="save_figure disabled">
                                 <a href="#">Save ⌘S</a>
+                            </li>
+                            <li class="save_as">
+                                <a href="#">Save A Copy...</a>
                             </li>
                             <li class="delete_figure">
                                 <a href="#">Delete Figure</a>
@@ -242,7 +254,7 @@
 
 
     <!-- Hacked Bootstrap's modal dialog to be non-modal -->
-    <div class="modal-dialog non-modal-dialog">
+    <div class="modal-dialog non-modal-dialog draggable-dialog">
         <div class="modal-content">
 
             <ul class="nav nav-tabs" id="previewInfoTabs">
@@ -424,10 +436,18 @@
                         <li><a href="#" data-label="[image-name]">Image Name</a></li>
                         <li><a href="#" data-label="[dataset-name]">Dataset Name</a></li>
                         <li><a href="#" data-label="[channels]">Channels</a></li>
-                        <li><a href="#" data-label="[time-secs]">Time (secs)</a></li>
-                        <li><a href="#" data-label="[time-mins]">Time (mins)</a></li>
-                        <li><a href="#" data-label="[time-hrs:mins:secs]">Time (hrs:mins:secs)</a></li>
-                        <li><a href="#" data-label="[time-hrs:mins]">Time (hrs:mins)</a></li>
+                        <li class="add_time_label">
+                            <a href="#" data-label="[time-secs]">Time (secs)</a>
+                        </li>
+                        <li class="add_time_label">
+                            <a href="#" data-label="[time-mins]">Time (mins)</a>
+                        </li>
+                        <li class="add_time_label">
+                            <a href="#" data-label="[time-hrs:mins:secs]">Time (hrs:mins:secs)</a>
+                        </li>
+                        <li class="add_time_label">
+                            <a href="#" data-label="[time-hrs:mins]">Time (hrs:mins)</a>
+                        </li>
                     </ul>
                 </div>
             <% } %>
@@ -460,7 +480,7 @@
             <button type="button" class="label-position btn btn-default btn-sm dropdown-toggle" 
                     title="Position" data-toggle="dropdown">
                 <span data-position="<%= position %>" class="labelicon-<%= position %> glyphicon 
-                    <% if (_.contains(['top','bottom','left','right'],position)) print('glyphicon-log-out'); else {print('glyphicon-new-window')} %>"></span>
+                    <% if (_.contains(['top','bottom','left','leftvert','right'],position)) print('glyphicon-log-out'); else {print('glyphicon-new-window')} %>"></span>
                 <span class="caret"></span>
             </button>
             <ul class="dropdown-menu" role="menu">
@@ -486,6 +506,11 @@
                 <li role="presentation" class="dropdown-header">Outside Edges</li>
                 <li><a href="#">
                     <span data-position="left" class="labelicon-left glyphicon glyphicon-log-out"></span> Left</a>
+                </li>
+                <li><a href="#">
+                        <span data-position="leftvert" class="labelicon-leftvert glyphicon glyphicon-log-out"></span> 
+                        Left vertical
+                    </a>
                 </li>
                 <li><a href="#">
                     <span data-position="top" class="labelicon-top glyphicon glyphicon-log-out"></span> Top</a>
@@ -627,6 +652,15 @@
             <% }); %>
         </div>
     </script>
+    <script id="label_vertical_template" type="text/template">
+        <div class="label_layout left_vlabels">
+            <div>
+                <% _.each(labels, function(l, i) { %>
+                    <div style='color:#<%= l.color %>; font-size:<%= l.size %>px'><%= l.text %></div>
+                <% }); %>
+            </div>
+        </div>
+    </script>
     <!-- Alternative label_template - uses table to valign middle for 'left' & 'right' labels -->
     <script id="label_table_template" type="text/template">
         <div class="label_layout label_middle label_<%= position %>">
@@ -679,7 +713,18 @@
     </script>
 
     <script type="text/template" id="figure_file_item">
-        <% if(imageId > 0) { print("<img src='/webgateway/render_thumbnail/" + imageId + "/' />") } %> <%= id %> <a href="#figure/<%= id %>"><%= name %></a> (<%= ownerFullName %>)
+        <td>
+            <% if(imageId > 0) { print("<img class='small-thumb' src='/webclient/render_thumbnail/" + imageId + "/' />") } %>
+        </td>
+        <td>
+            <a href="#figure/<%= id %>"><%= name %></a>
+        </td>
+        <td>
+            <%= creationDate %>
+        </td>
+        <td>
+            <%= ownerFullName %>
+        </td>
     </script>
 
 

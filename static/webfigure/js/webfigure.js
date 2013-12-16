@@ -77,7 +77,7 @@
             this.add_labels(newLabels);
         },
 
-        create_labels_from_time: function(options) {
+        get_time_label_text: function(format) {
             var pad = function(digit) {
                 var d = digit + "";
                 return d.length === 1 ? ("0"+d) : d;
@@ -85,22 +85,27 @@
             var theT = this.get('theT'),
                 deltaT = this.get('deltaT')[theT] || 0,
                 text = "", h, m, s;
-            if (options.format === "secs") {
+            if (format === "secs") {
                 text = deltaT + " secs";
-            } else if (options.format === "mins") {
+            } else if (format === "mins") {
                 text = Math.round(deltaT / 60) + "mins";
-            } else if (options.format === "hrs:mins") {
+            } else if (format === "hrs:mins") {
                 h = (deltaT / 3600) >> 0;
                 m = pad(Math.round((deltaT % 3600) / 60));
                 text = h + ":" + m;
-            } else if (options.format === "hrs:mins:secs") {
+            } else if (format === "hrs:mins:secs") {
                 h = (deltaT / 3600) >> 0;
                 m = pad(((deltaT % 3600) / 60) >> 0);
                 s = pad(deltaT % 60);
                 text = h + ":" + m + ":" + s;
             }
+            return text;
+        },
+
+        create_labels_from_time: function(options) {
+            
             this.add_labels([{
-                    'text': text,
+                    'time': options.format,
                     'size': options.size,
                     'position': options.position,
                     'color': options.color
@@ -350,6 +355,7 @@
                 self.set({'fileId': fileId,
                         'unsaved': false,
                         'figureName': name,
+                        'canEdit': data.canEdit
                     });
                 self.trigger("reset_undo_redo");
             });
@@ -364,28 +370,31 @@
                 p_json.push(m.toJSON());
             });
 
-            // figureName should be in options, but just in case...
-            var figureName = options.figureName || "WebFigure_" + Date();
-
             var figureJSON = {
                 panels: p_json,
                 paper_width: this.get('paper_width'),
                 paper_height: this.get('paper_height'),
-                figureName: figureName,
             };
 
             var url = window.SAVE_WEBFIGURE_URL,
                 data = options || {};
 
-            if (this.get('fileId')) {
-                data.fileId = this.get('fileId');
+            if (options.fileId) {
+                data.fileId = options.fileId;
             }
             data.figureJSON = JSON.stringify(figureJSON);
 
             // Save
             $.post( url, data)
                 .done(function( data ) {
-                    self.set({'fileId': +data, 'unsaved': false, 'figureName': figureName});
+                    var update = {
+                        'fileId': +data,
+                        'unsaved': false,
+                    };
+                    if (options.figureName) {
+                        update.figureName = options.figureName;
+                    }
+                    self.set(update);
 
                     if (success) {
                         success(data);
@@ -665,6 +674,7 @@
             this.$pasteBtn = $(".paste");
             this.$saveBtn = $(".save_figure.btn");
             this.$saveOption = $("li.save_figure");
+            this.$saveAsOption = $("li.save_as");
             this.$deleteOption = $("li.delete_figure");
 
             var self = this;
@@ -685,7 +695,7 @@
 
             // Don't leave the page with unsaved changes!
             window.onbeforeunload = function() {
-                if (self.model.get("unsaved")) {
+                if (self.model.get("unsaved") && self.model.get('canEdit')) {
                     return "Leave page with unsaved changes?";
                 }
             };
@@ -693,7 +703,7 @@
             // respond to zoom changes
             this.listenTo(this.model, 'change:curr_zoom', this.setZoom);
             this.listenTo(this.model, 'change:selection', this.renderSelectionChange);
-            this.listenTo(this.model, 'change:unsaved', this.renderUnsaved);
+            this.listenTo(this.model, 'change:unsaved', this.renderSaveBtn);
             this.listenTo(this.model, 'change:figureName', this.renderFigureName);
 
             // refresh current UI
@@ -712,6 +722,7 @@
             "click .copy": "copy_selected_panels",
             "click .paste": "paste_panels",
             "click .save_figure": "save_figure",
+            "click .save_as": "save_as",
             "click .new_figure": "goto_newfigure",
             "click .open_figure": "open_figure",
             "click .delete_figure": "delete_figure",
@@ -753,7 +764,7 @@
         },
 
         goto_newfigure: function(event) {
-            event.preventDefault();
+            if (event) event.preventDefault();
             window.location.hash = "";
         },
 
@@ -790,25 +801,42 @@
             var options = {};
             if (figureModel.get('fileId')) {
                 options.fileId = figureModel.get('fileId');
+                // Save
+                figureModel.save_to_OMERO(options, function(data){
+                    window.location.hash = "figure/"+data;
+                });
             } else {
-                var d = new Date(),
-                    dt = d.getFullYear() + "-" + (d.getMonth()+1) + "-" +d.getDate(),
-                    tm = d.getHours() + ":" + d.getMinutes() + ":" + d.getSeconds(),
-                    defaultName = "WebFigure_" + dt + "_" + tm;
-                var figureName = prompt("Enter Figure Name", defaultName);
-
-                if (figureName) {
-                    options.figureName = figureName;
-                } else {
-                    // Abort saving
-                    return false;
-                }
+                this.save_as();
             }
 
-            // Save
-            figureModel.save_to_OMERO(options, function(data){
-                window.location.hash = "figure/"+data;
-            });
+        },
+
+        save_as: function(event) {
+            if (event) {
+                event.preventDefault();
+            }
+
+            var options = {},
+                defaultName = this.model.get('figureName');
+            console.log('defaultName', defaultName);
+            if (!defaultName) {
+                var d = new Date(),
+                    dt = d.getFullYear() + "-" + (d.getMonth()+1) + "-" +d.getDate(),
+                    tm = d.getHours() + ":" + d.getMinutes() + ":" + d.getSeconds();
+                defaultName = "WebFigure_" + dt + "_" + tm;
+            } else {
+                defaultName = defaultName + "_copy";
+            }
+            var figureName = prompt("Enter Figure Name", defaultName);
+
+            if (figureName) {
+                options.figureName = figureName;
+                // Save
+                this.model.save_to_OMERO(options, function(data){
+                    window.location.hash = "figure/"+data;
+                });
+            }
+
         },
 
         copy_selected_panels: function(event) {
@@ -987,9 +1015,13 @@
             $('title').text(title);
         },
 
-        renderUnsaved: function() {
+        renderSaveBtn: function() {
 
-            if (this.model.get('unsaved')) {
+            var canEdit = this.model.get('canEdit'),
+                noFile = (typeof this.model.get('fileId') == 'undefined'),
+                btnText = (canEdit || noFile) ? "Save" : "Can't Save";
+            this.$saveBtn.text(btnText);
+            if (this.model.get('unsaved') && (canEdit || noFile)) {
                 this.$saveBtn.addClass('btn-success').removeClass('btn-default').removeAttr('disabled');
                 this.$saveOption.removeClass('disabled');
             } else {
@@ -1235,6 +1267,7 @@
         className: "imagePanel",
         template: _.template($('#figure_panel_template').html()),
         label_template: _.template($('#label_template').html()),
+        label_vertical_template: _.template($('#label_vertical_template').html()),
         label_table_template: _.template($('#label_table_template').html()),
         scalebar_template: _.template($('#scalebar_panel_template').html()),
 
@@ -1246,7 +1279,7 @@
                 this.render_layout);
             this.listenTo(this.model, 'change:scalebar change:pixel_size', this.render_scalebar);
             this.listenTo(this.model, 'change:channels change:theZ change:theT', this.render_image);
-            this.listenTo(this.model, 'change:labels', this.render_labels);
+            this.listenTo(this.model, 'change:labels change:theT', this.render_labels);
             // This could be handled by backbone.relational, but do it manually for now...
             // this.listenTo(this.model.channels, 'change', this.render);
             // During drag, model isn't updated, but we trigger 'drag'
@@ -1285,6 +1318,9 @@
                         'width': w +'px',
                         'height': h +'px'});
 
+            // container needs to be square for rotation to vertical
+            $('.left_vlabels', this.$el).css('width', h + 'px');
+
             // update the img within the panel
             var zoom = this.model.get('zoom'),
                 vp_css = this.model.get_vp_img_css(zoom, w, h);
@@ -1314,13 +1350,19 @@
                 self = this,
                 positions = {
                     'top':[], 'bottom':[], 'left':[], 'right':[],
+                    'leftvert':[],
                     'topleft':[], 'topright':[],
                     'bottomleft':[], 'bottomright':[]
                 };
 
             // group labels by position
             _.each(labels, function(l) {
-                positions[l.position].push(l);
+                // check if label is dynamic delta-T
+                var ljson = $.extend(true, {}, l);
+                if (typeof ljson.text == 'undefined' && ljson.time) {
+                    ljson.text = self.model.get_time_label_text(ljson.time);
+                }
+                positions[l.position].push(ljson);
             });
 
             // Render template for each position and append to Panel.$el
@@ -1328,13 +1370,18 @@
             _.each(positions, function(lbls, p) {
                 var json = {'position':p, 'labels':lbls};
                 if (lbls.length === 0) return;
-                if (p == 'left' || p == 'right') {
+                if (p == 'leftvert') {  // vertical
+                    html += self.label_vertical_template(json);
+                } else if (p == 'left' || p == 'right') {
                     html += self.label_table_template(json);
                 } else {
                     html += self.label_template(json);
                 }
             });
             self.$el.append(html);
+
+            // need to force update of vertical labels layout
+            $('.left_vlabels', self.$el).css('width', self.$el.height() + 'px');
 
             return this;
         },
@@ -1529,6 +1576,20 @@
                 $(".new-label-form", this.$el).hide();
             } else {
                 $(".new-label-form", this.$el).show();
+                // if none of the selected panels have time data, disable 'add_time_label's
+                var have_time = false, dTs;
+                for (var i=0; i<selected.length; i++) {
+                    dTs = selected[i].get('deltaT');
+                    if (dTs && dTs.length > 0) {
+                        have_time = true;
+                        break;
+                    }
+                }
+                if (have_time) {
+                    $(".add_time_label", this.$el).removeClass('disabled');
+                } else {
+                    $(".add_time_label", this.$el).addClass('disabled');
+                }
             }
 
             // show selected panels labels below
@@ -1580,7 +1641,7 @@
             var self = this;
 
             _.each(this.models, function(m){
-                self.listenTo(m, 'change:labels', self.render);
+                self.listenTo(m, 'change:labels change:theT', self.render);
             });
         },
 
@@ -1633,7 +1694,7 @@
         render: function() {
 
             var self = this,
-                positions = {'top':{}, 'bottom':{}, 'left':{}, 'right':{},
+                positions = {'top':{}, 'bottom':{}, 'left':{}, 'leftvert':{}, 'right':{},
                     'topleft':{}, 'topright':{}, 'bottomleft':{}, 'bottomright':{}};
             _.each(this.models, function(m, i){
                 // group labels by position
@@ -1642,6 +1703,9 @@
                     var key = m.get_label_key(l),
                         ljson = $.extend(true, {}, l);
                         ljson.key = key;
+                    if (typeof ljson.text == 'undefined' && ljson.time) {
+                        ljson.text = m.get_time_label_text(ljson.time);
+                    }
                     positions[l.position][key] = ljson;
                 });
             });
