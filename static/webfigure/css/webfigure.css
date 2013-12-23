@@ -161,6 +161,13 @@
         bottom:0;
         width:100%;
     }
+
+    .glyphicon-ok {
+        color: #0f0;
+    }
+    .glyphicon-flag {
+        color: #f00;
+    }
     /* Classes here are generated in templates from 'top' etc See labelicon classes below */
     .label_top {
         bottom: 100%;
@@ -342,6 +349,10 @@
         width: 190px;
     }
     /* Over-riding Bootstrap Styles */
+    .alert {
+        margin-bottom: 10px;
+        padding: 5px;
+    }
     .modal-dialog {
         left: 0;
     }

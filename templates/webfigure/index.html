@@ -54,6 +54,32 @@
 <body id="body">
 
     <!-- Modal -->
+    <div class="modal" id="setIdModal" tabindex="-1" role="dialog" aria-labelledby="setIdLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="setIdLabel">Edit Image ID</h4>
+                </div>
+                <div class="modal-body">
+                    <p>Choose a new Image ID for the selected panels</p>
+                    <form class="setIdForm form-inline" role="form" style="margin-top: 10px; margin-bottom: 10px">
+                        <div class="form-group">
+                            <input type="text" class="form-control imgIds" placeholder="Image ID">
+                        </div>
+                        <button type="submit" class="btn btn-primary preview" disabled="disabled">Preview</button>
+                    </form>
+                    <div class="previewIdChange">
+                    </div>
+                </div>
+                <div class="modal-footer" style="margin-top:0">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary doSetId" data-dismiss="modal" disabled="disabled">Update</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Modal -->
     <div class="modal" id="addImagesModal" tabindex="-1" role="dialog" aria-labelledby="addImagesLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -311,6 +337,70 @@
 
     <!-- Templates for Backbone Views -->
 
+    <script id="preview_Id_change_template"type="text/template">
+
+        <table class="table" style="margin-bottom:0">
+            <tbody>
+                <tr><td>
+                    <div class="col-sm-3">Compare:</div>
+                    <div class="col-sm-3">
+                        <img class="small-thumb" title="<%= selImg.name %>"
+                            src="/webclient/render_thumbnail/<%= selImg.imageId %>/" />
+                    </div>
+                    <div class="col-sm-3">
+                        <% if(newImg.imageId) { %>
+                            <img class="small-thumb" title="<%= newImg.name %>"
+                                src="/webclient/render_thumbnail/<%= newImg.imageId %>/" />
+                        <% } else { %>
+                            <div style="width:40px; height:40px; background-color:#ddd"></div>
+                        <% } %>
+                    </div>
+                    <div class="col-sm-3">Matching</div>
+                </td></tr>
+                <tr><td>
+                    <div class="col-sm-3"><small><strong>Dimensions (XY)</strong>:</small></div>
+                    <div class="col-sm-3"><small><%= selImg.orig_width %> x <%= selImg.orig_height %></small></div>
+                    <div class="col-sm-3"><small>
+                        <%= newImg.orig_width || "-" %> x <%= newImg.orig_height || "-"  %>
+                    </small></div>
+                    <div class="col-sm-3">
+                        <%= ok(comp.orig_width, comp.orig_height) %>
+                    </div>
+
+                    <div class="col-sm-3"><small><strong>Z-sections</strong>:</small></div>
+                    <div class="col-sm-3"><small><%= selImg.sizeZ %></small></div>
+                    <div class="col-sm-3"><small><%= newImg.sizeZ || "-" %></small></div>
+                    <div class="col-sm-3"><%= ok(comp.sizeZ) %></div>
+
+                    <div class="col-sm-3"><small><strong>Time-points</strong>:</small></div>
+                    <div class="col-sm-3"><small><%= selImg.sizeT %></small></div>
+                    <div class="col-sm-3"><small><%= newImg.sizeT || "-" %></small></div>
+                    <div class="col-sm-3"><small><%= ok(comp.sizeT) %></small></div>
+
+                    <div class="col-sm-3"><small><strong>Channels</strong>:</small></div>
+                    <div class="col-sm-3"><small>
+                        <% _.each(selImg.channels, function(ch, i) { %>
+                            <%= ch.label %><% if(i < selImg.channels.length-1){print(',')} %>
+                        <% }); %>
+                    </small></div>
+                    <div class="col-sm-3"><small>
+                        <% if(newImg.channels){ _.each(newImg.channels, function(ch, i) { %>
+                            <%= ch.label %><% if(i < newImg.channels.length-1){print(',')} %>
+                        <% }) } else { print("-") } %>
+                    </small></div>
+                    <div class="col-sm-3"><small><%= comp.channels || "-" %></small></div>
+
+                </td></tr>
+            </tbody>
+        </table>
+        <% _.each(messages, function(m) { %>
+            <div class="alert alert-<%= m.status %>"><%= m.text %></div>
+        <% }); %>
+        <% if (newImg.imageId && messages.length == 0) {
+            print("<div class='alert alert-success'>Perfect Match!</div>")
+        } %>
+    </script>
+
     <script id="scalebar_panel_template" type="text/template">
 
         <div class="scalebar label_<%= position %>" style="height: 2px; width: <%= width %>px; position: absolute; margin:5%; background-color: #<%= color %>"></div>
@@ -423,7 +513,7 @@
 
         <div class="input-group pull-left">
             <input type="text" class="label-text form-control input-sm" 
-                    placeholder="Label" value="<%= l.text %>" />
+                    placeholder="Label" value="<%= l.text %>" style="max-height:29px"/>
             <% if (!edit){ %>
                 <div class="input-group-btn">
                     <button type="button" class="btn btn-default btn-sm dropdown-toggle"
@@ -604,7 +694,15 @@
                 <tr><td>Image</td></tr>
                 <tr><td>
                     <div class="col-sm-6"><small><strong>Image ID</strong>:</small></div>
-                    <div class="col-sm-6"><small><%= imageId %></small></div>
+                    <div class="col-sm-6">
+                        <small><%= imageId %></small>
+                        <button type="button"
+                                style="position:absolute; top:0px; right:0px"
+                                <% if(!setImageId) { %>disabled="disabled"<% } %>
+                                class="btn btn-small btn-success setId">
+                            Edit ID
+                        </button>
+                    </div>
 
                     <div class="col-sm-6"><small><strong>Dimensions (XY)</strong>:</small></div>
                     <div class="col-sm-6"><small><%= orig_width %> x <%= orig_height %></small></div>

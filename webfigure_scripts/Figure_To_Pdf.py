@@ -92,6 +92,22 @@ def get_panel_region_xywh(panel):
 
     return {'x': tile_x, 'y': tile_y, 'width': tile_w, 'height': tile_h}
 
+def get_time_label_text(deltaT, format):
+
+    if format == "secs":
+        text = "%s secs" % deltaT
+    elif format == "mins":
+        text = "%s mins" % round(deltaT / 60)
+    elif format == "hrs:mins":
+        h = (deltaT / 3600)
+        m = round((deltaT % 3600) / 60)
+        text = "%s:%02d" % (h, m)
+    elif format == "hrs:mins:secs":
+        h = (deltaT / 3600)
+        m = (deltaT % 3600) / 60
+        s = deltaT % 60
+        text = "%s:%02d:%02d" % (h, m, s)
+    return text
 
 def drawLabels(conn, c, panel, pageHeight):
 
@@ -104,12 +120,27 @@ def drawLabels(conn, c, panel, pageHeight):
     spacer = 5
 
     # group by 'position':
-    positions = {'top': [], 'bottom': [], 'left': [], 'right': [],
+    positions = {'top': [], 'bottom': [], 'left': [],
+                'leftvert': [], 'right': [],
                 'topleft': [], 'topright': [],
                 'bottomleft': [], 'bottomright': []}
 
     print "sorting labels..."
     for l in labels:
+        if 'text' not in l:
+            print "NO text", 'time' in l, 'deltaT', 'deltaT' in panel
+            print panel['theT'], len(panel['deltaT']), panel['theT'] < len(panel['deltaT'])
+            if 'deltaT' in panel and panel['theT'] < len(panel['deltaT']):
+                theT = panel['theT']
+                print 'theT', theT
+                dT = panel['deltaT'][theT]
+                print 'dT', dT
+                text = get_time_label_text(dT, l['time'])
+                print 'text', text
+                l['text'] = text
+            else:
+                continue
+
         print l
         pos = l['position']
         l['size'] = int(l['size'])   # make sure 'size' is number
@@ -130,8 +161,26 @@ def drawLabels(conn, c, panel, pageHeight):
             c.drawRightString(lx, pageHeight - label_h - ly, label['text'])
         elif align == 'center':
             c.drawCentredString(lx, pageHeight - label_h - ly, label['text'])
+        elif align == 'vertical':
+            c.rotate(90)
+            c.drawCentredString(pageHeight - ly, -(lx + label_h), label['text'])
+            c.rotate(-90)
 
         return label_h
+
+    # def drawVertLab(c, label, lx, ly, align='center'):
+    #     label_h = label['size']
+    #     c.setFont("Helvetica", label_h)
+    #     color = label['color']
+    #     red = int(color[0:2], 16)
+    #     green = int(color[2:4], 16)
+    #     blue = int(color[4:6], 16)
+    #     c.setFillColorRGB(red, green, blue)
+    #     c.rotate(90)
+    #     if align == 'center':
+    #         c.drawCentredString(lx, pageHeight - label_h - ly, label['text'])
+    #     return label_h
+
 
     # Render each position:
     for key, labels in positions.items():
@@ -188,6 +237,13 @@ def drawLabels(conn, c, panel, pageHeight):
             for l in labels:
                 label_h = drawLab(c, l, lx, ly)
                 ly += label_h + spacer
+        elif key == 'leftvert':
+            lx = x - spacer
+            ly = y + (height/2)
+            labels.reverse()
+            for l in labels:
+                lx = lx - l['size'] - spacer
+                drawLab(c, l, lx, ly, align='vertical')
 
 
 def drawScalebar(c, panel, region_width, pageHeight):

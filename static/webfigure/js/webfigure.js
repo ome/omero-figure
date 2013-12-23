@@ -27,6 +27,46 @@
 
         syncOverride: true,
 
+        // Switch some attributes for new image...
+        setId: function(data) {
+
+            // we replace these attributes...
+            var newData = {'imageId': data.imageId,
+                'name': data.name,
+                'sizeZ': data.sizeZ,
+                'theZ': data.theZ,
+                'sizeT': data.sizeT,
+                'orig_width': data.orig_width,
+                'orig_height': data.orig_height,
+                'datasetName': data.datasetName,
+                'pixel_size': data.pixel_size,
+                'deltaT': data.deltaT,
+            };
+
+            // theT is not changed unless we have to...
+            if (this.get('theT') >= newData.sizeT) {
+                newData.theT = newData.sizeT - 1;
+            }
+
+            // new Channels are based on new data, but we keep the
+            // 'active' state and color from old Channels.
+            var newCh = [],
+                oldCh = this.get('channels'),
+                dataCh = data.channels;
+            _.each(dataCh, function(ch, i) {
+                var nc = $.extend(true, {}, dataCh[i]);
+                nc.active = (i < oldCh.length && oldCh[i].active);
+                if (i < oldCh.length) {
+                    nc.color = "" + oldCh[i].color;
+                }
+                newCh.push(nc);
+            });
+
+            newData.channels = newCh;
+
+            this.set(newData);
+        },
+
         hide_scalebar: function() {
             // keep all scalebar properties, except 'show'
             var sb = $.extend(true, {}, this.get('scalebar'));
@@ -661,6 +701,7 @@
             // Delegate some responsibility to other views
             new AlignmentToolbarView({model: this.model});
             new AddImagesModalView({model: this.model, figureView: this});
+            new SetIdModalView({model: this.model});
 
             this.figureFiles = new FileList();
             new FileListView({model:this.figureFiles});
@@ -818,7 +859,6 @@
 
             var options = {},
                 defaultName = this.model.get('figureName');
-            console.log('defaultName', defaultName);
             if (!defaultName) {
                 var d = new Date(),
                     dt = d.getFullYear() + "-" + (d.getMonth()+1) + "-" +d.getDate(),
@@ -1065,6 +1105,180 @@
                     'height': this.model.get('canvas_height')});
 
             return this;
+        }
+    });
+
+
+    var SetIdModalView = Backbone.View.extend({
+
+        el: $("#setIdModal"),
+
+        template: _.template($('#preview_Id_change_template').html()),
+
+        model:FigureModel,
+
+        events: {
+            "submit .addIdForm": "previewSetId",
+            "click .preview": "previewSetId",
+            "keyup .imgIds": "keyPressed",
+            "click .doSetId": "doSetId",
+        },
+
+        initialize: function(options) {
+
+            var self = this;
+
+            // when dialog is shown, clear and render
+            $("#setIdModal").bind("show.bs.modal", function(){
+                delete self.newImg;
+                self.render();
+            });
+        },
+
+        // Only enable submit button when input has a number in it
+        keyPressed: function() {
+            var idInput = $('input.imgIds', this.$el).val(),
+                previewBtn = $('button.preview', this.$el),
+                re = /^\d+$/;
+            if (re.test(idInput)) {
+                previewBtn.removeAttr("disabled");
+            } else {
+                previewBtn.attr("disabled", "disabled");
+            }
+        },
+
+        // handle adding Images to figure
+        previewSetId: function() {
+
+            var self = this,
+                idInput = $('input.imgIds', this.$el).val();
+
+            // get image Data
+            $.getJSON('/webfigure/imgData/' + parseInt(idInput, 10) + '/', function(data){
+                // just pick what we need
+                var newImg = {
+                    'imageId': data.id,
+                    'name': data.meta.imageName,
+                    // 'width': data.size.width,
+                    // 'height': data.size.height,
+                    'sizeZ': data.size.z,
+                    'theZ': data.rdefs.defaultZ,
+                    'sizeT': data.size.t,
+                    // 'theT': data.rdefs.defaultT,
+                    'channels': data.channels,
+                    'orig_width': data.size.width,
+                    'orig_height': data.size.height,
+                    // 'x': px,
+                    // 'y': py,
+                    'datasetName': data.meta.datasetName,
+                    'pixel_size': data.pixel_size.x,
+                    'deltaT': data.deltaT,
+                };
+                self.newImg = newImg;
+                self.render();
+            });
+        },
+
+        doSetId: function() {
+
+            var self = this,
+                sel = this.model.getSelected();
+
+            if (!self.newImg)   return;
+
+            _.each(sel, function(p) {
+                p.setId(self.newImg);
+            });
+
+        },
+
+        render: function() {
+
+            var sel = this.model.getSelected(),
+                selImg,
+                json = {};
+
+            if (sel.length < 1) {
+                self.selectedImage = null;
+                return; // shouldn't happen
+            }
+            selImg = sel[0];
+            json.selImg = selImg.toJSON();
+            json.newImg = {};
+            json.comp = {};
+            json.messages = [];
+
+            json.ok = function(match, match2) {
+                if (typeof match == 'undefined') return "-";
+                if (typeof match2 != 'undefined') {
+                    match = match && match2;
+                }
+                var m = match ? "ok" : "flag";
+                var rv = "<span class='glyphicon glyphicon-" + m + "'></span>";
+                return rv;
+            };
+
+            // minor attributes ('info' only)
+            var attrs = ["sizeZ", "orig_width", "orig_height"],
+                attrName = ['Z size', 'Width', 'Height'];
+
+            if (this.newImg) {
+                json.newImg = this.newImg;
+                // compare attrs above
+                _.each(attrs, function(a, i) {
+                    if (json.selImg[a] == json.newImg[a]) {
+                        json.comp[a] = true;
+                    } else {
+                        json.comp[a] = false;
+                        json.messages.push({"text":"Mismatch of " + attrName[i] + ": should be OK.",
+                            "status": "success"});   // status correspond to css alert class.
+                    }
+                });
+                // special message for sizeT
+                if (json.selImg.sizeT != json.newImg.sizeT) {
+                    // check if any existing images have theT > new.sizeT
+                    var tooSmallT = false;
+                    _.each(sel, function(o){
+                        if (o.get('theT') > json.newImg.sizeT) tooSmallT = true;
+                    });
+                    if (tooSmallT) {
+                        json.messages.push({"text": "New Image has fewer Timepoints than needed. Check after update.",
+                            "status": "danger"});
+                    } else {
+                        json.messages.push({"text":"Mismatch of Timepoints: should be OK.",
+                            "status": "success"});
+                    }
+                    json.comp.sizeT = false;
+                } else {
+                    json.comp.sizeT = true;
+                }
+                // compare channels
+                json.comp.channels = json.ok(true);
+                var selC = json.selImg.channels,
+                    newC = json.newImg.channels,
+                    cCount = selC.length;
+                if (cCount != newC.length) {
+                    json.comp.channels = json.ok(false);
+                    json.messages.push({"text":"New Image has " + newC.length + " channels " +
+                        "instead of " + cCount + ". Check after update.",
+                            "status": "danger"});
+                } else {
+                    for (var i=0; i<cCount; i++) {
+                        if (selC[i].label != newC[i].label) {
+                            json.comp.channels = json.ok(false);
+                            json.messages.push({"text": "Channel Names mismatch: should be OK.",
+                                "status": "success"});
+                            break;
+                        }
+                    }
+                }
+
+                $(".doSetId", this.$el).removeAttr('disabled');
+            } else {
+                $(".doSetId", this.$el).attr('disabled', 'disabled');
+            }
+
+            $(".previewIdChange", this.$el).html(this.template(json));
         }
     });
 
@@ -1560,7 +1774,7 @@
                     var pathnames = m.get('name').split('/');
                     label.text = pathnames[pathnames.length-1];
                 } else if (label_text === "[dataset-name]") {
-                    label.text = m.get('datasetId') ? m.get('datasetName') : "No/Many Datasets";
+                    label.text = m.get('datasetName') ? m.get('datasetName') : "No/Many Datasets";
                 }
                 m.add_labels([label]);
             });
@@ -1893,10 +2107,21 @@
             // } 
         },
 
+        events: {
+            "click .setId": "setImageId",
+        },
+
+        setImageId: function(event) {
+            event.preventDefault();
+            // Simply show dialog - Everything else handled by SetIdModalView
+            $("#setIdModal").modal('show');
+            $("#setIdModal .imgIds").val("").focus();
+        },
+
         // just update x,y,w,h by rendering ONE template
         drag_resize: function(xywh) {
             $("#xywh_table").remove();
-            var json = {'x': xywh[0], 'y':xywh[1], 'width':xywh[2], 'height':xywh[3]},
+            var json = {'x': xywh[0], 'y':xywh[1], 'width':xywh[2]>>0, 'height':xywh[3]>>0},
                 xywh_html = this.xywh_template(json);
             this.$el.append(xywh_html);
         },
@@ -1934,6 +2159,8 @@
                     }
                 });
             }
+
+            json.setImageId = (json.imageId > 0);
 
             if (json) {
                 var html = this.template(json),

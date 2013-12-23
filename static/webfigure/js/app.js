@@ -59,7 +59,9 @@ $(function(){
 
     // TODO - move this into FigureView
     // Heavy lifting of PDF generation handled by OMERO.script...
-    $("#create_figure_pdf").click(function(){
+    $("#create_figure_pdf").click(function(event){
+
+        event.preventDefault();
 
         // Status is indicated by showing / hiding 3 buttons
         var $create_figure_pdf = $(this),
@@ -119,7 +121,6 @@ $(function(){
 
                 }, 1000);
             });
-        return false;
     });
 
 
