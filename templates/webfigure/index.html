@@ -20,19 +20,19 @@
 
     <script>
 
-    var BASE_WEBFIGURE_URL = "{% url webfigure_index %}",
-        SAVE_WEBFIGURE_URL = "{% url save_web_figure %}",
-        LIST_WEBFIGURES_URL = "{% url list_web_figures %}",
-        DELETE_WEBFIGURE_URL = "{% url delete_web_figure %}",
-        MAKE_WEBFIGURE_URL = "{% url make_web_figure %}",
-        ACTIVITIES_JSON_URL = "{% url activities_json %}",
-        WEBINDEX_URL = "{% url webindex %}";
+    var BASE_WEBFIGURE_URL = "{% url 'webfigure_index' %}",
+        SAVE_WEBFIGURE_URL = "{% url 'save_web_figure' %}",
+        LIST_WEBFIGURES_URL = "{% url 'list_web_figures' %}",
+        DELETE_WEBFIGURE_URL = "{% url 'delete_web_figure' %}",
+        MAKE_WEBFIGURE_URL = "{% url 'make_web_figure' %}",
+        ACTIVITIES_JSON_URL = "{% url 'activities_json' %}",
+        WEBINDEX_URL = "{% url 'webindex' %}";
 
     $(document).ready(function() {
 
         // keep-alive ping every minute, so that OMERO session doesn't die
         setInterval(function (){
-            $.get("{% url keepalive_ping %}");
+            $.get("{% url 'keepalive_ping' %}");
         }, 60000);
 
         // load Panels from localStorage (if any)
@@ -138,7 +138,7 @@
     <div class="navbar navbar-inverse navbar-fixed-top">
         <div class="container">
             <div class="navbar-header" title="Back to OMERO.webclient">
-                <a class="navbar-brand" href="{% url webindex %}">OMERO</a>
+                <a class="navbar-brand" href="{% url 'webindex' %}">OMERO</a>
             </div>
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
