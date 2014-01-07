@@ -294,7 +294,7 @@
 
         // used by the PanelView and ImageViewerView to get the size and
         // offset of the img within it's frame
-        get_vp_img_css: function(zoom, frame_w, frame_h, dx, dy) {
+        get_vp_img_css: function(zoom, frame_w, frame_h, dx, dy, fit) {
 
             var orig_w = this.get('orig_width'),
                 orig_h = this.get('orig_height');
@@ -316,11 +316,27 @@
             } else {
                 img_w = img_h * orig_ratio;
             }
+            // offsets if image is centered
             img_y = (img_h - frame_h)/2;
             img_x = (img_w - frame_w)/2;
 
+            // now shift by dx & dy
+            dx = dx * (zoom/100);
+            dy = dy * (zoom/100);
             img_x = ((dx * frame_w) / orig_w) - img_x;
             img_y = ((dy * frame_h) / orig_h) - img_y;
+
+            // option to align image within viewport (not used now)
+            if (fit) {
+                img_x = Math.min(img_x, 0);
+                if (img_x + img_w < frame_w) {
+                    img_x = frame_w - img_w;
+                }
+                img_y = Math.min(img_y, 0);
+                if (img_y + img_h < frame_h) {
+                    img_y = frame_h - img_h;
+                }
+            }
 
             return {'left':img_x, 'top':img_y, 'width':img_w, 'height':img_h};
         },
@@ -1861,7 +1877,8 @@
 
         events: {
             "submit .edit-label-form": "handle_label_edit",
-            "change .btn": "dropdown_btn_changed",
+            "change .btn": "form_field_changed",
+            "blur .label-text": "form_field_changed",
             "click .delete-label": "handle_label_delete",
         },
 
@@ -1879,8 +1896,8 @@
             return false;
         },
 
-        // Automatically submit the form when a dropdown is changed
-        dropdown_btn_changed: function(event) {
+        // Automatically submit the form when a field is changed
+        form_field_changed: function(event) {
             $(event.target).closest('form').submit();
         },
 
@@ -2220,8 +2237,13 @@
                 },
                 stop: function( event, ui ) {
                     self.zoom_avg = ui.value;
+                    var to_save = {'zoom': ui.value}
+                    if (ui.value === 100) {
+                        to_save.dx = 0;
+                        to_save.dy = 0;
+                    }
                     _.each(self.models, function(m){
-                        m.save('zoom', ui.value);
+                        m.save(to_save);
                     });
                 }
             });
@@ -2323,6 +2345,9 @@
 
         update_img_css: function(zoom, dx, dy, save) {
 
+            dx = dx / (zoom/100);
+            dy = dy / (zoom/100);
+
             if (this.$vp_img) {
                 var frame_w = this.$vp_frame.width() + 2,
                     frame_h = this.$vp_frame.height() + 2;
@@ -2337,8 +2362,8 @@
                     this.dx = dx;
                     this.dy = dy;
                     _.each(this.models, function(m){
-                        m.save('dx', dx);
-                        m.save('dy', dy);
+                        m.save({'dx': dx,
+                                'dy': dy});
                     });
                 }
             }

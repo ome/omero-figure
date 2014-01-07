@@ -4,11 +4,12 @@ import json
 
 from datetime import datetime
 
+from omero.model import ImageAnnotationLinkI, ImageI
 import omero.scripts as scripts
 
 from cStringIO import StringIO
 try:
-    from PIL import Image # see ticket:2597
+    from PIL import Image  # see ticket:2597
 except ImportError:
     import Image
 
@@ -49,6 +50,8 @@ def get_panel_region_xywh(panel):
     frame_h = panel['height']
     dx = panel['dx']
     dy = panel['dy']
+    dx = dx * (zoom/100)
+    dy = dy * (zoom/100)
     orig_w = panel['orig_width']
     orig_h = panel['orig_height']
 
@@ -92,6 +95,7 @@ def get_panel_region_xywh(panel):
 
     return {'x': tile_x, 'y': tile_y, 'width': tile_w, 'height': tile_h}
 
+
 def get_time_label_text(deltaT, format):
 
     if format == "secs":
@@ -100,7 +104,7 @@ def get_time_label_text(deltaT, format):
         text = "%s mins" % round(deltaT / 60)
     elif format == "hrs:mins":
         h = (deltaT / 3600)
-        m = round((deltaT % 3600) / 60)
+        m = round((float(deltaT) % 3600) / 60)
         text = "%s:%02d" % (h, m)
     elif format == "hrs:mins:secs":
         h = (deltaT / 3600)
@@ -108,6 +112,7 @@ def get_time_label_text(deltaT, format):
         s = deltaT % 60
         text = "%s:%02d:%02d" % (h, m, s)
     return text
+
 
 def drawLabels(conn, c, panel, pageHeight):
 
@@ -121,15 +126,16 @@ def drawLabels(conn, c, panel, pageHeight):
 
     # group by 'position':
     positions = {'top': [], 'bottom': [], 'left': [],
-                'leftvert': [], 'right': [],
-                'topleft': [], 'topright': [],
-                'bottomleft': [], 'bottomright': []}
+                 'leftvert': [], 'right': [],
+                 'topleft': [], 'topright': [],
+                 'bottomleft': [], 'bottomright': []}
 
     print "sorting labels..."
     for l in labels:
         if 'text' not in l:
             print "NO text", 'time' in l, 'deltaT', 'deltaT' in panel
-            print panel['theT'], len(panel['deltaT']), panel['theT'] < len(panel['deltaT'])
+            print panel['theT'], len(panel['deltaT']),
+            print panel['theT'] < len(panel['deltaT'])
             if 'deltaT' in panel and panel['theT'] < len(panel['deltaT']):
                 theT = panel['theT']
                 print 'theT', theT
@@ -167,20 +173,6 @@ def drawLabels(conn, c, panel, pageHeight):
             c.rotate(-90)
 
         return label_h
-
-    # def drawVertLab(c, label, lx, ly, align='center'):
-    #     label_h = label['size']
-    #     c.setFont("Helvetica", label_h)
-    #     color = label['color']
-    #     red = int(color[0:2], 16)
-    #     green = int(color[2:4], 16)
-    #     blue = int(color[4:6], 16)
-    #     c.setFillColorRGB(red, green, blue)
-    #     c.rotate(90)
-    #     if align == 'center':
-    #         c.drawCentredString(lx, pageHeight - label_h - ly, label['text'])
-    #     return label_h
-
 
     # Render each position:
     for key, labels in positions.items():
@@ -252,7 +244,8 @@ def drawScalebar(c, panel, region_width, pageHeight):
     y = panel['y']
     width = panel['width']
     height = panel['height']
-    if not ('scalebar' in panel and 'show' in panel['scalebar'] and panel['scalebar']['show']):
+    if not ('scalebar' in panel and 'show' in panel['scalebar']
+            and panel['scalebar']['show']):
         return
 
     if not ('pixel_size' in panel and panel['pixel_size'] > 0):
@@ -354,11 +347,14 @@ def create_pdf(conn, scriptParams):
 
     panels_json_string = scriptParams['Panels_JSON']
     panels_json = json.loads(panels_json_string)
+    imageIds = set()
 
     for i, panel in enumerate(panels_json):
 
         print "\n---------------- "
-        print "IMAGE", i
+        imageId = panel['imageId']
+        print "IMAGE", i, imageId
+        imageIds.add(imageId)
         drawPanel(conn, c, panel, pageHeight, i)
         drawLabels(conn, c, panel, pageHeight)
 
@@ -368,6 +364,18 @@ def create_pdf(conn, scriptParams):
 
     ns = "omero.web.figure.pdf"
     fileAnn = conn.createFileAnnfromLocalFile(figureName, mimetype="application/pdf", ns=ns, desc=panels_json_string)
+
+    links = []
+    for iid in list(imageIds):
+        print "linking to", iid
+        link = ImageAnnotationLinkI()
+        link.parent = ImageI(iid, False)
+        link.child = fileAnn._obj
+        links.append(link)
+    print len(links)
+    if len(links) > 0:
+        links = conn.getUpdateService().saveAndReturnArray(links, conn.SERVICE_OPTS)
+
     return fileAnn
 
 
@@ -376,17 +384,18 @@ def runScript():
     The main entry point of the script, as called by the client via the scripting service, passing the required parameters.
     """
 
-    client = scripts.client('Figure_To_Pdf.py', """Used by web.figure to generate pdf figures from json data""",
+    client = scripts.client(
+        'Figure_To_Pdf.py', """Used by web.figure to generate pdf figures from json data""",
 
         scripts.Int("Page_Width", optional=False, grouping="1", default=612),
 
         scripts.Int("Page_Height", optional=False, grouping="2", default=792),
 
         scripts.String("Panels_JSON", optional=False, grouping="3",
-            description="All Panel Data as json stringified"),
+                       description="All Panel Data as json stringified"),
 
         scripts.String("Figure_Name", grouping="4", description="Name of the Pdf Figure")
-    ) 
+    )
 
     try:
         session = client.getSession()
