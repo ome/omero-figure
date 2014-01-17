@@ -52,8 +52,27 @@
         background: #ddd;
     }
 
+    #paper .dragging{
+        background: none;
+    }
+
+    .imgContainer {
+        overflow: hidden;
+        width: 100%;
+        height: 100%;
+        position: absolute;
+    }
+
+    .dragging .imgContainer {
+        opacity: 0.7;
+    }
+
     .img_panel{
         position: absolute;
+    }
+
+    .export_pdf>span {
+        margin-left: 6px;
     }
 
     footer {
@@ -136,9 +155,8 @@
     .label_layout {
         position:absolute;
     }
-    .label_layout div {
-        margin: 2px 5px;
-        font-size: 12px;
+    .left_vlabels>div {
+        margin-bottom: 5px;
     }
     .label_middle, .label_middle table, .label_middle td {
         height:100%;
@@ -154,6 +172,7 @@
         right: 100%;
         width:400px;
         text-align: center;
+        -webkit-transform: rotate(-90deg);
         transform: rotate(-90deg);
     }
     .left_vlabels>div {
@@ -172,7 +191,8 @@
     .label_top {
         bottom: 100%;
         width: 100%;
-        text-align:center;
+        text-align: center;
+        margin-bottom: 3px;
     }
     .label_bottom {
         top: 100%;
@@ -188,6 +208,13 @@
         text-align: left;
         width: 100%;
     }
+    .label_topleft,
+    .label_topright,
+    .label_bottomleft,
+    .label_bottomright {
+        margin: 0 5px 1px 4px;
+    }
+
     .label_topleft {
         top: 0;
         left: 0;
@@ -238,7 +265,7 @@
         position: relative;
         top: 5px;
         -webkit-transform: rotate(-180deg);
-        transform: rotate(-180deg)
+        transform: rotate(-180deg);
     }
     .labelicon-right {
     }

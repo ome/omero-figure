@@ -251,14 +251,30 @@
                         Creating Pdf...
                     </button>
 
-                    <a id="pdf_download" href="/webclient/annotation/1058/" style="padding: 4px 10px; display:none"
+                    <a id="pdf_download" href="/webclient/annotation/1058/" target="new" style="padding: 4px 10px; display:none"
                             class="btn btn-primary btn-sm" title="Download pdf">
                         <span class="glyphicon glyphicon-download-alt" style="font-size: 14px"></span>
                     </a>
 
-                    <button id="create_figure_pdf" class="btn btn-success btn-sm" title="Generate pdf for download">
-                        Create Figure pdf
-                    </button>
+                    <div class="btn-group">
+                        <button id="create_figure_pdf" title="Generate pdf for download"
+                            type="button" class="btn btn-success btn-sm export_pdf">Export PDF</button>
+                        <!-- <button type="button" class="btn btn-success btn-sm dropdown-toggle" data-toggle="dropdown">
+                            <span class="caret"></span>
+                            <span class="sr-only">Toggle Dropdown</span>
+                        </button>
+                        <ul class="dropdown-menu export-options" role="menu">
+                            <li title="Add page of image urls to PDF"><a href="#">
+                                <span data-option="info" class="glyphicon glyphicon-info-sign"></span>
+                                Add info page <span style="display:inline-block; transform:rotate(20deg)">&radic;</span>
+                            </a></li>
+                            <li title="Include TIFF images in a zip"><a href="#">
+                                <span data-option="images" class="glyphicon glyphicon-picture"></span>
+                                Include Images
+                                <span style="display:inline-block; transform:rotate(20deg)">&radic;</span>
+                            </a></li>
+                        </ul> -->
+                    </div>
                 </form>
             </div><!--/.navbar-collapse -->
         </div>
@@ -719,13 +735,13 @@
                 <tr><td>Panel</td></tr>
                 <tr><td>
                     <div class="col-sm-3" style="text-align: right"><small><strong>X</strong>:</small></div>
-                    <div class="col-sm-3"><small><% print(x.toFixed(0)) %></small></div>
+                    <div class="col-sm-3"><small><% print(x) %></small></div>
 
                     <div class="col-sm-3" style="text-align: right"><small><strong>Width</strong>:</small></div>
                     <div class="col-sm-3"><small><% print(width) %></small></div>
 
                     <div class="col-sm-3" style="text-align: right"><small><strong>Y</strong>:</small></div>
-                    <div class="col-sm-3"><small><% print(y.toFixed(0)) %></small></div>
+                    <div class="col-sm-3"><small><% print(y) %></small></div>
 
                     <div class="col-sm-3" style="text-align: right"><small><strong>Height</strong>:</small></div>
                     <div class="col-sm-3"><small><% print(height) %></small></div>
@@ -737,7 +753,7 @@
 
     <!-- The content of <div class='imagePanel'> for each panel -->
     <script id="figure_panel_template" type="text/template">
-        <div style="overflow: hidden; width:100%; height:100%; position:absolute">
+        <div class="imgContainer">
             <img class="img_panel" />
         </div>
     </script>

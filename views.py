@@ -10,6 +10,7 @@ import json
 from omeroweb.webgateway import views as webgateway_views
 from omeroweb.webgateway.marshal import imageMarshal
 from omeroweb.webclient.views import run_script
+from django.core.urlresolvers import reverse
 from omero.rtypes import wrap, rlong, rstring
 import omero
 
@@ -226,11 +227,13 @@ def make_web_figure(request, conn=None, **kwargs):
     pageWidth = int(request.POST.get('pageWidth'))
     pageHeight = int(request.POST.get('pageHeight'))
     panelsJSON = str(request.POST.get('panelsJSON'))
+    webclient_uri = request.build_absolute_uri(reverse('webindex'))
 
     inputMap = {
         'Page_Width': wrap(pageWidth),
         'Page_Height': wrap(pageHeight),
-        'Panels_JSON': wrap(panelsJSON)}
+        'Panels_JSON': wrap(panelsJSON),
+        'Webclient_URI': wrap(webclient_uri)}
 
     rsp = run_script(request, conn, sId, inputMap, scriptName='Web Figure.pdf')
     return HttpResponse(simplejson.dumps(rsp), mimetype='json')

@@ -1,7 +1,7 @@
 
 $(function(){
 
-    var figureModel = new FigureModel( {'canvas_width': 2000, 'canvas_height': 2000,
+    var figureModel = new FigureModel( {'canvas_width': 4000, 'canvas_height': 3000,
             'paper_width': 612, 'paper_height': 792});
 
     // var figureFiles = new FileList();
@@ -55,73 +55,6 @@ $(function(){
     undoView = new UndoView({model:undoManager});
     // Finally, start listening for changes to panels
     undoManager.listenToCollection(figureModel.panels);
-
-
-    // TODO - move this into FigureView
-    // Heavy lifting of PDF generation handled by OMERO.script...
-    $("#create_figure_pdf").click(function(event){
-
-        event.preventDefault();
-
-        // Status is indicated by showing / hiding 3 buttons
-        var $create_figure_pdf = $(this),
-            $pdf_inprogress = $("#pdf_inprogress"),
-            $pdf_download = $("#pdf_download");
-        $create_figure_pdf.hide();
-        $pdf_download.hide();
-        $pdf_inprogress.show();
-
-        // Turn panels into json
-        var p_json = [];
-        figureModel.panels.each(function(m) {
-            p_json.push(m.toJSON());
-        });
-
-        var url = MAKE_WEBFIGURE_URL,
-            data = {
-            pageWidth: figureModel.get('paper_width'),
-            pageHeight: figureModel.get('paper_height'),
-            panelsJSON: JSON.stringify(p_json)
-        }
-
-        // Start the Figure_To_Pdf.py script
-        $.post( url, data)
-            .done(function( data ) {
-
-                // {"status": "in progress", "jobId": "ProcessCallback/64be7a9e-2abb-4a48-9c5e-6d0938e1a3e2 -t:tcp -h 192.168.1.64 -p 64592"}
-                var jobId = data.jobId;
-
-                // Now we keep polling for script completion, every second...
-
-                var i = setInterval(function (){
-
-                    $.getJSON(ACTIVITIES_JSON_URL, function(act_data) {
-
-                            var pdf_job = act_data[jobId];
-
-                            // We're waiting for this flag...
-                            if (pdf_job.status == "finished") {
-                                clearInterval(i);
-
-                                // Update UI
-                                $create_figure_pdf.show();
-                                $pdf_inprogress.hide();
-                                var fa_id = pdf_job.results.File_Annotation.id,
-                                    fa_download = WEBINDEX_URL + "annotation/" + fa_id + "/";
-                                $pdf_download.attr('href', fa_download).show();
-                            }
-
-                            if (act_data.inprogress == 0) {
-                                clearInterval(i);
-                            }
-
-                        }).error(function() {
-                            clearInterval(i);
-                        });
-
-                }, 1000);
-            });
-    });
 
 
     var FigureRouter = Backbone.Router.extend({

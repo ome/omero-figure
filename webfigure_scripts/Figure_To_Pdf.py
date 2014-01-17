@@ -15,6 +15,9 @@ except ImportError:
 
 try:
     from reportlab.pdfgen import canvas
+    from reportlab.lib.styles import getSampleStyleSheet
+    from reportlab.lib.units import inch
+    from reportlab.platypus import Paragraph, Frame
     # from reportlab.lib.pagesizes import letter, A4
     reportlabInstalled = True
 except ImportError:
@@ -331,6 +334,73 @@ def drawPanel(conn, c, panel, pageHeight, idx):
     drawScalebar(c, panel, tile['width'], pageHeight)
 
 
+def getThumbnail(conn, imageId):
+    """ Saves thumb as local jpg and returns name """
+
+    image = conn.getObject("Image", imageId)
+    thumbData = image.getThumbnail(size=(96, 96))
+    i = StringIO(thumbData)
+    pilImg = Image.open(i)
+    tempName = str(imageId) + "thumb.jpg"
+    pilImg.save(tempName)
+    return tempName
+
+
+def addInfoPage(conn, scriptParams, c, panels_json):
+
+    base_url = None
+    if 'Webclient_URI' in scriptParams:
+        base_url = scriptParams['Webclient_URI']
+    pageWidth = scriptParams['Page_Width']
+    pageHeight = scriptParams['Page_Height']
+
+    # Need to sort panels from top (left) -> bottom of Figure
+    panels_json.sort(key=lambda x: int(x['y']) + x['y'] * 0.01)
+
+    imgIds = set()
+    styles = getSampleStyleSheet()
+    styleN = styles['Normal']
+    styleH = styles['Heading1']
+    story = []
+    scalebars = []
+
+    story.append(Paragraph("Figure Images", styleH))
+
+    def addPara(lines):
+        text = "<br />".join(lines)
+        attrs = "spaceBefore='15' spaceAfter='15'"
+        para = "<para %s>%s</para>" % (attrs, text)
+        story.append(Paragraph(para, styleN))
+
+    # Go through sorted panels, adding paragraph for each unique image
+    for p in panels_json:
+        iid = p['imageId']
+        # list unique scalebar lengths
+        if 'scalebar' in p and p['scalebar']['length'] not in scalebars:
+            scalebars.append(p['scalebar']['length'])
+        if iid in imgIds:
+            continue    # ignore images we've already handled
+        imgIds.add(iid)
+        thumbSrc = getThumbnail(conn, iid)
+        thumb = "<img src='%s' width='25' height='25' valign='middle' />" % thumbSrc
+        line = [thumb]
+        line.append(p['name'])
+        img_url = "%s?show=image-%s" % (base_url, iid)
+        line.append("<a href='%s' color='blue'>%s</a>" % (img_url, img_url))
+        addPara([" ".join(line)])
+
+    if len(scalebars) > 0:
+        story.append(Paragraph("Scalebars", styleH))
+        sbs = [str(s) for s in scalebars]
+        addPara(["Scalebars: %s microns" % " microns, ".join(sbs)])
+
+    f = Frame(inch, inch, pageWidth-2*inch, pageHeight-2*inch)
+    f.addFromList(story, c)
+    c.save()
+
+    #c.showPage()
+
+
 def create_pdf(conn, scriptParams):
 
     n = datetime.now()
@@ -360,10 +430,18 @@ def create_pdf(conn, scriptParams):
 
     # complete page and save
     c.showPage()
+
+    if True:
+        addInfoPage(conn, scriptParams, c, panels_json)
+
     c.save()
 
     ns = "omero.web.figure.pdf"
-    fileAnn = conn.createFileAnnfromLocalFile(figureName, mimetype="application/pdf", ns=ns, desc=panels_json_string)
+    fileAnn = conn.createFileAnnfromLocalFile(
+        figureName,
+        mimetype="application/pdf",
+        ns=ns,
+        desc=panels_json_string)
 
     links = []
     for iid in list(imageIds):
@@ -393,6 +471,9 @@ def runScript():
 
         scripts.String("Panels_JSON", optional=False, grouping="3",
                        description="All Panel Data as json stringified"),
+
+        scripts.String("Webclient_URI", grouping="4",
+                       description="Base URL for adding links to images in webclient"),
 
         scripts.String("Figure_Name", grouping="4", description="Name of the Pdf Figure")
     )

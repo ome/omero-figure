@@ -774,6 +774,7 @@
         },
 
         events: {
+            "click .export_pdf": "export_pdf",
             "click .add_panel": "addPanel",
             "click .delete_panel": "deleteSelectedPanels",
             "click .copy": "copy_selected_panels",
@@ -783,6 +784,7 @@
             "click .new_figure": "goto_newfigure",
             "click .open_figure": "open_figure",
             "click .delete_figure": "delete_figure",
+            "click .export-options a": "select_export_option",
         },
 
         keyboardEvents: {
@@ -798,6 +800,90 @@
             'up' : 'nudge_up',
             'left' : 'nudge_left',
             'right' : 'nudge_right',
+        },
+
+        // Heavy lifting of PDF generation handled by OMERO.script...
+        export_pdf: function(event){
+
+            event.preventDefault();
+
+            // Status is indicated by showing / hiding 3 buttons
+            var figureModel = this.model,
+                $create_figure_pdf = $(event.target),
+                $pdf_inprogress = $("#pdf_inprogress"),
+                $pdf_download = $("#pdf_download");
+            $create_figure_pdf.hide();
+            $pdf_download.hide();
+            $pdf_inprogress.show();
+
+            // Turn panels into json
+            var p_json = [];
+            figureModel.panels.each(function(m) {
+                p_json.push(m.toJSON());
+            });
+
+            var url = MAKE_WEBFIGURE_URL,
+                data = {
+                    pageWidth: figureModel.get('paper_width'),
+                    pageHeight: figureModel.get('paper_height'),
+                    panelsJSON: JSON.stringify(p_json)
+                };
+
+            // Start the Figure_To_Pdf.py script
+            $.post( url, data).done(function( data ) {
+
+                // {"status": "in progress", "jobId": "ProcessCallback/64be7a9e-2abb-4a48-9c5e-6d0938e1a3e2 -t:tcp -h 192.168.1.64 -p 64592"}
+                var jobId = data.jobId;
+
+                // Now we keep polling for script completion, every second...
+
+                var i = setInterval(function (){
+
+                    $.getJSON(ACTIVITIES_JSON_URL, function(act_data) {
+
+                            var pdf_job = act_data[jobId];
+
+                            // We're waiting for this flag...
+                            if (pdf_job.status == "finished") {
+                                clearInterval(i);
+
+                                // Update UI
+                                $create_figure_pdf.show();
+                                $pdf_inprogress.hide();
+                                var fa_id = pdf_job.results.File_Annotation.id,
+                                    fa_download = WEBINDEX_URL + "annotation/" + fa_id + "/";
+                                $pdf_download.attr('href', fa_download).show();
+                            }
+
+                            if (act_data.inprogress === 0) {
+                                clearInterval(i);
+                            }
+
+                        }).error(function() {
+                            clearInterval(i);
+                        });
+
+                }, 1000);
+            });
+        },
+
+        select_export_option: function(event) {
+            event.preventDefault();
+            var $a = $(event.target),
+                $span = $a.children('span.glyphicon');
+            // We take the <span> from the <a> and place it in the <button>
+            if ($span.length === 0) $span = $a;  // in case we clicked on <span>
+            var $li = $span.parent().parent(),
+                $button = $li.parent().prev().prev(),
+                option = $span.attr("data-option");
+            var $flag = $button.find("span[data-option='" + option + "']");
+            if ($flag.length > 0) {
+                $flag.remove();
+            } else {
+                $span = $span.clone();
+                $button.append($span);
+            }
+            $button.trigger('change');      // can listen for this if we want to 'submit' etc
         },
 
         nudge_right: function(event) {
@@ -1509,7 +1595,7 @@
                 this.render_layout);
             this.listenTo(this.model, 'change:scalebar change:pixel_size', this.render_scalebar);
             this.listenTo(this.model, 'change:channels change:theZ change:theT', this.render_image);
-            this.listenTo(this.model, 'change:labels change:theT', this.render_labels);
+            this.listenTo(this.model, 'change:labels change:theT change:deltaT', this.render_labels);
             // This could be handled by backbone.relational, but do it manually for now...
             // this.listenTo(this.model.channels, 'change', this.render);
             // During drag, model isn't updated, but we trigger 'drag'
@@ -1529,6 +1615,7 @@
                 w = xywh[2],
                 h = xywh[3];
             this.update_resize(x, y, w, h);
+            this.$el.addClass('dragging');
         },
 
         render_layout: function() {
@@ -1538,6 +1625,7 @@
                 h = this.model.get('height');
 
             this.update_resize(x, y, w, h);
+            this.$el.removeClass('dragging');
         },
 
         update_resize: function(x, y, w, h) {
@@ -2114,7 +2202,7 @@
                 this.models = opts.models;
                 var self = this;
                 _.each(this.models, function(m){
-                    self.listenTo(m, 'change:x change:y change:width change:height', self.render);
+                    self.listenTo(m, 'change:x change:y change:width change:height change:imageId', self.render);
                 });
             } else if (opts.models.length == 1) {
                 this.model = opts.models[0];
@@ -2148,8 +2236,6 @@
             var json;
             if (this.model) {
                 json = this.model.toJSON();
-                json.width = json.width.toFixed(0);
-                json.height = json.height.toFixed(0);
             } else if (this.models) {
                 var title = this.models.length + " Panels Selected...";
                 _.each(this.models, function(m, i){
@@ -2157,25 +2243,24 @@
                     if (!json) {
                         json = m.toJSON();
                         json.name = title;
-                        json.width = json.width.toFixed(0);
-                        json.height = json.height.toFixed(0);
                     } else {
                         // compare json summary so far with this Panel
                         var this_json = m.toJSON(),
-                            attrs = ["imageId", "orig_width", "orig_height", "sizeT", "sizeZ"];
+                            attrs = ["imageId", "orig_width", "orig_height", "sizeT", "sizeZ", "x", "y", "width", "height"];
                         _.each(attrs, function(a){
                             if (json[a] != this_json[a]) {
                                 json[a] = "-";
                             }
                         });
-                        // Show the min x & y. Format & compare width & height
-                        json.x = Math.min(json.x, this_json.x);
-                        json.y = Math.min(json.y, this_json.y);
-                        if (json.width != this_json.width.toFixed(0)) json.width = "-";
-                        if (json.height != this_json.height.toFixed(0)) json.height = "-";
                     }
                 });
             }
+            // Format floating point values
+            _.each(["x", "y", "width", "height"], function(a){
+                if (json[a] != "-") {
+                    json[a] = json[a].toFixed(0);
+                }
+            });
 
             json.setImageId = (json.imageId > 0);
 
@@ -2237,7 +2322,7 @@
                 },
                 stop: function( event, ui ) {
                     self.zoom_avg = ui.value;
-                    var to_save = {'zoom': ui.value}
+                    var to_save = {'zoom': ui.value};
                     if (ui.value === 100) {
                         to_save.dx = 0;
                         to_save.dy = 0;
