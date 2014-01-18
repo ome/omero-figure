@@ -224,15 +224,11 @@ def make_web_figure(request, conn=None, **kwargs):
     scriptService = conn.getScriptService()
     sId = scriptService.getScriptID("/figure_scripts/Figure_To_Pdf.py")
 
-    pageWidth = int(request.POST.get('pageWidth'))
-    pageHeight = int(request.POST.get('pageHeight'))
-    panelsJSON = str(request.POST.get('panelsJSON'))
+    figureJSON = str(request.POST.get('figureJSON'))
     webclient_uri = request.build_absolute_uri(reverse('webindex'))
 
     inputMap = {
-        'Page_Width': wrap(pageWidth),
-        'Page_Height': wrap(pageHeight),
-        'Panels_JSON': wrap(panelsJSON),
+        'Figure_JSON': wrap(figureJSON),
         'Webclient_URI': wrap(webclient_uri)}
 
     rsp = run_script(request, conn, sId, inputMap, scriptName='Figure.pdf')

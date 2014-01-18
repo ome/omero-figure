@@ -364,7 +364,7 @@
 
         getSelected: function() {
             return this.filter(function(panel){
-                return panel.get('selected'); 
+                return panel.get('selected');
             });
         },
 
@@ -417,8 +417,7 @@
             });
         },
 
-        save_to_OMERO: function(options, success) {
-
+        figure_toJSON: function() {
             // Turn panels into json
             var p_json = [],
                 self = this;
@@ -431,6 +430,13 @@
                 paper_width: this.get('paper_width'),
                 paper_height: this.get('paper_height'),
             };
+            return figureJSON;
+        },
+
+        save_to_OMERO: function(options, success) {
+
+            var self = this,
+                figureJSON = this.figure_toJSON();
 
             var url = window.SAVE_WEBFIGURE_URL,
                 data = options || {};
@@ -816,17 +822,12 @@
             $pdf_download.hide();
             $pdf_inprogress.show();
 
-            // Turn panels into json
-            var p_json = [];
-            figureModel.panels.each(function(m) {
-                p_json.push(m.toJSON());
-            });
+            // Get figure as json
+            var figureJSON = this.model.figure_toJSON();
 
             var url = MAKE_WEBFIGURE_URL,
                 data = {
-                    pageWidth: figureModel.get('paper_width'),
-                    pageHeight: figureModel.get('paper_height'),
-                    panelsJSON: JSON.stringify(p_json)
+                    figureJSON: JSON.stringify(figureJSON)
                 };
 
             // Start the Figure_To_Pdf.py script
@@ -1402,7 +1403,7 @@
 
             var self = this;
             // when the modal dialog is shown, focus the input
-            $("#addImagesModal").bind("focus", 
+            $("#addImagesModal").bind("focus",
                 function() {
                     setTimeout(function(){
                         $('input.imgIds', self.$el).focus();
@@ -1590,7 +1591,7 @@
         initialize: function(opts) {
             // we render on Changes in the model OR selected shape etc.
             this.model.on('destroy', this.remove, this);
-            this.listenTo(this.model, 
+            this.listenTo(this.model,
                 'change:x change:y change:width change:height change:zoom change:dx change:dy',
                 this.render_layout);
             this.listenTo(this.model, 'change:scalebar change:pixel_size', this.render_scalebar);
@@ -3035,7 +3036,7 @@
             $("#canvas_wrapper>svg")
                 .mousedown(function(event){
                     self.dragging = true;
-                    var parentOffset = $(this).parent().offset(); 
+                    var parentOffset = $(this).parent().offset();
                     //or $(this).offset(); if you really just want the current element's offset
                     self.left = self.drag_start_x = event.pageX - parentOffset.left;
                     self.top = self.drag_start_y = event.pageY - parentOffset.top;
@@ -3051,7 +3052,7 @@
             })
                 .mousemove(function(event){
                     if (self.dragging) {
-                        var parentOffset = $(this).parent().offset(); 
+                        var parentOffset = $(this).parent().offset();
                         //or $(this).offset(); if you really just want the current element's offset
                         self.left = self.drag_start_x;
                         self.top = self.drag_start_y;
@@ -3102,7 +3103,7 @@
         addOne: function(m) {
 
             var rectModel = new ProxyRectModel({panel: m, figure:this.model});
-            new RectView({'model':rectModel, 'paper':this.raphael_paper, 
+            new RectView({'model':rectModel, 'paper':this.raphael_paper,
                     'handle_wh':5, 'disable_handles': true});
         },
 

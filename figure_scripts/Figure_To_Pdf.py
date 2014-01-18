@@ -403,11 +403,20 @@ def addInfoPage(conn, scriptParams, c, panels_json):
 
 def create_pdf(conn, scriptParams):
 
+    figure_json_string = scriptParams['Figure_JSON']
+    figure_json = json.loads(figure_json_string)
+
     n = datetime.now()
     # time-stamp name by default: Figure_2013-10-29_22-43-53.pdf (tried : but they get replaced)
     figureName = "Figure_%s-%s-%s_%s-%s-%s.pdf" % (n.year, n.month, n.day, n.hour, n.minute, n.second)
-    pageWidth = scriptParams['Page_Width']
-    pageHeight = scriptParams['Page_Height']
+
+    # get Figure width & height...
+    pageWidth = figure_json['paper_width']
+    pageHeight = figure_json['paper_height']
+    # add to scriptParams for convenience
+    scriptParams['Page_Width'] = pageWidth
+    scriptParams['Page_Height'] = pageHeight
+
     if 'Figure_Name' in scriptParams:
         figureName = scriptParams['Figure_Name']
     if not figureName.endswith('.pdf'):
@@ -415,8 +424,7 @@ def create_pdf(conn, scriptParams):
 
     c = canvas.Canvas(figureName, pagesize=(pageWidth, pageHeight))
 
-    panels_json_string = scriptParams['Panels_JSON']
-    panels_json = json.loads(panels_json_string)
+    panels_json = figure_json['panels']
     imageIds = set()
 
     for i, panel in enumerate(panels_json):
@@ -441,7 +449,7 @@ def create_pdf(conn, scriptParams):
         figureName,
         mimetype="application/pdf",
         ns=ns,
-        desc=panels_json_string)
+        desc=figure_json_string)
 
     links = []
     for iid in list(imageIds):
@@ -465,12 +473,8 @@ def runScript():
     client = scripts.client(
         'Figure_To_Pdf.py', """Used by web.figure to generate pdf figures from json data""",
 
-        scripts.Int("Page_Width", optional=False, grouping="1", default=612),
-
-        scripts.Int("Page_Height", optional=False, grouping="2", default=792),
-
-        scripts.String("Panels_JSON", optional=False, grouping="3",
-                       description="All Panel Data as json stringified"),
+        scripts.String("Figure_JSON", optional=False,
+                       description="All figure info as json stringified"),
 
         scripts.String("Webclient_URI", grouping="4",
                        description="Base URL for adding links to images in webclient"),
