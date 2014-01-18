@@ -965,7 +965,7 @@
                 var d = new Date(),
                     dt = d.getFullYear() + "-" + (d.getMonth()+1) + "-" +d.getDate(),
                     tm = d.getHours() + ":" + d.getMinutes() + ":" + d.getSeconds();
-                defaultName = "WebFigure_" + dt + "_" + tm;
+                defaultName = "Figure_" + dt + "_" + tm;
             } else {
                 defaultName = defaultName + "_copy";
             }
@@ -1149,7 +1149,7 @@
 
         renderFigureName: function() {
 
-            var title = "WebFigure",
+            var title = "OMERO.figure",
                 figureName = this.model.get('figureName');
             if ((figureName) && (figureName.length > 0)) {
                 title += " - " + figureName;
@@ -1256,7 +1256,7 @@
                 idInput = $('input.imgIds', this.$el).val();
 
             // get image Data
-            $.getJSON('/webfigure/imgData/' + parseInt(idInput, 10) + '/', function(data){
+            $.getJSON(BASE_WEBFIGURE_URL + 'imgData/' + parseInt(idInput, 10) + '/', function(data){
                 // just pick what we need
                 var newImg = {
                     'imageId': data.id,
@@ -1459,7 +1459,7 @@
                 if (parseInt(imgId, 10) > 0) {
                     var c = this.figureView.getCentre();
                     // Get the json data for the image...
-                    $.getJSON('/webfigure/imgData/' + parseInt(imgId, 10) + '/', function(data){
+                    $.getJSON(BASE_WEBFIGURE_URL + 'imgData/' + parseInt(imgId, 10) + '/', function(data){
                         // just pick what we need, add x & y etc...
                         // Need to work out where to start (px,py) now that we know size of panel
                         // (assume all panels are same size)

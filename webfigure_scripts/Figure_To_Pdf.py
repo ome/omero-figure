@@ -404,8 +404,8 @@ def addInfoPage(conn, scriptParams, c, panels_json):
 def create_pdf(conn, scriptParams):
 
     n = datetime.now()
-    # time-stamp name by default: WebFigure_2013-10-29_22-43-53.pdf (tried : but they get replaced)
-    figureName = "WebFigure_%s-%s-%s_%s-%s-%s.pdf" % (n.year, n.month, n.day, n.hour, n.minute, n.second)
+    # time-stamp name by default: Figure_2013-10-29_22-43-53.pdf (tried : but they get replaced)
+    figureName = "Figure_%s-%s-%s_%s-%s-%s.pdf" % (n.year, n.month, n.day, n.hour, n.minute, n.second)
     pageWidth = scriptParams['Page_Width']
     pageHeight = scriptParams['Page_Height']
     if 'Figure_Name' in scriptParams:

@@ -1,11 +1,16 @@
-from django.conf.urls import *
 
-from webfigure import views
+import django
+if django.VERSION < (1, 6):
+    from django.conf.urls.defaults import *
+else:
+    from django.conf.urls import *
+
+from figure import views
 
 urlpatterns = patterns('django.views.generic.simple',
 
     # index 'home page' of the webfigure app
-    url( r'^$', views.index, name='webfigure_index' ),
+    url( r'^$', views.index, name='figure_index' ),
 
     url( r'^imgData/(?P<imageId>[0-9]+)/$', views.imgData_json, name='webfigure_imgData'),
 

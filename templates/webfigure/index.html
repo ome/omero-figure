@@ -1,3 +1,5 @@
+{% load url from future %}
+
 <!DOCTYPE html>
 <!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
 <!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
@@ -20,7 +22,7 @@
 
     <script>
 
-    var BASE_WEBFIGURE_URL = "{% url 'webfigure_index' %}",
+    var BASE_WEBFIGURE_URL = "{% url 'figure_index' %}",
         SAVE_WEBFIGURE_URL = "{% url 'save_web_figure' %}",
         LIST_WEBFIGURES_URL = "{% url 'list_web_figures' %}",
         DELETE_WEBFIGURE_URL = "{% url 'delete_web_figure' %}",
