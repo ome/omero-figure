@@ -9,10 +9,10 @@ from figure import views
 
 urlpatterns = patterns('django.views.generic.simple',
 
-    # index 'home page' of the webfigure app
+    # index 'home page' of the figure app
     url( r'^$', views.index, name='figure_index' ),
 
-    url( r'^imgData/(?P<imageId>[0-9]+)/$', views.imgData_json, name='webfigure_imgData'),
+    url( r'^imgData/(?P<imageId>[0-9]+)/$', views.imgData_json, name='figure_imgData'),
 
     # Send json to OMERO to create pdf using scripting service
     url( r'^make_web_figure/', views.make_web_figure, name='make_web_figure'),

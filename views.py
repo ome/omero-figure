@@ -83,7 +83,7 @@ def index(request, conn=None, **kwargs):
     and lay them out in canvas by dragging & resizing etc
     """
 
-    return render_to_response("webfigure/index.html", {})
+    return render_to_response("figure/index.html", {})
 
 
 @login_required()
@@ -222,7 +222,7 @@ def make_web_figure(request, conn=None, **kwargs):
         return HttpResponse("Need to use POST")
 
     scriptService = conn.getScriptService()
-    sId = scriptService.getScriptID("/webfigure_scripts/Figure_To_Pdf.py")
+    sId = scriptService.getScriptID("/figure_scripts/Figure_To_Pdf.py")
 
     pageWidth = int(request.POST.get('pageWidth'))
     pageHeight = int(request.POST.get('pageHeight'))
@@ -235,7 +235,7 @@ def make_web_figure(request, conn=None, **kwargs):
         'Panels_JSON': wrap(panelsJSON),
         'Webclient_URI': wrap(webclient_uri)}
 
-    rsp = run_script(request, conn, sId, inputMap, scriptName='Web Figure.pdf')
+    rsp = run_script(request, conn, sId, inputMap, scriptName='Figure.pdf')
     return HttpResponse(simplejson.dumps(rsp), mimetype='json')
 
 
