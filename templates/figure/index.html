@@ -431,14 +431,14 @@
             <div class="pixel_size_div">
                 Pixel Size:
                 <input class="input-sm form-control pixel_size_input" placeholder="Pixel Size (&#181;)"
-                        style="width:100px; display:none" value="<%= pixel_size %>">
+                        style="width:100px; display:none" value="<%= pixel_size_x %>">
                 <span class="pixel_size_display">
-                    <% if (pixel_size == 0)
+                    <% if (pixel_size_x == 0)
                         {print('<span style="color:red">NOT SET</span>')}
-                    else if (typeof pixel_size === 'number')
-                        {print(pixel_size.toFixed(3) + " &#181;m")}
+                    else if (typeof pixel_size_x === 'number')
+                        {print(pixel_size_x.toFixed(3) + " &#181;m")}
                     else
-                        {print(pixel_size + " &#181;m")} %>
+                        {print(pixel_size_x + " &#181;m")} %>
                 </span>
             </div>
 

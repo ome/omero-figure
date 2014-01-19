@@ -39,7 +39,8 @@
                 'orig_width': data.orig_width,
                 'orig_height': data.orig_height,
                 'datasetName': data.datasetName,
-                'pixel_size': data.pixel_size,
+                'pixel_size_x': data.pixel_size_x,
+                'pixel_size_y': data.pixel_size_y,
                 'deltaT': data.deltaT,
             };
 
@@ -401,6 +402,9 @@
 
             $.getJSON(load_url, function(data){
 
+                // bring older files up-to-date
+                data = self.version_transform(data);
+
                 _.each(data.panels, function(p){
                     p.selected = false;
                     self.panels.create(p);
@@ -417,6 +421,25 @@
             });
         },
 
+        // take Figure_JSON from a previous version,
+        // and transform it to latest version
+        version_transform: function(json) {
+            var v = json.version || 0;
+
+            // In version 1, we have pixel_size_x and y.
+            // Earlier versions only have pixel_size.
+            if (v < 1) {
+                _.each(json.panels, function(p){
+                    var ps = p.pixel_size;
+                    p.pixel_size_x = ps;
+                    p.pixel_size_y = ps;
+                    delete p.pixel_size;
+                });
+            }
+
+            return json;
+        },
+
         figure_toJSON: function() {
             // Turn panels into json
             var p_json = [],
@@ -426,6 +449,7 @@
             });
 
             var figureJSON = {
+                version: 1,
                 panels: p_json,
                 paper_width: this.get('paper_width'),
                 paper_height: this.get('paper_height'),
@@ -1274,7 +1298,8 @@
                     // 'x': px,
                     // 'y': py,
                     'datasetName': data.meta.datasetName,
-                    'pixel_size': data.pixel_size.x,
+                    'pixel_size_x': data.pixel_size.x,
+                    'pixel_size_y': data.pixel_size.y,
                     'deltaT': data.deltaT,
                 };
                 self.newImg = newImg;
@@ -1476,6 +1501,13 @@
                                 }
                             });
                         }
+                        // ****** This is the Data Model ******
+                        //-------------------------------------
+                        // Any changes here will create a new version
+                        // of the model and will also have to be applied
+                        // to the 'version_transform()' function so that
+                        // older files can be brought up to date.
+                        // Also check 'previewSetId()' for changes.
                         var n = {
                             'imageId': data.id,
                             'name': data.meta.imageName,
@@ -1492,7 +1524,8 @@
                             'y': py,
                             'datasetName': data.meta.datasetName,
                             'datasetId': data.meta.datasetId,
-                            'pixel_size': data.pixel_size.x,
+                            'pixel_size_x': data.pixel_size.x,
+                            'pixel_size_y': data.pixel_size.y,
                             'deltaT': data.deltaT,
                         };
                         // create Panel (and select it)
@@ -1594,7 +1627,7 @@
             this.listenTo(this.model,
                 'change:x change:y change:width change:height change:zoom change:dx change:dy',
                 this.render_layout);
-            this.listenTo(this.model, 'change:scalebar change:pixel_size', this.render_scalebar);
+            this.listenTo(this.model, 'change:scalebar change:pixel_size_x', this.render_scalebar);
             this.listenTo(this.model, 'change:channels change:theZ change:theT', this.render_image);
             this.listenTo(this.model, 'change:labels change:theT change:deltaT', this.render_labels);
             // This could be handled by backbone.relational, but do it manually for now...
@@ -1649,7 +1682,7 @@
             var sb = this.model.get('scalebar');
             if (sb && sb.show) {
                 // this.$scalebar.css('width':);
-                var sb_pixels = sb.length / this.model.get('pixel_size');
+                var sb_pixels = sb.length / this.model.get('pixel_size_x');
                 var panel_scale = vp_css.width / this.model.get('orig_width'),
                     sb_width = panel_scale * sb_pixels;
                 this.$scalebar.css('width', sb_width);
@@ -2064,7 +2097,7 @@
             var self = this;
 
             _.each(this.models, function(m){
-                self.listenTo(m, 'change:scalebar change:pixel_size', self.render);
+                self.listenTo(m, 'change:scalebar change:pixel_size_x', self.render);
             });
 
             // this.$el = $("#scalebar_form");
@@ -2106,7 +2139,7 @@
             var pixel_size = parseFloat(val);
             if (isNaN(pixel_size)) return;
             _.each(this.models, function(m, i){
-                m.save('pixel_size', pixel_size);
+                m.save('pixel_size_x', pixel_size);
             });
         },
 
@@ -2149,12 +2182,15 @@
 
             _.each(this.models, function(m, i){
                 // start with json data from first Panel
-                if (!json.pixel_size) {
-                    json.pixel_size = m.get('pixel_size');
+                if (!json.pixel_size_x) {
+                    json.pixel_size_x = m.get('pixel_size_x');
                 } else {
-                    pix_sze = m.get('pixel_size');
+                    pix_sze = m.get('pixel_size_x');
                     // account for floating point imprecision when comparing
-                    if (json.pixel_size.toFixed(10) != pix_sze.toFixed(10)) json.pixel_size = '-';
+                    if (json.pixel_size_x != '-' &&
+                        json.pixel_size_x.toFixed(10) != pix_sze.toFixed(10)) {
+                            json.pixel_size_x = '-';
+                    }
                 }
                 sb = m.get('scalebar');
                 // ignore scalebars if not visible
