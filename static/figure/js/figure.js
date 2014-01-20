@@ -933,7 +933,7 @@
 
         goto_newfigure: function(event) {
             if (event) event.preventDefault();
-            window.location.hash = "";
+            window.location.hash = "new";
         },
 
         delete_figure: function(event) {

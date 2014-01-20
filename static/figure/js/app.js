@@ -61,10 +61,13 @@ $(function(){
 
         routes: {
             "": "index",
+            "new": "newFigure",
             "figure/:id": "loadFigure"
         },
 
         clearFigure: function() {
+
+            $(".modal").modal('hide'); // hide any existing dialogs
 
             // Arrive at 'home' page, either starting here OR we hit 'new' figure...
             // ...so start by clearing any existing Figure (save first if needed)
@@ -84,6 +87,12 @@ $(function(){
         },
 
         index: function() {
+            this.clearFigure();
+            figureModel.set('unsaved', false);
+            $('#welcomeModal').modal();
+        },
+
+        newFigure: function() {
             this.clearFigure();
             figureModel.set('unsaved', false);
             $('#addImagesModal').modal();
