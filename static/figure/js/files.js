@@ -20,6 +20,17 @@ var FileList = Backbone.Collection.extend({
     initialize: function() {
     },
 
+    deleteFile: function(fileId, name) {
+        // may not have fetched files...
+        var f = this.get(fileId),   // might be undefined
+            msg = "Delete '" + name + "'?";
+        if (confirm(msg)) {
+            $.post( DELETE_WEBFIGURE_URL, { fileId: fileId })
+                .done(this.remove(f));
+            window.location.hash = "";
+        }
+    },
+
     url: function() {
         return LIST_WEBFIGURES_URL;
     }
@@ -32,6 +43,7 @@ var FileListView = Backbone.View.extend({
         this.$el = $('#figure_files');
         var self = this;
         this.model.bind("reset", this.render, this);
+        this.model.bind("remove", this.render, this);
         this.model.bind("add", function (file) {
             var e = new FileListItemView({model:file}).render().el;
             self.$el.append(e);

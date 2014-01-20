@@ -939,17 +939,9 @@
         delete_figure: function(event) {
             event.preventDefault();
             var fileId = this.model.get('fileId'),
-                self = this;
-
+                figName = this.model.get('figureName');
             if(fileId) {
-                var msg = "Delete '" + this.model.get('figureName') + "'?";
-                if(confirm(msg)) {
-                    var url = DELETE_WEBFIGURE_URL;
-                    $.post( DELETE_WEBFIGURE_URL, { fileId: fileId })
-                        .done(function( data ) {
-                            self.goto_newfigure();
-                        });
-                }
+                this.figureFiles.deleteFile(fileId, figName);
             }
         },
 
