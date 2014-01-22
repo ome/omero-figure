@@ -13,6 +13,7 @@ from omeroweb.webclient.views import run_script
 from django.core.urlresolvers import reverse
 from omero.rtypes import wrap, rlong, rstring
 import omero
+from omero.gateway import OriginalFileWrapper
 
 try:
     from PIL import Image
@@ -31,10 +32,9 @@ def createOriginalFileFromFileObj(
     """
     This is a copy of the same method from Blitz Gateway, but fixes a bug
     where the conn.SERVICE_OPTS are not passed in the API calls.
-    Once that has been fixed in develop and dev_4_4, then we can revert to
-    using the BlitzGateway for this method again.
+    Once this is fixed in OMERO-5 (and we don't need to work with OMERO-4)
+    then we can revert to using the BlitzGateway for this method again.
     """
-    updateService = conn.getUpdateService()
     rawFileStore = conn.createRawFileStore()
 
     # create original file, set name, path, mimetype
@@ -44,20 +44,23 @@ def createOriginalFileFromFileObj(
     if mimetype:
         originalFile.mimetype = rstring(mimetype)
     originalFile.setSize(rlong(fileSize))
-    # set sha1
-    # try:
-    #     import hashlib
-    #     hash_sha1 = hashlib.sha1
-    # except:
-    #     import sha
-    #     hash_sha1 = sha.new
-    fo.seek(0)
-    # h = hash_sha1()
-    # h.update(fo.read())
-    # shaHast = h.hexdigest()
-    # originalFile.setHash(rstring(shaHast))
-    originalFile = updateService.saveAndReturnObject(
-        originalFile, conn.SERVICE_OPTS)
+    # set sha1 # ONLY for OMERO-4
+    try:
+        import hashlib
+        hash_sha1 = hashlib.sha1
+    except:
+        import sha
+        hash_sha1 = sha.new
+    try:
+        fo.seek(0)
+        h = hash_sha1()
+        h.update(fo.read())
+        shaHast = h.hexdigest()
+        originalFile.setSha1(rstring(shaHast))
+    except:
+        pass       # OMERO-5 doesn't need this
+    upd = conn.getUpdateService()
+    originalFile = upd.saveAndReturnObject(originalFile, conn.SERVICE_OPTS)
 
     # upload file
     fo.seek(0)
@@ -72,6 +75,8 @@ def createOriginalFileFromFileObj(
         fo.seek(pos)
         block = fo.read(blockSize)
         rawFileStore.write(block, pos, blockSize, conn.SERVICE_OPTS)
+    # https://github.com/openmicroscopy/openmicroscopy/pull/2006
+    originalFile = rawFileStore.save()
     rawFileStore.close()
     return OriginalFileWrapper(conn, originalFile)
 
@@ -157,14 +162,14 @@ def save_web_figure(request, conn=None, **kwargs):
         fileSize = len(figureJSON)
         f = StringIO()
         f.write(figureJSON)
-        origF = conn.createOriginalFileFromFileObj(
-            f, '', figureName, fileSize, mimetype="application/json")
+        origF = createOriginalFileFromFileObj(
+            conn, f, '', figureName, fileSize, mimetype="application/json")
         fa = omero.model.FileAnnotationI()
-        fa.setFile(origF._obj)
+        fa.setFile(omero.model.OriginalFileI(origF.getId(), False))
         fa.setNs(wrap(JSON_FILEANN_NS))
         desc = simplejson.dumps(description)
         fa.setDescription(wrap(desc))
-        fa = conn.getUpdateService().saveAndReturnObject(fa)
+        fa = conn.getUpdateService().saveAndReturnObject(fa, conn.SERVICE_OPTS)
         fileId = fa.id.val
 
     else:
