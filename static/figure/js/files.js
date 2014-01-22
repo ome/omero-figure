@@ -42,8 +42,7 @@ var FileListView = Backbone.View.extend({
     initialize:function () {
         this.$el = $('#figure_files');
         var self = this;
-        this.model.bind("reset", this.render, this);
-        this.model.bind("remove", this.render, this);
+        this.model.bind("reset, remove, sync", this.render, this);
         this.model.bind("add", function (file) {
             var e = new FileListItemView({model:file}).render().el;
             self.$el.append(e);
@@ -54,6 +53,12 @@ var FileListView = Backbone.View.extend({
 
         var self = this;
         this.$el.empty();
+        if (this.model.models.length === 0) {
+            var msg = "<tr><td colspan='3'>" +
+                "You have no figures. Start by <a href='#new'>creating a new figure</a>" +
+                "</td></tr>";
+            self.$el.html(msg);
+        }
         _.each(this.model.models, function (file) {
             var e = new FileListItemView({model:file}).render().el;
             self.$el.append(e);
