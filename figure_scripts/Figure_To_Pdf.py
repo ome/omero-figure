@@ -251,8 +251,9 @@ def drawScalebar(c, panel, region_width, pageHeight):
             and panel['scalebar']['show']):
         return
 
-    if not ('pixel_size' in panel and panel['pixel_size'] > 0):
-        print "Can't show scalebar - pixel_size is not defined for panel"
+    if not ('pixel_size_x' in panel and panel['pixel_size_x'] > 0):
+        print "Can't show scalebar - pixel_size_x is not defined for panel"
+        return
 
     sb = panel['scalebar']
 
@@ -267,8 +268,8 @@ def drawScalebar(c, panel, region_width, pageHeight):
 
     def draw_sb(sb_x, sb_y, align='left'):
 
-        print "Adding Scalebar of %s microns. Pixel size is %s microns" % (sb['length'], panel['pixel_size'])
-        pixels_length = sb['length'] / panel['pixel_size']
+        print "Adding Scalebar of %s microns. Pixel size is %s microns" % (sb['length'], panel['pixel_size_x'])
+        pixels_length = sb['length'] / panel['pixel_size_x']
         scale_to_canvas = panel['width'] / region_width
         canvas_length = pixels_length * scale_to_canvas
         print 'Scalebar length (panel pixels):', pixels_length
