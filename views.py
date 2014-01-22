@@ -1,6 +1,5 @@
 from django.http import Http404, HttpResponse
 from django.shortcuts import render_to_response
-from django.utils import simplejson
 from django.conf import settings
 from datetime import datetime
 import os
@@ -118,7 +117,7 @@ def imgData_json(request, imageId, conn=None, **kwargs):
                 timeList.append(timeMap[t])
     rv['deltaT'] = timeList
 
-    return HttpResponse(simplejson.dumps(rv), mimetype='json')
+    return HttpResponse(json.dumps(rv), content_type='json')
 
 
 @login_required(setGroupContext=True)
@@ -167,7 +166,7 @@ def save_web_figure(request, conn=None, **kwargs):
         fa = omero.model.FileAnnotationI()
         fa.setFile(omero.model.OriginalFileI(origF.getId(), False))
         fa.setNs(wrap(JSON_FILEANN_NS))
-        desc = simplejson.dumps(description)
+        desc = json.dumps(description)
         fa.setDescription(wrap(desc))
         fa = conn.getUpdateService().saveAndReturnObject(fa, conn.SERVICE_OPTS)
         fileId = fa.id.val
@@ -179,15 +178,20 @@ def save_web_figure(request, conn=None, **kwargs):
         fa = conn.getObject("FileAnnotation", fileId)
         if fa is None:
             return Http404("Couldn't find FileAnnotation of ID: %s" % fileId)
+        conn.SERVICE_OPTS.setOmeroGroup(fa.getDetails().group.id.val)
         origFile = fa._obj.file
         size = len(figureJSON)
         origFile.setSize(rlong(size))
-        origFile = conn.getUpdateService().saveAndReturnObject(origFile)
+        origFile = conn.getUpdateService().saveAndReturnObject(
+            origFile, conn.SERVICE_OPTS)
         # upload file
         rawFileStore = conn.createRawFileStore()
-        rawFileStore.setFileId(origFile.getId().getValue())
-        rawFileStore.write(figureJSON, 0, size)
-        rawFileStore.truncate(size)     # ticket #11751
+        rawFileStore.setFileId(origFile.getId().getValue(), conn.SERVICE_OPTS)
+        rawFileStore.write(figureJSON, 0, size, conn.SERVICE_OPTS)
+        rawFileStore.truncate(size, conn.SERVICE_OPTS)     # ticket #11751
+        # Once #11928 is fixed, these last 2 lines can be replaced with
+        # awFileStore.close(conn.SERVICE_OPTS)
+        rawFileStore.save(conn.SERVICE_OPTS)
         rawFileStore.close()
 
     return HttpResponse(str(fileId))
@@ -211,9 +215,9 @@ def load_web_figure(request, fileId, conn=None, **kwargs):
         json_data['figureName'] = jsonFile.getName()
     except:
         # If the json failed to parse, return the string anyway
-        return HttpResponse(jsonData, mimetype='json')
+        return HttpResponse(jsonData, content_type='json')
 
-    return HttpResponse(simplejson.dumps(json_data), mimetype='json')
+    return HttpResponse(json.dumps(json_data), content_type='json')
 
 
 @login_required(setGroupContext=True)
@@ -237,7 +241,7 @@ def make_web_figure(request, conn=None, **kwargs):
         'Webclient_URI': wrap(webclient_uri)}
 
     rsp = run_script(request, conn, sId, inputMap, scriptName='Figure.pdf')
-    return HttpResponse(simplejson.dumps(rsp), mimetype='json')
+    return HttpResponse(json.dumps(rsp), content_type='json')
 
 
 @login_required()
@@ -272,7 +276,7 @@ def list_web_figures(request, conn=None, **kwargs):
 
     rsp.sort(key=lambda x: x['name'].lower())
 
-    return HttpResponse(simplejson.dumps(rsp), mimetype='json')
+    return HttpResponse(json.dumps(rsp), content_type='json')
 
 
 @login_required()
