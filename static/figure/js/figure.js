@@ -1467,77 +1467,96 @@
             // approx work out number of columns to layout new panels
             var colCount = Math.ceil(Math.sqrt(iIds.length)),
                 rowCount = Math.ceil(iIds.length/colCount),
+                c = this.figureView.getCentre(),
                 col = 0,
                 row = 0,
-                px, py, spacer;
+                px, py, spacer,
+                coords = {'px': px,
+                          'py': py,
+                          'c': c,
+                          'spacer': spacer,
+                          'colCount': colCount,
+                          'rowCount': rowCount,
+                          'col': col,
+                          'row': row};
 
+            // This loop sets up a load of async imports.
+            // The first one to return will set all the coords
+            // and subsequent ones will update coords to position
+            // new image panels appropriately in a grid.
             for (var i=0; i<iIds.length; i++) {
                 var imgId = iIds[i];
+                this.importImage(imgId, coords);
+            }
+        },
 
-                if (parseInt(imgId, 10) > 0) {
-                    var c = this.figureView.getCentre();
-                    // Get the json data for the image...
-                    $.getJSON(BASE_WEBFIGURE_URL + 'imgData/' + parseInt(imgId, 10) + '/', function(data){
-                        // just pick what we need, add x & y etc...
-                        // Need to work out where to start (px,py) now that we know size of panel
-                        // (assume all panels are same size)
-                        px = px || c.x - (colCount * data.size.width)/2;
-                        py = py || c.y - (rowCount * data.size.height)/2;
-                        spacer = spacer || data.size.width/20;
-                        var channels = data.channels;
-                        if (data.rdefs.model === "greyscale") {
-                            // we don't support greyscale, but instead set active channel grey
-                            _.each(channels, function(ch){
-                                if (ch.active) {
-                                    ch.color = "FFFFFF";
-                                }
-                            });
-                        }
-                        // ****** This is the Data Model ******
-                        //-------------------------------------
-                        // Any changes here will create a new version
-                        // of the model and will also have to be applied
-                        // to the 'version_transform()' function so that
-                        // older files can be brought up to date.
-                        // Also check 'previewSetId()' for changes.
-                        var n = {
-                            'imageId': data.id,
-                            'name': data.meta.imageName,
-                            'width': data.size.width,
-                            'height': data.size.height,
-                            'sizeZ': data.size.z,
-                            'theZ': data.rdefs.defaultZ,
-                            'sizeT': data.size.t,
-                            'theT': data.rdefs.defaultT,
-                            'channels': channels,
-                            'orig_width': data.size.width,
-                            'orig_height': data.size.height,
-                            'x': px,
-                            'y': py,
-                            'datasetName': data.meta.datasetName,
-                            'datasetId': data.meta.datasetId,
-                            'pixel_size_x': data.pixel_size.x,
-                            'pixel_size_y': data.pixel_size.y,
-                            'deltaT': data.deltaT,
-                        };
-                        // create Panel (and select it)
-                        self.model.panels.create(n).set('selected', true);
-                        self.model.notifySelectionChange();
+        importImage: function(imgId, coords) {
 
-                        // update px, py for next panel
-                        col += 1;
-                        px += data.size.width + spacer;
-                        if (col == colCount) {
-                            row += 1;
-                            col = 0;
-                            py += data.size.height + spacer;
-                            px = undefined; // recalculate next time
+            if (parseInt(imgId, 10) <= 0) return;
+
+            var self = this;
+
+            // Get the json data for the image...
+            $.getJSON(BASE_WEBFIGURE_URL + 'imgData/' + parseInt(imgId, 10) + '/', function(data){
+                // just pick what we need, add x & y etc...
+                // Need to work out where to start (px,py) now that we know size of panel
+                // (assume all panels are same size)
+                coords.px = coords.px || coords.c.x - (coords.colCount * data.size.width)/2;
+                coords.py = coords.py || coords.c.y - (coords.rowCount * data.size.height)/2;
+                coords.spacer = coords.spacer || data.size.width/20;
+                var channels = data.channels;
+                if (data.rdefs.model === "greyscale") {
+                    // we don't support greyscale, but instead set active channel grey
+                    _.each(channels, function(ch){
+                        if (ch.active) {
+                            ch.color = "FFFFFF";
                         }
-                    }).fail(function(event) {
-                        alert("Image ID: " + imgId + " not found");
                     });
                 }
-            }
+                // ****** This is the Data Model ******
+                //-------------------------------------
+                // Any changes here will create a new version
+                // of the model and will also have to be applied
+                // to the 'version_transform()' function so that
+                // older files can be brought up to date.
+                // Also check 'previewSetId()' for changes.
+                var n = {
+                    'imageId': data.id,
+                    'name': data.meta.imageName,
+                    'width': data.size.width,
+                    'height': data.size.height,
+                    'sizeZ': data.size.z,
+                    'theZ': data.rdefs.defaultZ,
+                    'sizeT': data.size.t,
+                    'theT': data.rdefs.defaultT,
+                    'channels': channels,
+                    'orig_width': data.size.width,
+                    'orig_height': data.size.height,
+                    'x': coords.px,
+                    'y': coords.py,
+                    'datasetName': data.meta.datasetName,
+                    'datasetId': data.meta.datasetId,
+                    'pixel_size_x': data.pixel_size.x,
+                    'pixel_size_y': data.pixel_size.y,
+                    'deltaT': data.deltaT,
+                };
+                // create Panel (and select it)
+                self.model.panels.create(n).set('selected', true);
+                self.model.notifySelectionChange();
+
+                // update px, py for next panel
+                coords.col += 1;
+                coords.px += data.size.width + coords.spacer;
+                if (coords.col == coords.colCount) {
+                    coords.row += 1;
+                    coords.col = 0;
+                    coords.py += data.size.height + coords.spacer;
+                    coords.px = undefined; // recalculate next time
+                }
+            }).fail(function(event) {
+                alert("Image ID: " + imgId + " not found");
+            });
+
         }
     });
 
