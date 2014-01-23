@@ -1444,6 +1444,7 @@
         addImages: function() {
 
             var self = this,
+                paper_width = this.model.get('paper_width'),
                 iIds;
 
             var $input = $('input.imgIds', this.$el),
@@ -1470,7 +1471,7 @@
                 c = this.figureView.getCentre(),
                 col = 0,
                 row = 0,
-                px, py, spacer,
+                px, py, spacer, scale,
                 coords = {'px': px,
                           'py': py,
                           'c': c,
@@ -1478,7 +1479,8 @@
                           'colCount': colCount,
                           'rowCount': rowCount,
                           'col': col,
-                          'row': row};
+                          'row': row,
+                          'paper_width': paper_width};
 
             // This loop sets up a load of async imports.
             // The first one to return will set all the coords
@@ -1498,12 +1500,16 @@
 
             // Get the json data for the image...
             $.getJSON(BASE_WEBFIGURE_URL + 'imgData/' + parseInt(imgId, 10) + '/', function(data){
-                // just pick what we need, add x & y etc...
-                // Need to work out where to start (px,py) now that we know size of panel
+                // For the FIRST IMAGE ONLY (coords.px etc undefined), we
+                // need to work out where to start (px,py) now that we know size of panel
                 // (assume all panels are same size)
-                coords.px = coords.px || coords.c.x - (coords.colCount * data.size.width)/2;
-                coords.py = coords.py || coords.c.y - (coords.rowCount * data.size.height)/2;
                 coords.spacer = coords.spacer || data.size.width/20;
+                var full_width = (coords.colCount * (data.size.width + coords.spacer)) - coords.spacer,
+                    full_height = (coords.rowCount * (data.size.height + coords.spacer)) - coords.spacer;
+                coords.scale = (coords.paper_width - (2 * coords.spacer)) / full_width;
+                coords.scale = Math.min(coords.scale, 1);    // only scale down
+                coords.px = coords.px || coords.c.x - (full_width * coords.scale)/2;
+                coords.py = coords.py || coords.c.y - (full_height * coords.scale)/2;
                 var channels = data.channels;
                 if (data.rdefs.model === "greyscale") {
                     // we don't support greyscale, but instead set active channel grey
@@ -1523,8 +1529,8 @@
                 var n = {
                     'imageId': data.id,
                     'name': data.meta.imageName,
-                    'width': data.size.width,
-                    'height': data.size.height,
+                    'width': data.size.width * coords.scale,
+                    'height': data.size.height * coords.scale,
                     'sizeZ': data.size.z,
                     'theZ': data.rdefs.defaultZ,
                     'sizeT': data.size.t,
@@ -1546,11 +1552,11 @@
 
                 // update px, py for next panel
                 coords.col += 1;
-                coords.px += data.size.width + coords.spacer;
+                coords.px += (data.size.width + coords.spacer) * coords.scale;
                 if (coords.col == coords.colCount) {
                     coords.row += 1;
                     coords.col = 0;
-                    coords.py += data.size.height + coords.spacer;
+                    coords.py += (data.size.height + coords.spacer) * coords.scale;
                     coords.px = undefined; // recalculate next time
                 }
             }).fail(function(event) {
