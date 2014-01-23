@@ -1533,6 +1533,8 @@
                             py += data.size.height + spacer;
                             px = undefined; // recalculate next time
                         }
+                    }).fail(function(event) {
+                        alert("Image ID: " + imgId + " not found");
                     });
                 }
             }

@@ -95,7 +95,7 @@ def imgData_json(request, imageId, conn=None, **kwargs):
 
     image = conn.getObject("Image", imageId)
     if image is None:
-        return HttpResponseServerError('""', mimetype='application/javascript')
+        raise Http404("Image not found")
     rv = imageMarshal(image)
 
     sizeT = image.getSizeT()
