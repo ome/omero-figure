@@ -782,7 +782,9 @@
 
             // Don't leave the page with unsaved changes!
             window.onbeforeunload = function() {
-                if (self.model.get("unsaved") && self.model.get('canEdit')) {
+                var canEdit = self.model.get('canEdit');
+                if (typeof canEdit === 'undefined') canEdit = true;
+                if (self.model.get("unsaved") && canEdit) {
                     return "Leave page with unsaved changes?";
                 }
             };
