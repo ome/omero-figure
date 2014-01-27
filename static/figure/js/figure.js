@@ -789,14 +789,23 @@
                 }
             };
 
+            $("#zoom_slider").slider({
+                max: 400,
+                min: 40,
+                value: 75,
+                slide: function(event, ui) {
+                    self.model.set('curr_zoom', ui.value);
+                }
+            });
+
             // respond to zoom changes
-            this.listenTo(this.model, 'change:curr_zoom', this.setZoom);
+            this.listenTo(this.model, 'change:curr_zoom', this.renderZoom);
             this.listenTo(this.model, 'change:selection', this.renderSelectionChange);
             this.listenTo(this.model, 'change:unsaved', this.renderSaveBtn);
             this.listenTo(this.model, 'change:figureName', this.renderFigureName);
 
             // refresh current UI
-            this.setZoom();
+            this.renderZoom();
             this.reCentre();
 
             // 'Auto-render' on init.
@@ -817,6 +826,7 @@
             "click .open_figure": "open_figure",
             "click .delete_figure": "delete_figure",
             "click .export-options a": "select_export_option",
+            "click .zoom-paper-to-fit": "zoom_paper_to_fit",
         },
 
         keyboardEvents: {
@@ -1073,7 +1083,7 @@
         // User has zoomed the UI - work out new sizes etc...
         // We zoom the main content 'canvas' using css transform: scale()
         // But also need to resize the canvas_wrapper manually.
-        setZoom: function() {
+        renderZoom: function() {
             var curr_zoom = this.model.get('curr_zoom'),
                 zoom = curr_zoom * 0.01,
                 newWidth = parseInt(this.orig_width * zoom, 10),
@@ -1158,6 +1168,26 @@
                 scrollLeft: offst_left,
                 scrollTop: offst_top
             }, speed);
+        },
+
+        zoom_paper_to_fit: function(event) {
+
+            this.reCentre();
+
+            var m = this.model,
+                pw = m.get('paper_width'),
+                ph = m.get('paper_height'),
+                viewport_w = this.$main.width(),
+                viewport_h = this.$main.height();
+
+            var zoom_x = viewport_w/pw,
+                zoom_y = viewport_h/ph,
+                zm = Math.min(zoom_x, zoom_y);
+            zm = (zm * 100) >> 0;
+
+            // TODO: Need to update slider!
+            m.set('curr_zoom', zm-5) ;
+            $("#zoom_slider").slider({ value: zm-5 });
         },
 
         // Add a panel to the view
@@ -3148,7 +3178,7 @@
 
             // If a panel is added...
             this.model.panels.on("add", this.addOne, this);
-            this.listenTo(this.model, 'change:curr_zoom', this.setZoom);
+            this.listenTo(this.model, 'change:curr_zoom', this.renderZoom);
 
             var multiSelectRect = new MultiSelectRectModel({figureModel: this.model}),
                 rv = new RectView({'model':multiSelectRect, 'paper':this.raphael_paper,
@@ -3170,7 +3200,7 @@
         },
 
         // We simply re-size the Raphael svg itself - Shapes have their own zoom listeners
-        setZoom: function() {
+        renderZoom: function() {
             var zoom = this.model.get('curr_zoom') * 0.01,
                 newWidth = this.model.get('canvas_width') * zoom,
                 newHeight = this.model.get('canvas_height') * zoom;

@@ -37,15 +37,6 @@ $(function(){
     var svgView = new SvgView( {model: figureModel});
     new RightPanelView({model: figureModel});
 
-    $("#zoom_slider").slider({
-        max: 400,
-        min: 40,
-        value: 75,
-        slide: function(event, ui) {
-            figureModel.set('curr_zoom', ui.value);
-        }
-    });
-
     // Do this after other setup above
     figureModel.set('curr_zoom', 75);
 

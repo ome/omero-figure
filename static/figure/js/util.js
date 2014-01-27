@@ -43,6 +43,11 @@ $(function(){
     });
 
 
+    // Header button tooltips
+    $('.btn-sm').tooltip({container: 'body', placement:'bottom', toggle:"tooltip"});
+    // Footer button tooltips
+    $('.btn-xs').tooltip({container: 'body', placement:'top', toggle:"tooltip"});
+
 
     // If we're on Windows, update tool-tips for keyboard short cuts:
     if (navigator.platform.toUpperCase().indexOf('WIN') > -1) {

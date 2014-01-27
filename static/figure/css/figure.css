@@ -98,6 +98,12 @@
         width: 220px;
         background: #bbb;
     }
+
+    footer .zoom-paper-to-fit {
+        left: 300px;
+        position: absolute;
+        top: 3px;
+    }
     #zoom_slider .ui-slider-handle {
         background: #ddd;
         border: 1px solid white;
