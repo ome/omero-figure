@@ -806,7 +806,7 @@
 
             // refresh current UI
             this.renderZoom();
-            this.reCentre();
+            this.zoom_paper_to_fit();
 
             // 'Auto-render' on init.
             this.render();
@@ -966,6 +966,8 @@
 
         save_figure: function(event) {
             event.preventDefault();
+
+            this.$saveBtn.tooltip('hide');
 
             // Turn panels into json
             var figureModel = this.model;
@@ -1299,7 +1301,8 @@
         },
 
         // handle adding Images to figure
-        previewSetId: function() {
+        previewSetId: function(event) {
+            event.preventDefault();
 
             var self = this,
                 idInput = $('input.imgIds', this.$el).val();

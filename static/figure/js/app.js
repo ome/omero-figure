@@ -30,15 +30,10 @@ $(function(){
         return Backbone.getSyncMethod(model).apply(this, [method, model, options, error]);
     };
 
-    // UI Model (not saved - just used to coordinate UI status)
-    // var uiState = new UiState( {model:figureModel} )
 
     var view = new FigureView( {model: figureModel});   // uiState: uiState
     var svgView = new SvgView( {model: figureModel});
     new RightPanelView({model: figureModel});
-
-    // Do this after other setup above
-    figureModel.set('curr_zoom', 75);
 
 
     // Undo Model and View
