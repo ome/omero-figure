@@ -1,8 +1,7 @@
 
 $(function(){
 
-    var figureModel = new FigureModel( {'canvas_width': 4000, 'canvas_height': 3000,
-            'paper_width': 612, 'paper_height': 792});
+    var figureModel = new FigureModel();
 
     // var figureFiles = new FileList();
     // figureFiles.fetch();

@@ -75,6 +75,11 @@
         margin-left: 6px;
     }
 
+    .wh_disabled {
+        /*opacity: 0.5;*/
+        display: none;
+    }
+
     footer {
         background: gray;
         height: 30px;

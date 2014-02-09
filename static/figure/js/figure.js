@@ -2,7 +2,7 @@
 
     // ----------------------- Backbone MODEL --------------------------------------------
 
-
+    var VERSION = 1;
     // ------------------------ Panel -----------------------------------------
     // Simple place-holder for each Panel. Will have E.g. imageId, rendering options etc
     // Attributes can be added as we need them.
@@ -378,8 +378,18 @@
     var FigureModel = Backbone.Model.extend({
 
         defaults: {
-            'curr_zoom': 100,
+            // 'curr_zoom': 100,
             'unsaved': false,
+            'canvas_width': 10000,
+            'canvas_height': 8000,
+            // w & h from reportlab.
+            'paper_width': 612,
+            'paper_height': 792,
+            'orientation': 'vertical',
+            'page_size': 'A4',       // options [A4, letter, mm, pixels]
+            // see http://www.a4papersize.org/a4-paper-size-in-pixels.php
+            'width_mm': 210,    // A4 sizes, only used if user chooses page_size: 'mm'
+            'height_mm': 297,
         },
 
         initialize: function() {
@@ -405,19 +415,32 @@
                 // bring older files up-to-date
                 data = self.version_transform(data);
 
+                var name = data.figureName || "UN-NAMED",
+                    n = {'fileId': fileId,
+                        'figureName': name,
+                        'canEdit': data.canEdit,
+                        'paper_width': data.paper_width,
+                        'paper_height': data.paper_height,
+                        'page_size': data.page_size || 'letter',
+                    };
+                // optional values - ignore if missing
+                if (data.orientation) n.orientation = data.orientation;
+                // if (data.page_size) n.page_size = data.page_size; // E.g. 'A4'
+                if (data.height_mm) n.height_mm = data.height_mm;
+                if (data.width_mm) n.width_mm = data.width_mm;
+
+                self.set(n);
+
                 _.each(data.panels, function(p){
                     p.selected = false;
                     self.panels.create(p);
                 });
 
-                var name = data.figureName || "UN-NAMED";
-
-                self.set({'fileId': fileId,
-                        'unsaved': false,
-                        'figureName': name,
-                        'canEdit': data.canEdit
-                    });
-                self.trigger("reset_undo_redo");
+                self.set('unsaved', false);
+                // wait for undo/redo to handle above, then...
+                setTimeout(function() {
+                    self.trigger("reset_undo_redo");
+                }, 50);
             });
         },
 
@@ -449,10 +472,14 @@
             });
 
             var figureJSON = {
-                version: 1,
+                version: VERSION,
                 panels: p_json,
                 paper_width: this.get('paper_width'),
                 paper_height: this.get('paper_height'),
+                page_size: this.get('page_size'),
+                height_mm: this.get('height_mm'),
+                width_mm: this.get('width_mm'),
+                orientation: this.get('orientation'),
             };
             return figureJSON;
         },
@@ -715,7 +742,7 @@
             this.notifySelectionChange();
         },
 
-        delete_all: function() {
+        delete_panels: function() {
             // make list that won't change as we destroy
             var ps = [];
             this.panels.each(function(p){
@@ -748,6 +775,7 @@
             new AlignmentToolbarView({model: this.model});
             new AddImagesModalView({model: this.model, figureView: this});
             new SetIdModalView({model: this.model});
+            new PaperSetupModalView({model: this.model});
 
             this.figureFiles = new FileList();
             new FileListView({model:this.figureFiles});
@@ -767,13 +795,13 @@
             var self = this;
 
             // Render on changes to the model
-            this.model.on('change:paper_width', this.render, this);
+            this.model.on('change:paper_width change:paper_height', this.render, this);
 
             // If a panel is added...
             this.model.panels.on("add", this.addOne, this);
 
             // Select a different size paper
-            $("#paper_size_chooser").change(function(){
+            $("#page_size_chooser").change(function(){
                 var wh = $(this).val().split(","),
                     w = wh[0],
                     h = wh[1];
@@ -806,7 +834,7 @@
 
             // refresh current UI
             this.renderZoom();
-            this.zoom_paper_to_fit();
+            // this.zoom_paper_to_fit();
 
             // 'Auto-render' on init.
             this.render();
@@ -825,6 +853,7 @@
             "click .new_figure": "goto_newfigure",
             "click .open_figure": "open_figure",
             "click .delete_figure": "delete_figure",
+            "click .paper_setup": "paper_setup",
             "click .export-options a": "select_export_option",
             "click .zoom-paper-to-fit": "zoom_paper_to_fit",
         },
@@ -842,6 +871,12 @@
             'up' : 'nudge_up',
             'left' : 'nudge_left',
             'right' : 'nudge_right',
+        },
+
+        paper_setup: function(event) {
+            event.preventDefault();
+
+            $("#paperSetupModal").modal();
         },
 
         // Heavy lifting of PDF generation handled by OMERO.script...
@@ -1168,8 +1203,6 @@
 
         zoom_paper_to_fit: function(event) {
 
-            this.reCentre();
-
             var m = this.model,
                 pw = m.get('paper_width'),
                 ph = m.get('paper_height'),
@@ -1184,6 +1217,12 @@
             // TODO: Need to update slider!
             m.set('curr_zoom', zm-5) ;
             $("#zoom_slider").slider({ value: zm-5 });
+
+            // seems we sometimes need to wait to workaround bugs
+            var self = this;
+            setTimeout(function(){
+                self.reCentre();
+            }, 10);
         },
 
         // Add a panel to the view
@@ -1251,8 +1290,115 @@
             $("#canvas").css({'width': this.model.get('canvas_width'),
                     'height': this.model.get('canvas_height')});
 
+            // always want to do this?
+            this.zoom_paper_to_fit();
+
             return this;
         }
+    });
+
+
+    var PaperSetupModalView = Backbone.View.extend({
+
+        el: $("#paperSetupModal"),
+
+        template: _.template($("#paper_setup_modal_template").html()),
+
+        model:FigureModel,
+
+        events: {
+            "submit .paperSetupForm": "handlePaperSetup",
+            "change .paperSizeSelect": "rerender",
+            // "keyup #dpi": "rerenderDb",
+            "change input": "rerender",
+        },
+
+        initialize: function(options) {
+
+            var self = this;
+            $("#paperSetupModal").bind("show.bs.modal", function(){
+                self.render();
+            });
+            // don't update while typing
+            // this.rerenderDb = _.debounce(this.rerender, 1000);
+        },
+
+        processForm: function() {
+
+            // On form submit, need to work out paper width & height
+            var $form = $('form', this.$el),
+                dpi = 72,
+                size = $('.paperSizeSelect', $form).val(),
+                orientation = $form.find('input[name="pageOrientation"]:checked').val(),
+                custom_w = parseInt($("#paperWidth").val(), 10),
+                custom_h = parseInt($("#paperHeight").val(), 10),
+                units = $('.wh_units:first', $form).text();
+
+            var w_mm, h_m, w_pixels, h_pixels;
+            if (size == 'A4') {
+                w_mm = 210;
+                h_mm = 297;
+            } else if (size == 'letter') {
+                w_mm = 216;
+                h_mm = 280;
+            } else { // if ($.trim(units) == 'mm') {
+                // get dims from custom fields and units
+                w_mm = custom_w;
+                h_mm = custom_h;
+            }
+            if (w_mm && h_mm) {
+                // convert mm -> pixels (inch is 25.4 mm)
+                w_pixels = Math.round(dpi * w_mm / 25.4);
+                h_pixels = Math.round(dpi * h_mm / 25.4);
+            } // else {
+            //     w_pixels = custom_w;
+            //     h_pixels = custom_h;
+            //     w_mm = Math.round(w_pixels * 25.4 / dpi);
+            //     h_mm = Math.round(h_pixels * 25.4 / dpi);
+            // }
+
+            if (orientation == 'horizontal' && size != 'mm') {
+                var tmp = w_mm; w_mm = h_mm; h_mm = tmp;
+                tmp = w_pixels; w_pixels = h_pixels; h_pixels = tmp;
+            }
+
+            var rv = {
+                // 'dpi': dpi,
+                'page_size': size,
+                'orientation': orientation,
+                'width_mm': w_mm,
+                'height_mm': h_mm,
+                'paper_width': w_pixels,
+                'paper_height': h_pixels,
+            };
+            return rv;
+        },
+
+        handlePaperSetup: function(event) {
+            event.preventDefault();
+            var json = this.processForm();
+
+            this.model.set(json);
+            $("#paperSetupModal").modal('hide');
+        },
+
+        rerender: function() {
+            var json = this.processForm();
+            this.render(json);
+        },
+
+        render: function(json) {
+            json = json || this.model.toJSON();
+            // if we're not manually setting mm or pixels, disable
+            json.wh_disabled = (json.page_size != 'mm');
+            // json.units = json.page_size == 'mm' ? 'mm' : 'pixels';
+            // if (json.page_size == "mm") {
+            //     json.paper_width = json.width_mm;
+            //     json.paper_height = json.height_mm;
+            // }
+
+            this.$el.find(".modal-body").html(this.template(json));
+        },
     });
 
 
@@ -2835,7 +2981,7 @@
             this.renderFromModel();
 
             // Refresh c
-            this.listenTo(this.figureModel, 'change:curr_zoom', this.renderFromModel);
+            this.listenTo(this.figureModel, 'change:curr_zoom change:paper_width change:paper_height', this.renderFromModel);
             this.listenTo(this.panelModel, 'change:x change:y change:width change:height', this.renderFromModel);
             // when PanelModel is being dragged, but NOT by this ProxyRectModel...
             this.listenTo(this.panelModel, 'drag_resize', this.renderFromTrigger);
@@ -2962,7 +3108,8 @@
             this.listenTo(this, 'drag_resize', this.drag_resize);
             this.listenTo(this, 'drag_resize_stop', this.drag_resize_stop);
             this.listenTo(this.figureModel, 'change:selection', this.updateSelection);
-            this.listenTo(this.figureModel, 'change:curr_zoom', this.updateSelection);
+            this.listenTo(this.figureModel, 'change:curr_zoom change:paper_height change:paper_width',
+                    this.updateSelection);
 
             // also listen for drag_xy coming from a selected panel
             this.listenTo(this.figureModel, 'drag_xy', this.update_xy);

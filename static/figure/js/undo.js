@@ -10,6 +10,7 @@ var UndoManager = Backbone.Model.extend({
     },
     initialize: function(opts) {
         this.figureModel = opts.figureModel;    // need for setting selection etc
+        this.figureModel.on("change:paper_width change:paper_height", this.handleChange, this);
         this.listenTo(this.figureModel, 'reset_undo_redo', this.resetQueue);
         this.undoQueue = [];
         this.undoInProgress = false;
@@ -21,6 +22,7 @@ var UndoManager = Backbone.Model.extend({
     resetQueue: function() {
         this.undoQueue = [];
         this.set('undo_pointer', -1);
+        this.canUndo();
     },
     canUndo: function() {
         return this.get('undo_pointer') >= 0;
@@ -121,7 +123,6 @@ var UndoManager = Backbone.Model.extend({
 
     // Here we do most of the work, buiding Undo/Redo Edits when something changes
     handleChange: function(m) {
-
         var self = this;
 
         // Make sure we don't listen to changes coming from Undo/Redo
