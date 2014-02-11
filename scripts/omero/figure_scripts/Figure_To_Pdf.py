@@ -374,11 +374,17 @@ def addInfoPage(conn, scriptParams, c, panels_json):
 
     story.append(Paragraph("Figure Images", styleH))
 
-    def addPara(lines):
+    fontSize = 10
+    spaceBefore = 15
+    spaceAfter = 15
+    thumbSize = 25
+
+    def addPara(lines, style=styleN):
         text = "<br />".join(lines)
-        attrs = "spaceBefore='15' spaceAfter='15'"
+        attrs = "spaceBefore='%s' spaceAfter='%s' " \
+            "fontSize='%s'" % (spaceBefore, spaceAfter, fontSize)
         para = "<para %s>%s</para>" % (attrs, text)
-        story.append(Paragraph(para, styleN))
+        story.append(Paragraph(para, style))
 
     # Go through sorted panels, adding paragraph for each unique image
     for p in panels_json:
