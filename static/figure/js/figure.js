@@ -342,6 +342,18 @@
             return {'left':img_x, 'top':img_y, 'width':img_w, 'height':img_h};
         },
 
+        getPanelDpi: function(w, h, zoom) {
+            // page is 72 dpi
+            w = w || this.get('width');
+            h = h || this.get('height');
+            zoom = zoom || this.get('zoom');
+            var img_width = this.get_vp_img_css(zoom, w, h).width,  // not viewport width
+                orig_width = this.get('orig_width'),
+                scaling = orig_width / img_width,
+                dpi = scaling * 72;
+            return dpi.toFixed(0);
+        },
+
         // True if coords (x,y,width, height) overlap with panel
         regionOverlaps: function(coords) {
 
@@ -2007,7 +2019,8 @@
             }
             if (selected.length > 0) {
                 this.ipv = new InfoPanelView({models: selected});
-                $("#infoTab").append(this.ipv.render().el);
+                this.ipv.render();
+                $("#infoTab").append(this.ipv.el);
             }
 
             if (this.ctv) {
@@ -2433,18 +2446,19 @@
 
         initialize: function(opts) {
             // if (opts.models) {
+            this.render = _.debounce(this.render);
+
             if (opts.models.length > 1) {
                 this.models = opts.models;
                 var self = this;
                 _.each(this.models, function(m){
-                    self.listenTo(m, 'change:x change:y change:width change:height change:imageId', self.render);
+                    self.listenTo(m, 'change:x change:y change:width change:height change:imageId change:zoom', self.render);
                 });
             } else if (opts.models.length == 1) {
                 this.model = opts.models[0];
-                this.listenTo(this.model, 'change:x change:y change:width change:height', this.render);
+                this.listenTo(this.model, 'change:x change:y change:width change:height change:zoom', this.render);
                 this.listenTo(this.model, 'drag_resize', this.drag_resize);
             }
-            // } 
         },
 
         events: {
@@ -2461,9 +2475,12 @@
         // just update x,y,w,h by rendering ONE template
         drag_resize: function(xywh) {
             $("#xywh_table").remove();
-            var json = {'x': xywh[0]>>0, 'y':xywh[1]>>0, 'width':xywh[2]>>0, 'height':xywh[3]>>0},
-                xywh_html = this.xywh_template(json);
-            this.$el.append(xywh_html);
+            var json = {'x': xywh[0] >> 0,
+                        'y': xywh[1] >> 0,
+                        'width': xywh[2] >> 0,
+                        'height': xywh[3] >> 0};
+            json.dpi = this.model.getPanelDpi(json.width, json.height);
+            this.$el.append(this.xywh_template(json));
         },
 
         // render BOTH templates
@@ -2471,6 +2488,7 @@
             var json;
             if (this.model) {
                 json = this.model.toJSON();
+                json.dpi = this.model.getPanelDpi();
             } else if (this.models) {
                 var title = this.models.length + " Panels Selected...";
                 _.each(this.models, function(m, i){
@@ -2478,10 +2496,12 @@
                     if (!json) {
                         json = m.toJSON();
                         json.name = title;
+                        json.dpi = m.getPanelDpi();
                     } else {
                         // compare json summary so far with this Panel
                         var this_json = m.toJSON(),
-                            attrs = ["imageId", "orig_width", "orig_height", "sizeT", "sizeZ", "x", "y", "width", "height"];
+                            attrs = ["imageId", "orig_width", "orig_height", "sizeT", "sizeZ", "x", "y", "width", "height", "dpi"];
+                        this_json.dpi = m.getPanelDpi();
                         _.each(attrs, function(a){
                             if (json[a] != this_json[a]) {
                                 json[a] = "-";
