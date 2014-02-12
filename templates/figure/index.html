@@ -797,7 +797,10 @@
         <div class="vp_frame" style="width:<%= frame_w %>px; height:<%= frame_h %>px">
             <% _.each(imgs_css, function(css, i) { %>
             <img class="vp_img"
-                style="opacity:<%= opacity %>; left:<%= css.left %>px; top:<%= css.top %>px; width:<%= css.width %>px; height:<%= css.height %>px;"
+                style="opacity:<%= opacity %>; left:<%= css.left %>px; top:<%= css.top %>px;
+                    width:<%= css.width %>px; height:<%= css.height %>px;
+                    transform-origin:<%= css['transform-origin'] %>;
+                    -moz-transform:<%= css['-moz-transform'] %>"
                 src="<%= css.src %>" />
             <% }); %>
         </div>
@@ -929,6 +932,15 @@
                 </ul>
             </div><br>
         <% }); %>
+
+        <div class="btn-group rotation-controls" style="padding:2px">
+            <button type="button" class="btn btn-default btn-sm show-rotation">
+                <span class="glyphicon glyphicon-repeat"></span>
+                <span class="rotation_value"><%= rotation %></span> &deg;
+            </button>
+
+            <div class="rotation-slider"></div>
+        </div>
     </script>
 
     <script type="text/template" id="figure_file_item">

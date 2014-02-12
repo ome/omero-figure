@@ -18,6 +18,7 @@
             dy: 0,
             labels: [],
             deltaT: [],     // list of deltaTs (secs) for tIndexes of movie
+            rotation: 0,
             selected: false
         },
 
@@ -321,6 +322,10 @@
             img_y = (img_h - frame_h)/2;
             img_x = (img_w - frame_w)/2;
 
+            var transform_x = 50 - (100 * dx/orig_w),
+                transform_y = 50 - (100 * dy/orig_h),
+                rotation = this.get('rotation') || 0;
+
             // now shift by dx & dy
             dx = dx * (zoom/100);
             dy = dy * (zoom/100);
@@ -339,7 +344,14 @@
                 }
             }
 
-            return {'left':img_x, 'top':img_y, 'width':img_w, 'height':img_h};
+            var css = {'left':img_x,
+                       'top':img_y,
+                       'width':img_w,
+                       'height':img_h,
+                       'transform-origin': transform_x + '% ' + transform_y + '%',
+                       '-moz-transform': 'rotate(' + rotation + 'deg)',
+                   };
+            return css;
         },
 
         getPanelDpi: function(w, h, zoom) {
@@ -1835,7 +1847,7 @@
             // we render on Changes in the model OR selected shape etc.
             this.model.on('destroy', this.remove, this);
             this.listenTo(this.model,
-                'change:x change:y change:width change:height change:zoom change:dx change:dy',
+                'change:x change:y change:width change:height change:zoom change:dx change:dy change:rotation',
                 this.render_layout);
             this.listenTo(this.model, 'change:scalebar change:pixel_size_x', this.render_scalebar);
             this.listenTo(this.model, 'change:channels change:theZ change:theT', this.render_image);
@@ -2552,7 +2564,7 @@
             this.sizeT = this.models[0].get('sizeT');
 
             _.each(this.models, function(m){
-                self.listenTo(m, 'change:width change:height change:channels change:zoom change:theZ change:theT', self.render);
+                self.listenTo(m, 'change:width change:height change:channels change:zoom change:theZ change:theT change:rotation', self.render);
                 zoom_sum += m.get('zoom');
                 theZ_sum += m.get('theZ');
                 theT_sum += m.get('theT');
@@ -2848,7 +2860,36 @@
 
         events: {
             "click .channel-btn": "toggle_channel",
-            "click .dropdown-menu a": "pick_color"
+            "click .dropdown-menu a": "pick_color",
+            "click .show-rotation": "show_rotation",
+        },
+
+        show_rotation: function(e) {
+            var $rc = this.$el.find('.rotation-controls').toggleClass('rotation-controls-shown'),
+                self = this;
+
+            if ($rc.hasClass('rotation-controls-shown')) {
+                $rc.find('.rotation-slider').slider({
+                    orientation: "vertical",
+                    max: 360,
+                    min: 0,
+                    step: 2,
+                    value: self.rotation,
+                    slide: function(event, ui) {
+                        $(".vp_img").css({'transform':'rotate(' + ui.value + 'deg)',
+                                        '-moz-transform':'rotate(' + ui.value + 'deg)'});
+                        $(".rotation_value").text(ui.value);
+                    },
+                    stop: function( event, ui ) {
+                        self.rotation = ui.value;
+                        _.each(self.models, function(m){
+                            m.save('rotation', ui.value);
+                        });
+                    }
+                });
+            } else {
+                $rc.find('.rotation-slider').slider("destroy");
+            }
         },
 
         pick_color: function(e) {
@@ -2885,12 +2926,16 @@
 
         clear: function() {
             $(".ch_slider").slider("destroy");
+            this.$el.find('.rotation-slider').slider("destroy");
             $("#channel_sliders").empty();
             return this;
         },
 
         render: function() {
             var json, html,
+                max_rotation = 0,
+                sum_rotation = 0,
+                rotation,
                 self = this;
             if (this.models) {
 
@@ -2901,6 +2946,9 @@
 
                 _.each(this.models, function(m, i){
                     var chs = m.get('channels');
+                    rotation = m.get('rotation');
+                    max_rotation = Math.max(max_rotation, rotation);
+                    sum_rotation += rotation;
                     // start with a copy of the first image channels
                     if (json.length === 0) {
                         _.each(chs, function(c) {
@@ -2930,11 +2978,22 @@
                         }
                     }
                 });
+                var avg_rotation = sum_rotation / this.models.length;
+                if (avg_rotation === max_rotation) {
+                    rotation = avg_rotation;
+                } else {
+                    rotation = "-";
+                }
+                // save this value to init rotation slider etc
+                this.rotation = avg_rotation;
+
+                if (!compatible) {
+                    json = [];
+                }
+                html = this.template({'channels':json, 'rotation': rotation});
+                this.$el.html(html);
 
                 if (compatible) {
-                    html = this.template({'channels':json});
-                    this.$el.html(html);
-
                     $(".ch_slider").slider("destroy");
                     var $channel_sliders = $("#channel_sliders").empty();
                     _.each(json, function(ch, idx) {

@@ -355,6 +355,15 @@
         margin-right: 10px;
         margin-top: 25px;
     }
+    .rotation-controls-shown .rotation-slider {
+        height: 150px;
+        margin-left: 15px;
+        margin-top: 35px;
+    }
+    .show-rotation {
+        padding: 5px 2px;
+        min-width: 45px;
+    }
     .tab-pane .ui-slider-vertical .ui-slider-handle {
         left: -7px;
     }
@@ -385,6 +394,16 @@
         bottom: -1px;
         left: 35px;
         width: 190px;
+    }
+
+    .rotation-controls-shown {
+        background-color: #FAFAFA;
+        border: 1px solid #CCCCCC;
+        border-radius: 3px;
+        height: 200px;
+        padding: 2px;
+        position: absolute;
+        z-index: 100;
     }
     /* Over-riding Bootstrap Styles */
     .alert {
