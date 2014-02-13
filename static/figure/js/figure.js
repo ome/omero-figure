@@ -349,8 +349,10 @@
                        'width':img_w,
                        'height':img_h,
                        'transform-origin': transform_x + '% ' + transform_y + '%',
-                       '-moz-transform': 'rotate(' + rotation + 'deg)',
+                       '-webkit-transform': 'rotate(' + rotation + 'deg)',
+                       'transform': 'rotate(' + rotation + 'deg)'
                    };
+            console.log('top', css.top);
             return css;
         },
 
@@ -843,7 +845,7 @@
 
             $("#zoom_slider").slider({
                 max: 400,
-                min: 40,
+                min: 10,
                 value: 75,
                 slide: function(event, ui) {
                     self.model.set('curr_zoom', ui.value);
@@ -2665,12 +2667,18 @@
             this.dragging = true;
             this.dragstart_x = event.clientX;
             this.dragstart_y = event.clientY;
+            this.r = this.models[0].get('rotation');
             return false;
         },
 
         mouseup: function(event) {
             var dx = event.clientX - this.dragstart_x,
                 dy = event.clientY - this.dragstart_y;
+            if (this.r !== 0) {
+                var xy = this.correct_rotation(dx, dy, this.r);
+                dx = xy.dx;
+                dy = xy.dy;
+            }
             this.update_img_css(this.zoom_avg, dx, dy, true);
             this.dragging = false;
             return false;
@@ -2680,9 +2688,29 @@
             if (this.dragging) {
                 var dx = event.clientX - this.dragstart_x,
                     dy = event.clientY - this.dragstart_y;
+                if (this.r !== 0) {
+                    var xy = this.correct_rotation(dx, dy, this.r);
+                    dx = xy.dx;
+                    dy = xy.dy;
+                }
                 this.update_img_css(this.zoom_avg, dx, dy);
             }
             return false;
+        },
+
+        // if 
+        correct_rotation: function(dx, dy, rotation) {
+            var length = Math.sqrt(dx * dx + dy * dy),
+                ang1 = Math.atan(dy/dx),
+                deg1 = ang1/(Math.PI/180);  // rad -> deg
+            if (dx < 0) {
+                deg1 = 180 + deg1;
+            }
+            var deg2 = deg1 - this.r,
+                ang2 = deg2 * (Math.PI/180);  // deg -> rad
+            dx = Math.cos(ang2) * length;
+            dy = Math.sin(ang2) * length;
+            return {'dx': dx, 'dy': dy};
         },
 
         // called by the parent View before .remove()
@@ -2802,7 +2830,7 @@
                 sum_dx += m.get('dx');
                 sum_dy += m.get('dy');
                 var src = m.get_img_src(),
-                    img_css = model.get_vp_img_css(m.get('zoom'), frame_w, frame_h, m.get('dx'), m.get('dy'));
+                    img_css = m.get_vp_img_css(m.get('zoom'), frame_w, frame_h, m.get('dx'), m.get('dy'));
                 img_css.src = src;
                 imgs_css.push(img_css);
             });
