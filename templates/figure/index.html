@@ -800,7 +800,8 @@
                 style="opacity:<%= opacity %>; left:<%= css.left %>px; top:<%= css.top %>px;
                     width:<%= css.width %>px; height:<%= css.height %>px;
                     transform-origin:<%= css['transform-origin'] %>;
-                    -moz-transform:<%= css['transform'] %>"
+                    transform:<%= css['transform'] %>;
+                    -webkit-transform:<%= css['transform'] %>"
                 src="<%= css.src %>" />
             <% }); %>
         </div>

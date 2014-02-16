@@ -309,15 +309,17 @@
                 img_w = frame_w * (zoom/100),
                 img_h = frame_h * (zoom/100),
                 orig_ratio = orig_w / orig_h,
-                wh = frame_w / frame_h;
-            if (Math.abs(orig_ratio - wh) < 0.01) {
+                vp_ratio = frame_w / frame_h;
+            if (Math.abs(orig_ratio - vp_ratio) < 0.01) {
                 // ignore...
             // if viewport is wider than orig, offset y
-            } else if (orig_ratio < wh) {
+            } else if (orig_ratio < vp_ratio) {
                 img_h = img_w / orig_ratio;
             } else {
                 img_w = img_h * orig_ratio;
             }
+            var vp_scale = frame_w / orig_w;
+
             // offsets if image is centered
             img_y = (img_h - frame_h)/2;
             img_x = (img_w - frame_w)/2;
@@ -329,8 +331,8 @@
             // now shift by dx & dy
             dx = dx * (zoom/100);
             dy = dy * (zoom/100);
-            img_x = ((dx * frame_w) / orig_w) - img_x;
-            img_y = ((dy * frame_h) / orig_h) - img_y;
+            img_x = (dx * vp_scale) - img_x;
+            img_y = (dy * vp_scale) - img_y;
 
             // option to align image within viewport (not used now)
             if (fit) {
@@ -352,7 +354,6 @@
                        '-webkit-transform': 'rotate(' + rotation + 'deg)',
                        'transform': 'rotate(' + rotation + 'deg)'
                    };
-            console.log('top', css.top);
             return css;
         },
 
