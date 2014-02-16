@@ -2989,16 +2989,27 @@
                             compatible = false;
                         } else {
                             // if attributes don't match - show 'null' state
-                            _.each(chs, function(c, i) {
-                                if (json[i].color != c.color) {
-                                    json[i].color = 'ccc';
+                            _.each(chs, function(c, cIndex) {
+                                if (json[cIndex].color != c.color) {
+                                    json[cIndex].color = 'ccc';
                                 }
-                                if (json[i].active != c.active) {
-                                    json[i].active = undefined;
+                                if (json[cIndex].active != c.active) {
+                                    json[cIndex].active = undefined;
                                 }
                                 // process the 'window' {min, max, start, end}
-                                var wdw = json[i].window,    // the window we're updating
+                                var wdw = json[cIndex].window,    // the window we're updating
                                     w = c.window;
+                                // if we haven't got a label yet, compare 'start' from 1st 2 panels
+                                if (typeof wdw.start_label === 'undefined') {
+                                    wdw.start_label = (w.start === wdw.start) ? w.start : '-';
+                                } else if (wdw.start_label != w.start) {
+                                    wdw.start_label = "-";      // otherwise revert to '-' unless all same
+                                }
+                                if (typeof wdw.end_label === 'undefined') {
+                                    wdw.end_label = (w.end === wdw.end) ? w.end : '-';
+                                } else if (wdw.end_label != w.end) {
+                                    wdw.end_label = "-";      // revert to '-' unless all same
+                                }
                                 wdw.min = Math.min(wdw.min, w.min);
                                 wdw.max = Math.max(wdw.max, w.max);
                                 wdw.start = wdw.start + w.start;    // average when done
@@ -3031,9 +3042,13 @@
                             end = (ch.window.end / self.models.length) << 0,
                             min = Math.min(ch.window.min, start),
                             max = Math.max(ch.window.max, end),
+                            start_label = ch.window.start_label || start,
+                            end_label = ch.window.end_label || end,
                             color = ch.color;
                         if (color == "FFFFFF") color = "ccc";  // white slider would be invisible
-                        var $div = $("<div><span class='ch_start'>" + start +"</span><div class='ch_slider' style='background-color:#"+color+"'></div><span class='ch_end'>" + end +"</span></div>")
+                        var $div = $("<div><span class='ch_start'>" + start_label +
+                                "</span><div class='ch_slider' style='background-color:#" + color +
+                                "'></div><span class='ch_end'>" + end_label + "</span></div>")
                             .appendTo($channel_sliders);
 
                         $div.find('.ch_slider').slider({
