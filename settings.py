@@ -10,4 +10,4 @@
 # https://www.openmicroscopy.org/site/support/omero4/developers/Web/WebclientPlugin.html#plugin-installation
 
 # Don't want this script to show up in the webclient scripts menu
-# settings.SCRIPTS_TO_IGNORE.append("/figure_scripts/Figure_To_Pdf.py")
+# settings.SCRIPTS_TO_IGNORE.append("/omero/figure_scripts/Figure_To_Pdf.py")
