@@ -231,7 +231,7 @@ def make_web_figure(request, conn=None, **kwargs):
         return HttpResponse("Need to use POST")
 
     scriptService = conn.getScriptService()
-    sId = scriptService.getScriptID("/figure_scripts/Figure_To_Pdf.py")
+    sId = scriptService.getScriptID("/omero/figure_scripts/Figure_To_Pdf.py")
 
     figureJSON = str(request.POST.get('figureJSON'))
     webclient_uri = request.build_absolute_uri(reverse('webindex'))

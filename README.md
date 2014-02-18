@@ -40,8 +40,8 @@ Pdf-generation script
 In order to export figures as pdf documents, you also need to upload the Figure_To_Pdf.py script.
 This script requires the reportlab python libraray: http://www.reportlab.com/software/opensource/
 
-    cd figure
-    path/to/bin/omero script upload figure_scripts/Figure_To_Pdf.py --official
+    cd figure/scripts
+    path/to/bin/omero script upload omero/figure_scripts/Figure_To_Pdf.py --official
 
     pip install reportlab    # or easy_install reportlab
 
