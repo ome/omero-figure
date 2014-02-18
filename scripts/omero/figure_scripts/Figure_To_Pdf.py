@@ -46,7 +46,7 @@ def applyRdefs(image, channels):
     image.setActiveChannels(cIdxs, windows, colors)
 
 
-def get_panel_region_xywh(panel):
+def get_panel_size(panel):
 
     zoom = float(panel['zoom'])
     frame_w = panel['width']
@@ -75,28 +75,23 @@ def get_panel_region_xywh(panel):
     orig_ratio = float(orig_w) / orig_h
     wh = float(frame_w) / frame_h
 
-    print "ratios", wh, orig_ratio
-
     if abs(orig_ratio - wh) > 0.01:
         # if viewport is wider than orig...
         if (orig_ratio < wh):
             print "viewport wider"
-            # tile_w = orig_ratio
             tile_h = tile_w / wh
         else:
             print "viewport longer"
             tile_w = tile_h * wh
 
     print 'tile_w', tile_w, 'tile_h', tile_h
+    # print 'dx', dx, 'dy', dy
+    # print 'orig_w - tile_w', orig_w - tile_w
 
-    print 'dx', dx, 'dy', dy
+    # tile_x = (orig_w - tile_w)/2 - (dx / (zoom/100))
+    # tile_y = (orig_h - tile_h)/2 - (dy / (zoom/100))
 
-    print 'orig_w - tile_w', orig_w - tile_w
-
-    tile_x = (orig_w - tile_w)/2 - (dx / (zoom/100))
-    tile_y = (orig_h - tile_h)/2 - (dy / (zoom/100))
-
-    return {'x': tile_x, 'y': tile_y, 'width': tile_w, 'height': tile_h}
+    return {'width': tile_w, 'height': tile_h}
 
 
 def get_time_label_text(deltaT, format):
@@ -274,7 +269,7 @@ def drawScalebar(c, panel, region_width, pageHeight):
         print "Adding Scalebar of %s microns." % sb['length'],
         print "Pixel size is %s microns" % panel['pixel_size_x']
         pixels_length = sb['length'] / panel['pixel_size_x']
-        scale_to_canvas = panel['width'] / region_width
+        scale_to_canvas = panel['width'] / float(region_width)
         canvas_length = pixels_length * scale_to_canvas
         print 'Scalebar length (panel pixels):', pixels_length
         print 'Scale by %s to page ' \
@@ -306,6 +301,62 @@ def drawScalebar(c, panel, region_width, pageHeight):
         draw_sb(lx, ly, align="right")
 
 
+def getPanelImage(image, panel):
+
+    z = panel['theZ']
+    t = panel['theT']
+
+    pilImg = image.renderImage(z, t, compression=1.0)
+
+    # Need to crop around centre before rotating...
+    sizeX = image.getSizeX()
+    sizeY = image.getSizeY()
+    cx = sizeX/2
+    cy = sizeY/2
+    dx = panel['dx']
+    dy = panel['dy']
+
+    cx += dx
+    cy += dy
+
+    crop_left = 0
+    crop_top = 0
+    crop_right = sizeX
+    crop_bottom = sizeY
+
+    # We 'inverse crop' to make the image bigger, centred by dx, dy.
+    # This is really only needed for rotation, but also gets us centered...
+    if dx > 0:
+        crop_left = int(dx * -2)
+    else:
+        crop_right = crop_right - int(dx * 2)
+    if dy > 0:
+        crop_top = int(dy * -2)
+    else:
+        crop_bottom = crop_bottom - int(dy * 2)
+    pilImg = pilImg.crop((crop_left, crop_top, crop_right, crop_bottom))
+
+    # Optional rotation
+    if ('rotation' in panel and panel['rotation'] > 0):
+        rotation = -int(panel['rotation'])
+        pilImg = pilImg.rotate(rotation, Image.BICUBIC)
+
+    # Final crop to size
+    panel_size = get_panel_size(panel)
+
+    w, h = pilImg.size
+    tile_w = panel_size['width']
+    tile_h = panel_size['height']
+    crop_left = int((w - tile_w) / 2)
+    crop_top = int((h - tile_h) / 2)
+    crop_right = w - crop_left
+    crop_bottom = h - crop_top
+
+    pilImg = pilImg.crop((crop_left, crop_top, crop_right, crop_bottom))
+
+    return pilImg
+
+
 def drawPanel(conn, c, panel, pageHeight, idx):
 
     imageId = panel['imageId']
@@ -321,25 +372,15 @@ def drawPanel(conn, c, panel, pageHeight, idx):
     image = conn.getObject("Image", imageId)
     applyRdefs(image, channels)
 
-    tile = get_panel_region_xywh(panel)
+    pilImg = getPanelImage(image, panel)
+    tile_width = pilImg.size[0]
 
-    print "TILE", tile
-
-    z = panel['theZ']     # image._re.getDefaultZ()
-    t = panel['theT']     # image._re.getDefaultT()
-
-    # pilImg = image.renderImage(z, t)
-    imgData = image.renderJpegRegion(
-        z, t, tile['x'], tile['y'],
-        tile['width'], tile['height'], compression=1.0)
-    i = StringIO(imgData)
-    pilImg = Image.open(i)
     tempName = str(idx) + ".jpg"
     pilImg.save(tempName)
 
     c.drawImage(tempName, x, y, width, height)
 
-    drawScalebar(c, panel, tile['width'], pageHeight)
+    drawScalebar(c, panel, tile_width, pageHeight)
 
 
 def getThumbnail(conn, imageId):
