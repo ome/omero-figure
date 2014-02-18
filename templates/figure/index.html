@@ -831,6 +831,13 @@
 
                     <div class="col-sm-6"><small><strong>Z-sections/Timepoints</strong>:</small></div>
                     <div class="col-sm-6"><small><%= sizeZ %> x <%= sizeT %></small></div>
+
+                    <div class="col-sm-6"><small><strong>Channels</strong>:</small></div>
+                    <div class="col-sm-6"><small>
+                        <% _.each(channel_labels, function(c, i) {
+                            print(c); print((i < channels.length-1) ? ", " : "");
+                        }); %>
+                    </small></div>
                 </td></tr>
             </tbody>
         </table>

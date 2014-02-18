@@ -2463,8 +2463,8 @@
             // if (opts.models) {
             this.render = _.debounce(this.render);
 
+            this.models = opts.models;
             if (opts.models.length > 1) {
-                this.models = opts.models;
                 var self = this;
                 _.each(this.models, function(m){
                     self.listenTo(m, 'change:x change:y change:width change:height change:imageId change:zoom', self.render);
@@ -2500,31 +2500,40 @@
 
         // render BOTH templates
         render: function() {
-            var json;
-            if (this.model) {
-                json = this.model.toJSON();
-                json.dpi = this.model.getPanelDpi();
-            } else if (this.models) {
-                var title = this.models.length + " Panels Selected...";
-                _.each(this.models, function(m, i){
-                    // start with json data from first Panel
-                    if (!json) {
-                        json = m.toJSON();
-                        json.name = title;
-                        json.dpi = m.getPanelDpi();
+            var json,
+                title = this.models.length + " Panels Selected...";
+            _.each(this.models, function(m, i){
+                // start with json data from first Panel
+                if (!json) {
+                    json = m.toJSON();
+                    json.dpi = m.getPanelDpi();
+                    json.channel_labels = [];
+                    _.each(json.channels, function(c){ json.channel_labels.push(c.label);});
+                } else {
+                    json.name = title;
+                    // compare json summary so far with this Panel
+                    var this_json = m.toJSON(),
+                        attrs = ["imageId", "orig_width", "orig_height", "sizeT", "sizeZ", "x", "y", "width", "height", "dpi"];
+                    this_json.dpi = m.getPanelDpi();
+                    _.each(attrs, function(a){
+                        if (json[a] != this_json[a]) {
+                            json[a] = "-";
+                        }
+                    });
+                    // handle channel names
+                    if (this_json.channels.length != json.channel_labels.length) {
+                        json.channel_labels = ["-"];
                     } else {
-                        // compare json summary so far with this Panel
-                        var this_json = m.toJSON(),
-                            attrs = ["imageId", "orig_width", "orig_height", "sizeT", "sizeZ", "x", "y", "width", "height", "dpi"];
-                        this_json.dpi = m.getPanelDpi();
-                        _.each(attrs, function(a){
-                            if (json[a] != this_json[a]) {
-                                json[a] = "-";
+                        _.each(this_json.channels, function(c, idx){
+                            if (json.channel_labels[idx] != c.label) {
+                                json.channel_labels[idx] = '-';
                             }
                         });
                     }
-                });
-            }
+
+                }
+            });
+
             // Format floating point values
             _.each(["x", "y", "width", "height"], function(a){
                 if (json[a] != "-") {
