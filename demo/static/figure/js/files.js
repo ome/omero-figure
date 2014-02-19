@@ -9,6 +9,9 @@ var FigureFile = Backbone.Model.extend({
         } else {
             this.set('imageId', 0);
         }
+        if (desc && desc.baseUrl) {
+            this.set('baseUrl', desc.baseUrl);
+        }
     },
 });
 
@@ -87,7 +90,10 @@ var FileListItemView = Backbone.View.extend({
     },
 
     render:function () {
-        var h = this.template(this.model.toJSON());
+        var json = this.model.toJSON(),
+            baseUrl = json.baseUrl || "/webgateway";
+        json.thumbSrc = baseUrl + "/render_thumbnail/" + json.imageId + "/";
+        var h = this.template(json);
         $(this.el).html(h);
         return this;
     }
