@@ -153,8 +153,11 @@ def save_web_figure(request, conn=None, **kwargs):
         try:
             # ...such as first imageId (used for figure thumbnail)
             json_data = json.loads(figureJSON)
-            firstImgId = json_data['panels'][0]['imageId']
+            panel = json_data['panels'][0]
+            firstImgId = panel['imageId']
             description['imageId'] = long(firstImgId)
+            if 'baseUrl' in panel:
+                description['baseUrl'] = panel['baseUrl']
         except:
             # Maybe give user warning that figure json is invalid?
             pass

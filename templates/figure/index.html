@@ -953,7 +953,7 @@
 
     <script type="text/template" id="figure_file_item">
         <td>
-            <% if(imageId > 0) { print("<img class='small-thumb' src='/webclient/render_thumbnail/" + imageId + "/' />") } %>
+            <% if(imageId > 0) { print("<img class='small-thumb' src='" + thumbSrc + "' />") } %>
         </td>
         <td>
             <a href="#figure/<%= id %>"><%= name %></a>

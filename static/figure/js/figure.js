@@ -288,9 +288,10 @@
             var renderString = cStrings.join(","),
                 imageId = this.get('imageId'),
                 theZ = this.get('theZ'),
-                theT = this.get('theT');
+                theT = this.get('theT'),
+                baseUrl = this.get('baseUrl') || "/webgateway";
 
-            return '/webgateway/render_image/' + imageId +
+            return baseUrl + '/render_image/' + imageId +
                     "/" + theZ + "/" + theT + '/?c=' + renderString + "&m=c";
         },
 
@@ -1705,9 +1706,9 @@
 
         importFromRemote: function(img_detail_url) {
             var iid = parseInt(img_detail_url.split('img_detail/')[1], 10),
-                base_url = img_detail_url.split('img_detail')[0],
+                baseUrl = img_detail_url.split('/img_detail')[0],
                 // http://jcb-dataviewer.rupress.org/jcb/imgData/25069/
-                imgDataUrl = base_url + 'imgData/' + iid;
+                imgDataUrl = baseUrl + '/imgData/' + iid;
 
             var colCount = 1,
                 rowCount = 1,
@@ -1726,18 +1727,18 @@
                           'row': row,
                           'paper_width': paper_width};
 
-            this.importImage(imgDataUrl, coords, true);
+            this.importImage(imgDataUrl, coords, baseUrl);
 
         },
 
-        importImage: function(imgDataUrl, coords, jsonP) {
+        importImage: function(imgDataUrl, coords, baseUrl) {
 
             console.log('importImage', arguments);
             var self = this,
                 callback,
                 dataType = "json";
 
-            if (jsonP) {
+            if (baseUrl) {
                 callback = "callback";
                 dataType = "jsonp";
             }
@@ -1798,6 +1799,9 @@
                         'pixel_size_y': data.pixel_size.y,
                         'deltaT': data.deltaT,
                     };
+                    if (baseUrl) {
+                        n.baseUrl = baseUrl;
+                    }
                     // create Panel (and select it)
                     self.model.panels.create(n).set('selected', true);
                     self.model.notifySelectionChange();
