@@ -13,7 +13,7 @@
     <meta name="viewport" content="width=device-width">
 
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
-    <link rel="stylesheet" href="/static/figure/css/figure.css">
+    <link rel="stylesheet" href="static/figure/css/figure.css">
 
     <script type="text/javascript" src="//code.jquery.com/jquery-1.10.2.min.js"></script>
 
@@ -26,7 +26,7 @@
 
     var BASE_WEBFIGURE_URL = "/figure/",
         SAVE_WEBFIGURE_URL = "/figure/save_web_figure/",
-        LIST_WEBFIGURES_URL = "/figure/list_web_figures/",
+        LIST_WEBFIGURES_URL = "static/json/list_web_figures.json",
         DELETE_WEBFIGURE_URL = "/figure/delete_web_figure/",
         MAKE_WEBFIGURE_URL = "/figure/make_web_figure/",
         ACTIVITIES_JSON_URL = "/webclient/activities_json/",
@@ -35,9 +35,9 @@
     $(document).ready(function() {
 
         // keep-alive ping every minute, so that OMERO session doesn't die
-        setInterval(function (){
-            $.get("/webclient/keepalive_ping/");
-        }, 60000);
+        // setInterval(function (){
+        //     $.get("/webclient/keepalive_ping/");
+        // }, 60000);
 
         // load Panels from localStorage (if any)
         // figureModel.panels.fetch({
@@ -957,15 +957,15 @@
     <!-- <script src="/static/figure/3rdparty/backbone-localstorage.js"></script> -->
     <script src="//cdnjs.cloudflare.com/ajax/libs/raphael/2.1.2/raphael-min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/mousetrap/1.4.6/mousetrap.min.js"></script>
-    <script src="/static/figure/3rdparty/backbone.mousetrap/backbone.mousetrap.js"></script>
+    <script src="static/figure/3rdparty/backbone.mousetrap/backbone.mousetrap.js"></script>
     <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
 
-    <script type="text/javascript" src="/static/figure/js/figure.js"></script>
-    <script type="text/javascript" src="/static/figure/js/undo.js"></script>
-    <script type="text/javascript" src="/static/figure/js/raphael-rect.js"></script>
-    <script type="text/javascript" src="/static/figure/js/util.js"></script>
-    <script type="text/javascript" src="/static/figure/js/files.js"></script>
-    <script type="text/javascript" src="/static/figure/js/app.js"></script>
+    <script type="text/javascript" src="static/figure/js/figure.js"></script>
+    <script type="text/javascript" src="static/figure/js/undo.js"></script>
+    <script type="text/javascript" src="static/figure/js/raphael-rect.js"></script>
+    <script type="text/javascript" src="static/figure/js/util.js"></script>
+    <script type="text/javascript" src="static/figure/js/files.js"></script>
+    <script type="text/javascript" src="static/figure/js/app.js"></script>
 
 </body>
 
