@@ -1666,9 +1666,14 @@
             // test for E.g: http://localhost:8000/webclient/?show=image-25|image-26|image-27
             if (idInput.indexOf('?') > 10) {
                 iIds = idInput.split('image-').slice(1);
+            } else if (idInput.indexOf('img_detail') > 0) {
+                // url of image viewer...
+                this.importFromRemote(idInput);
+                return;
             } else {
                 iIds = idInput.split(',');
             }
+            console.log(iIds);
 
             // approx work out number of columns to layout new panels
             var colCount = Math.ceil(Math.sqrt(iIds.length)),
@@ -1692,81 +1697,126 @@
             // and subsequent ones will update coords to position
             // new image panels appropriately in a grid.
             for (var i=0; i<iIds.length; i++) {
-                var imgId = iIds[i];
-                this.importImage(imgId, coords);
+                var imgId = iIds[i],
+                    imgDataUrl = BASE_WEBFIGURE_URL + 'imgData/' + parseInt(imgId, 10) + '/';
+                this.importImage(imgDataUrl, coords);
             }
         },
 
-        importImage: function(imgId, coords) {
+        importFromRemote: function(img_detail_url) {
+            var iid = parseInt(img_detail_url.split('img_detail/')[1], 10),
+                base_url = img_detail_url.split('img_detail')[0],
+                // http://jcb-dataviewer.rupress.org/jcb/imgData/25069/
+                imgDataUrl = base_url + 'imgData/' + iid;
 
-            if (parseInt(imgId, 10) <= 0) return;
+            var colCount = 1,
+                rowCount = 1,
+                paper_width = this.model.get('paper_width'),
+                c = this.figureView.getCentre(),
+                col = 0,
+                row = 0,
+                px, py, spacer, scale,
+                coords = {'px': px,
+                          'py': py,
+                          'c': c,
+                          'spacer': spacer,
+                          'colCount': colCount,
+                          'rowCount': rowCount,
+                          'col': col,
+                          'row': row,
+                          'paper_width': paper_width};
 
-            var self = this;
+            this.importImage(imgDataUrl, coords, true);
+
+        },
+
+        importImage: function(imgDataUrl, coords, jsonP) {
+
+            console.log('importImage', arguments);
+            var self = this,
+                callback,
+                dataType = "json";
+
+            if (jsonP) {
+                callback = "callback";
+                dataType = "jsonp";
+            }
+
+            console.log(callback, dataType);
 
             // Get the json data for the image...
-            $.getJSON(BASE_WEBFIGURE_URL + 'imgData/' + parseInt(imgId, 10) + '/', function(data){
-                // For the FIRST IMAGE ONLY (coords.px etc undefined), we
-                // need to work out where to start (px,py) now that we know size of panel
-                // (assume all panels are same size)
-                coords.spacer = coords.spacer || data.size.width/20;
-                var full_width = (coords.colCount * (data.size.width + coords.spacer)) - coords.spacer,
-                    full_height = (coords.rowCount * (data.size.height + coords.spacer)) - coords.spacer;
-                coords.scale = (coords.paper_width - (2 * coords.spacer)) / full_width;
-                coords.scale = Math.min(coords.scale, 1);    // only scale down
-                coords.px = coords.px || coords.c.x - (full_width * coords.scale)/2;
-                coords.py = coords.py || coords.c.y - (full_height * coords.scale)/2;
-                var channels = data.channels;
-                if (data.rdefs.model === "greyscale") {
-                    // we don't support greyscale, but instead set active channel grey
-                    _.each(channels, function(ch){
-                        if (ch.active) {
-                            ch.color = "FFFFFF";
-                        }
-                    });
-                }
-                // ****** This is the Data Model ******
-                //-------------------------------------
-                // Any changes here will create a new version
-                // of the model and will also have to be applied
-                // to the 'version_transform()' function so that
-                // older files can be brought up to date.
-                // Also check 'previewSetId()' for changes.
-                var n = {
-                    'imageId': data.id,
-                    'name': data.meta.imageName,
-                    'width': data.size.width * coords.scale,
-                    'height': data.size.height * coords.scale,
-                    'sizeZ': data.size.z,
-                    'theZ': data.rdefs.defaultZ,
-                    'sizeT': data.size.t,
-                    'theT': data.rdefs.defaultT,
-                    'channels': channels,
-                    'orig_width': data.size.width,
-                    'orig_height': data.size.height,
-                    'x': coords.px,
-                    'y': coords.py,
-                    'datasetName': data.meta.datasetName,
-                    'datasetId': data.meta.datasetId,
-                    'pixel_size_x': data.pixel_size.x,
-                    'pixel_size_y': data.pixel_size.y,
-                    'deltaT': data.deltaT,
-                };
-                // create Panel (and select it)
-                self.model.panels.create(n).set('selected', true);
-                self.model.notifySelectionChange();
+            $.ajax({
+                url: imgDataUrl,
+                jsonp: callback, // 'callback'
+                dataType: dataType,
+                // work with the response
+                success: function( data ) {
 
-                // update px, py for next panel
-                coords.col += 1;
-                coords.px += (data.size.width + coords.spacer) * coords.scale;
-                if (coords.col == coords.colCount) {
-                    coords.row += 1;
-                    coords.col = 0;
-                    coords.py += (data.size.height + coords.spacer) * coords.scale;
-                    coords.px = undefined; // recalculate next time
-                }
-            }).fail(function(event) {
-                alert("Image ID: " + imgId +
-                    " could not be found on the server, or you don't have permission to access it");
+                    // For the FIRST IMAGE ONLY (coords.px etc undefined), we
+                    // need to work out where to start (px,py) now that we know size of panel
+                    // (assume all panels are same size)
+                    coords.spacer = coords.spacer || data.size.width/20;
+                    var full_width = (coords.colCount * (data.size.width + coords.spacer)) - coords.spacer,
+                        full_height = (coords.rowCount * (data.size.height + coords.spacer)) - coords.spacer;
+                    coords.scale = (coords.paper_width - (2 * coords.spacer)) / full_width;
+                    coords.scale = Math.min(coords.scale, 1);    // only scale down
+                    coords.px = coords.px || coords.c.x - (full_width * coords.scale)/2;
+                    coords.py = coords.py || coords.c.y - (full_height * coords.scale)/2;
+                    var channels = data.channels;
+                    if (data.rdefs.model === "greyscale") {
+                        // we don't support greyscale, but instead set active channel grey
+                        _.each(channels, function(ch){
+                            if (ch.active) {
+                                ch.color = "FFFFFF";
+                            }
+                        });
+                    }
+                    // ****** This is the Data Model ******
+                    //-------------------------------------
+                    // Any changes here will create a new version
+                    // of the model and will also have to be applied
+                    // to the 'version_transform()' function so that
+                    // older files can be brought up to date.
+                    // Also check 'previewSetId()' for changes.
+                    var n = {
+                        'imageId': data.id,
+                        'name': data.meta.imageName,
+                        'width': data.size.width * coords.scale,
+                        'height': data.size.height * coords.scale,
+                        'sizeZ': data.size.z,
+                        'theZ': data.rdefs.defaultZ,
+                        'sizeT': data.size.t,
+                        'theT': data.rdefs.defaultT,
+                        'channels': channels,
+                        'orig_width': data.size.width,
+                        'orig_height': data.size.height,
+                        'x': coords.px,
+                        'y': coords.py,
+                        'datasetName': data.meta.datasetName,
+                        'datasetId': data.meta.datasetId,
+                        'pixel_size_x': data.pixel_size.x,
+                        'pixel_size_y': data.pixel_size.y,
+                        'deltaT': data.deltaT,
+                    };
+                    // create Panel (and select it)
+                    self.model.panels.create(n).set('selected', true);
+                    self.model.notifySelectionChange();
+
+                    // update px, py for next panel
+                    coords.col += 1;
+                    coords.px += (data.size.width + coords.spacer) * coords.scale;
+                    if (coords.col == coords.colCount) {
+                        coords.row += 1;
+                        coords.col = 0;
+                        coords.py += (data.size.height + coords.spacer) * coords.scale;
+                        coords.px = undefined; // recalculate next time
+                    }
+                },
+
+                error: function(event) {
+                    alert("Image not found on the server, " +
+                        "or you don't have permission to access it at " + imgDataUrl);
+                },
             });
 
         }
