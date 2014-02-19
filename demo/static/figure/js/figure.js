@@ -2079,6 +2079,7 @@
 
             if (this.vp) {
                 this.vp.clear().remove();
+                delete this.vp;
             }
             if (selected.length > 0) {
                 this.vp = new ImageViewerView({models: selected}); // auto-renders on init
@@ -3020,7 +3021,7 @@
 
         clear: function() {
             $(".ch_slider").slider("destroy");
-            this.$el.find('.rotation-slider').slider("destroy");
+            this.$el.find('.rotation-controls-shown .rotation-slider').slider("destroy");
             $("#channel_sliders").empty();
             return this;
         },
@@ -3099,7 +3100,7 @@
                 this.$el.html(html);
 
                 if (compatible) {
-                    $(".ch_slider").slider("destroy");
+                    // $(".ch_slider").slider("destroy");
                     var $channel_sliders = $("#channel_sliders").empty();
                     _.each(json, function(ch, idx) {
                         // Turn 'start' and 'end' into average values
