@@ -2404,7 +2404,7 @@
                 }
             });
 
-            this.zoom_avg = zoom_sum/ this.models.length;
+            this.zoom_avg = parseInt(zoom_sum/ this.models.length, 10);
             this.theZ_avg = theZ_sum/ this.models.length;
             this.theT_avg = theT_sum/ this.models.length;
 
@@ -2666,7 +2666,7 @@
 
             this.$vp_frame = $(".vp_frame", this.$el);  // cache for later
             this.$vp_img = $(".vp_img", this.$el);
-            this.$vp_zoom_value.text(zoom + "%");
+            this.$vp_zoom_value.text((zoom >> 0) + "%");
 
             return this;
         }
