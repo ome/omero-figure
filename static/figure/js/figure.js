@@ -1331,6 +1331,9 @@
                 };
                 self.newImg = newImg;
                 self.render();
+            }).fail(function(event) {
+                alert("Image ID: " + idInput +
+                    " could not be found on the server, or you don't have permission to access it");
             });
         },
 
@@ -1595,7 +1598,8 @@
                     coords.px = undefined; // recalculate next time
                 }
             }).fail(function(event) {
-                alert("Image ID: " + imgId + " not found");
+                alert("Image ID: " + imgId +
+                    " could not be found on the server, or you don't have permission to access it");
             });
 
         }
