@@ -2317,7 +2317,7 @@
         // just update x,y,w,h by rendering ONE template
         drag_resize: function(xywh) {
             $("#xywh_table").remove();
-            var json = {'x': xywh[0], 'y':xywh[1], 'width':xywh[2]>>0, 'height':xywh[3]>>0},
+            var json = {'x': xywh[0]>>0, 'y':xywh[1]>>0, 'width':xywh[2]>>0, 'height':xywh[3]>>0},
                 xywh_html = this.xywh_template(json);
             this.$el.append(xywh_html);
         },
