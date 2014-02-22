@@ -434,7 +434,7 @@
 
         load_from_OMERO: function(fileId, success) {
 
-            var load_url = BASE_WEBFIGURE_URL + "load_web_figure/" + fileId + "/",
+            var load_url = "static/json/load_web_figure/" + fileId + ".json",
                 self = this;
 
 
