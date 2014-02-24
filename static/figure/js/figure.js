@@ -969,16 +969,10 @@
 
             this.$saveBtn.tooltip('hide');
 
-            // Turn panels into json
-            var figureModel = this.model;
-
-            var options = {};
-            if (figureModel.get('fileId')) {
-                options.fileId = figureModel.get('fileId');
+            var fileId = this.model.get('fileId');
+            if (fileId) {
                 // Save
-                figureModel.save_to_OMERO(options, function(data){
-                    window.location.hash = "figure/"+data;
-                });
+                this.model.save_to_OMERO({'fileId':fileId});
             } else {
                 this.save_as();
             }
@@ -1331,6 +1325,9 @@
                 };
                 self.newImg = newImg;
                 self.render();
+            }).fail(function(event) {
+                alert("Image ID: " + idInput +
+                    " could not be found on the server, or you don't have permission to access it");
             });
         },
 
@@ -1595,7 +1592,8 @@
                     coords.px = undefined; // recalculate next time
                 }
             }).fail(function(event) {
-                alert("Image ID: " + imgId + " not found");
+                alert("Image ID: " + imgId +
+                    " could not be found on the server, or you don't have permission to access it");
             });
 
         }
@@ -2317,7 +2315,7 @@
         // just update x,y,w,h by rendering ONE template
         drag_resize: function(xywh) {
             $("#xywh_table").remove();
-            var json = {'x': xywh[0], 'y':xywh[1], 'width':xywh[2]>>0, 'height':xywh[3]>>0},
+            var json = {'x': xywh[0]>>0, 'y':xywh[1]>>0, 'width':xywh[2]>>0, 'height':xywh[3]>>0},
                 xywh_html = this.xywh_template(json);
             this.$el.append(xywh_html);
         },
@@ -2400,7 +2398,7 @@
                 }
             });
 
-            this.zoom_avg = zoom_sum/ this.models.length;
+            this.zoom_avg = parseInt(zoom_sum/ this.models.length, 10);
             this.theZ_avg = theZ_sum/ this.models.length;
             this.theT_avg = theT_sum/ this.models.length;
 
@@ -2662,7 +2660,7 @@
 
             this.$vp_frame = $(".vp_frame", this.$el);  // cache for later
             this.$vp_img = $(".vp_img", this.$el);
-            this.$vp_zoom_value.text(zoom + "%");
+            this.$vp_zoom_value.text((zoom >> 0) + "%");
 
             return this;
         }
