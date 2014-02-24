@@ -51,44 +51,78 @@ $(function(){
             "figure/:id": "loadFigure"
         },
 
-        clearFigure: function() {
+        clearFigure: function(callback) {
+
+            var doClear = function() {
+                figureModel.unset('fileId');
+                figureModel.delete_all();
+                figureModel.unset("figureName");
+                figureModel.trigger('reset_undo_redo');
+                if (callback) {
+                    callback();
+                }
+            };
 
             $(".modal").modal('hide'); // hide any existing dialogs
 
             // Arrive at 'home' page, either starting here OR we hit 'new' figure...
             // ...so start by clearing any existing Figure (save first if needed)
             var self = this;
-            if (figureModel.get("unsaved") && confirm("Save current Figure to OMERO?")) {
-                figureModel.save_to_OMERO({}, function() {
-                    figureModel.unset('fileId');
+            if (figureModel.get("unsaved")) {
+
+                // show the confirm dialog...
+                $("#confirmModal").modal();
+
+                // default handler for 'cancel' or 'close'
+                $('#confirmModal').one('hide.bs.modal', function() {
+                    // remove the other 'one' handler below
+                    $("#confirmModal [type='submit']").off('click');
+                    doClear();  // carry-on with clearing
+                });
+
+                // handle 'Save' btn click.
+                $("#confirmModal [type='submit']").one('click', function() {
+                    // remove the default 'one' handler above
+                    $('#confirmModal').off('hide.bs.modal');
+                    var options = {};
+                    // Save current figure or New figure...
+                    var fileId = figureModel.get('fileId');
+                    if (fileId) {
+                        options.fileId = fileId;
+                    } else {
+                        var figureName = prompt("Enter Figure Name", "unsaved");
+                        options.figureName = figureName || "unsaved";
+                    }
+                    figureModel.save_to_OMERO(options, doClear);
                 });
             } else {
-                figureModel.unset('fileId');
+                doClear();
             }
-            figureModel.delete_all();
-            figureModel.unset("figureName");
-            figureModel.trigger('reset_undo_redo');
 
-            return false;
+            return true;
         },
 
         index: function() {
-            this.clearFigure();
-            figureModel.set('unsaved', false);
-            $('#welcomeModal').modal();
+            var cb = function() {
+                $('#welcomeModal').modal();
+            };
+            this.clearFigure(cb);
         },
 
         newFigure: function() {
-            this.clearFigure();
-            figureModel.set('unsaved', false);
-            $('#addImagesModal').modal();
+            var cb = function() {
+                $('#addImagesModal').modal();
+            };
+            this.clearFigure(cb);
         },
 
         loadFigure: function(id) {
-            this.clearFigure();
 
             var fileId = parseInt(id, 10);
-            figureModel.load_from_OMERO(fileId);
+            var cb = function() {
+                figureModel.load_from_OMERO(fileId);
+            };
+            this.clearFigure(cb);
         }
     });
 

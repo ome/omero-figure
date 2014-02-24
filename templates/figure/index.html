@@ -55,7 +55,7 @@
 
 <body id="body">
 
-    <!-- Modal -->
+    <!-- Welcome Modal -->
     <div class="modal" id="welcomeModal" tabindex="-1" role="dialog" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -74,6 +74,24 @@
                             Open Figure
                         </button>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Confirm modal for custom messages -->
+    <div class="modal" id="confirmModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title">Save Changes to Figure?</h4>
+                </div>
+                <div class="modal-body" style="padding: 25px 25px 35px 25px">
+                    <p>Your changes will be lost if you don't save them</p>
+                </div>
+                <div class="modal-footer" style="margin-top:0">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Don't Save</button>
+                    <button type="submit" class="btn btn-primary" data-dismiss="modal">Save</button>
                 </div>
             </div>
         </div>

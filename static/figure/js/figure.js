@@ -969,16 +969,10 @@
 
             this.$saveBtn.tooltip('hide');
 
-            // Turn panels into json
-            var figureModel = this.model;
-
-            var options = {};
-            if (figureModel.get('fileId')) {
-                options.fileId = figureModel.get('fileId');
+            var fileId = this.model.get('fileId');
+            if (fileId) {
                 // Save
-                figureModel.save_to_OMERO(options, function(data){
-                    window.location.hash = "figure/"+data;
-                });
+                this.model.save_to_OMERO({'fileId':fileId});
             } else {
                 this.save_as();
             }
