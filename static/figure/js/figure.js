@@ -1016,6 +1016,7 @@
             var fileId = this.model.get('fileId'),
                 figName = this.model.get('figureName');
             if(fileId) {
+                this.model.set("unsaved", false);   // prevent "Save?" dialog
                 this.figureFiles.deleteFile(fileId, figName);
             }
         },
