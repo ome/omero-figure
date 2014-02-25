@@ -54,7 +54,7 @@ $(function(){
 
             var doClear = function() {
                 figureModel.unset('fileId');
-                figureModel.delete_all();
+                figureModel.delete_panels();
                 figureModel.unset("figureName");
                 figureModel.trigger('reset_undo_redo');
                 if (callback) {
