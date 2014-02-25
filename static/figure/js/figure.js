@@ -543,6 +543,54 @@
                 });
         },
 
+        clearFigure: function(callback) {
+
+            var figureModel = this;
+
+            var doClear = function() {
+                figureModel.unset('fileId');
+                figureModel.delete_panels();
+                figureModel.unset("figureName");
+                figureModel.trigger('reset_undo_redo');
+                if (callback) {
+                    callback();
+                }
+            };
+
+            // Arrive at 'home' page, either starting here OR we hit 'new' figure...
+            // ...so start by clearing any existing Figure (save first if needed)
+            if (figureModel.get("unsaved")) {
+
+                // show the confirm dialog...
+                $("#confirmModal").modal();
+
+                // default handler for 'cancel' or 'close'
+                $('#confirmModal').one('hide.bs.modal', function() {
+                    // remove the other 'one' handler below
+                    $("#confirmModal [type='submit']").off('click');
+                    doClear();  // carry-on with clearing
+                });
+
+                // handle 'Save' btn click.
+                $("#confirmModal [type='submit']").one('click', function() {
+                    // remove the default 'one' handler above
+                    $('#confirmModal').off('hide.bs.modal');
+                    var options = {};
+                    // Save current figure or New figure...
+                    var fileId = figureModel.get('fileId');
+                    if (fileId) {
+                        options.fileId = fileId;
+                    } else {
+                        var figureName = prompt("Enter Figure Name", "unsaved");
+                        options.figureName = figureName || "unsaved";
+                    }
+                    figureModel.save_to_OMERO(options, doClear);
+                });
+            } else {
+                doClear();
+            }
+        },
+
         nudge_right: function() {
             this.nudge('x', 10);
         },
@@ -1008,7 +1056,8 @@
 
         goto_newfigure: function(event) {
             if (event) event.preventDefault();
-            window.location.hash = "new";
+            // TODO: Save / Don't Save / Cancel.
+            // If not 'Cancel' then go to /new url.
         },
 
         delete_figure: function(event) {

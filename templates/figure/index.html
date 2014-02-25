@@ -956,7 +956,7 @@
             <% if(imageId > 0) { print("<img class='small-thumb' src='" + thumbSrc + "' />") } %>
         </td>
         <td>
-            <a href="#figure/<%= id %>"><%= name %></a>
+            <a href="{% url 'figure_index' %}figure/<%= id %>"><%= name %></a>
         </td>
         <td>
             <%= creationDate %>

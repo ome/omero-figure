@@ -11,6 +11,8 @@ urlpatterns = patterns('django.views.generic.simple',
 
     # index 'home page' of the figure app
     url( r'^$', views.index, name='figure_index' ),
+    url( r'^new/$', views.index, name='new_figure' ),
+    url( r'^figure/[0-9]+/$', views.index, name='load_figure' ),
 
     url( r'^imgData/(?P<imageId>[0-9]+)/$', views.imgData_json, name='figure_imgData'),
 
