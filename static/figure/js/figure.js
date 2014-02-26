@@ -3208,6 +3208,7 @@
                             .appendTo($channel_sliders);
 
                         $div.find('.ch_slider').slider({
+                            range: true,
                             min: min,
                             max: max,
                             values: [start, end],

@@ -385,17 +385,21 @@
         height: 11px !important;
         width: 245px !important;
         top: 5px;
-        left: 35px;
+        left: 39px;
     }
     .ch_start, .ch_end {
         position: absolute;
         top: 0px;
     }
     .ch_start {
-        left: 10px;
+        left: 4px;
+        text-align: right;
+        width: 30px;
     }
     .ch_end {
-        right: 10px;
+        right: 5px;
+        text-align: left;
+        width: 30px;
     }
     .ui-slider-disabled a {
         display: none;
