@@ -20,20 +20,52 @@ JSON.stringify = JSON.stringify || function (obj) {
 };
 
 
+var figureConfirmDialog = function(title, message, buttons, callback) {
+    var $confirmModal = $("#confirmModal"),
+        $title = $(".modal-title", $confirmModal),
+        $body = $(".modal-body", $confirmModal),
+        $footer = $(".modal-footer", $confirmModal),
+        $btn = $(".btn:first", $footer);
+
+    // Update modal with params
+    $title.html(title);
+    $body.html('<p>' + message + '<p>');
+    $footer.empty();
+    _.each(buttons, function(txt){
+        $btn.clone().text(txt).appendTo($footer);
+    });
+    $(".btn", $footer).removeClass('btn-primary')
+        .addClass('btn-default')
+        .last()
+        .removeClass('btn-default')
+        .addClass('btn-primary');
+
+    // show modal
+    $confirmModal.modal('show');
+
+    // default handler for 'cancel' or 'close'
+    $confirmModal.one('hide.bs.modal', function() {
+        // remove the other 'one' handler below
+        $("#confirmModal .modal-footer .btn").off('click');
+        if (callback) {
+            callback();
+        }
+    });
+
+    // handle 'Save' btn click.
+    $("#confirmModal .modal-footer .btn").one('click', function(event) {
+        // remove the default 'one' handler above
+        $confirmModal.off('hide.bs.modal');
+        var btnText = $(event.target).text();
+        if (callback) {
+            callback(btnText);
+        }
+    });
+};
+
+
 $(function(){
 
-    // $("body").ajaxError(function(e, req, settings, exception) {
-    //     if (req.status == 404) {
-    //         console.log(arguments);
-    //         alert("404: Image not found");
-    //     } else if (req.status == 403) {
-    //         // Denied (E.g. session timeout) Refresh - will redirect to login page
-    //         window.location.reload();
-    //     } else if (req.status == 500) {
-    //         // Our 500 handler returns only the stack-trace if request.is_json()
-    //         alert("500 error: " + req.responseText);
-    //     }
-    // });
 
     $(".draggable-dialog").draggable();
 
