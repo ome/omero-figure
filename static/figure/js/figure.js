@@ -1359,8 +1359,11 @@
                 figureName = this.model.get('figureName');
             if ((figureName) && (figureName.length > 0)) {
                 title += " - " + figureName;
+            } else {
+                figureName = "";
             }
             $('title').text(title);
+            $(".figure-title").text(figureName);
         },
 
         renderSaveBtn: function() {
