@@ -5,6 +5,7 @@ from datetime import datetime
 import os
 import shutil
 import json
+import time
 
 from omeroweb.webgateway import views as webgateway_views
 from omeroweb.webgateway.marshal import imageMarshal
@@ -262,7 +263,7 @@ def list_web_figures(request, conn=None, **kwargs):
         figFile = {
             'id': fa.id,
             'name': fa.getFile().getName(),
-            'creationDate': "%s-%02d-%02d" % (cd.year, cd.month, cd.day),
+            'creationDate': time.mktime(cd.timetuple()),
             'ownerFullName': owner.getFullName(),
             'canEdit': fa.getFile().canEdit()
         }

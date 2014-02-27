@@ -503,3 +503,13 @@
         max-width: 40px;
         max-height: 40px;
     }
+
+    #figure_files th .btn-sm:first-child {
+        padding-right: 0
+    }
+    #figure_files th .btn-sm:last-child {
+        padding-left: 0
+    }
+    .muted {
+        opacity: 0.4;
+    }

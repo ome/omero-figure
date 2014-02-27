@@ -242,16 +242,32 @@
                 </div>
                 
                     <div class="modal-body">
-                        <table class="table table-condensed">
+                        <table class="table table-condensed" id="figure_files">
                             <thead>
                                 <tr>
                                     <th></th>
-                                    <th>Name</th>
-                                    <th>Created</th>
+                                    <th>
+                                        Name
+                                        <button type="button" class="btn btn-link btn-sm sort-name muted">
+                                            <span class="glyphicon glyphicon-chevron-up"></span>
+                                        </button>
+                                        <button type="button" class="btn btn-link btn-sm sort-name-reverse muted">
+                                            <span class="glyphicon glyphicon-chevron-down"></span>
+                                        </button>
+                                    </th>
+                                    <th>
+                                        Created
+                                        <button type="button" class="btn btn-link btn-sm sort-created sort">
+                                            <span class="glyphicon glyphicon-chevron-up"></span>
+                                        </button>
+                                        <button type="button" class="btn btn-link btn-sm sort-created-reverse muted">
+                                            <span class="glyphicon glyphicon-chevron-down"></span>
+                                        </button>
+                                    </th>
                                     <th>Owner</th>
                                 </tr>
                             </thead>
-                            <tbody id="figure_files">
+                            <tbody>
                             </tbody>
                         </table>
                     </div>
@@ -962,7 +978,7 @@
             <a href="{% url 'figure_index' %}figure/<%= id %>"><%= name %></a>
         </td>
         <td>
-            <%= creationDate %>
+            <%= formatDate(creationDate) %>
         </td>
         <td>
             <%= ownerFullName %>
