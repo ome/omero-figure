@@ -8,6 +8,18 @@
 
     <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
 
+    <style type"text/css">
+      p, li {
+        font-size: 18px;
+      }
+      h1, h2, h3, h4, h5, #project_title {
+        font-weight: 400;
+      }
+      li {
+        padding-bottom: 8px;
+      }
+    </style>
+
     <title>Figure</title>
   </head>
 
@@ -35,17 +47,62 @@
     <!-- MAIN CONTENT -->
     <div id="main_content_wrap" class="outer">
       <section id="main_content" class="inner">
-        <h3>
-          <a name="welcome-to-omerofigure" class="anchor" href="#welcome-to-omerofigure">
-            <span class="octicon octicon-link"></span>
-          </a>
-          Welcome to OMERO.figure
-        </h3>
 
         <p>OMERO.figure is a web app that makes it easy to create figures from your OMERO images.</p>
 
         <!-- <img src="https://raw.github.com/will-moore/figure/gh-pages/images/figure_screenshot_1.png" /> -->
         <iframe width="640" height="360" src="//www.youtube.com/embed/JNFvT8JwY7E?rel=0" frameborder="0" allowfullscreen></iframe>
+
+        <h2 style="margin-top: 30px">Smart figures from OMERO</h2>
+        <p>OMERO is a server platform for managing biological images. See the
+          <a href="http://www.openmicroscopy.org/site">Open Microscopy Site</a> for more info.
+          OMERO.figure combines OMERO's powerful image rendering and metadata to provide a
+          tool for rapid figure creation. Each panel of the figure becomes a multi-dimensional
+          image viewer, allowing you to zoom and pan, adjust rendering settings and even
+          scroll through Z and Time.
+          Figures can be exported as PDF documents, so you can move seamlessly to
+          other editing tools such as Adobe Illustrator.
+        </p>
+
+        <h2>Shortcuts for common tasks</h2>
+        <p>Many tasks of figure creation are very time consuming when done manually.
+          OMERO.figure provides tools to get the job done quickly. All of these features
+          work with multiple selected panels at once, making it easy to keep similar
+          panels in sync.
+          <ul>
+            <li><strong>Align to grid</strong>: Snap panels to perfectly-spaced rows and columns.</li>
+            <li><strong>Adjust rendering settings</strong>: Toggle channels, change colours and adjust levels.</li>
+            <li><strong>Clever labels</strong>: Labels are bound to the chosen spot on each panel and can
+              be auto-generated from image metadata.</li>
+            <li><strong>Copy and paste</strong>: Duplicate rows or columns instantly, aligned perfectly.</li>
+            <li><strong>Scroll Z and Time</strong>: Move image panels through Z and Time dimensions.</li>
+            <li><strong>Zoom, Pan and Rotate</strong>: Crop your images simply by zooming, panning and rotating the viewport without ever losing the full image.</li>
+            <li><strong>Accurate scalebars</strong>: Use the pixel size metadata from OMERO to add 'live'
+              scalebars that update as you zoom.</li>
+            <li><strong>Full undo and redo</strong>: For extra convenience.</li>
+          </ul>
+        </p>
+
+        <h2>Power of the web</h2>
+        <p>
+          You can create beautiful figures in your browser, then share them with others.
+          Depending on your OMERO permissions settings, you can even make them public,
+          so everyone can explore your figures interactively.
+        </p>
+
+        <h2>Easy installation onto OMERO.web</h2>
+        <p>Checkout the <a href="https://github.com/will-moore/figure">github page</a> for
+          simple steps to add OMERO.figure to your OMERO web installation.
+        </p>
+
+        <h2>Try it now!</h2>
+        <p>I've created a <a href="http://will-moore.github.io/figure/demo/#figure/1"/>live demo</a>
+          (Warning: still Beta)
+          using <a href="http://jcb-dataviewer.rupress.org/jcb/browse/105/134/">
+            data hosted on the OMERO-powered JCB-DataViewer
+          </a> from this paper:
+          <a href="http://jcb.rupress.org/content/179/2/187">Porter et al, JCB 2007</a>.
+        </p>
 
       </section>
     </div>
