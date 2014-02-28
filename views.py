@@ -76,7 +76,7 @@ def createOriginalFileFromFileObj(
         block = fo.read(blockSize)
         rawFileStore.write(block, pos, blockSize, conn.SERVICE_OPTS)
     # https://github.com/openmicroscopy/openmicroscopy/pull/2006
-    originalFile = rawFileStore.save()
+    originalFile = rawFileStore.save(conn.SERVICE_OPTS)
     rawFileStore.close()
     return OriginalFileWrapper(conn, originalFile)
 

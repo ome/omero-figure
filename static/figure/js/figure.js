@@ -512,16 +512,20 @@
             return figureJSON;
         },
 
-        save_to_OMERO: function(options, success) {
+        save_to_OMERO: function(options) {
 
             var self = this,
                 figureJSON = this.figure_toJSON();
 
             var url = window.SAVE_WEBFIGURE_URL,
-                data = options || {};
+                // fileId = self.get('fileId'),
+                data = {};
 
             if (options.fileId) {
                 data.fileId = options.fileId;
+            }
+            if (options.figureName) {
+                data.figureName = options.figureName;
             }
             data.figureJSON = JSON.stringify(figureJSON);
 
@@ -537,56 +541,19 @@
                     }
                     self.set(update);
 
-                    if (success) {
-                        success(data);
+                    if (options.success) {
+                        options.success(data);
                     }
                 });
         },
 
-        clearFigure: function(callback) {
+        clearFigure: function() {
 
             var figureModel = this;
-
-            var doClear = function() {
-                figureModel.unset('fileId');
-                figureModel.delete_panels();
-                figureModel.unset("figureName");
-                figureModel.trigger('reset_undo_redo');
-                if (callback) {
-                    callback();
-                }
-            };
-
-            // Arrive at 'home' page, either starting here OR we hit 'new' figure...
-            // ...so start by clearing any existing Figure (save first if needed)
-            if (figureModel.get("unsaved")) {
-
-                // show the confirm dialog...
-                figureConfirmDialog("Save Changes to Figure?",
-                    "Your changes will be lost if you don't save them",
-                    ["Don't Save", "Save"],
-                    function(btnTxt){
-                        if (btnTxt === "Save") {
-                             var options = {};
-                            // Save current figure or New figure...
-                            var fileId = figureModel.get('fileId');
-                            if (fileId) {
-                                options.fileId = fileId;
-                            } else {
-                                var figureName = prompt("Enter Figure Name", "unsaved");
-                                options.figureName = figureName || "unsaved";
-                            }
-                            figureModel.save_to_OMERO(options, doClear);
-                        } else if (btnTxt === "Don't Save") {
-                            figureModel.set("unsaved", false);
-                            doClear();
-                        } else {
-                            doClear();
-                        }
-                    });
-            } else {
-                doClear();
-            }
+            figureModel.unset('fileId');
+            figureModel.delete_panels();
+            figureModel.unset("figureName");
+            figureModel.trigger('reset_undo_redo');
         },
 
         nudge_right: function() {
@@ -922,8 +889,8 @@
             "click .delete_panel": "deleteSelectedPanels",
             "click .copy": "copy_selected_panels",
             "click .paste": "paste_panels",
-            "click .save_figure": "save_figure",
-            "click .save_as": "save_as",
+            "click .save_figure": "save_figure_event",
+            "click .save_as": "save_as_event",
             "click .new_figure": "goto_newfigure",
             "click .open_figure": "open_figure",
             "click .delete_figure": "delete_figure",
@@ -938,7 +905,7 @@
             'mod+a': 'select_all',
             'mod+c': 'copy_selected_panels',
             'mod+v': 'paste_panels',
-            'mod+s': 'save_figure',
+            'mod+s': 'save_figure_event',
             'mod+n': 'goto_newfigure',
             'mod+o': 'open_figure',
             'down' : 'nudge_down',
@@ -1058,6 +1025,9 @@
 
             var self = this;
             var callback = function() {
+                self.model.clearFigure();
+                $('#addImagesModal').modal();
+                // navigate will be ignored if we're already on /new
                 app.navigate("new/", {trigger: true});
             };
 
@@ -1068,10 +1038,8 @@
                     ["Cancel", "Don't Save", "Save"],
                     function(btnTxt){
                         if (btnTxt === "Save") {
-                            self.save_figure();
-                            callback();
+                            self.save_figure({success: callback});
                         } else if (btnTxt === "Don't Save") {
-                            self.model.set("unsaved", false);
                             callback();
                         }
                     });
@@ -1119,30 +1087,39 @@
             }
         },
 
-        save_figure: function(event) {
+        save_figure_event: function(event) {
             if (event) {
                 event.preventDefault();
             }
-
             this.$saveBtn.tooltip('hide');
+            this.save_figure();
+        },
+
+        save_figure: function(options) {
+            options = options || {};
 
             var fileId = this.model.get('fileId');
             if (fileId) {
                 // Save
-                this.model.save_to_OMERO({'fileId':fileId});
+                options.fileId = fileId;
+                this.model.save_to_OMERO(options);
             } else {
-                this.save_as();
+                this.save_as(options);
             }
 
         },
 
-        save_as: function(event) {
+        save_as_event: function(event) {
             if (event) {
                 event.preventDefault();
             }
+            this.save_as();
+        },
 
-            var options = {},
-                defaultName = this.model.get('figureName');
+        save_as: function(options) {
+
+            options = options || {};
+            var defaultName = this.model.get('figureName');
             if (!defaultName) {
                 var d = new Date(),
                     dt = d.getFullYear() + "-" + (d.getMonth()+1) + "-" +d.getDate(),
@@ -1153,12 +1130,15 @@
             }
             var figureName = prompt("Enter Figure Name", defaultName);
 
+            var nav = function(data){
+                app.navigate("figure/"+data);
+            };
             if (figureName) {
                 options.figureName = figureName;
+                // On save, go to newly saved page, unless we have callback already
+                options.success = options.success || nav;
                 // Save
-                this.model.save_to_OMERO(options, function(data){
-                    app.navigate("figure/"+data);
-                });
+                this.model.save_to_OMERO(options);
             }
 
         },

@@ -50,19 +50,58 @@ $(function(){
             "figure/:id(/)": "loadFigure",
         },
 
+        checkSaveAndClear: function(callback) {
+
+            var doClear = function() {
+                figureModel.clearFigure();
+                if (callback) {
+                    callback();
+                }
+            };
+            if (figureModel.get("unsaved")) {
+
+                // show the confirm dialog...
+                figureConfirmDialog("Save Changes to Figure?",
+                    "Your changes will be lost if you don't save them",
+                    ["Don't Save", "Save"],
+                    function(btnTxt){
+                        if (btnTxt === "Save") {
+                             var options = {};
+                            // Save current figure or New figure...
+                            var fileId = figureModel.get('fileId');
+                            if (fileId) {
+                                options.fileId = fileId;
+                            } else {
+                                var figureName = prompt("Enter Figure Name", "unsaved");
+                                options.figureName = figureName || "unsaved";
+                            }
+                            options.success = doClear;
+                            figureModel.save_to_OMERO(options);
+                        } else if (btnTxt === "Don't Save") {
+                            figureModel.set("unsaved", false);
+                            doClear();
+                        } else {
+                            doClear();
+                        }
+                    });
+            } else {
+                doClear();
+            }
+        },
+
         index: function() {
             $(".modal").modal('hide'); // hide any existing dialogs
             var cb = function() {
                 $('#welcomeModal').modal();
             };
-            figureModel.clearFigure(cb);
+            this.checkSaveAndClear(cb);
         },
 
         newFigure: function() {
             var cb = function() {
                 $('#addImagesModal').modal();
             };
-            figureModel.clearFigure(cb);
+            this.checkSaveAndClear(cb);
          },
 
         loadFigure: function(id) {
@@ -71,7 +110,7 @@ $(function(){
             var cb = function() {
                 figureModel.load_from_OMERO(fileId);
             };
-            figureModel.clearFigure(cb);
+            this.checkSaveAndClear(cb);
         }
     });
 
