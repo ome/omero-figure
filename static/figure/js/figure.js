@@ -897,6 +897,7 @@
             "click .paper_setup": "paper_setup",
             "click .export-options a": "select_export_option",
             "click .zoom-paper-to-fit": "zoom_paper_to_fit",
+            "click .about_figure": "show_about_dialog",
         },
 
         keyboardEvents: {
@@ -918,6 +919,11 @@
             event.preventDefault();
 
             $("#paperSetupModal").modal();
+        },
+
+        show_about_dialog: function(event) {
+            event.preventDefault();
+            $("#aboutModal").modal();
         },
 
         // Heavy lifting of PDF generation handled by OMERO.script...

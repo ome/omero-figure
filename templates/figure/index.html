@@ -22,6 +22,8 @@
 
     <script>
 
+    var RELEASE_VERSION = "v1.0.0-beta1-rc1";
+
     var BASE_WEBFIGURE_URL = "{% url 'figure_index' %}",
         SAVE_WEBFIGURE_URL = "{% url 'save_web_figure' %}",
         LIST_WEBFIGURES_URL = "{% url 'list_web_figures' %}",
@@ -74,6 +76,31 @@
                             Open Figure
                         </button>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- About OMERO.figure Modal -->
+    <div class="modal" id="aboutModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header" style="padding:15px; text-align:center">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title">About OMERO.figure</h4>
+                </div>
+                <div class="modal-body" style="padding: 25px 25px 35px 25px; text-align:center">
+                    <p><strong>Version</strong>: <script>document.write(RELEASE_VERSION)</script></p>
+                    <p>For more information, visit the
+                        <a target="new" href="http://will-moore.github.io/figure/">OMERO.figure Home Page</a>
+                    </p>
+                    <p>
+                        &copy; 2013-{% now "Y" %} University of Dundee &amp; Open Microscopy Environment<br/>
+                        OMERO and OMERO.figure are distributed under the terms of the GNU GPL.<br/>
+                        See: <a target="new" href="http://www.openmicroscopy.org">openmicroscopy.org</a>
+                    </p>
+                </div>
+                <div class="modal-footer" style="margin-top:0">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
@@ -333,6 +360,20 @@
                                 <a href="#">Paste ⌘V</a>
                             </li>
 
+                         </ul>
+                    </li>
+
+                    <li class="active dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Help <b class="caret"></b></a>
+                        <ul class="active dropdown-menu">
+                            <li class="about_figure">
+                                <a href="#">About OMERO.figure</a>
+                            </li>
+                            <li>
+                                <a href="http://will-moore.github.io/figure/" target="new">
+                                    Home Page
+                                </a>
+                            </li>
                          </ul>
                     </li>
 
