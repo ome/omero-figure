@@ -1068,10 +1068,16 @@
             event.preventDefault();
             $(".modal").modal('hide');
 
-            var self = this;
+            var self = this,
+                currentFileId = self.model.get('fileId');
             var callback = function() {
                 $("#openFigureModal").modal();
-                self.figureFiles.fetch();
+                self.figureFiles.fetch({success: function(fileList){
+                    // Don't allow opening of current figure
+                    if (currentFileId) {
+                        fileList.disable(currentFileId);
+                    }
+                }});
             };
 
             if (this.model.get("unsaved")) {

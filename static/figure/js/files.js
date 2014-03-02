@@ -1,6 +1,10 @@
 
 var FigureFile = Backbone.Model.extend({
 
+    defaults: {
+        disabled: false,
+    },
+
     initialize: function() {
 
         var desc = this.get('description');
@@ -23,6 +27,13 @@ var FileList = Backbone.Collection.extend({
     comparator: 'creationDate',
 
     initialize: function() {
+    },
+
+    disable: function(fileId) {
+        var f = this.get(fileId);
+        if (f) {
+            f.set('disabled', true);
+        }
     },
 
     deleteFile: function(fileId, name) {
