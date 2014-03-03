@@ -407,6 +407,7 @@
 
         defaults: {
             // 'curr_zoom': 100,
+            'canEdit': true,
             'unsaved': false,
             'canvas_width': 10000,
             'canvas_height': 8000,
