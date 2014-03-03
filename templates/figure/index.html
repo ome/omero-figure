@@ -1021,12 +1021,12 @@
         </td>
     <% } else { %>
         <td>
-            <a href="{% url 'figure_index' %}figure/<%= id %>">
+            <a href="{% url 'figure_index' %}file/<%= id %>">
                 <% if(imageId > 0) { print("<img class='small-thumb' src='" + thumbSrc + "' />") } %>
             </a>
         </td>
         <td>
-            <a href="{% url 'figure_index' %}figure/<%= id %>"><%= name %></a>
+            <a href="{% url 'figure_index' %}file/<%= id %>"><%= name %></a>
         </td>
     <% } %>
         <td>

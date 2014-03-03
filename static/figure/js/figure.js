@@ -1144,7 +1144,7 @@
             var figureName = prompt("Enter Figure Name", defaultName);
 
             var nav = function(data){
-                app.navigate("figure/"+data);
+                app.navigate("file/"+data);
             };
             if (figureName) {
                 options.figureName = figureName;

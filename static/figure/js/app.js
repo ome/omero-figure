@@ -47,7 +47,7 @@ $(function(){
         routes: {
             "": "index",
             "new(/)": "newFigure",
-            "figure/:id(/)": "loadFigure",
+            "file/:id(/)": "loadFigure",
         },
 
         checkSaveAndClear: function(callback) {
