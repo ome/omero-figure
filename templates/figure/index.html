@@ -688,9 +688,7 @@
         <% if (show){ %>
             <button type="submit" class="show_scalebar btn btn-sm btn-success pull-right">Show</button>
         <% } else { %>
-            <!-- hidden 'submit' so that 'enter' still submits form -->
-            <button type="submit" class="show_scalebar btn btn-sm btn-success pull-right" style="display:none">Show</button>
-            <button aria-hidden="true" class="close hide_scalebar delete-label" title="Remove Scalebar" type="button">×</button>
+            <button type="button" class="hide_scalebar btn btn-sm btn-default pull-right">Hide</button>
         <% } %>
         </form>
 
