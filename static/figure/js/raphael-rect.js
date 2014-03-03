@@ -65,20 +65,34 @@ var RectView = Backbone.View.extend({
                 // Use dx & dy to update the location of the handle and the corresponding point of the parent
                 var new_x = this.ox + dx;
                 var new_y = this.oy + dy;
+                var newRect = {
+                    x: this.rect.x,
+                    y: this.rect.y,
+                    width: this.rect.width,
+                    height: this.rect.height
+                };
                 if (this.h_id.indexOf('e') > -1) {    // if we're dragging an 'EAST' handle, update width
-                    this.rect.width = new_x - self.x + self.handle_wh/2;
+                    newRect.width = new_x - self.x + self.handle_wh/2;
                 }
                 if (this.h_id.indexOf('s') > -1) {    // if we're dragging an 'SOUTH' handle, update height
-                    this.rect.height = new_y - self.y + self.handle_wh/2;
+                    newRect.height = new_y - self.y + self.handle_wh/2;
                 }
                 if (this.h_id.indexOf('n') > -1) {    // if we're dragging an 'NORTH' handle, update y and height
-                    this.rect.y = new_y + self.handle_wh/2;
-                    this.rect.height = this.obottom - new_y;
+                    newRect.y = new_y + self.handle_wh/2;
+                    newRect.height = this.obottom - new_y;
                 }
                 if (this.h_id.indexOf('w') > -1) {    // if we're dragging an 'WEST' handle, update x and width
-                    this.rect.x = new_x + self.handle_wh/2;
-                    this.rect.width = this.oright - new_x;
+                    newRect.x = new_x + self.handle_wh/2;
+                    newRect.width = this.oright - new_x;
                 }
+                // Don't allow zero sized rect.
+                if (newRect.width < 1 || newRect.height < 1) {
+                    return false;
+                }
+                this.rect.x = newRect.x;
+                this.rect.y = newRect.y;
+                this.rect.width = newRect.width;
+                this.rect.height = newRect.height;
                 this.rect.model.trigger("drag_resize", [this.rect.x, this.rect.y, this.rect.width, this.rect.height]);
                 this.rect.updateShape();
                 return false;
