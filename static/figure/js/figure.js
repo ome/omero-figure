@@ -2850,6 +2850,9 @@
 
         // if 
         correct_rotation: function(dx, dy, rotation) {
+            if (dx === 0 && dy === 0) {
+                return {'dx': dx, 'dy': dy};
+            }
             var length = Math.sqrt(dx * dx + dy * dy),
                 ang1 = Math.atan(dy/dx),
                 deg1 = ang1/(Math.PI/180);  // rad -> deg
