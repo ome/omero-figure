@@ -351,6 +351,7 @@
                        'top':img_y,
                        'width':img_w,
                        'height':img_h,
+                       '-webkit-transform-origin': transform_x + '% ' + transform_y + '%',
                        'transform-origin': transform_x + '% ' + transform_y + '%',
                        '-webkit-transform': 'rotate(' + rotation + 'deg)',
                        'transform': 'rotate(' + rotation + 'deg)'
@@ -3057,8 +3058,8 @@
                     step: 2,
                     value: self.rotation,
                     slide: function(event, ui) {
-                        $(".vp_img").css({'transform':'rotate(' + ui.value + 'deg)',
-                                        '-moz-transform':'rotate(' + ui.value + 'deg)'});
+                        $(".vp_img").css({'-webkit-transform':'rotate(' + ui.value + 'deg)',
+                                        'transform':'rotate(' + ui.value + 'deg)'});
                         $(".rotation_value").text(ui.value);
                     },
                     stop: function( event, ui ) {

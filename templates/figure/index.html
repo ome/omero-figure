@@ -857,9 +857,10 @@
             <img class="vp_img"
                 style="opacity:<%= opacity %>; left:<%= css.left %>px; top:<%= css.top %>px;
                     width:<%= css.width %>px; height:<%= css.height %>px;
+                    -webkit-transform-origin:<%= css['transform-origin'] %>;
                     transform-origin:<%= css['transform-origin'] %>;
-                    transform:<%= css['transform'] %>;
-                    -webkit-transform:<%= css['transform'] %>"
+                    -webkit-transform:<%= css['transform'] %>;
+                    transform:<%= css['transform'] %>"
                 src="<%= css.src %>" />
             <% }); %>
         </div>
