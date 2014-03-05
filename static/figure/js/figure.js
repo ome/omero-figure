@@ -2893,6 +2893,8 @@
                 this.$vp_zoom_value.text(zoom + "%");
 
                 if (save) {
+                    if (typeof dx === "undefined") dx = 0;  // rare crazy-dragging case!
+                    if (typeof dy === "undefined") dy = 0;
                     this.dx = dx;
                     this.dy = dy;
                     _.each(this.models, function(m){
