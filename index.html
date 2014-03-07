@@ -126,10 +126,13 @@
           </ul>
           <h4>To enable PDF generation:</h4>
           <ul>
-            <li>Install <a href="http://www.reportlab.com/software/installation/">reportlab</a> PDF python package</li>
+            <li>Install <a href="http://www.reportlab.com/software/installation/">reportlab</a> PDF python package.<br>
+              In the simplest case: <code>$ pip install reportlab</code> OR  <code>$ easy_install reportlab</code><br>
+              NB: For python 2.6, you'll need Reportlab 2.7: <code>$ pip install reportlab==2.7</code>
+            </li>
             <li>Upload PDF generation script (need to be Admin)
               <code style="display:block; width:700px">
-                $ cd figure/scripts <br>
+                $ cd figure/scripts   &nbsp &nbsp &nbsp # NB: important to be in this directory<br>
                 $ path/to/bin/omero script upload omero/figure_scripts/Figure_To_Pdf.py --official
               </code>
             </li>
