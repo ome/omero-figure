@@ -382,6 +382,8 @@ def drawPanel(conn, c, panel, pageHeight, idx):
 
     drawScalebar(c, panel, tile_width, pageHeight)
 
+    return image
+
 
 def getThumbnail(conn, imageId):
     """ Saves thumb as local jpg and returns name """
@@ -459,6 +461,9 @@ def addInfoPage(conn, scriptParams, c, panels_json):
 
 def create_pdf(conn, scriptParams):
 
+    # make sure we can find all images
+    conn.SERVICE_OPTS.setOmeroGroup(-1)
+
     figure_json_string = scriptParams['Figure_JSON']
     figure_json = json.loads(figure_json_string)
 
@@ -484,14 +489,22 @@ def create_pdf(conn, scriptParams):
     panels_json = figure_json['panels']
     imageIds = set()
 
+    groupId = None
     for i, panel in enumerate(panels_json):
 
         print "\n---------------- "
         imageId = panel['imageId']
         print "IMAGE", i, imageId
         imageIds.add(imageId)
-        drawPanel(conn, c, panel, pageHeight, i)
+        image = drawPanel(conn, c, panel, pageHeight, i)
         drawLabels(conn, c, panel, pageHeight)
+        # We get our group from the first image
+        if groupId is None:
+            groupId = image.getDetails().group.id.val
+
+    # PDF will get created in this group
+    if groupId is not None:
+        conn.SERVICE_OPTS.setOmeroGroup(groupId)
 
     # complete page and save
     c.showPage()
