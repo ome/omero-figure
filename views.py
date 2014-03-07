@@ -212,10 +212,11 @@ def load_web_figure(request, fileId, conn=None, **kwargs):
         raise Http404("Figure File-Annotation %s not found" % fileId)
     figureJSON = "".join(list(fileAnn.getFileInChunks()))
     jsonFile = fileAnn.getFile()
+    ownerId = jsonFile.getDetails().getOwner().getId()
     try:
         # parse the json, so we can add info...
         json_data = json.loads(figureJSON)
-        json_data['canEdit'] = jsonFile.canEdit()
+        json_data['canEdit'] = ownerId == conn.getUserId()
         json_data['figureName'] = jsonFile.getName()
     except:
         # If the json failed to parse, return the string anyway
