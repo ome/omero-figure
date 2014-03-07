@@ -46,8 +46,12 @@
           <!-- <h2 id="project_tagline">Makes figure creation fun!</h2> -->
 
             <section id="downloads">
-              <a class="zip_download_link" href="https://github.com/will-moore/figure/zipball/master">Download this project as a .zip file</a>
-              <a class="tar_download_link" href="https://github.com/will-moore/figure/tarball/master">Download this project as a tar.gz file</a>
+              <a class="zip_download_link" href="http://downloads.openmicroscopy.org/figure/1.0.0-beta1-rc2/figure-1.0.0-beta1-rc2.zip">
+                Download this project as a .zip file
+              </a>
+              <a class="tar_download_link" href="http://downloads.openmicroscopy.org/figure/1.0.0-beta1-rc2/figure-1.0.0-beta1-rc2.tar.gz">
+                Download this project as a tar.gz file
+              </a>
             </section>
         </header>
     </div>
@@ -61,7 +65,7 @@
         <!-- <img src="https://raw.github.com/will-moore/figure/gh-pages/images/figure_screenshot_1.png" /> -->
         <iframe width="640" height="360" src="//www.youtube.com/embed/JNFvT8JwY7E?rel=0" frameborder="0" allowfullscreen></iframe>
 
-        <h2 style="margin-top: 30px">Smart figures from OMERO</h2>
+        <h2 style="margin-top: 10px">Smart figures with metadata</h2>
         <p>OMERO is a server platform for managing biological images. See the
           <a href="http://www.openmicroscopy.org/site">Open Microscopy Site</a> for more info.
           OMERO.figure combines OMERO's powerful image rendering and metadata to provide a
@@ -98,11 +102,6 @@
           so everyone can explore your figures interactively.
         </p>
 
-        <h2>Easy installation onto OMERO.web</h2>
-        <p>Checkout the <a href="https://github.com/will-moore/figure">github page</a> for
-          simple steps to add OMERO.figure to your OMERO web installation.
-        </p>
-
         <h2>Try it now!</h2>
         <p>I've created a <a href="http://will-moore.github.io/figure/demo/#figure/1"/>live demo</a>
           (Warning: still Beta)
@@ -112,6 +111,34 @@
           <a href="http://jcb.rupress.org/content/179/2/187">Porter et al, JCB 2007</a>.
         </p>
 
+        <h2>Install instructions</h2>
+        <p>
+          <ul>
+            <li>Download the release from the top of this page and unzip</li>
+            <li>Rename the unzipped directory to 'figure'</li>
+            <li>Place the directory on your PYTHONPATH</li>
+            <li>Configure web: <code> $ bin/omero config set omero.web.apps '["figure"]' </code></li>
+            <li>Restart web: 
+              <code style="display:block">
+                $ bin/omero web stop<br>
+                $ bin/omero web start
+              </code></li>
+          </ul>
+          <h4>To enable PDF generation:</h4>
+          <ul>
+            <li>Install <a href="http://www.reportlab.com/software/installation/">reportlab</a> PDF python package</li>
+            <li>Upload PDF generation script (need to be Admin)
+              <code style="display:block; width:700px">
+                $ cd figure/scripts <br>
+                $ path/to/bin/omero script upload omero/figure_scripts/Figure_To_Pdf.py --official
+              </code>
+            </li>
+          </ul>
+        </p>
+        <p>Checkout the <a href="https://github.com/will-moore/figure">github page</a> for
+          more details and developer install instructions.
+        </p>
+
       </section>
     </div>
 
@@ -119,10 +146,14 @@
     <div id="footer_wrap" class="outer">
       <footer class="inner">
         <p class="copyright">
-          <span style="padding-right: 20px; position: relative; top: -5px;">
-            Figure maintained by <a href="https://github.com/will-moore">will-moore</a>
-          </span>
-        <a href="https://twitter.com/will_j_moore" class="twitter-follow-button" data-show-count="false" data-show-screen-name="false">Follow @will_j_moore</a>
+          <!-- <span style="padding-right: 20px; position: relative; top: -5px;"> -->
+            Figure maintained by Will Moore. <br>
+            github: <a href="https://github.com/will-moore">will-moore</a>
+            Twitter: <a href="https://twitter.com/will_j_moore">
+              @will_j_moore
+            </a>
+          <!-- </span> -->
+        <!-- <a href="https://twitter.com/will_j_moore" class="twitter-follow-button" data-show-count="false" data-show-screen-name="false">Follow @will_j_moore</a> -->
 <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
         </p>
         <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
