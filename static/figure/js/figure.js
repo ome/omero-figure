@@ -1132,6 +1132,7 @@
 
         save_as: function(options) {
 
+            var self = this;
             options = options || {};
             var defaultName = this.model.get('figureName');
             if (!defaultName) {
@@ -1146,6 +1147,8 @@
 
             var nav = function(data){
                 app.navigate("file/"+data);
+                // in case you've Saved a copy of a file you can't edit
+                self.model.set('canEdit', true);
             };
             if (figureName) {
                 options.figureName = figureName;
