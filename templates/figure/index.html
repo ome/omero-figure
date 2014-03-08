@@ -441,8 +441,9 @@
                         <span class="glyphicon glyphicon-download-alt" style="font-size: 14px"></span>
                     </a>
 
-                    <div class="btn-group">
+                    <div class="btn-group" {% if scriptMissing %}title="PDF script not installed"{% endif %}>
                         <button id="create_figure_pdf" title="Generate PDF for download"
+                            {% if scriptMissing %}disabled="disabled"{% endif %}
                             type="button" class="btn btn-success btn-sm export_pdf">Export PDF</button>
                     </div>
                 </form>

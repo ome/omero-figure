@@ -25,6 +25,7 @@ from cStringIO import StringIO
 from omeroweb.webclient.decorators import login_required
 
 JSON_FILEANN_NS = "omero.web.figure.json"
+SCRIPT_PATH = "/omero/figure_scripts/Figure_To_Pdf.py"
 
 
 def createOriginalFileFromFileObj(
@@ -88,7 +89,12 @@ def index(request, conn=None, **kwargs):
     and lay them out in canvas by dragging & resizing etc
     """
 
-    return render_to_response("figure/index.html", {})
+    scriptService = conn.getScriptService()
+    sId = scriptService.getScriptID(SCRIPT_PATH)
+    scriptMissing = sId <= 0
+
+    context = {'scriptMissing': scriptMissing}
+    return render_to_response("figure/index.html", context)
 
 
 @login_required()
@@ -236,7 +242,7 @@ def make_web_figure(request, conn=None, **kwargs):
         return HttpResponse("Need to use POST")
 
     scriptService = conn.getScriptService()
-    sId = scriptService.getScriptID("/omero/figure_scripts/Figure_To_Pdf.py")
+    sId = scriptService.getScriptID(SCRIPT_PATH)
 
     figureJSON = str(request.POST.get('figureJSON'))
     webclient_uri = request.build_absolute_uri(reverse('webindex'))
