@@ -351,6 +351,7 @@
                        'top':img_y,
                        'width':img_w,
                        'height':img_h,
+                       '-webkit-transform-origin': transform_x + '% ' + transform_y + '%',
                        'transform-origin': transform_x + '% ' + transform_y + '%',
                        '-webkit-transform': 'rotate(' + rotation + 'deg)',
                        'transform': 'rotate(' + rotation + 'deg)'
@@ -407,6 +408,7 @@
 
         defaults: {
             // 'curr_zoom': 100,
+            'canEdit': true,
             'unsaved': false,
             'canvas_width': 10000,
             'canvas_height': 8000,
@@ -512,16 +514,20 @@
             return figureJSON;
         },
 
-        save_to_OMERO: function(options, success) {
+        save_to_OMERO: function(options) {
 
             var self = this,
                 figureJSON = this.figure_toJSON();
 
             var url = window.SAVE_WEBFIGURE_URL,
-                data = options || {};
+                // fileId = self.get('fileId'),
+                data = {};
 
             if (options.fileId) {
                 data.fileId = options.fileId;
+            }
+            if (options.figureName) {
+                data.figureName = options.figureName;
             }
             data.figureJSON = JSON.stringify(figureJSON);
 
@@ -537,10 +543,19 @@
                     }
                     self.set(update);
 
-                    if (success) {
-                        success(data);
+                    if (options.success) {
+                        options.success(data);
                     }
                 });
+        },
+
+        clearFigure: function() {
+
+            var figureModel = this;
+            figureModel.unset('fileId');
+            figureModel.delete_panels();
+            figureModel.unset("figureName");
+            figureModel.trigger('reset_undo_redo');
         },
 
         nudge_right: function() {
@@ -876,14 +891,15 @@
             "click .delete_panel": "deleteSelectedPanels",
             "click .copy": "copy_selected_panels",
             "click .paste": "paste_panels",
-            "click .save_figure": "save_figure",
-            "click .save_as": "save_as",
+            "click .save_figure": "save_figure_event",
+            "click .save_as": "save_as_event",
             "click .new_figure": "goto_newfigure",
             "click .open_figure": "open_figure",
             "click .delete_figure": "delete_figure",
             "click .paper_setup": "paper_setup",
             "click .export-options a": "select_export_option",
             "click .zoom-paper-to-fit": "zoom_paper_to_fit",
+            "click .about_figure": "show_about_dialog",
         },
 
         keyboardEvents: {
@@ -892,7 +908,7 @@
             'mod+a': 'select_all',
             'mod+c': 'copy_selected_panels',
             'mod+v': 'paste_panels',
-            'mod+s': 'save_figure',
+            'mod+s': 'save_figure_event',
             'mod+n': 'goto_newfigure',
             'mod+o': 'open_figure',
             'down' : 'nudge_down',
@@ -905,6 +921,11 @@
             event.preventDefault();
 
             $("#paperSetupModal").modal();
+        },
+
+        show_about_dialog: function(event) {
+            event.preventDefault();
+            $("#aboutModal").modal();
         },
 
         // Heavy lifting of PDF generation handled by OMERO.script...
@@ -1008,14 +1029,40 @@
 
         goto_newfigure: function(event) {
             if (event) event.preventDefault();
-            window.location.hash = "new";
+            $(".modal").modal('hide');
+
+            var self = this;
+            var callback = function() {
+                self.model.clearFigure();
+                $('#addImagesModal').modal();
+                // navigate will be ignored if we're already on /new
+                app.navigate("new/", {trigger: true});
+            };
+
+            if (this.model.get("unsaved")) {
+
+                figureConfirmDialog("Save Changes to Figure?",
+                    "Your changes will be lost if you don't save them",
+                    ["Cancel", "Don't Save", "Save"],
+                    function(btnTxt){
+                        if (btnTxt === "Save") {
+                            self.save_figure({success: callback});
+                        } else if (btnTxt === "Don't Save") {
+                            callback();
+                        }
+                    });
+            } else {
+                callback();
+            }
         },
 
         delete_figure: function(event) {
             event.preventDefault();
+            return;     // ignore for DEMO
             var fileId = this.model.get('fileId'),
                 figName = this.model.get('figureName');
             if(fileId) {
+                this.model.set("unsaved", false);   // prevent "Save?" dialog
                 this.figureFiles.deleteFile(fileId, figName);
             }
         },
@@ -1023,38 +1070,72 @@
         open_figure: function(event) {
             event.preventDefault();
             $(".modal").modal('hide');
-            $("#openFigureModal").modal();
-            this.figureFiles.fetch();
-        },
 
-        save_figure: function(event) {
-            event.preventDefault();
+            var self = this,
+                currentFileId = self.model.get('fileId');
+            var callback = function() {
+                $("#openFigureModal").modal();
+                self.figureFiles.fetch({success: function(fileList){
+                    // Don't allow opening of current figure
+                    if (currentFileId) {
+                        fileList.disable(currentFileId);
+                    }
+                }});
+            };
 
-            this.$saveBtn.tooltip('hide');
+            if (this.model.get("unsaved")) {
 
-            // Turn panels into json
-            var figureModel = this.model;
-
-            var options = {};
-            if (figureModel.get('fileId')) {
-                options.fileId = figureModel.get('fileId');
-                // Save
-                figureModel.save_to_OMERO(options, function(data){
-                    window.location.hash = "figure/"+data;
-                });
+                figureConfirmDialog("Save Changes to Figure?",
+                    "Your changes will be lost if you don't save them",
+                    ["Cancel", "Don't Save", "Save"],
+                    function(btnTxt){
+                        if (btnTxt === "Save") {
+                            self.save_figure();
+                            callback();
+                        } else if (btnTxt === "Don't Save") {
+                            self.model.set("unsaved", false);
+                            callback();
+                        }
+                    });
             } else {
-                this.save_as();
+                callback();
             }
-
         },
 
-        save_as: function(event) {
+        save_figure_event: function(event) {
             if (event) {
                 event.preventDefault();
             }
+            this.$saveBtn.tooltip('hide');
+            this.save_figure();
+        },
 
-            var options = {},
-                defaultName = this.model.get('figureName');
+        save_figure: function(options) {
+            options = options || {};
+
+            var fileId = this.model.get('fileId');
+            if (fileId) {
+                // Save
+                options.fileId = fileId;
+                this.model.save_to_OMERO(options);
+            } else {
+                this.save_as(options);
+            }
+
+        },
+
+        save_as_event: function(event) {
+            if (event) {
+                event.preventDefault();
+            }
+            // this.save_as();  // ignore for DEMO
+        },
+
+        save_as: function(options) {
+
+            var self = this;
+            options = options || {};
+            var defaultName = this.model.get('figureName');
             if (!defaultName) {
                 var d = new Date(),
                     dt = d.getFullYear() + "-" + (d.getMonth()+1) + "-" +d.getDate(),
@@ -1065,12 +1146,17 @@
             }
             var figureName = prompt("Enter Figure Name", defaultName);
 
+            var nav = function(data){
+                app.navigate("file/"+data);
+                // in case you've Saved a copy of a file you can't edit
+                self.model.set('canEdit', true);
+            };
             if (figureName) {
                 options.figureName = figureName;
+                // On save, go to newly saved page, unless we have callback already
+                options.success = options.success || nav;
                 // Save
-                this.model.save_to_OMERO(options, function(data){
-                    window.location.hash = "figure/"+data;
-                });
+                this.model.save_to_OMERO(options);
             }
 
         },
@@ -1271,8 +1357,11 @@
                 figureName = this.model.get('figureName');
             if ((figureName) && (figureName.length > 0)) {
                 title += " - " + figureName;
+            } else {
+                figureName = "";
             }
             $('title').text(title);
+            $(".figure-title").text(figureName);
         },
 
         renderSaveBtn: function() {
@@ -1505,6 +1594,9 @@
                 };
                 self.newImg = newImg;
                 self.render();
+            }).fail(function(event) {
+                alert("Image ID: " + idInput +
+                    " could not be found on the server, or you don't have permission to access it");
             });
         },
 
@@ -1677,7 +1769,6 @@
             } else {
                 iIds = idInput.split(',');
             }
-            console.log(iIds);
 
             // approx work out number of columns to layout new panels
             var colCount = Math.ceil(Math.sqrt(iIds.length)),
@@ -1736,7 +1827,6 @@
 
         importImage: function(imgDataUrl, coords, baseUrl) {
 
-            console.log('importImage', arguments);
             var self = this,
                 callback,
                 dataType = "json";
@@ -1745,8 +1835,6 @@
                 callback = "callback";
                 dataType = "jsonp";
             }
-
-            console.log(callback, dataType);
 
             // Get the json data for the image...
             $.ajax({
@@ -1821,8 +1909,9 @@
                 },
 
                 error: function(event) {
-                    alert("Image not found at " + imgDataUrl);
-                }
+                    alert("Image not found on the server, " +
+                        "or you don't have permission to access it at " + imgDataUrl);
+                },
             });
 
         }
@@ -2645,7 +2734,7 @@
                 }
             });
 
-            this.zoom_avg = zoom_sum/ this.models.length;
+            this.zoom_avg = parseInt(zoom_sum/ this.models.length, 10);
             this.theZ_avg = theZ_sum/ this.models.length;
             this.theT_avg = theT_sum/ this.models.length;
 
@@ -2767,6 +2856,9 @@
 
         // if 
         correct_rotation: function(dx, dy, rotation) {
+            if (dx === 0 && dy === 0) {
+                return {'dx': dx, 'dy': dy};
+            }
             var length = Math.sqrt(dx * dx + dy * dy),
                 ang1 = Math.atan(dy/dx),
                 deg1 = ang1/(Math.PI/180);  // rad -> deg
@@ -2806,6 +2898,8 @@
                 this.$vp_zoom_value.text(zoom + "%");
 
                 if (save) {
+                    if (typeof dx === "undefined") dx = 0;  // rare crazy-dragging case!
+                    if (typeof dy === "undefined") dy = 0;
                     this.dx = dx;
                     this.dy = dy;
                     _.each(this.models, function(m){
@@ -2933,7 +3027,7 @@
 
             this.$vp_frame = $(".vp_frame", this.$el);  // cache for later
             this.$vp_img = $(".vp_img", this.$el);
-            this.$vp_zoom_value.text(zoom + "%");
+            this.$vp_zoom_value.text((zoom >> 0) + "%");
 
             return this;
         }
@@ -2971,8 +3065,8 @@
                     step: 2,
                     value: self.rotation,
                     slide: function(event, ui) {
-                        $(".vp_img").css({'transform':'rotate(' + ui.value + 'deg)',
-                                        '-moz-transform':'rotate(' + ui.value + 'deg)'});
+                        $(".vp_img").css({'-webkit-transform':'rotate(' + ui.value + 'deg)',
+                                        'transform':'rotate(' + ui.value + 'deg)'});
                         $(".rotation_value").text(ui.value);
                     },
                     stop: function( event, ui ) {
@@ -3118,6 +3212,7 @@
                             .appendTo($channel_sliders);
 
                         $div.find('.ch_slider').slider({
+                            range: true,
                             min: min,
                             max: max,
                             values: [start, end],

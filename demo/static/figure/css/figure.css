@@ -80,6 +80,17 @@
         display: none;
     }
 
+    .figure-title {
+        color: #FFFFFF;
+        font-size: 18px;
+        left: 365px;
+        line-height: 20px;
+        padding: 12px;
+        position: absolute;
+        right: 450px;
+        text-align: center;
+    }
+
     footer {
         background: gray;
         height: 30px;
@@ -374,17 +385,21 @@
         height: 11px !important;
         width: 245px !important;
         top: 5px;
-        left: 35px;
+        left: 39px;
     }
     .ch_start, .ch_end {
         position: absolute;
         top: 0px;
     }
     .ch_start {
-        left: 10px;
+        left: 4px;
+        text-align: right;
+        width: 30px;
     }
     .ch_end {
-        right: 10px;
+        right: 5px;
+        text-align: left;
+        width: 30px;
     }
     .ui-slider-disabled a {
         display: none;
@@ -487,4 +502,14 @@
     .small-thumb {
         max-width: 40px;
         max-height: 40px;
+    }
+
+    #figure_files th .btn-sm:first-child {
+        padding-right: 0
+    }
+    #figure_files th .btn-sm:last-child {
+        padding-left: 0
+    }
+    .muted {
+        opacity: 0.4;
     }

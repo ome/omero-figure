@@ -12,7 +12,7 @@
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width">
 
-    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="static/figure/css/figure.css">
 
     <script type="text/javascript" src="//code.jquery.com/jquery-1.10.2.min.js"></script>
@@ -23,6 +23,9 @@
 
 
     <script>
+
+    var RELEASE_VERSION = "v1.0.0-beta1-rc4";
+
 
     var BASE_WEBFIGURE_URL = "/figure/",
         SAVE_WEBFIGURE_URL = "/figure/save_web_figure/",
@@ -69,13 +72,55 @@
                     <p>To get started...</p>
                     <div style="margin-left: auto; margin-right: auto; display: block; width: 70%">
                         <!-- Two buttons - use different elements in different ways -->
-                        <a href="#new" role="button" class="btn btn-lg btn-primary">
-                            Create New Figure
-                        </a>
+                        <button type="button" class="new_figure btn btn-lg btn-primary">
+                            Create New File
+                        </button>
                         <button type="button" class="open_figure btn btn-lg btn-primary pull-right">
-                            Open Figure
+                            Open File
                         </button>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- About OMERO.figure Modal -->
+    <div class="modal" id="aboutModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header" style="padding:15px; text-align:center">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title">About OMERO.figure</h4>
+                </div>
+                <div class="modal-body" style="padding: 25px 25px 35px 25px; text-align:center">
+                    <p><strong>Version</strong>: <script>document.write(RELEASE_VERSION)</script></p>
+                    <p>For more information, visit the
+                        <a target="new" href="http://will-moore.github.io/figure/">OMERO.figure Home Page</a>
+                    </p>
+                    <p>
+                        &copy; 2013-{% now "Y" %} University of Dundee &amp; Open Microscopy Environment<br/>
+                        OMERO and OMERO.figure are distributed under the terms of the GNU GPL.<br/>
+                        See: <a target="new" href="http://www.openmicroscopy.org">openmicroscopy.org</a>
+                    </p>
+                </div>
+                <div class="modal-footer" style="margin-top:0">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Confirm modal for custom messages -->
+    <div class="modal" id="confirmModal" data-backdrop="static" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Save Changes to Figure?</h4>
+                </div>
+                <div class="modal-body" style="padding: 25px 25px 35px 25px">
+                    <p>Your changes will be lost if you don't save them</p>
+                </div>
+                <div class="modal-footer" style="margin-top:0">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Don't Save</button>
+                    <button type="submit" class="btn btn-primary" data-dismiss="modal">Save</button>
                 </div>
             </div>
         </div>
@@ -223,20 +268,36 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                    <h4 class="modal-title">Open Figure</h4>
+                    <h4 class="modal-title">Open</h4>
                 </div>
                 
                     <div class="modal-body">
-                        <table class="table table-condensed">
+                        <table class="table table-condensed" id="figure_files">
                             <thead>
                                 <tr>
                                     <th></th>
-                                    <th>Name</th>
-                                    <th>Created</th>
+                                    <th width="50%">
+                                        Name
+                                        <button type="button" class="btn btn-link btn-sm sort-name muted">
+                                            <span class="glyphicon glyphicon-chevron-up"></span>
+                                        </button>
+                                        <button type="button" class="btn btn-link btn-sm sort-name-reverse muted">
+                                            <span class="glyphicon glyphicon-chevron-down"></span>
+                                        </button>
+                                    </th>
+                                    <th>
+                                        Created
+                                        <button type="button" class="btn btn-link btn-sm sort-created sort">
+                                            <span class="glyphicon glyphicon-chevron-up"></span>
+                                        </button>
+                                        <button type="button" class="btn btn-link btn-sm sort-created-reverse muted">
+                                            <span class="glyphicon glyphicon-chevron-down"></span>
+                                        </button>
+                                    </th>
                                     <th>Owner</th>
                                 </tr>
                             </thead>
-                            <tbody id="figure_files">
+                            <tbody>
                             </tbody>
                         </table>
                     </div>
@@ -273,11 +334,11 @@
                             <li class="save_figure disabled">
                                 <a href="#">Save ⌘S</a>
                             </li>
-                            <li class="save_as">
+                            <li class="save_as disabled">
                                 <a href="#">Save A Copy...</a>
                             </li>
                             <li class="delete_figure">
-                                <a href="#">Delete Figure</a>
+                                <a href="#">Delete</a>
                             </li>
                             <li class="paper_setup">
                                 <a href="#">Paper Setup...</a>
@@ -305,6 +366,20 @@
                          </ul>
                     </li>
 
+                    <li class="active dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Help <b class="caret"></b></a>
+                        <ul class="active dropdown-menu">
+                            <li class="about_figure">
+                                <a href="#">About OMERO.figure</a>
+                            </li>
+                            <li>
+                                <a href="http://will-moore.github.io/figure/" target="new">
+                                    Home Page
+                                </a>
+                            </li>
+                         </ul>
+                    </li>
+
                 </ul>
 
                 <form class="navbar-form navbar-left">
@@ -313,6 +388,10 @@
                         Save
                     </button>
                 </form>
+
+                <div class="navbar-header figure-title" title="Back to OMERO.webclient">
+                    <!-- Figure Title will be added here -->
+                </div>
 
                 <form class="navbar-form navbar-right">
 
@@ -355,17 +434,19 @@
                         </ul>
                     </div>
 
-                    <button id="pdf_inprogress" style="display:none" class="btn btn-primary btn-sm" title="Pdf generation in progress...">
-                        Creating Pdf...
+                    <button id="pdf_inprogress" style="display:none" class="btn btn-primary btn-sm"
+                            title="PDF generation in progress..." onClick="return false;">
+                        Creating PDF...
                     </button>
 
                     <a id="pdf_download" href="/webclient/annotation/1058/" target="new" style="padding: 4px 10px; display:none"
-                            class="btn btn-primary btn-sm" title="Download pdf">
+                            class="btn btn-primary btn-sm" title="Download PDF">
                         <span class="glyphicon glyphicon-download-alt" style="font-size: 14px"></span>
                     </a>
 
-                    <div class="btn-group">
-                        <button id="create_figure_pdf" title="Generate pdf for download"
+                    <div class="btn-group" title="PDF export not in DEMO">
+                        <button id="create_figure_pdf" title="Generate PDF for download"
+                            disabled="disabled"
                             type="button" class="btn btn-success btn-sm export_pdf">Export PDF</button>
                     </div>
                 </form>
@@ -612,9 +693,7 @@
         <% if (show){ %>
             <button type="submit" class="show_scalebar btn btn-sm btn-success pull-right">Show</button>
         <% } else { %>
-            <!-- hidden 'submit' so that 'enter' still submits form -->
-            <button type="submit" class="show_scalebar btn btn-sm btn-success pull-right" style="display:none">Show</button>
-            <button aria-hidden="true" class="close hide_scalebar delete-label" title="Remove Scalebar" type="button">×</button>
+            <button type="button" class="hide_scalebar btn btn-sm btn-default pull-right">Hide</button>
         <% } %>
         </form>
 
@@ -783,9 +862,10 @@
             <img class="vp_img"
                 style="opacity:<%= opacity %>; left:<%= css.left %>px; top:<%= css.top %>px;
                     width:<%= css.width %>px; height:<%= css.height %>px;
+                    -webkit-transform-origin:<%= css['transform-origin'] %>;
                     transform-origin:<%= css['transform-origin'] %>;
-                    transform:<%= css['transform'] %>;
-                    -webkit-transform:<%= css['transform'] %>"
+                    -webkit-transform:<%= css['transform'] %>;
+                    transform:<%= css['transform'] %>"
                 src="<%= css.src %>" />
             <% }); %>
         </div>
@@ -937,13 +1017,15 @@
 
     <script type="text/template" id="figure_file_item">
         <td>
-            <% if(imageId > 0) { print("<img class='small-thumb' src='" + thumbSrc + "' />") } %>
+            <a href="#file/<%= id %>">
+                <% if(imageId > 0) { print("<img class='small-thumb' src='" + thumbSrc + "' />") } %>
+            </a>
         </td>
         <td>
-            <a href="#figure/<%= id %>"><%= name %></a>
+            <a href="#file/<%= id %>"><%= name %></a>
         </td>
         <td>
-            <%= creationDate %>
+            <%= formatDate(creationDate) %>
         </td>
         <td>
             <%= ownerFullName %>
@@ -958,7 +1040,7 @@
     <script src="//cdnjs.cloudflare.com/ajax/libs/raphael/2.1.2/raphael-min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/mousetrap/1.4.6/mousetrap.min.js"></script>
     <script src="static/figure/3rdparty/backbone.mousetrap/backbone.mousetrap.js"></script>
-    <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
 
     <script type="text/javascript" src="static/figure/js/figure.js"></script>
     <script type="text/javascript" src="static/figure/js/undo.js"></script>

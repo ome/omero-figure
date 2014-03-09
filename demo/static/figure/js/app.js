@@ -46,57 +46,86 @@ $(function(){
 
         routes: {
             "": "index",
-            "new": "newFigure",
-            "figure/:id": "loadFigure"
+            "new(/)": "newFigure",
+            "file/:id(/)": "loadFigure",
         },
 
-        clearFigure: function() {
+        checkSaveAndClear: function(callback) {
 
-            $(".modal").modal('hide'); // hide any existing dialogs
+            var doClear = function() {
+                figureModel.clearFigure();
+                if (callback) {
+                    callback();
+                }
+            };
+            if (figureModel.get("unsaved")) {
 
-            // Arrive at 'home' page, either starting here OR we hit 'new' figure...
-            // ...so start by clearing any existing Figure (save first if needed)
-            var self = this;
-            if (figureModel.get("unsaved") && confirm("Save current Figure to OMERO?")) {
-                figureModel.save_to_OMERO({}, function() {
-                    figureModel.unset('fileId');
-                });
+                // show the confirm dialog...
+                figureConfirmDialog("Save Changes to Figure?",
+                    "Your changes will be lost if you don't save them",
+                    ["Don't Save", "Save"],
+                    function(btnTxt){
+                        if (btnTxt === "Save") {
+                             var options = {};
+                            // Save current figure or New figure...
+                            var fileId = figureModel.get('fileId');
+                            if (fileId) {
+                                options.fileId = fileId;
+                            } else {
+                                var figureName = prompt("Enter Figure Name", "unsaved");
+                                options.figureName = figureName || "unsaved";
+                            }
+                            options.success = doClear;
+                            figureModel.save_to_OMERO(options);
+                        } else if (btnTxt === "Don't Save") {
+                            figureModel.set("unsaved", false);
+                            doClear();
+                        } else {
+                            doClear();
+                        }
+                    });
             } else {
-                figureModel.unset('fileId');
+                doClear();
             }
-            figureModel.delete_panels();
-            figureModel.unset("figureName");
-
-            figureModel.set(figureModel.defaults);
-            // wait for undo/redo to handle above, then...
-            setTimeout(function() {
-                figureModel.trigger("reset_undo_redo");
-            }, 50);
-
-            return false;
         },
 
         index: function() {
-            this.clearFigure();
-            figureModel.set('unsaved', false);
-            $('#welcomeModal').modal();
+            $(".modal").modal('hide'); // hide any existing dialogs
+            var cb = function() {
+                $('#welcomeModal').modal();
+            };
+            this.checkSaveAndClear(cb);
         },
 
         newFigure: function() {
-            this.clearFigure();
-            figureModel.set('unsaved', false);
-            $('#addImagesModal').modal();
-        },
+            var cb = function() {
+                $('#addImagesModal').modal();
+            };
+            this.checkSaveAndClear(cb);
+         },
 
         loadFigure: function(id) {
-            this.clearFigure();
-
+            $(".modal").modal('hide'); // hide any existing dialogs
             var fileId = parseInt(id, 10);
-            figureModel.load_from_OMERO(fileId);
+            var cb = function() {
+                figureModel.load_from_OMERO(fileId);
+            };
+            this.checkSaveAndClear(cb);
         }
     });
 
     app = new FigureRouter();
     Backbone.history.start();
+
+    // We want 'a' links (E.g. to open_figure) to use app.navigate
+    $(document).on('click', 'a', function (ev) {
+        var href = $(this).attr('href');
+        // check that links are 'internal' to this app
+        if (href.substring(0, 8) === '/figure/') {
+            ev.preventDefault();
+            href = href.replace('/figure', "");
+            app.navigate(href, {trigger: true});
+        }
+    });
 
 });
