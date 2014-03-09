@@ -1043,7 +1043,7 @@
 
                 figureConfirmDialog("Save Changes to Figure?",
                     "Your changes will be lost if you don't save them",
-                    ["Cancel", "Don't Save", "Save"],
+                    ["Cancel", "Don't Save"],
                     function(btnTxt){
                         if (btnTxt === "Save") {
                             self.save_figure({success: callback});
@@ -1087,7 +1087,7 @@
 
                 figureConfirmDialog("Save Changes to Figure?",
                     "Your changes will be lost if you don't save them",
-                    ["Cancel", "Don't Save", "Save"],
+                    ["Cancel", "Don't Save"],
                     function(btnTxt){
                         if (btnTxt === "Save") {
                             self.save_figure();

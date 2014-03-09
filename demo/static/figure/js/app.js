@@ -58,7 +58,7 @@ $(function(){
                     callback();
                 }
             };
-            if (figureModel.get("unsaved")) {
+            if (false) { // Don't save DEMO // (figureModel.get("unsaved")) {
 
                 // show the confirm dialog...
                 figureConfirmDialog("Save Changes to Figure?",
