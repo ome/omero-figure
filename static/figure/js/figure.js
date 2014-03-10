@@ -1112,8 +1112,9 @@
         save_figure: function(options) {
             options = options || {};
 
-            var fileId = this.model.get('fileId');
-            if (fileId) {
+            var fileId = this.model.get('fileId'),
+                canEdit = this.model.get('canEdit');
+            if (fileId && canEdit) {
                 // Save
                 options.fileId = fileId;
                 this.model.save_to_OMERO(options);
