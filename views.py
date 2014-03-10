@@ -170,6 +170,7 @@ def save_web_figure(request, conn=None, **kwargs):
             pass
 
         # Try to set Group context to the same as first image
+        currGid = conn.SERVICE_OPTS.getOmeroGroup()
         try:
             json_data = json.loads(figureJSON)
             panel = json_data['panels'][0]
@@ -179,9 +180,12 @@ def save_web_figure(request, conn=None, **kwargs):
             if i is not None:
                 gid = i.getDetails().group.id.val
                 conn.SERVICE_OPTS.setOmeroGroup(gid)
+            else:
+                # Don't leave as -1
+                conn.SERVICE_OPTS.setOmeroGroup(currGid)
         except:
-            # Maybe give user warning that figure json is invalid?
-            pass
+            # revert back
+            conn.SERVICE_OPTS.setOmeroGroup(currGid)
         fileSize = len(figureJSON)
         f = StringIO()
         f.write(figureJSON)
