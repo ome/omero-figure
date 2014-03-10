@@ -854,8 +854,7 @@
             // Don't leave the page with unsaved changes!
             window.onbeforeunload = function() {
                 var canEdit = self.model.get('canEdit');
-                if (typeof canEdit === 'undefined') canEdit = true;
-                if (self.model.get("unsaved") && canEdit) {
+                if (self.model.get("unsaved")) {
                     return "Leave page with unsaved changes?";
                 }
             };
@@ -1040,12 +1039,15 @@
             };
 
             if (this.model.get("unsaved")) {
+                var saveBtnTxt = "Save",
+                    canEdit = this.model.get('canEdit');
+                if (!canEdit) saveBtnTxt = "Save a Copy";
 
                 figureConfirmDialog("Save Changes to Figure?",
                     "Your changes will be lost if you don't save them",
-                    ["Cancel", "Don't Save", "Save"],
+                    ["Cancel", "Don't Save", saveBtnTxt],
                     function(btnTxt){
-                        if (btnTxt === "Save") {
+                        if (btnTxt === saveBtnTxt) {
                             self.save_figure({success: callback});
                         } else if (btnTxt === "Don't Save") {
                             callback();
@@ -1083,12 +1085,15 @@
             };
 
             if (this.model.get("unsaved")) {
+                var saveBtnTxt = "Save",
+                    canEdit = this.model.get('canEdit');
+                if (!canEdit) saveBtnTxt = "Save a Copy";
 
                 figureConfirmDialog("Save Changes to Figure?",
                     "Your changes will be lost if you don't save them",
-                    ["Cancel", "Don't Save", "Save"],
+                    ["Cancel", "Don't Save", saveBtnTxt],
                     function(btnTxt){
-                        if (btnTxt === "Save") {
+                        if (btnTxt === saveBtnTxt) {
                             self.save_figure();
                             callback();
                         } else if (btnTxt === "Don't Save") {

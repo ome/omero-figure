@@ -60,16 +60,19 @@ $(function(){
             };
             if (figureModel.get("unsaved")) {
 
+                var saveBtnTxt = "Save",
+                    canEdit = figureModel.get('canEdit');
+                if (!canEdit) saveBtnTxt = "Save a Copy";
                 // show the confirm dialog...
                 figureConfirmDialog("Save Changes to Figure?",
                     "Your changes will be lost if you don't save them",
-                    ["Don't Save", "Save"],
+                    ["Don't Save", saveBtnTxt],
                     function(btnTxt){
-                        if (btnTxt === "Save") {
+                        if (btnTxt === saveBtnTxt) {
                              var options = {};
                             // Save current figure or New figure...
                             var fileId = figureModel.get('fileId');
-                            if (fileId) {
+                            if (fileId && canEdit) {
                                 options.fileId = fileId;
                             } else {
                                 var figureName = prompt("Enter Figure Name", "unsaved");
