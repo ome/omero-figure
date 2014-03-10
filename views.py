@@ -168,6 +168,20 @@ def save_web_figure(request, conn=None, **kwargs):
         except:
             # Maybe give user warning that figure json is invalid?
             pass
+
+        # Try to set Group context to the same as first image
+        try:
+            json_data = json.loads(figureJSON)
+            panel = json_data['panels'][0]
+            firstImgId = panel['imageId']
+            conn.SERVICE_OPTS.setOmeroGroup('-1')
+            i = conn.getObject("Image", firstImgId)
+            if i is not None:
+                gid = i.getDetails().group.id.val
+                conn.SERVICE_OPTS.setOmeroGroup(gid)
+        except:
+            # Maybe give user warning that figure json is invalid?
+            pass
         fileSize = len(figureJSON)
         f = StringIO()
         f.write(figureJSON)
