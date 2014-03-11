@@ -13,6 +13,14 @@
 	"creationDate": "2013-10-07",
 	"canEdit": false,
 	"name": "Wang et al, Patronin: 2013"
+},
+{
+	"description": {"baseUrl": "http://jcb-dataviewer.rupress.org/jcb", "imageId": 573812},
+	"ownerFullName": "Will Moore",
+	"id": 3,
+	"creationDate": "2013-10-07",
+	"canEdit": false,
+	"name": "Wang et al, Patronin: Figure 2"
 }
 
 ]
