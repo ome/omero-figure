@@ -114,10 +114,17 @@
         <h2>Install instructions</h2>
         <p>
           <ul>
-            <li>Download the release from the top of this page and unzip</li>
-            <li>Rename the unzipped directory to 'figure'</li>
-            <li>Place the directory on your PYTHONPATH</li>
-            <li>Configure web: <code> $ bin/omero config set omero.web.apps '["figure"]' </code></li>
+            <li>Download the release from the top of this page and unzip.</li>
+            <li>Rename the unzipped directory to 'figure'.</li>
+            <li>Place the directory on your PYTHONPATH.</li>
+            <li>Add the app to OMERO.web:
+              <code style="display:block"> $ bin/omero config set omero.web.apps '["figure"]' </code>
+            </li>
+            <li>Display a link to 'Figure' at the top of the webclient:
+              <code style="display:block; width:650px">
+                $ bin/omero config set omero.web.ui.top_links '[["Figure", "figure_index"]]'
+              </code>
+            </li>
             <li>Restart web: 
               <code style="display:block">
                 $ bin/omero web stop<br>
