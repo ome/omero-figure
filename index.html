@@ -118,11 +118,13 @@
             <li>Rename the unzipped directory to 'figure'.</li>
             <li>Place the directory on your PYTHONPATH.</li>
             <li>Add the app to OMERO.web:
-              <code style="display:block"> $ bin/omero config set omero.web.apps '["figure"]' </code>
+              <code style="display:block"> $ bin/omero config append omero.web.apps '"figure"' &nbsp # NB: double quotes</code>
+              NB: for OMERO 4.4.x you'll need to 'set' the whole list (append not supported):
+              <code style="display:block"> $ bin/omero config set omero.web.apps '["figure"]' &nbsp # OMERO 4.4 only</code>
             </li>
             <li>Display a link to 'Figure' at the top of the webclient:
               <code style="display:block; width:650px">
-                $ bin/omero config set omero.web.ui.top_links '[["Figure", "figure_index"]]'
+                $ bin/omero config append omero.web.ui.top_links '["Figure", "figure_index"]'
               </code>
             </li>
             <li>Restart web: 
