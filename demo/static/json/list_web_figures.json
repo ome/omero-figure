@@ -21,6 +21,14 @@
 	"creationDate": "2013-10-07",
 	"canEdit": false,
 	"name": "Wang et al, Patronin: Figure 2"
+},
+{
+	"description": {"baseUrl": "http://jcb-dataviewer.rupress.org/jcb", "imageId": 623054},
+	"ownerFullName": "Will Moore",
+	"id": 4,
+	"creationDate": "2014-03-10",
+	"canEdit": false,
+	"name": "Zatulovskiy et al, Chemotaxis"
 }
 
 ]
