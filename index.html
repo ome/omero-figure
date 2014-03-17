@@ -116,7 +116,11 @@
           <ul>
             <li>Download the release from the top of this page and unzip.</li>
             <li>Rename the unzipped directory to 'figure'.</li>
-            <li>Place the directory on your PYTHONPATH.</li>
+            <li>
+              Place 'figure' <strong>within</strong> a directory that is on your PYTHONPATH, or
+              in the OMERO <code>lib/python/omeroweb/</code> directory. NB: for OMERO 4.4.9 and earlier, you will
+              have to use lib/python/omeroweb/ (other locations not supported).
+            </li>
             <li>Add the app to OMERO.web:
               <code style="display:block"> $ bin/omero config append omero.web.apps '"figure"' &nbsp # NB: double quotes</code>
               NB: for OMERO 4.4.x you'll need to 'set' the whole list (append not supported):
