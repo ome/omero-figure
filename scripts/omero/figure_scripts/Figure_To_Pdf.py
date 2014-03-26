@@ -99,10 +99,10 @@ def get_time_label_text(deltaT, format):
     if format == "secs":
         text = "%s secs" % deltaT
     elif format == "mins":
-        text = "%s mins" % round(deltaT / 60)
+        text = "%s mins" % int(round(float(deltaT) / 60))
     elif format == "hrs:mins":
         h = (deltaT / 3600)
-        m = round((float(deltaT) % 3600) / 60)
+        m = int(round((float(deltaT) % 3600) / 60))
         text = "%s:%02d" % (h, m)
     elif format == "hrs:mins:secs":
         h = (deltaT / 3600)
