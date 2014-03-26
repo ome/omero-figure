@@ -130,7 +130,7 @@
             if (format === "secs") {
                 text = deltaT + " secs";
             } else if (format === "mins") {
-                text = Math.round(deltaT / 60) + "mins";
+                text = Math.round(deltaT / 60) + " mins";
             } else if (format === "hrs:mins") {
                 h = (deltaT / 3600) >> 0;
                 m = pad(Math.round((deltaT % 3600) / 60));
