@@ -1,0 +1,34 @@
+[{
+	"description": {"baseUrl": "http://jcb-dataviewer.rupress.org/jcb", "imageId": 127},
+	"ownerFullName": "Will Moore",
+	"id": 1,
+	"creationDate": "2007-10-22",
+	"canEdit": false,
+	"name": "Porter et al, Bod1: 2007"
+},
+{
+	"description": {"baseUrl": "http://jcb-dataviewer.rupress.org/jcb", "imageId": 573821},
+	"ownerFullName": "Will Moore",
+	"id": 2,
+	"creationDate": "2013-10-07",
+	"canEdit": false,
+	"name": "Wang et al, Patronin: 2013"
+},
+{
+	"description": {"baseUrl": "http://jcb-dataviewer.rupress.org/jcb", "imageId": 573812},
+	"ownerFullName": "Will Moore",
+	"id": 3,
+	"creationDate": "2013-10-07",
+	"canEdit": false,
+	"name": "Wang et al, Patronin: Figure 2"
+},
+{
+	"description": {"baseUrl": "http://jcb-dataviewer.rupress.org/jcb", "imageId": 623054},
+	"ownerFullName": "Will Moore",
+	"id": 4,
+	"creationDate": "2014-03-10",
+	"canEdit": false,
+	"name": "Zatulovskiy et al, Chemotaxis"
+}
+
+]

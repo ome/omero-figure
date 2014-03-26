@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="Figure : An OMERO.web app for creating Figures from images in OMERO" />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="/css/stylesheet.css">
+
+    <style type"text/css">
+      p, li {
+        font-size: 18px;
+      }
+      h1, h2, h3, h4, h5, #project_title {
+        font-weight: 400;
+      }
+      li {
+        padding-bottom: 8px;
+      }
+      #main_content {
+        padding-top: 20px;
+      }
+      #forkme_banner {
+        background: #0090FF;
+        padding: 10px 30px;
+        font-size: 20px;
+      }
+    </style>
+
+    <!-- Google Analytics -->
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-49056175-1', 'will-moore.github.io');
+      ga('send', 'pageview');
+    </script>
+
+    <title>Figure</title>
+  </head>
+
+  <body>
+
+    <a href="https://github.com/will-moore/figure">
+      <img style="position: absolute; top: 0; right: 0; border: 0; box-shadow: none; margin: 0; padding: 0" src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png" alt="Fork me on GitHub">
+    </a>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner" style="padding: 20px 10px 30px;">
+          <a id="forkme_banner" href="http://will-moore.github.io/figure/demo/#file/1">Try the DEMO (beta!)</a>
+
+          <h1 id="project_title">OMERO.figure</h1>
+          <!-- <h2 id="project_tagline">Makes figure creation fun!</h2> -->
+
+            <section id="downloads">
+              <a class="zip_download_link" href="http://downloads.openmicroscopy.org/figure/1.0.0-beta1/figure-1.0.0-beta1.zip">
+                Download this project as a .zip file
+              </a>
+              <a class="tar_download_link" href="http://downloads.openmicroscopy.org/figure/1.0.0-beta1/figure-1.0.0-beta1.tar.gz">
+                Download this project as a tar.gz file
+              </a>
+            </section>
+        </header>
+    </div>
+
+
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+
+      <h1>OMERO.figure blog</h1>
+    
+        <h2><a href="/2014/03/26/why-I-created-omero-figure.html">Why I created OMERO.figure</a></h2>
+        <span>26 Mar 2014</span>
+        <p>I used to be a biologist in the lab a (good) few years ago now,
+and I remember the time it took to create figures from my
+microscope images. I had to open each Deltavision image in the SoftWoRx
+application, copy and paste rendering settings from one image to another,
+then save each one as a tiff for each channel I wanted to show.
+I had to write the rendering settings in my lab notebook in case I
+wanted to come back and export more images with the same settings later.
+Then I&#39;d go to Photoshop, copy and paste each image into a single
+figure and carefully arrange them in appropriate rows and columns.</p>
+
+<p>That was before we had OMERO available. One of the first useful
+pieces of functionality I contributed to OMERO was the &quot;Figure scripts&quot;,
+as part of the OMERO 4.2 release in July 2010.
+These are Python scripts that constructed various standard types
+of figure, such as a Split-view figure or ROI figure. See a 
+<a href="http://downloads.openmicroscopy.org/movies/omero-4-2/mov/FigureExport.mov">Figure scripts Demo Movie</a>.</p>
+
+<p>These scripts proved quite popular, but were very inflexible and
+were mostly used as a quick export for a lab meeting or
+print out. It was still necessary to create most figures manually,
+and so we added the &#39;Batch Image Export&#39; script that would
+create a zip with all the separate planes and channels for your
+chosen images, along with a log of their rendering settings.</p>
+
+<p>However, there was clearly a need for a tool that would
+give users the flexibility they required, but still provide
+the rapid layout of panels with coordinated rendering settings,
+regions of interest, labels and other common features.</p>
+
+    
+        <h2><a href="/2014/03/25/first-blog-post-using-jekyll.html">First blog post using Jekyll</a></h2>
+        <span>25 Mar 2014</span>
+        <p>Who knows if this blog is going to turn into anything worth reading,
+or even if it&#39;s going to see the light of day? But I&#39;ll give it a
+go and if nothing else, I will at least have learnt how to use
+<a href="http://jekyllrb.com">Jekyll</a> for creating blogs.</p>
+
+    
+
+
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">
+          <!-- <span style="padding-right: 20px; position: relative; top: -5px;"> -->
+            Figure maintained by Will Moore. <br>
+            github: <a href="https://github.com/will-moore">will-moore</a>
+            Twitter: <a href="https://twitter.com/will_j_moore">
+              @will_j_moore
+            </a>
+          <!-- </span> -->
+        <!-- <a href="https://twitter.com/will_j_moore" class="twitter-follow-button" data-show-count="false" data-show-screen-name="false">Follow @will_j_moore</a> -->
+<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
+        </p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
+
