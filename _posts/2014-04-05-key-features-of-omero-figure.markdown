@@ -1,7 +1,6 @@
 ---
 layout: post
 title:  "Key features of OMERO.figure"
-date:   
 ---
 
 The two main goals of OMERO.figure were to make it
