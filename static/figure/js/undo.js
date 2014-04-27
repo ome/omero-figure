@@ -144,7 +144,7 @@ var UndoManager = Backbone.Model.extend({
         }
 
         // in case we only got 'ignorable' changes
-        if (_.size(redo_attrs) == 0) {
+        if (_.size(redo_attrs) === 0) {
             return;
         }
 
@@ -160,7 +160,7 @@ var UndoManager = Backbone.Model.extend({
         // this could maybe moved to FigureModel itself
         var set_selected = function(selected) {
             for (var i=0; i<selected.length; i++) {
-                if (i == 0) {
+                if (i === 0) {
                     self.figureModel.setSelected(selected[i], true);
                 } else {
                     self.figureModel.addSelected(selected[i]);

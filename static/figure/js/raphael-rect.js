@@ -118,6 +118,9 @@ var RectView = Backbone.View.extend({
                 return false;
             };
         };
+        var _stop_event_propagation = function(e) {
+            e.stopImmediatePropagation();
+        }
         for (var key in this.handleIds) {
             var hx = this.handleIds[key][0];
             var hy = this.handleIds[key][1];
@@ -131,9 +134,7 @@ var RectView = Backbone.View.extend({
                 _handle_drag_start(),
                 _handle_drag_end()
             );
-            handle.mousedown(function(e){
-                e.stopImmediatePropagation();
-            });
+            handle.mousedown(_stop_event_propagation);
             self.handles.push(handle);
         }
         self.handles.hide();     // show on selection
