@@ -63,9 +63,9 @@ var FileListView = Backbone.View.extend({
     initialize:function () {
         this.$tbody = $('tbody', this.$el);
         var self = this;
-        this.model.bind("reset remove sync sort", this.render, this);
+        this.model.bind("remove sort", this.render, this);
         this.model.bind("add", function (file) {
-            var e = new FileListItemView({model:file}).render().el;
+            var e = new FileListItemView({model:file}).el;
             self.$tbody.prepend(e);
         });
     },
@@ -158,11 +158,22 @@ var FileListItemView = Backbone.View.extend({
         return s;
     },
 
+    formatName: function(name) {
+        // add spaces so we can wrap really long names
+        var length = 60;
+        if (name.length > length) {
+            // split into chunks and join with space
+            name = name.match(/.{1,60}/g).join(" ");
+        }
+        return name;
+    },
+
     render:function () {
         var json = this.model.toJSON(),
             baseUrl = json.baseUrl;
         baseUrl = baseUrl || WEBGATEWAYINDEX.slice(0, -1);  // remove last /
         json.thumbSrc = baseUrl + "/render_thumbnail/" + json.imageId + "/";
+        json.formatName = this.formatName;
         json.formatDate = this.formatDate;
         var h = this.template(json);
         $(this.el).html(h);

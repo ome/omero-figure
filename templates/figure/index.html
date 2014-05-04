@@ -262,7 +262,7 @@
     </div><!-- /.modal -->
     <!-- Modal -->
     <div class="modal" id="openFigureModal" tabindex="-1" role="dialog" aria-labelledby="addImagesLabel" aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog" style="width:800px">
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
@@ -274,7 +274,7 @@
                             <thead>
                                 <tr>
                                     <th></th>
-                                    <th width="50%">
+                                    <th>
                                         Name
                                         <button type="button" class="btn btn-link btn-sm sort-name muted">
                                             <span class="glyphicon glyphicon-chevron-up"></span>
@@ -1028,7 +1028,7 @@
             </a>
         </td>
         <td>
-            <a href="{% url 'figure_index' %}file/<%= id %>"><%= name %></a>
+            <a href="{% url 'figure_index' %}file/<%= id %>"><%= formatName(name) %></a>
         </td>
     <% } %>
         <td>
