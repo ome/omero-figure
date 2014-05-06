@@ -76,12 +76,14 @@ var FileListView = Backbone.View.extend({
 
     initialize:function () {
         this.$tbody = $('tbody', this.$el);
+        this.$fileFilter = $('#file-filter');
         var self = this;
         this.model.bind("remove sort", this.render, this);
         this.model.bind("add", function (file) {
             var e = new FileListItemView({model:file}).el;
             self.$tbody.prepend(e);
         });
+        this.$fileFilter.val("");
     },
 
     events: {
@@ -90,6 +92,11 @@ var FileListView = Backbone.View.extend({
         "click .sort-name": "sort_name",
         "click .sort-name-reverse": "sort_name_reverse",
         "click .pick-owner": "pick_owner",
+        "keyup #file-filter": "filter_files",
+    },
+
+    filter_files: function(event) {
+        this.render();
     },
 
     sort_created: function(event) {
@@ -132,15 +139,23 @@ var FileListView = Backbone.View.extend({
     pick_owner: function(event) {
         event.preventDefault()
         var owner = $(event.target).text();
-        this.owner = owner;
+        if (owner != " -- Show All -- ") {
+            this.owner = owner;
+        } else {
+            delete this.owner;
+        }
         this.render();
     },
 
     render:function () {
         var self = this,
-            filter = {};
+            filter = {},
+            filterVal = this.$fileFilter.val();
         if (this.owner) {
             filter.owner = this.owner;
+        }
+        if (filterVal.length > 0) {
+            filter.name = filterVal;
         }
         this.$tbody.empty();
         if (this.model.models.length === 0) {
@@ -157,7 +172,8 @@ var FileListView = Backbone.View.extend({
         });
         owners = this.model.pluck("ownerFullName");
         owners = _.uniq(owners, false);
-        var ownersHtml = ""
+        var ownersHtml = "<li><a class='pick-owner' href='#'> -- Show All -- </a></li>";
+            ownersHtml += "<li class='divider'></li>";
         _.each(owners, function(owner) {
             ownersHtml += "<li><a class='pick-owner' href='#'>" + owner + "</a></li>";
         });

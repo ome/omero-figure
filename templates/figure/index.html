@@ -275,13 +275,22 @@
                                 <tr>
                                     <th></th>
                                     <th>
-                                        Name
-                                        <button type="button" class="btn btn-link btn-sm sort-name muted">
-                                            <span class="glyphicon glyphicon-chevron-up"></span>
-                                        </button>
-                                        <button type="button" class="btn btn-link btn-sm sort-name-reverse muted">
-                                            <span class="glyphicon glyphicon-chevron-down"></span>
-                                        </button>
+                                        <form class="form-horizontal" role="form">
+                                            <div class="form-group pull-left" style="margin-bottom: 0; width: 75%">
+                                                <label for="file-filter" class="col-sm-3 control-label">Name</label>
+                                                <div class="col-sm-9">
+                                                    <input class="form-control" id="file-filter" placeholder="Filter">
+                                                </div>
+                                            </div>
+                                            <div class="form-group pull-left" style="margin-bottom: 0; margin-left: 0">
+                                                <button type="button" class="btn btn-link btn-sm sort-name muted">
+                                                    <span class="glyphicon glyphicon-chevron-up"></span>
+                                                </button>
+                                                <button type="button" class="btn btn-link btn-sm sort-name-reverse muted">
+                                                    <span class="glyphicon glyphicon-chevron-down"></span>
+                                                </button>
+                                            </div>
+                                        </form>
                                     </th>
                                     <th>
                                         Created
