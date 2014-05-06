@@ -17,6 +17,20 @@ var FigureFile = Backbone.Model.extend({
             this.set('baseUrl', desc.baseUrl);
         }
     },
+
+    isVisible: function(filter) {
+        if (filter.owner) {
+            if (this.get('ownerFullName') !== filter.owner) {
+                return false;
+            }
+        }
+        if (filter.name) {
+            if (this.get('name').indexOf(filter.name) < 0) {
+                return false;
+            }
+        }
+        return true;
+    }
 });
 
 
@@ -75,6 +89,7 @@ var FileListView = Backbone.View.extend({
         "click .sort-created-reverse": "sort_created_reverse",
         "click .sort-name": "sort_name",
         "click .sort-name-reverse": "sort_name_reverse",
+        "click .pick-owner": "pick_owner",
     },
 
     sort_created: function(event) {
@@ -114,8 +129,19 @@ var FileListView = Backbone.View.extend({
         $(event.target).removeClass('muted');
     },
 
+    pick_owner: function(event) {
+        event.preventDefault()
+        var owner = $(event.target).text();
+        this.owner = owner;
+        this.render();
+    },
+
     render:function () {
-        var self = this;
+        var self = this,
+            filter = {};
+        if (this.owner) {
+            filter.owner = this.owner;
+        }
         this.$tbody.empty();
         if (this.model.models.length === 0) {
             var msg = "<tr><td colspan='3'>" +
@@ -124,9 +150,18 @@ var FileListView = Backbone.View.extend({
             self.$tbody.html(msg);
         }
         _.each(this.model.models, function (file) {
-            var e = new FileListItemView({model:file}).render().el;
-            self.$tbody.prepend(e);
+            if (file.isVisible(filter)) {
+                var e = new FileListItemView({model:file}).render().el;
+                self.$tbody.prepend(e);
+            }
         });
+        owners = this.model.pluck("ownerFullName");
+        owners = _.uniq(owners, false);
+        var ownersHtml = ""
+        _.each(owners, function(owner) {
+            ownersHtml += "<li><a class='pick-owner' href='#'>" + owner + "</a></li>";
+        });
+        $("#owner-menu").html(ownersHtml);
         return this;
     }
 });

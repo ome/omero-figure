@@ -292,7 +292,16 @@
                                             <span class="glyphicon glyphicon-chevron-down"></span>
                                         </button>
                                     </th>
-                                    <th>Owner</th>
+                                    <th>
+                                        <div class="btn-group">
+                                            <button id="file-owner-btn" type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                                <b>Owner</b><span class="caret"></span>
+                                            </button>
+                                            <ul id="owner-menu" class="dropdown-menu pull-right" role="menu">
+                                                <!-- owners added here -->
+                                            </ul>
+                                        </div>
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody>
