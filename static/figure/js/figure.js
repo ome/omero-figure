@@ -289,7 +289,8 @@
                 imageId = this.get('imageId'),
                 theZ = this.get('theZ'),
                 theT = this.get('theT'),
-                baseUrl = this.get('baseUrl') || "/webgateway";
+                baseUrl = this.get('baseUrl')
+            baseUrl = baseUrl || WEBGATEWAYINDEX.slice(0, -1);  // remove last /
 
             return baseUrl + '/render_image/' + imageId +
                     "/" + theZ + "/" + theT + '/?c=' + renderString + "&m=c";
