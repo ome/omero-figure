@@ -160,7 +160,8 @@ var FileListItemView = Backbone.View.extend({
 
     render:function () {
         var json = this.model.toJSON(),
-            baseUrl = json.baseUrl || "/webgateway";
+            baseUrl = json.baseUrl;
+        baseUrl = baseUrl || WEBGATEWAYINDEX.slice(0, -1);  // remove last /
         json.thumbSrc = baseUrl + "/render_thumbnail/" + json.imageId + "/";
         json.formatDate = this.formatDate;
         var h = this.template(json);

@@ -118,7 +118,7 @@ $(function(){
     });
 
     app = new FigureRouter();
-    Backbone.history.start({pushState: true, root:'/figure/'});
+    Backbone.history.start({pushState: true, root: BASE_WEBFIGURE_URL});
 
     // We want 'a' links (E.g. to open_figure) to use app.navigate
     $(document).on('click', 'a', function (ev) {
