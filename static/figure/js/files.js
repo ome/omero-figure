@@ -25,7 +25,7 @@ var FigureFile = Backbone.Model.extend({
             }
         }
         if (filter.name) {
-            if (this.get('name').indexOf(filter.name) < 0) {
+            if (this.get('name').toLowerCase().indexOf(filter.name) < 0) {
                 return false;
             }
         }
@@ -155,7 +155,7 @@ var FileListView = Backbone.View.extend({
             filter.owner = this.owner;
         }
         if (filterVal.length > 0) {
-            filter.name = filterVal;
+            filter.name = filterVal.toLowerCase();
         }
         this.$tbody.empty();
         if (this.model.models.length === 0) {
