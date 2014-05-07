@@ -44,6 +44,11 @@ var FileList = Backbone.Collection.extend({
     },
 
     disable: function(fileId) {
+        // enable all first
+        this.where({disabled: true}).forEach(function(f){
+            f.set('disabled', false);
+        });
+
         var f = this.get(fileId);
         if (f) {
             f.set('disabled', true);

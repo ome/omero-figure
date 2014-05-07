@@ -1077,12 +1077,18 @@
                 currentFileId = self.model.get('fileId');
             var callback = function() {
                 $("#openFigureModal").modal();
-                self.figureFiles.fetch({success: function(fileList){
-                    // Don't allow opening of current figure
+                if (self.figureFiles.length === 0) {
+                    self.figureFiles.fetch({success: function(fileList){
+                        // Don't allow opening of current figure
+                        if (currentFileId) {
+                            fileList.disable(currentFileId);
+                        }
+                    }});
+                } else {
                     if (currentFileId) {
-                        fileList.disable(currentFileId);
+                        self.figureFiles.disable(currentFileId);
                     }
-                }});
+                }
             };
 
             if (this.model.get("unsaved")) {
