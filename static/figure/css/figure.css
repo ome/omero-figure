@@ -500,8 +500,8 @@
     }
 
     .small-thumb {
-        max-width: 40px;
-        max-height: 40px;
+        width: 40px;
+        height: 40px;
     }
 
     #figure_files th .btn-sm:first-child {

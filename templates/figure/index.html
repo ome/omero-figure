@@ -262,7 +262,7 @@
     </div><!-- /.modal -->
     <!-- Modal -->
     <div class="modal" id="openFigureModal" tabindex="-1" role="dialog" aria-labelledby="addImagesLabel" aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog" style="width:800px">
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
@@ -270,18 +270,27 @@
                 </div>
                 
                     <div class="modal-body">
-                        <table class="table table-condensed" id="figure_files">
+                        <table class="table table-condensed">
                             <thead>
                                 <tr>
                                     <th></th>
-                                    <th width="50%">
-                                        Name
-                                        <button type="button" class="btn btn-link btn-sm sort-name muted">
-                                            <span class="glyphicon glyphicon-chevron-up"></span>
-                                        </button>
-                                        <button type="button" class="btn btn-link btn-sm sort-name-reverse muted">
-                                            <span class="glyphicon glyphicon-chevron-down"></span>
-                                        </button>
+                                    <th>
+                                        <form class="form-horizontal" role="form">
+                                            <div class="form-group pull-left" style="margin-bottom: 0; width: 75%">
+                                                <label for="file-filter" class="col-sm-3 control-label">Name</label>
+                                                <div class="col-sm-9">
+                                                    <input class="form-control" id="file-filter" placeholder="Filter">
+                                                </div>
+                                            </div>
+                                            <div class="form-group pull-left" style="margin-bottom: 0; margin-left: 0">
+                                                <button type="button" class="btn btn-link btn-sm sort-name muted">
+                                                    <span class="glyphicon glyphicon-chevron-up"></span>
+                                                </button>
+                                                <button type="button" class="btn btn-link btn-sm sort-name-reverse muted">
+                                                    <span class="glyphicon glyphicon-chevron-down"></span>
+                                                </button>
+                                            </div>
+                                        </form>
                                     </th>
                                     <th>
                                         Created
@@ -292,7 +301,16 @@
                                             <span class="glyphicon glyphicon-chevron-down"></span>
                                         </button>
                                     </th>
-                                    <th>Owner</th>
+                                    <th>
+                                        <div class="btn-group" title="Filter files by owner">
+                                            <button id="file-owner-btn" type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                                <b>Owner</b> <span class="caret"></span>
+                                            </button>
+                                            <ul id="owner-menu" class="dropdown-menu pull-right" role="menu">
+                                                <!-- owners added here -->
+                                            </ul>
+                                        </div>
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -300,6 +318,7 @@
                         </table>
                     </div>
                     <div class="modal-footer" style="margin-top:0px">
+                        <button title="Refresh file list" type="button" class="btn btn-default pull-left refresh-files">Refresh</button>
                         <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
                     </div>
             </div>
@@ -1028,7 +1047,7 @@
             </a>
         </td>
         <td>
-            <a href="{% url 'figure_index' %}file/<%= id %>"><%= name %></a>
+            <a href="{% url 'figure_index' %}file/<%= id %>"><%= formatName(name) %></a>
         </td>
     <% } %>
         <td>
