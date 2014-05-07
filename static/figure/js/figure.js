@@ -1145,6 +1145,9 @@
 
         save_as: function(options) {
 
+            // clear file list (will be re-fetched when needed)
+            this.figureFiles.reset();
+
             var self = this;
             options = options || {};
             var defaultName = this.model.get('figureName');

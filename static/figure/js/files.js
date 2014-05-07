@@ -77,17 +77,14 @@ var FileList = Backbone.Collection.extend({
 
 var FileListView = Backbone.View.extend({
 
-    el: $("#figure_files"),
+    el: $("#openFigureModal"),
 
     initialize:function () {
         this.$tbody = $('tbody', this.$el);
         this.$fileFilter = $('#file-filter');
         var self = this;
+        // we automatically 'sort' on fetch, add etc.
         this.model.bind("remove sort", this.render, this);
-        this.model.bind("add", function (file) {
-            var e = new FileListItemView({model:file}).el;
-            self.$tbody.prepend(e);
-        });
         this.$fileFilter.val("");
     },
 
@@ -98,9 +95,16 @@ var FileListView = Backbone.View.extend({
         "click .sort-name-reverse": "sort_name_reverse",
         "click .pick-owner": "pick_owner",
         "keyup #file-filter": "filter_files",
+        "click .refresh-files": "refresh_files",
+    },
+
+    refresh_files: function(event) {
+        // will trigger sort & render()
+        this.model.fetch();
     },
 
     filter_files: function(event) {
+        // render() will pick the new filter text
         this.render();
     },
 
@@ -137,7 +141,7 @@ var FileListView = Backbone.View.extend({
     },
 
     render_sort_btn: function(event) {
-        $("th .btn", this.$el).addClass('muted');
+        $("th .btn-sm", this.$el).addClass('muted');
         $(event.target).removeClass('muted');
     },
 
