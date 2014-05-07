@@ -124,9 +124,9 @@ $(function(){
     $(document).on('click', 'a', function (ev) {
         var href = $(this).attr('href');
         // check that links are 'internal' to this app
-        if (href.substring(0, 8) === '/figure/') {
+        if (href.substring(0, BASE_WEBFIGURE_URL.length) === BASE_WEBFIGURE_URL) {
             ev.preventDefault();
-            href = href.replace('/figure', "");
+            href = href.replace(BASE_WEBFIGURE_URL, "/");
             app.navigate(href, {trigger: true});
         }
     });
