@@ -84,7 +84,7 @@ var FileListView = Backbone.View.extend({
         this.$fileFilter = $('#file-filter');
         var self = this;
         // we automatically 'sort' on fetch, add etc.
-        this.model.bind("remove sort", this.render, this);
+        this.model.bind("sync remove sort", this.render, this);
         this.$fileFilter.val("");
     },
 
@@ -169,7 +169,7 @@ var FileListView = Backbone.View.extend({
         this.$tbody.empty();
         if (this.model.models.length === 0) {
             var msg = "<tr><td colspan='3'>" +
-                "You have no figures. Start by <a href='#new'>creating a new figure</a>" +
+                "You have no figures. Start by <a href='" + BASE_WEBFIGURE_URL + "new'>creating a new figure</a>" +
                 "</td></tr>";
             self.$tbody.html(msg);
         }
@@ -220,10 +220,10 @@ var FileListItemView = Backbone.View.extend({
 
     formatName: function(name) {
         // add spaces so we can wrap really long names
-        var length = 60;
+        var length = 50;
         if (name.length > length) {
             // split into chunks and join with space
-            name = name.match(/.{1,60}/g).join(" ");
+            name = name.match(/.{1,50}/g).join(" ");
         }
         return name;
     },

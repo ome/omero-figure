@@ -101,6 +101,7 @@ $(function(){
         },
 
         newFigure: function() {
+            $(".modal").modal('hide'); // hide any existing dialogs
             var cb = function() {
                 $('#addImagesModal').modal();
             };
