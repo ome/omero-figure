@@ -2661,8 +2661,10 @@
         // render BOTH templates
         render: function() {
             var json,
-                title = this.models.length + " Panels Selected...";
+                title = this.models.length + " Panels Selected...",
+                imageIds = [];
             _.each(this.models, function(m, i){
+                imageIds.push(m.get('imageId'));
                 // start with json data from first Panel
                 if (!json) {
                     json = m.toJSON();
@@ -2701,7 +2703,10 @@
                 }
             });
 
-            json.setImageId = (json.imageId > 0);
+            json.imageIds = _.uniq(imageIds);
+
+            // all setId if we have a single Id
+            json.setImageId = json.imageIds.length == 1;
 
             if (json) {
                 var html = this.template(json),
