@@ -495,8 +495,9 @@ def create_pdf(conn, scriptParams):
         print "\n---------------- "
         imageId = panel['imageId']
         print "IMAGE", i, imageId
-        imageIds.add(imageId)
         image = drawPanel(conn, c, panel, pageHeight, i)
+        if image.canAnnotate():
+            imageIds.add(imageId)
         drawLabels(conn, c, panel, pageHeight)
         # We get our group from the first image
         if groupId is None:
@@ -557,7 +558,6 @@ def runScript():
     )
 
     try:
-        session = client.getSession()
         scriptParams = {}
 
         conn = BlitzGateway(client_obj=client)
