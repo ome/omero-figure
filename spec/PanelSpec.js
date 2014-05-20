@@ -23,6 +23,7 @@ describe("Panel", function() {
 
     beforeEach(function() {
         panel = new Panel();
+        panel.url = "dummy";     // required by bb since we call panel.save()
     })
 
     it("should have default dx, dy and rotation of zero", function() {
