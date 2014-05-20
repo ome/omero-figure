@@ -42,3 +42,9 @@ backbone.mousetrap
 ==================
 https://github.com/elasticsales/backbone.mousetrap
 License: MIT
+
+
+jasmine
+=======
+http://jasmine.github.io/
+License: MIT
