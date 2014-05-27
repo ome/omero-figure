@@ -1457,7 +1457,7 @@
 
         el: $("#paperSetupModal"),
 
-        template: _.template($("#paper_setup_modal_template").html()),
+        template: JST["static/figure/templates/paper_setup_modal_template.html"],
 
         model:FigureModel,
 
@@ -1561,7 +1561,7 @@
 
         el: $("#setIdModal"),
 
-        template: _.template($('#preview_Id_change_template').html()),
+        template: JST["static/figure/templates/preview_Id_change_template.html"],
 
         model:FigureModel,
 
@@ -2021,7 +2021,8 @@
         label_template: JST["static/figure/templates/labels/label_template.html"],
         label_vertical_template: JST["static/figure/templates/labels/label_vertical_template.html"],
         label_table_template: JST["static/figure/templates/labels/label_table_template.html"],
-        scalebar_template: _.template($('#scalebar_panel_template').html()),
+        scalebar_template: JST["static/figure/templates/scalebar_panel_template.html"],
+
 
         initialize: function(opts) {
             // we render on Changes in the model OR selected shape etc.
@@ -2231,7 +2232,7 @@
 
         model: FigureModel,
 
-        template: _.template($("#labels_form_inner_template").html()),
+        template: JST["static/figure/templates/labels_form_inner_template.html"],
 
         el: $("#labelsTab"),
 
@@ -2384,8 +2385,8 @@
     // Created new for each selection change
     var SelectedPanelsLabelsView = Backbone.View.extend({
 
-        template: _.template($("#labels_form_template").html()),
-        inner_template: _.template($("#labels_form_inner_template").html()),
+        template: JST["static/figure/templates/labels_form_template.html"],
+        inner_template: JST["static/figure/templates/labels_form_inner_template.html"],
 
         initialize: function(opts) {
 
@@ -2489,7 +2490,7 @@
     // Created new for each selection change
     var ScalebarFormView = Backbone.View.extend({
 
-        template: _.template($("#scalebar_form_template").html()),
+        template: JST["static/figure/templates/scalebar_form_template.html"],
 
         initialize: function(opts) {
 

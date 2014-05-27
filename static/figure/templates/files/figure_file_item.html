@@ -4,7 +4,9 @@
             <% if(imageId > 0) { print("<img class='small-thumb' src='" + thumbSrc + "' />") } %>
         </td>
         <td title="This figure is currently open">
-            <%= name %>
+            <div style="width:400px; word-wrap:break-word;">
+                <%= name %>
+            </div>
         </td>
     <% } else { %>
         <td>
@@ -13,12 +15,14 @@
             </a>
         </td>
         <td>
-            <a href="{% url 'figure_index' %}file/<%= id %>"><%= formatName(name) %></a>
+            <div style="width:400px; word-wrap:break-word;">
+                <a href="{% url 'figure_index' %}file/<%= id %>"><%= name %></a>
+            </div>
         </td>
     <% } %>
-        <td>
-            <%= formatDate(creationDate) %>
-        </td>
-        <td>
-            <%= ownerFullName %>
-        </td>
+    <td>
+        <%= formatDate(creationDate) %>
+    </td>
+    <td>
+        <%= ownerFullName %>
+    </td>
