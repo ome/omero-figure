@@ -522,6 +522,11 @@
         height: 40px;
     }
 
+    .table-sort-btn {
+        padding-left: 3px;
+        padding-right: 3px;
+    }
+
     #figure_files th .btn-sm:first-child {
         padding-right: 0
     }
