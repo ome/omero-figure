@@ -15,11 +15,19 @@
   <script type="text/javascript" src="../../static/figure/3rdparty/underscore.js"></script>
   <script type="text/javascript" src="../../static/figure/3rdparty/backbone.js"></script>
 
+  <script type="text/javascript" src="../../static/figure/3rdparty/jasmine-jquery.js"></script>
+
   <!-- include source files here... -->
   <script type="text/javascript" src="../../static/figure/js/figure.js"></script>
 
   <!-- include spec files here... -->
+
+  <!-- These PanelSpec tests are all passing -->
   <script type="text/javascript" src="../../spec/PanelSpec.js"></script>
+
+
+  <!-- This is failing because figure.js views try to create _.templates($("#el").text()) -->
+  <script type="text/javascript" src="../../spec/ViewportViewSpec.js"></script>
 
 </head>
 
