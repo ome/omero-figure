@@ -1,0 +1,24 @@
+
+    <% if (disabled) { %>
+        <td>
+            <% if(imageId > 0) { print("<img class='small-thumb' src='" + thumbSrc + "' />") } %>
+        </td>
+        <td title="This figure is currently open">
+            <%= name %>
+        </td>
+    <% } else { %>
+        <td>
+            <a href="{% url 'figure_index' %}file/<%= id %>">
+                <% if(imageId > 0) { print("<img class='small-thumb' src='" + thumbSrc + "' />") } %>
+            </a>
+        </td>
+        <td>
+            <a href="{% url 'figure_index' %}file/<%= id %>"><%= formatName(name) %></a>
+        </td>
+    <% } %>
+        <td>
+            <%= formatDate(creationDate) %>
+        </td>
+        <td>
+            <%= ownerFullName %>
+        </td>

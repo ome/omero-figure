@@ -2017,10 +2017,10 @@
     var PanelView = Backbone.View.extend({
         tagName: "div",
         className: "imagePanel",
-        template: _.template($('#figure_panel_template').html()),
-        label_template: _.template($('#label_template').html()),
-        label_vertical_template: _.template($('#label_vertical_template').html()),
-        label_table_template: _.template($('#label_table_template').html()),
+        template: JST["static/figure/templates/figure_panel_template.html"],
+        label_template: JST["static/figure/templates/labels/label_template.html"],
+        label_vertical_template: JST["static/figure/templates/labels/label_vertical_template.html"],
+        label_table_template: JST["static/figure/templates/labels/label_table_template.html"],
         scalebar_template: _.template($('#scalebar_panel_template').html()),
 
         initialize: function(opts) {
@@ -2633,8 +2633,8 @@
 
     var InfoPanelView = Backbone.View.extend({
 
-        template: _.template($("#info_panel_template").html()),
-        xywh_template: _.template($("#xywh_panel_template").html()),
+        template: JST["static/figure/templates/info_panel_template.html"],
+        xywh_template: JST["static/figure/templates/xywh_panel_template.html"],
 
         initialize: function(opts) {
             // if (opts.models) {
@@ -2738,7 +2738,7 @@
 
     var ImageViewerView = Backbone.View.extend({
 
-        template: _.template($('#viewport_template').html()),
+        template: JST["static/figure/templates/viewport_template.html"],
 
         className: "imageViewer",
 
@@ -3072,7 +3072,7 @@
     // Coloured Buttons to Toggle Channels on/off.
     var ChannelToggleView = Backbone.View.extend({
         tagName: "div",
-        template: _.template($('#channel_toggle_template').html()),
+        template: JST["static/figure/templates/channel_toggle_template.html"],
 
         initialize: function(opts) {
             // This View may apply to a single PanelModel or a list

@@ -25,11 +25,32 @@ module.exports = function (grunt) {
           specs: "spec/*.js"
         // , vendor: "vendor/**/*.js"
       }
-    }
+    },
+    jst: {
+      compile: {
+        files: {
+          "static/figure/js/templates.js": [
+            "static/figure/templates/*.html",
+            "static/figure/templates/**/*.html"
+          ]
+        }
+      }
+    },
+    watch: {
+      scripts: {
+        files: ['static/figure/templates/*.html', 'static/figure/templates/**/*.html'],
+        tasks: ['jst'],
+        // options: {
+        //   spawn: false,
+        // },
+      },
+    },
   })
 
   grunt.loadNpmTasks('grunt-contrib-jshint')
   grunt.loadNpmTasks('grunt-contrib-jasmine')
+  grunt.loadNpmTasks('grunt-contrib-jst');
+  grunt.loadNpmTasks('grunt-contrib-watch');
 
   grunt.registerTask('test', ['jshint', 'jasmine'])
   grunt.registerTask('default', ['test'])
