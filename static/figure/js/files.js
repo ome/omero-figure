@@ -218,22 +218,11 @@ var FileListItemView = Backbone.View.extend({
         return s;
     },
 
-    formatName: function(name) {
-        // add spaces so we can wrap really long names
-        var length = 50;
-        if (name.length > length) {
-            // split into chunks and join with space
-            name = name.match(/.{1,50}/g).join(" ");
-        }
-        return name;
-    },
-
     render:function () {
         var json = this.model.toJSON(),
             baseUrl = json.baseUrl;
         baseUrl = baseUrl || WEBGATEWAYINDEX.slice(0, -1);  // remove last /
         json.thumbSrc = baseUrl + "/render_thumbnail/" + json.imageId + "/";
-        json.formatName = this.formatName;
         json.formatDate = this.formatDate;
         var h = this.template(json);
         $(this.el).html(h);

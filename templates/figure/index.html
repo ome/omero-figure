@@ -273,35 +273,33 @@
                         <table class="table table-condensed">
                             <thead>
                                 <tr>
-                                    <th></th>
-                                    <th>
+                                    <th style="width:10%"></th>
+                                    <th style="width:50%">
                                         <form class="form-horizontal" role="form">
-                                            <div class="form-group pull-left" style="margin-bottom: 0; width: 75%">
-                                                <label for="file-filter" class="col-sm-3 control-label">Name</label>
-                                                <div class="col-sm-9">
-                                                    <input class="form-control" id="file-filter" placeholder="Filter">
-                                                </div>
-                                            </div>
-                                            <div class="form-group pull-left" style="margin-bottom: 0; margin-left: 0">
-                                                <button type="button" class="btn btn-link btn-sm sort-name muted">
+                                            <div class="col-sm-4">
+                                                Name
+                                                <button type="button" class="btn btn-link btn-sm sort-name muted table-sort-btn">
                                                     <span class="glyphicon glyphicon-chevron-up"></span>
                                                 </button>
-                                                <button type="button" class="btn btn-link btn-sm sort-name-reverse muted">
+                                                <button type="button" class="btn btn-link btn-sm sort-name-reverse muted table-sort-btn">
                                                     <span class="glyphicon glyphicon-chevron-down"></span>
                                                 </button>
                                             </div>
+                                            <div class="col-sm-8">
+                                                <input class="form-control" id="file-filter" placeholder="Filter">
+                                            </div>
                                         </form>
                                     </th>
-                                    <th>
+                                    <th style="width:25%">
                                         Created
-                                        <button type="button" class="btn btn-link btn-sm sort-created sort">
+                                        <button type="button" class="btn btn-link btn-sm sort-created sort table-sort-btn">
                                             <span class="glyphicon glyphicon-chevron-up"></span>
                                         </button>
-                                        <button type="button" class="btn btn-link btn-sm sort-created-reverse muted">
+                                        <button type="button" class="btn btn-link btn-sm sort-created-reverse muted table-sort-btn">
                                             <span class="glyphicon glyphicon-chevron-down"></span>
                                         </button>
                                     </th>
-                                    <th>
+                                    <th style="width:15%">
                                         <div class="btn-group" title="Filter files by owner">
                                             <button id="file-owner-btn" type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                                                 <b>Owner</b> <span class="caret"></span>
@@ -1043,7 +1041,9 @@
             <% if(imageId > 0) { print("<img class='small-thumb' src='" + thumbSrc + "' />") } %>
         </td>
         <td title="This figure is currently open">
+        <div style="width:400px; word-wrap:break-word;">
             <%= name %>
+            </div>
         </td>
     <% } else { %>
         <td>
@@ -1052,7 +1052,9 @@
             </a>
         </td>
         <td>
-            <a href="{% url 'figure_index' %}file/<%= id %>"><%= formatName(name) %></a>
+            <div style="width:400px; word-wrap:break-word;">
+            <a href="{% url 'figure_index' %}file/<%= id %>"><%= name %></a>
+            </div>
         </td>
     <% } %>
         <td>

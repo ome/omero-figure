@@ -504,6 +504,11 @@
         height: 40px;
     }
 
+    .table-sort-btn {
+        padding-left: 5px;
+        padding-right: 0;
+    }
+
     #figure_files th .btn-sm:first-child {
         padding-right: 0
     }
