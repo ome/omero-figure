@@ -377,12 +377,12 @@ __p += '\n        </td>\n        <td title="This figure is currently open">\n   
 ((__t = ( name )) == null ? '' : __t) +
 '\n            </div>\n        </td>\n    ';
  } else { ;
-__p += '\n        <td>\n            <a href="{% url \'figure_index\' %}file/' +
-((__t = ( id )) == null ? '' : __t) +
+__p += '\n        <td>\n            <a href="' +
+((__t = ( url )) == null ? '' : __t) +
 '">\n                ';
  if(imageId > 0) { print("<img class='small-thumb' src='" + thumbSrc + "' />") } ;
-__p += '\n            </a>\n        </td>\n        <td>\n            <div style="width:400px; word-wrap:break-word;">\n                <a href="{% url \'figure_index\' %}file/' +
-((__t = ( id )) == null ? '' : __t) +
+__p += '\n            </a>\n        </td>\n        <td>\n            <div style="width:400px; word-wrap:break-word;">\n                <a href="' +
+((__t = ( url )) == null ? '' : __t) +
 '">' +
 ((__t = ( name )) == null ? '' : __t) +
 '</a>\n            </div>\n        </td>\n    ';

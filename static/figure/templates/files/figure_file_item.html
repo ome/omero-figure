@@ -10,13 +10,13 @@
         </td>
     <% } else { %>
         <td>
-            <a href="{% url 'figure_index' %}file/<%= id %>">
+            <a href="<%= url %>">
                 <% if(imageId > 0) { print("<img class='small-thumb' src='" + thumbSrc + "' />") } %>
             </a>
         </td>
         <td>
             <div style="width:400px; word-wrap:break-word;">
-                <a href="{% url 'figure_index' %}file/<%= id %>"><%= name %></a>
+                <a href="<%= url %>"><%= name %></a>
             </div>
         </td>
     <% } %>

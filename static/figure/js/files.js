@@ -241,6 +241,7 @@ var FileListItemView = Backbone.View.extend({
             baseUrl = json.baseUrl;
         baseUrl = baseUrl || WEBGATEWAYINDEX.slice(0, -1);  // remove last /
         json.thumbSrc = baseUrl + "/render_thumbnail/" + json.imageId + "/";
+        json.url = BASE_WEBFIGURE_URL + "file/" + json.id;
         json.formatDate = this.formatDate;
         var h = this.template(json);
         $(this.el).html(h);
