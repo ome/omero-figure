@@ -19,16 +19,10 @@ describe("Viewport", function() {
     });
 
     it("should expose a property with its DOM element", function() {
-        // expect(view.$el).toExist();
 
-        // This is OK...
-        console.log("FigureModel", FigureModel);
-
-        // But later objects from the same figure.js are undefined
-        // since Views try to do _.template($("#some_element").text()) which fails.
-        console.log("ProxyRectModel", ProxyRectModel);
-        console.log("ImageViewerView", ImageViewerView);
-        view = new ImageViewerView();
+        var models = [panel];
+        var view = new ImageViewerView({models: models});
+        expect(view.$el).toExist();
     });
 
 })
