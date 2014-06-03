@@ -337,21 +337,23 @@
             } else {
                 img_w = img_h * orig_ratio;
             }
-            var vp_scale = frame_w / orig_w;
+            var vp_scale_x = frame_w / orig_w,
+                vp_scale_y = frame_h / orig_h,
+                vp_scale = Math.max(vp_scale_x, vp_scale_y);
 
             // offsets if image is centered
             img_y = (img_h - frame_h)/2;
             img_x = (img_w - frame_w)/2;
-
-            var transform_x = 50 - (100 * dx/orig_w),
-                transform_y = 50 - (100 * dy/orig_h),
-                rotation = this.get('rotation') || 0;
 
             // now shift by dx & dy
             dx = dx * (zoom/100);
             dy = dy * (zoom/100);
             img_x = (dx * vp_scale) - img_x;
             img_y = (dy * vp_scale) - img_y;
+
+            var transform_x = 100 * (frame_w/2 - img_x) / img_w,
+                transform_y = 100 * (frame_h/2 - img_y) / img_h,
+                rotation = this.get('rotation') || 0;
 
             // option to align image within viewport (not used now)
             if (fit) {
