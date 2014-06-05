@@ -1876,6 +1876,11 @@
                 // work with the response
                 success: function( data ) {
 
+                    if (data.size.width * data.size.height > 5000 * 5000) {
+                        alert("Image '" + data.meta.imageName + "' too big for OMERO.figure");
+                        return;
+                    }
+
                     // For the FIRST IMAGE ONLY (coords.px etc undefined), we
                     // need to work out where to start (px,py) now that we know size of panel
                     // (assume all panels are same size)
