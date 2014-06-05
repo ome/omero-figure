@@ -67,6 +67,14 @@
                 newData.theT = newData.sizeT - 1;
             }
 
+            // Make sure dx and dy are not outside the new image
+            if (Math.abs(this.get('dx')) > newData.orig_width/2) {
+                newData.dx = 0;
+            }
+            if (Math.abs(this.get('dy')) > newData.orig_height/2) {
+                newData.dy = 0;
+            }
+
             // new Channels are based on new data, but we keep the
             // 'active' state and color from old Channels.
             var newCh = [],
