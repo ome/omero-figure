@@ -519,17 +519,19 @@ def create_pdf(conn, scriptParams):
         if groupId is None:
             groupId = image.getDetails().group.id.val
 
-    # PDF will get created in this group
-    if groupId is not None:
-        conn.SERVICE_OPTS.setOmeroGroup(groupId)
-
     # complete page and save
     c.showPage()
 
-    if True:
-        addInfoPage(conn, scriptParams, c, panels_json)
+    # Add thumbnails and links page
+    addInfoPage(conn, scriptParams, c, panels_json)
 
     c.save()
+
+
+    # PDF will get created in this group
+    if groupId is None:
+        groupId = conn.getEventContext().groupId
+    conn.SERVICE_OPTS.setOmeroGroup(groupId)
 
     ns = "omero.web.figure.pdf"
     fileAnn = conn.createFileAnnfromLocalFile(
