@@ -547,10 +547,13 @@ def create_pdf(conn, scriptParams):
         link.parent = ImageI(iid, False)
         link.child = fileAnn._obj
         links.append(link)
-    print len(links)
     if len(links) > 0:
-        links = conn.getUpdateService().saveAndReturnArray(
-            links, conn.SERVICE_OPTS)
+        # Don't want to fail at this point due to strange permissions combo
+        try:
+            links = conn.getUpdateService().saveAndReturnArray(
+                links, conn.SERVICE_OPTS)
+        except:
+            print "Failed to attach figure: %s to images %s" % (fileAnn, imageIds)
 
     return fileAnn
 
