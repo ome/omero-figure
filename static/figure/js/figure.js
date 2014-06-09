@@ -67,6 +67,14 @@
                 newData.theT = newData.sizeT - 1;
             }
 
+            // Make sure dx and dy are not outside the new image
+            if (Math.abs(this.get('dx')) > newData.orig_width/2) {
+                newData.dx = 0;
+            }
+            if (Math.abs(this.get('dy')) > newData.orig_height/2) {
+                newData.dy = 0;
+            }
+
             // new Channels are based on new data, but we keep the
             // 'active' state and color from old Channels.
             var newCh = [],
@@ -1606,6 +1614,13 @@
 
             // get image Data
             $.getJSON(BASE_WEBFIGURE_URL + 'imgData/' + parseInt(idInput, 10) + '/', function(data){
+
+                // Don't allow BIG images
+                if (data.size.width * data.size.height > 5000 * 5000) {
+                    alert("Image '" + data.meta.imageName + "' too big for OMERO.figure");
+                    return;
+                }
+
                 // just pick what we need
                 var newImg = {
                     'imageId': data.id,
@@ -1877,6 +1892,11 @@
                 dataType: dataType,
                 // work with the response
                 success: function( data ) {
+
+                    if (data.size.width * data.size.height > 5000 * 5000) {
+                        alert("Image '" + data.meta.imageName + "' too big for OMERO.figure");
+                        return;
+                    }
 
                     // For the FIRST IMAGE ONLY (coords.px etc undefined), we
                     // need to work out where to start (px,py) now that we know size of panel
