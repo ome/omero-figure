@@ -19,6 +19,7 @@
 from django.http import Http404, HttpResponse
 from django.shortcuts import render_to_response
 from datetime import datetime
+import unicodedata
 import json
 import time
 
@@ -150,7 +151,8 @@ def save_web_figure(request, conn=None, **kwargs):
     figureJSON = request.POST.get('figureJSON')
     if figureJSON is None:
         return HttpResponse("No 'figureJSON' in POST")
-    figureJSON = str(figureJSON)
+    # See https://github.com/will-moore/figure/issues/16
+    figureJSON = unicodedata.normalize('NFKD', figureJSON).encode('ascii','ignore')
 
     fileId = request.POST.get('fileId')
 
@@ -271,7 +273,9 @@ def make_web_figure(request, conn=None, **kwargs):
     scriptService = conn.getScriptService()
     sId = scriptService.getScriptID(SCRIPT_PATH)
 
-    figureJSON = str(request.POST.get('figureJSON'))
+    figureJSON = request.POST.get('figureJSON')
+    # see https://github.com/will-moore/figure/issues/16
+    figureJSON = unicodedata.normalize('NFKD', figureJSON).encode('ascii','ignore')
     webclient_uri = request.build_absolute_uri(reverse('webindex'))
 
     inputMap = {
