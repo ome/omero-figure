@@ -2724,6 +2724,7 @@
             });
 
             json.imageIds = _.uniq(imageIds);
+            json.webclientBaseUrl = WEBINDEX_URL;
 
             // all setId if we have a single Id
             json.setImageId = json.imageIds.length == 1;

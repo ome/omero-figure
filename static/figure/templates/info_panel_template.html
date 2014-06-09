@@ -6,7 +6,7 @@
         <tbody>
             <tr><td>Image
                 <a class="pull-right" target="new"
-                    href="{% url 'webindex' %}?show=image-<% print(imageIds.join('|image-')) %>">
+                    href="<%= webclientBaseUrl %>?show=image-<% print(imageIds.join('|image-')) %>">
                     <span class="glyphicon glyphicon-share"></span> Show in Webclient
                 </a>
             </td></tr>

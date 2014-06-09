@@ -48,7 +48,9 @@ function print() { __p += __j.call(arguments, '') }
 with (obj) {
 __p += '\n    <p>' +
 ((__t = ( name )) == null ? '' : __t) +
-'</p>\n    <div class="clearfix"></div>\n\n    <table class="table">\n        <tbody>\n            <tr><td>Image\n                <a class="pull-right" target="new"\n                    href="{% url \'webindex\' %}?show=image-';
+'</p>\n    <div class="clearfix"></div>\n\n    <table class="table">\n        <tbody>\n            <tr><td>Image\n                <a class="pull-right" target="new"\n                    href="' +
+((__t = ( webclientBaseUrl )) == null ? '' : __t) +
+'?show=image-';
  print(imageIds.join('|image-')) ;
 __p += '">\n                    <span class="glyphicon glyphicon-share"></span> Show in Webclient\n                </a>\n            </td></tr>\n            <tr><td>\n                <div class="col-sm-6"><small><strong>Image ID</strong>:</small></div>\n                <div class="col-sm-6">\n                    <small>' +
 ((__t = ( imageId )) == null ? '' : __t) +
