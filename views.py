@@ -18,14 +18,11 @@
 
 from django.http import Http404, HttpResponse
 from django.shortcuts import render_to_response
-from django.conf import settings
 from datetime import datetime
-import os
-import shutil
+import unicodedata
 import json
 import time
 
-from omeroweb.webgateway import views as webgateway_views
 from omeroweb.webgateway.marshal import imageMarshal
 from omeroweb.webclient.views import run_script
 from django.core.urlresolvers import reverse
@@ -33,12 +30,7 @@ from omero.rtypes import wrap, rlong, rstring
 import omero
 from omero.gateway import OriginalFileWrapper
 
-try:
-    from PIL import Image
-except ImportError:
-    import Image
 from cStringIO import StringIO
-
 
 from omeroweb.webclient.decorators import login_required
 
@@ -135,8 +127,8 @@ def imgData_json(request, imageId, conn=None, **kwargs):
         timeMap = {}
         for info in infoList:
             tIndex = info.theT.getValue()
-            time = int(info.deltaT.getValue())
-            timeMap[tIndex] = time
+            deltaT = int(info.deltaT.getValue())
+            timeMap[tIndex] = deltaT
         for t in range(image.getSizeT()):
             if t in timeMap:
                 timeList.append(timeMap[t])
@@ -159,7 +151,8 @@ def save_web_figure(request, conn=None, **kwargs):
     figureJSON = request.POST.get('figureJSON')
     if figureJSON is None:
         return HttpResponse("No 'figureJSON' in POST")
-    figureJSON = str(figureJSON)
+    # See https://github.com/will-moore/figure/issues/16
+    figureJSON = unicodedata.normalize('NFKD', figureJSON).encode('ascii','ignore')
 
     fileId = request.POST.get('fileId')
 
@@ -262,7 +255,7 @@ def load_web_figure(request, fileId, conn=None, **kwargs):
         json_data['figureName'] = jsonFile.getName()
     except:
         # If the json failed to parse, return the string anyway
-        return HttpResponse(jsonData, content_type='json')
+        return HttpResponse(json_data, content_type='json')
 
     return HttpResponse(json.dumps(json_data), content_type='json')
 
@@ -280,7 +273,9 @@ def make_web_figure(request, conn=None, **kwargs):
     scriptService = conn.getScriptService()
     sId = scriptService.getScriptID(SCRIPT_PATH)
 
-    figureJSON = str(request.POST.get('figureJSON'))
+    figureJSON = request.POST.get('figureJSON')
+    # see https://github.com/will-moore/figure/issues/16
+    figureJSON = unicodedata.normalize('NFKD', figureJSON).encode('ascii','ignore')
     webclient_uri = request.build_absolute_uri(reverse('webindex'))
 
     inputMap = {
