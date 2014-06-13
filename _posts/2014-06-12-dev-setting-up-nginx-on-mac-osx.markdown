@@ -18,6 +18,9 @@ So, the first thing I needed to setup before fixing the bugs was to deploy
 my local development OMERO.figure under an /omero/ prefix. It turned out
 that the easiest way to do this was to use nginx, which Chris helped me
 to setup with the following instructions (which others may find useful).
+NB: The proper documentation for this is on the
+[OMERO.web deployment docs](https://www.openmicroscopy.org/site/support/omero5/sysadmins/unix/install-web.html)
+but this is just what worked for me.
 Using homebrew on Mac 10.8:
 
 	$ brew install nginx
