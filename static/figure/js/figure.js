@@ -1617,7 +1617,7 @@
 
                 // Don't allow BIG images
                 if (data.size.width * data.size.height > 5000 * 5000) {
-                    alert("Image '" + data.meta.imageName + "' too big for OMERO.figure");
+                    alert("Image '" + data.meta.imageName + "' is too big for OMERO.figure");
                     return;
                 }
 
@@ -1894,7 +1894,7 @@
                 success: function( data ) {
 
                     if (data.size.width * data.size.height > 5000 * 5000) {
-                        alert("Image '" + data.meta.imageName + "' too big for OMERO.figure");
+                        alert("Image '" + data.meta.imageName + "' is too big for OMERO.figure");
                         return;
                     }
 
