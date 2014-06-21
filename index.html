@@ -86,7 +86,8 @@ title: OMERO.figure
               <code>
                 $ bin/omero web stop<br>
                 $ bin/omero web start
-              </code></li>
+              </code>
+            </li>
           </ul>
           <h4>To enable PDF generation:</h4>
           <ul>
@@ -102,6 +103,28 @@ title: OMERO.figure
             </li>
           </ul>
         </p>
-        <p>Checkout the <a href="https://github.com/will-moore/figure">github page</a> for
-          more details and developer install instructions.
+
+        <h1>Update instructions</h1>
+        <p>
+          <ul>
+            <li>
+              To update an existing install of OMERO.figure to the latest release, download it,
+              unzip and replace the contents of the current /figure
+              directory with the contents of the unzipped directory.
+            </li>
+            <li>Replace PDF generation script (need to be Admin)
+              <code style="width:700px">
+                $ cd figure/scripts   &nbsp &nbsp &nbsp # NB: important to be in this directory<br>
+                # List scripts to get the ID of omero/figure_scripts/Figure_To_Pdf.py<br>
+                $ path/to/bin/omero script list<br>
+                $ path/to/bin/omero script replace &ltscriptId&gt omero/figure_scripts/Figure_To_Pdf.py
+              </code>
+            </li>
+            <li>Restart web:
+              <code>
+                $ bin/omero web stop<br>
+                $ bin/omero web start
+              </code>
+            </li>
+          </ul>
         </p>
