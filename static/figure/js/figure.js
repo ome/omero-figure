@@ -1617,7 +1617,7 @@
 
                 // Don't allow BIG images
                 if (data.size.width * data.size.height > 5000 * 5000) {
-                    alert("Image '" + data.meta.imageName + "' too big for OMERO.figure");
+                    alert("Image '" + data.meta.imageName + "' is too big for OMERO.figure");
                     return;
                 }
 
@@ -1894,7 +1894,7 @@
                 success: function( data ) {
 
                     if (data.size.width * data.size.height > 5000 * 5000) {
-                        alert("Image '" + data.meta.imageName + "' too big for OMERO.figure");
+                        alert("Image '" + data.meta.imageName + "' is too big for OMERO.figure");
                         return;
                     }
 
@@ -2947,9 +2947,12 @@
 
             if (this.$vp_img) {
                 var frame_w = this.$vp_frame.width() + 2,
-                    frame_h = this.$vp_frame.height() + 2;
-                dx = (dx / frame_w) * this.models[0].get('orig_width');
-                dy = (dy / frame_h) * this.models[0].get('orig_height');
+                    frame_h = this.$vp_frame.height() + 2,
+                    zm_w = this.models[0].get('orig_width') / frame_w,
+                    zm_h = this.models[0].get('orig_height') / frame_h,
+                    scale = Math.min(zm_w, zm_h);
+                dx = dx * scale;
+                dy = dy * scale;
                 dx += this.dx;
                 dy += this.dy;
                 this.$vp_img.css( this.models[0].get_vp_img_css(zoom, frame_w, frame_h, dx, dy) );
