@@ -2441,6 +2441,12 @@
 
             var new_label = {text:label_text, size:font_size, position:position, color:color};
 
+            // if we're editing a 'time' label, preserve the 'time' attribute
+            if (label_text.slice(0, 5) == '[time') {
+                new_label.text = undefined;                 // no 'text'
+                new_label.time = label_text.slice(6, -1);   // 'secs', 'hrs:mins' etc
+            }
+
             var newlbls = {};
             newlbls[key] = new_label;
 
@@ -2463,7 +2469,8 @@
                         ljson = $.extend(true, {}, l);
                         ljson.key = key;
                     if (typeof ljson.text == 'undefined' && ljson.time) {
-                        ljson.text = m.get_time_label_text(ljson.time);
+                        // show time labels as they are in 'new label' form
+                        ljson.text = '[time-' + ljson.time + "]"
                     }
                     positions[l.position][key] = ljson;
                 });
