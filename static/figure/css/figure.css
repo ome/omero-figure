@@ -380,9 +380,9 @@
     }
     .tab-pane .ui-slider-vertical {
         width: 10px;
-        height: 198px;
+        height: 188px;
         margin-right: 10px;
-        margin-top: 25px;
+        margin-top: 30px;
     }
     .rotation-controls-shown .rotation-slider {
         height: 150px;
@@ -425,10 +425,39 @@
     #vp_t_slider {
         position: absolute;
         bottom: -1px;
-        left: 35px;
-        width: 190px;
+        left: 40px;
+        width: 180px;
     }
-
+    .z-decrement, .z-increment, .time-decrement, .time-increment {
+        position: absolute;
+        padding: 2px;
+        display: none;
+    }
+    /* only show these buttons when container div is slider */
+    .ui-slider .time-increment, .ui-slider .time-decrement,
+    .ui-slider .z-increment, .ui-slider .z-decrement {
+        display: block;
+    }
+    .time-increment:hover, .time-decrement:hover,
+    .z-increment:hover, .z-decrement:hover {
+        border: solid #ddd 1px;
+    }
+    .z-decrement {
+        left: -8px;
+        bottom: -23px;
+    }
+    .z-increment {
+        left: -8px;
+        top: -22px;
+    }
+    .time-decrement {
+        left: -20px;
+        top: -10px;
+    }
+    .time-increment {
+        right: -20px;
+        top: -10px;
+    }
     .rotation-controls-shown {
         background-color: #FAFAFA;
         border: 1px solid #CCCCCC;

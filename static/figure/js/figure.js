@@ -45,6 +45,22 @@
 
         syncOverride: true,
 
+        validate: function(attrs, options) {
+            // obviously lots more could be added here...
+            if (attrs.theT >= attrs.sizeT) {
+                return "theT too big";
+            }
+            if (attrs.theT < 0) {
+                return "theT too small";
+            }
+            if (attrs.theZ >= attrs.sizeZ) {
+                return "theZ too big";
+            }
+            if (attrs.theZ < 0) {
+                return "theZ too small";
+            }
+        },
+
         // Switch some attributes for new image...
         setId: function(data) {
 
@@ -2196,6 +2212,7 @@
 
             // this.render();
             new LabelsPanelView({model: this.model});
+            new SliderButtonsView({model: this.model});
         },
 
         render: function() {
@@ -2747,6 +2764,50 @@
     });
 
 
+    // This simply handles buttons to increment time/z
+    // since other views don't have an appropriate container
+    var SliderButtonsView = Backbone.View.extend({
+
+        el: $("#viewportContainer"),
+
+        initialize: function(opts) {
+            this.model = opts.model;
+        },
+
+        events: {
+            "click .z-increment": "z_increment",
+            "click .z-decrement": "z_decrement",
+            "click .time-increment": "time_increment",
+            "click .time-decrement": "time_decrement",
+        },
+
+        z_increment: function(event) {
+            _.each(this.model.getSelected(), function(m){
+                m.set({'theZ': m.get('theZ') + 1}, {'validate': true});
+            });
+            return false;
+        },
+        z_decrement: function(event) {
+            _.each(this.model.getSelected(), function(m){
+                m.set({'theZ': m.get('theZ') - 1}, {'validate': true});
+            });
+            return false;
+        },
+        time_increment: function(event) {
+            _.each(this.model.getSelected(), function(m){
+                m.set({'theT': m.get('theT') + 1}, {'validate': true});
+            });
+            return false;
+        },
+        time_decrement: function(event) {
+            _.each(this.model.getSelected(), function(m){
+                m.set({'theT': m.get('theT') - 1}, {'validate': true});
+            });
+            return false;
+        },
+    });
+
+
     var ImageViewerView = Backbone.View.extend({
 
         template: JST["static/figure/templates/viewport_template.html"],
@@ -2770,6 +2831,7 @@
 
             _.each(this.models, function(m){
                 self.listenTo(m, 'change:width change:height change:channels change:zoom change:theZ change:theT change:rotation', self.render);
+                self.listenTo(m, 'change:theZ change:theT', self.updateZT);
                 zoom_sum += m.get('zoom');
                 theZ_sum += m.get('theZ');
                 theT_sum += m.get('theT');
@@ -2899,6 +2961,20 @@
                 this.update_img_css(this.zoom_avg, dx, dy);
             }
             return false;
+        },
+
+        updateZT: function(event) {
+            var theZ_sum = 0,
+                theT_sum = 0;
+            _.each(this.models, function(m){
+                theZ_sum += m.get('theZ');
+                theT_sum += m.get('theT');
+            });
+            var Z_avg = (theZ_sum/ this.models.length) + 1;
+            var T_avg = (theT_sum/ this.models.length) + 1;
+
+            $("#vp_z_slider").slider("value", Z_avg);
+            $("#vp_t_slider").slider("value", T_avg);
         },
 
         // if 

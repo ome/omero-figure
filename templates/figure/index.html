@@ -456,8 +456,22 @@
                 <div class="tab-pane active" id="previewTab">
                     <div class="col-sm-2 no-padding" id="channelToggle"></div>
                     <div class="col-sm-10 no-padding" id="viewportContainer">
-                        <div id="vp_z_slider" class="pull-left"></div>
-                        <div id="vp_t_slider"></div>
+                        <div id="vp_z_slider" class="pull-left">
+                            <button type="button" class="btn btn-link btn-sm z-decrement">
+                                <span class="glyphicon glyphicon-chevron-down"></span>
+                            </button>
+                            <button type="button" class="btn btn-link btn-sm z-increment">
+                                <span class="glyphicon glyphicon-chevron-up"></span>
+                            </button>
+                        </div>
+                        <div id="vp_t_slider">
+                            <button type="button" class="btn btn-link btn-sm time-decrement">
+                                <span class="glyphicon glyphicon-chevron-left"></span>
+                            </button>
+                            <button type="button" class="btn btn-link btn-sm time-increment">
+                                <span class="glyphicon glyphicon-chevron-right"></span>
+                            </button>
+                        </div>
                     </div>
                     <div class='clearfix' style="padding-bottom:3px"></div>
                     <div id="channel_sliders"></div>
