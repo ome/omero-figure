@@ -23,9 +23,17 @@ __p += '"\n                    data-index="' +
 ((__t = ( i )) == null ? '' : __t) +
 '">\n                <li class="dropdown-header">Channel Color</li>\n                <li class="divider"></li>\n                <li><a data-color="0000FF" href="#">\n                    <span style="background-color:#00f">&nbsp &nbsp &nbsp</span>&nbsp Blue\n                </a></li>\n                <li><a data-color="00FF00" href="#">\n                    <span style="background-color:#0f0">&nbsp &nbsp &nbsp</span>&nbsp Green\n                </a></li>\n                <li><a data-color="FF0000" href="#">\n                    <span style="background-color:#f00">&nbsp &nbsp &nbsp</span>&nbsp Red\n                </a></li>\n                <li><a data-color="FFFF00" href="#">\n                    <span style="background-color:#ff0">&nbsp &nbsp &nbsp</span>&nbsp Yellow\n                </a></li>\n                <li><a data-color="FFFFFF" href="#">\n                    <span style="background-color:#fff">&nbsp &nbsp &nbsp</span>&nbsp White\n                </a></li>\n                <li><a data-color="FF00FF" href="#">\n                    <span style="background-color:#f0f">&nbsp &nbsp &nbsp</span>&nbsp Magenta\n                </a></li>\n            </ul>\n        </div><br>\n    ';
  }); ;
-__p += '\n\n    <div class="btn-group rotation-controls" style="padding:2px">\n        <button type="button" class="btn btn-default btn-sm show-rotation">\n            <span class="glyphicon glyphicon-repeat"></span>\n            <span class="rotation_value">' +
+__p += '\n\n    <div class="btn-group rotation-controls" style="padding:2px">\n        <button type="button" class="btn btn-default btn-sm show-rotation" title="Rotate image">\n            <span class="glyphicon glyphicon-repeat"></span>\n            <span class="rotation_value">' +
 ((__t = ( rotation )) == null ? '' : __t) +
-'</span> &deg;\n        </button>\n\n        <div class="rotation-slider"></div>\n    </div>\n';
+'</span> &deg;\n        </button>\n\n        <div class="rotation-slider"></div>\n    </div>\n\n\n    <div class="btn-group" style="padding:2px">\n        <button type="button" class="btn btn-default btn-sm z-projection\n                ';
+ if(z_projection) { ;
+__p += 'zp-btn-down';
+ } else if (typeof z_projection == 'boolean') { ;
+
+ } else { ;
+__p += 'ch-btn-flat';
+ };
+__p += '"\n                title="Maximum intensity Z-projection">\n            <span class="glyphicon"></span>\n        </button>\n    </div>\n';
 
 }
 return __p

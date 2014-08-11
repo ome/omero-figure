@@ -3166,7 +3166,7 @@
             this.models = opts.models;
             var self = this;
             _.each(this.models, function(m){
-                self.listenTo(m, 'change:channels', self.render);
+                self.listenTo(m, 'change:channels change:z_projection', self.render);
             });
         },
 
@@ -3174,6 +3174,21 @@
             "click .channel-btn": "toggle_channel",
             "click .dropdown-menu a": "pick_color",
             "click .show-rotation": "show_rotation",
+            "click .z-projection": "z_projection",
+        },
+
+        z_projection:function(e) {
+            // 'flat' means that some panels have z_projection on, some off
+            var flat = $(e.currentTarget).hasClass('ch-btn-flat');
+            _.each(this.models, function(m){
+                var p;
+                if (flat) {
+                    p = true;
+                } else {
+                    p = !m.get('z_projection');
+                }
+                m.set('z_projection', p);
+            });
         },
 
         show_rotation: function(e) {
@@ -3248,6 +3263,8 @@
                 max_rotation = 0,
                 sum_rotation = 0,
                 rotation,
+                z_projection,
+                zp,
                 self = this;
             if (this.models) {
 
@@ -3266,7 +3283,12 @@
                         _.each(chs, function(c) {
                             json.push($.extend(true, {}, c));
                         });
+                        z_projection = !!m.get('z_projection');
                     } else{
+                        zp = !!m.get('z_projection');
+                        if (zp !== z_projection) {
+                            z_projection = undefined;
+                        }
                         // compare json summary so far with this channels
                         if (json.length != chs.length) {
                             compatible = false;
@@ -3313,7 +3335,9 @@
                 if (!compatible) {
                     json = [];
                 }
-                html = this.template({'channels':json, 'rotation': rotation});
+                html = this.template({'channels':json,
+                    'rotation': rotation,
+                    'z_projection': z_projection});
                 this.$el.html(html);
 
                 if (compatible) {

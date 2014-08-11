@@ -159,6 +159,10 @@
         background-image: url("../images/button-flat.png")
     }
 
+    .zp-btn-down {
+        background-image: url("../images/button-down-grey.png")
+    }
+
     .pixel_size_div {
         position: absolute;
         top: -27px;
@@ -392,6 +396,14 @@
     .show-rotation {
         padding: 5px 2px;
         min-width: 45px;
+    }
+    .z-projection {
+        padding: 3px 5px 1px;
+    }
+    .z-projection span{
+        background-image: url("../images/projection20.png");
+        width: 20px;
+        height: 20px;
     }
     .tab-pane .ui-slider-vertical .ui-slider-handle {
         left: -7px;
