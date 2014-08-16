@@ -322,6 +322,12 @@ def getPanelImage(image, panel):
     z = panel['theZ']
     t = panel['theT']
 
+    if 'z_projection' in panel and panel['z_projection']:
+        if 'z_start' in panel and 'z_end' in panel:
+            print "Z_projection:", panel['z_start'], panel['z_end']
+            image.setProjection('intmax')
+            image.setProjectionRange(panel['z_start'], panel['z_end'])
+
     pilImg = image.renderImage(z, t, compression=1.0)
 
     # Need to crop around centre before rotating...
