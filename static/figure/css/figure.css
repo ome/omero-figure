@@ -341,6 +341,7 @@
         position: absolute;
         bottom: 20px;
         right: 95%;
+        white-space: nowrap;
     }
     #vp_t_label {
         position: absolute;

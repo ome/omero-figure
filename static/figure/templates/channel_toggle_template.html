@@ -46,10 +46,11 @@ class="btn btn-default channel-btn <% if(c.active) { %>ch-btn-down<% } else if (
     </div>
 
 
-    <div class="btn-group" style="padding:2px">
+    <div class="btn-group" style="padding:2px" title="Maximum intensity Z-projection">
         <button type="button" class="btn btn-default btn-sm z-projection
                 <% if(z_projection) { %>zp-btn-down<% } else if (typeof z_projection == 'boolean') { %><% } else { %>ch-btn-flat<% }%>"
-                title="Maximum intensity Z-projection">
+                <% if (z_projection_disabled) { %>disabled="disabled"<% } %>
+                >
             <span class="glyphicon"></span>
         </button>
     </div>

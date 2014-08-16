@@ -249,6 +249,31 @@
             this.save_channel(cIndex, 'window', new_w);
         },
 
+        set_z_projection: function(z_projection) {
+            var zp = this.get('z_projection'),
+                z_start = this.get('z_start'),
+                z_end = this.get('z_end'),
+                sizeZ = this.get('sizeZ'),
+                theZ = this.get('theZ');
+            if (z_start === undefined) {
+                z_start = Math.max(theZ - 2, 0);
+            }
+            if (z_end === undefined) {
+                z_end = Math.min(theZ + 2, sizeZ - 1);
+            }
+
+            // Only allow Z-projection if sizeZ > 1
+            if (z_projection && sizeZ > 1) {
+                this.set({
+                    'z_projection': true,
+                    'z_start': z_start,
+                    'z_end': z_end
+                });
+            } else {
+                this.set('z_projection', false);
+            }
+        },
+
         // When a multi-select rectangle is drawn around several Panels
         // a resize of the rectangle x1, y1, w1, h1 => x2, y2, w2, h2
         // will resize the Panels within it in proportion.
@@ -322,11 +347,15 @@
                 imageId = this.get('imageId'),
                 theZ = this.get('theZ'),
                 theT = this.get('theT'),
-                baseUrl = this.get('baseUrl')
+                baseUrl = this.get('baseUrl'),
+                proj = "";
+            if (this.get('z_projection')) {
+                proj = "&p=intmax|" + this.get('z_start') + ":" + this.get('z_end');
+            }
             baseUrl = baseUrl || WEBGATEWAYINDEX.slice(0, -1);  // remove last /
 
-            return baseUrl + '/render_image/' + imageId +
-                    "/" + theZ + "/" + theT + '/?c=' + renderString + "&m=c";
+            return baseUrl + '/render_image/' + imageId + "/" + theZ + "/" + theT
+                    + '/?c=' + renderString + proj + "&m=c";
         },
 
         // used by the PanelView and ImageViewerView to get the size and
@@ -2049,7 +2078,7 @@
                 'change:x change:y change:width change:height change:zoom change:dx change:dy change:rotation',
                 this.render_layout);
             this.listenTo(this.model, 'change:scalebar change:pixel_size_x', this.render_scalebar);
-            this.listenTo(this.model, 'change:channels change:theZ change:theT', this.render_image);
+            this.listenTo(this.model, 'change:channels change:theZ change:theT change:z_start change:z_end change:z_projection', this.render_image);
             this.listenTo(this.model, 'change:labels change:theT change:deltaT', this.render_labels);
             // This could be handled by backbone.relational, but do it manually for now...
             // this.listenTo(this.model.channels, 'change', this.render);
@@ -2823,29 +2852,17 @@
 
             this.models = opts.models;
             var self = this,
-                zoom_sum = 0,
-                theZ_sum = 0,
-                theT_sum = 0;
-            this.sizeZ = this.models[0].get('sizeZ');
-            this.sizeT = this.models[0].get('sizeT');
+                zoom_sum = 0;
 
             _.each(this.models, function(m){
-                self.listenTo(m, 'change:width change:height change:channels change:zoom change:theZ change:theT change:rotation', self.render);
-                self.listenTo(m, 'change:theZ change:theT', self.updateZT);
+                self.listenTo(m,
+                    'change:width change:height change:channels change:zoom change:theZ change:theT change:rotation change:z_projection',
+                    self.render);
                 zoom_sum += m.get('zoom');
-                theZ_sum += m.get('theZ');
-                theT_sum += m.get('theT');
-                if (self.sizeZ != m.get('sizeZ')) {
-                    self.sizeZ = undefined;
-                }
-                if (self.sizeT != m.get('sizeT')) {
-                    self.sizeT = undefined;
-                }
+
             });
 
             this.zoom_avg = parseInt(zoom_sum/ this.models.length, 10);
-            this.theZ_avg = theZ_sum/ this.models.length;
-            this.theT_avg = theT_sum/ this.models.length;
 
             $("#vp_zoom_slider").slider({
                 max: 800,
@@ -2867,57 +2884,6 @@
                 }
             });
             this.$vp_zoom_value = $("#vp_zoom_value");
-
-            var Z_disabled = false,
-                sizeZ = self.sizeZ;
-            if (!sizeZ || sizeZ === 1) {    // undefined or 1
-                Z_disabled = true;
-                sizeZ = 1;
-            }
-            $("#vp_z_slider").slider({
-                orientation: "vertical",
-                max: sizeZ,
-                disabled: Z_disabled,
-                min: 1,             // model is 0-based, UI is 1-based
-                value: self.theZ_avg + 1,
-                slide: function(event, ui) {
-                    $("#vp_z_value").text(ui.value + "/" + self.sizeZ);
-                },
-                stop: function( event, ui ) {
-                    _.each(self.models, function(m){
-                        m.save('theZ', ui.value - 1);
-                    });
-                }
-            });
-
-            var T_disabled = false,
-                sizeT = self.sizeT;
-            if (!sizeT || sizeT === 1) {    // undefined or 1
-                T_disabled = true;
-                sizeT = 1;
-            }
-            $("#vp_t_slider").slider({
-                max: sizeT,
-                disabled: T_disabled,
-                min: 1,             // model is 0-based, UI is 1-based
-                value: self.theT_avg + 1,
-                slide: function(event, ui) {
-                    var theT = ui.value;
-                    $("#vp_t_value").text(theT + "/" + self.sizeT);
-                    var dt = self.models[0].get('deltaT')[theT-1];
-                    _.each(self.models, function(m){
-                        if (m.get('deltaT')[theT-1] != dt) {
-                            dt = undefined;
-                        }
-                    });
-                    $("#vp_deltaT").text(self.formatTime(dt));
-                },
-                stop: function( event, ui ) {
-                    _.each(self.models, function(m){
-                        m.save('theT', ui.value - 1);
-                    });
-                }
-            });
 
             this.render();
         },
@@ -2963,21 +2929,7 @@
             return false;
         },
 
-        updateZT: function(event) {
-            var theZ_sum = 0,
-                theT_sum = 0;
-            _.each(this.models, function(m){
-                theZ_sum += m.get('theZ');
-                theT_sum += m.get('theT');
-            });
-            var Z_avg = (theZ_sum/ this.models.length) + 1;
-            var T_avg = (theT_sum/ this.models.length) + 1;
-
-            $("#vp_z_slider").slider("value", Z_avg);
-            $("#vp_t_slider").slider("value", T_avg);
-        },
-
-        // if 
+        // if the panel is rotated by css, drag events need to be corrected
         correct_rotation: function(dx, dy, rotation) {
             if (dx === 0 && dy === 0) {
                 return {'dx': dx, 'dy': dy};
@@ -3055,10 +3007,9 @@
 
         render: function() {
 
-            if (this.models.length === 0);
-
             // only show viewport if original w / h ratio is same for all models
-            var model = this.models[0];
+            var model = this.models[0],
+                self = this;
             var orig_wh,
                 sum_wh = 0,
                 sum_zoom = 0,
@@ -3071,7 +3022,14 @@
                 sum_dx = 0,
                 sum_dy = 0,
                 imgs_css = [],
-                same_wh = true;
+                same_wh = true,
+                // sizeZ = model.get('sizeZ');
+                sizeZ = this.models[0].get('sizeZ'),
+                sizeT = this.models[0].get('sizeT'),
+                z_start_sum = 0,
+                z_end_sum = 0,
+                z_projection = true;
+
 
             // first, work out frame w & h - use average w/h ratio of all selected panels
             _.each(this.models, function(m){
@@ -3091,16 +3049,33 @@
                 max_theZ = Math.max(max_theZ, m.get('theZ'));
                 max_theT = Math.max(max_theT, theT);
                 max_deltaT = Math.max(max_deltaT, dT);
+                if (sizeZ != m.get('sizeZ')) {
+                    sizeZ = undefined;
+                }
+                if (sizeT != m.get('sizeT')) {
+                    sizeT = undefined;
+                }
+                z_start_sum += m.get('z_start') || 0;
+                z_end_sum += m.get('z_end') || 0;
+                if (!m.get('z_projection')) {
+                    z_projection = false;
+                }
             });
             // Only continue if panels are all same w/h ratio
             if (!same_wh) return;
+
+            theZ_avg = sum_theZ/ this.models.length;
+            this.theT_avg = sum_theT/ this.models.length;
 
             // get average viewport frame w/h & zoom
             var wh = sum_wh/this.models.length,
                 zoom = sum_zoom/this.models.length,
                 theZ = sum_theZ/this.models.length,
+                z_start = z_start_sum/this.models.length,
+                z_end = z_end_sum/this.models.length,
                 theT = sum_theT/this.models.length;
                 deltaT = sum_deltaT/this.models.length;
+
             if (wh <= 1) {
                 frame_h = this.full_size;
                 frame_w = this.full_size * wh;
@@ -3123,24 +3098,105 @@
             this.dx = sum_dx/this.models.length;
             this.dy = sum_dy/this.models.length;
 
+            // update sliders
+            var Z_disabled = false;
+            if (!sizeZ || sizeZ === 1) {    // undefined or 1
+                Z_disabled = true;
+                sizeZ = 1;
+            }
+
+            // in case it's already been initialised:
+            $("#vp_z_slider").slider("destroy");
+
+            if (z_projection) {
+                $("#vp_z_slider").slider({
+                    orientation: "vertical",
+                    range: true,
+                    max: sizeZ,
+                    disabled: Z_disabled,
+                    min: 1,             // model is 0-based, UI is 1-based
+                    values: [z_start + 1, z_end + 1],
+                    slide: function(event, ui) {
+                        $("#vp_z_value").text(ui.values[0] + "-" + ui.values[1] + "/" + sizeZ);
+                    },
+                    stop: function( event, ui ) {
+                        _.each(self.models, function(m){
+                            m.save({
+                                'z_start': ui.values[0] - 1,
+                                'z_end': ui.values[1] -1
+                            });
+                        });
+                    }
+                });
+            } else {
+                $("#vp_z_slider").slider({
+                    orientation: "vertical",
+                    max: sizeZ,
+                    disabled: Z_disabled,
+                    min: 1,             // model is 0-based, UI is 1-based
+                    value: theZ_avg + 1,
+                    slide: function(event, ui) {
+                        $("#vp_z_value").text(ui.value + "/" + sizeZ);
+                    },
+                    stop: function( event, ui ) {
+                        _.each(self.models, function(m){
+                            m.save('theZ', ui.value - 1);
+                        });
+                    }
+                });
+            }
+
+            var T_disabled = false;
+            if (!sizeT || sizeT === 1) {    // undefined or 1
+                T_disabled = true;
+                sizeT = 1;
+            }
+            // in case it's already been initialised:
+            $("#vp_t_slider").slider("destroy");
+
+            $("#vp_t_slider").slider({
+                max: sizeT,
+                disabled: T_disabled,
+                min: 1,             // model is 0-based, UI is 1-based
+                value: self.theT_avg + 1,
+                slide: function(event, ui) {
+                    var theT = ui.value;
+                    $("#vp_t_value").text(theT + "/" + sizeT);
+                    var dt = self.models[0].get('deltaT')[theT-1];
+                    _.each(self.models, function(m){
+                        if (m.get('deltaT')[theT-1] != dt) {
+                            dt = undefined;
+                        }
+                    });
+                    $("#vp_deltaT").text(self.formatTime(dt));
+                },
+                stop: function( event, ui ) {
+                    _.each(self.models, function(m){
+                        m.save('theT', ui.value - 1);
+                    });
+                }
+            });
+
             var json = {};
 
             json.opacity = 1 / imgs_css.length;
             json.imgs_css = imgs_css;
             json.frame_w = frame_w;
             json.frame_h = frame_h;
-            json.sizeZ = this.sizeZ || "-";
+            json.sizeZ = sizeZ || "-";
             json.theZ = theZ+1;
-            json.sizeT = this.sizeT || "-";
+            json.sizeT = sizeT || "-";
             json.theT = theT+1;
             json.deltaT = deltaT;
-            if (max_theZ != theZ) {
+            if (z_projection) {
+                json.theZ = (z_start + 1) + "-" + (z_end + 1);
+            } else if (max_theZ != theZ) {
                 json.theZ = "-";
             }
             if (max_theT != theT) {
                 json.theT = "-";
             }
-            if (max_deltaT != deltaT || this.sizeT == 1) {
+            if (max_deltaT != deltaT || sizeT == 1) {
                 json.deltaT = "";
             } else {
                 json.deltaT = this.formatTime(deltaT);
@@ -3187,7 +3243,7 @@
                 } else {
                     p = !m.get('z_projection');
                 }
-                m.set('z_projection', p);
+                m.set_z_projection(p);
             });
         },
 
@@ -3262,6 +3318,7 @@
             var json, html,
                 max_rotation = 0,
                 sum_rotation = 0,
+                sum_sizeZ = 0,
                 rotation,
                 z_projection,
                 zp,
@@ -3278,6 +3335,7 @@
                     rotation = m.get('rotation');
                     max_rotation = Math.max(max_rotation, rotation);
                     sum_rotation += rotation;
+                    sum_sizeZ += m.get('sizeZ');
                     // start with a copy of the first image channels
                     if (json.length === 0) {
                         _.each(chs, function(c) {
@@ -3332,10 +3390,14 @@
                 // save this value to init rotation slider etc
                 this.rotation = avg_rotation;
 
+                // if all panels have sizeZ == 1, don't allow z_projection
+                z_projection_disabled = (sum_sizeZ === this.models.length);
+
                 if (!compatible) {
                     json = [];
                 }
                 html = this.template({'channels':json,
+                    'z_projection_disabled': z_projection_disabled,
                     'rotation': rotation,
                     'z_projection': z_projection});
                 this.$el.html(html);

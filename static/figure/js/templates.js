@@ -25,7 +25,7 @@ __p += '"\n                    data-index="' +
  }); ;
 __p += '\n\n    <div class="btn-group rotation-controls" style="padding:2px">\n        <button type="button" class="btn btn-default btn-sm show-rotation" title="Rotate image">\n            <span class="glyphicon glyphicon-repeat"></span>\n            <span class="rotation_value">' +
 ((__t = ( rotation )) == null ? '' : __t) +
-'</span> &deg;\n        </button>\n\n        <div class="rotation-slider"></div>\n    </div>\n\n\n    <div class="btn-group" style="padding:2px">\n        <button type="button" class="btn btn-default btn-sm z-projection\n                ';
+'</span> &deg;\n        </button>\n\n        <div class="rotation-slider"></div>\n    </div>\n\n\n    <div class="btn-group" style="padding:2px" title="Maximum intensity Z-projection">\n        <button type="button" class="btn btn-default btn-sm z-projection\n                ';
  if(z_projection) { ;
 __p += 'zp-btn-down';
  } else if (typeof z_projection == 'boolean') { ;
@@ -33,7 +33,11 @@ __p += 'zp-btn-down';
  } else { ;
 __p += 'ch-btn-flat';
  };
-__p += '"\n                title="Maximum intensity Z-projection">\n            <span class="glyphicon"></span>\n        </button>\n    </div>\n';
+__p += '"\n                ';
+ if (z_projection_disabled) { ;
+__p += 'disabled="disabled"';
+ } ;
+__p += '\n                >\n            <span class="glyphicon"></span>\n        </button>\n    </div>\n';
 
 }
 return __p
