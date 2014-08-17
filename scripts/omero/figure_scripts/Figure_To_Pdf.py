@@ -558,8 +558,7 @@ def create_pdf(conn, scriptParams):
     fileAnn = conn.createFileAnnfromLocalFile(
         pdfName,
         mimetype="application/pdf",
-        ns=ns,
-        desc=figure_json_string)
+        ns=ns)
 
     links = []
     for iid in list(imageIds):
