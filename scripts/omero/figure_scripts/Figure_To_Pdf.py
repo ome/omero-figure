@@ -419,7 +419,7 @@ def getThumbnail(conn, imageId):
     return tempName
 
 
-def addInfoPage(conn, scriptParams, c, panels_json):
+def addInfoPage(conn, scriptParams, c, panels_json, figureName):
 
     base_url = None
     if 'Webclient_URI' in scriptParams:
@@ -434,10 +434,9 @@ def addInfoPage(conn, scriptParams, c, panels_json):
     styles = getSampleStyleSheet()
     styleN = styles['Normal']
     styleH = styles['Heading1']
+    styleH2 = styles['Heading2']
     story = []
     scalebars = []
-
-    story.append(Paragraph("Figure Images", styleH))
 
     fontSize = 10
     spaceBefore = 15
@@ -450,6 +449,18 @@ def addInfoPage(conn, scriptParams, c, panels_json):
             "fontSize='%s'" % (spaceBefore, spaceAfter, fontSize)
         para = "<para %s>%s</para>" % (attrs, text)
         story.append(Paragraph(para, style))
+
+
+    story.append(Paragraph(figureName, styleH))
+
+    if "Figure_URI" in scriptParams:
+        fileUrl = scriptParams["Figure_URI"]
+        print "Figure URL", fileUrl
+        addPara(["Link to Figure: <a href='%s' color='blue'>%s</a>" % (fileUrl, fileUrl)])
+
+    # addPara( ["Figure contains the following images:"])
+    story.append(Paragraph("Figure contains the following images:", styleH2))
+
 
     # Go through sorted panels, adding paragraph for each unique image
     for p in panels_json:
@@ -493,6 +504,9 @@ def create_pdf(conn, scriptParams):
     # time-stamp name by default: Figure_2013-10-29_22-43-53.pdf
     figureName = "Figure_%s-%s-%s_%s-%s-%s." \
         "pdf" % (n.year, n.month, n.day, n.hour, n.minute, n.second)
+    if 'figureName' in figure_json:
+        figureName = str(figure_json['figureName'])
+
 
     # get Figure width & height...
     pageWidth = figure_json['paper_width']
@@ -501,12 +515,11 @@ def create_pdf(conn, scriptParams):
     scriptParams['Page_Width'] = pageWidth
     scriptParams['Page_Height'] = pageHeight
 
-    if 'Figure_Name' in scriptParams:
-        figureName = scriptParams['Figure_Name']
-    if not figureName.endswith('.pdf'):
-        figureName = "%s.pdf" % figureName
+    pdfName = figureName
+    if not pdfName.endswith('.pdf'):
+        pdfName = "%s.pdf" % pdfName
 
-    c = canvas.Canvas(figureName, pagesize=(pageWidth, pageHeight))
+    c = canvas.Canvas(pdfName, pagesize=(pageWidth, pageHeight))
 
     panels_json = figure_json['panels']
     imageIds = set()
@@ -528,8 +541,10 @@ def create_pdf(conn, scriptParams):
     # complete page and save
     c.showPage()
 
+    print panels_json
+
     # Add thumbnails and links page
-    addInfoPage(conn, scriptParams, c, panels_json)
+    addInfoPage(conn, scriptParams, c, panels_json, figureName)
 
     c.save()
 
@@ -541,7 +556,7 @@ def create_pdf(conn, scriptParams):
 
     ns = "omero.web.figure.pdf"
     fileAnn = conn.createFileAnnfromLocalFile(
-        figureName,
+        pdfName,
         mimetype="application/pdf",
         ns=ns,
         desc=figure_json_string)
@@ -581,7 +596,9 @@ def runScript():
                        description="webclient URL for adding links to images"),
 
         scripts.String("Figure_Name", grouping="4",
-                       description="Name of the Pdf Figure")
+                       description="Name of the Pdf Figure"),
+
+        scripts.String("Figure_URI", description="URL to the Figure")
     )
 
     try:

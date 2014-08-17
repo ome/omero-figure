@@ -584,6 +584,12 @@
                 width_mm: this.get('width_mm'),
                 orientation: this.get('orientation'),
             };
+            if (this.get('figureName')){
+                figureJSON.figureName = this.get('figureName')
+            }
+            if (this.get('fileId')){
+                figureJSON.fileId = this.get('fileId')
+            }
             return figureJSON;
         },
 
