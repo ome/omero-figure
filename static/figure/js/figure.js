@@ -3045,6 +3045,7 @@
                 sum_theZ = 0,
                 max_theZ = 0,
                 sum_theT = 0,
+                min_sizeT = this.models[0].get('sizeT'),
                 max_theT = 0,
                 sum_deltaT = 0,
                 max_deltaT = 0,
@@ -3078,6 +3079,7 @@
                 max_theZ = Math.max(max_theZ, m.get('theZ'));
                 max_theT = Math.max(max_theT, theT);
                 max_deltaT = Math.max(max_deltaT, dT);
+                min_sizeT = Math.min(min_sizeT, m.get('sizeT'))
                 if (sizeZ != m.get('sizeZ')) {
                     sizeZ = undefined;
                 }
@@ -3128,10 +3130,11 @@
             this.dy = sum_dy/this.models.length;
 
             // update sliders
-            var Z_disabled = false;
+            var Z_disabled = false,
+                Z_max = sizeZ;
             if (!sizeZ || sizeZ === 1) {    // undefined or 1
                 Z_disabled = true;
-                sizeZ = 1;
+                Z_max = 1;
             }
 
             // in case it's already been initialised:
@@ -3141,7 +3144,7 @@
                 $("#vp_z_slider").slider({
                     orientation: "vertical",
                     range: true,
-                    max: sizeZ,
+                    max: Z_max,
                     disabled: Z_disabled,
                     min: 1,             // model is 0-based, UI is 1-based
                     values: [z_start + 1, z_end + 1],
@@ -3175,22 +3178,26 @@
                 });
             }
 
-            var T_disabled = false;
-            if (!sizeT || sizeT === 1) {    // undefined or 1
+            // T-slider should be enabled even if we have a mixture of sizeT values.
+            // Slider T_max is the minimum of sizeT values
+            // Slider value is average of theT values (but smaller than T_max)
+            var T_disabled = false,
+                T_max = min_sizeT;
+            if (T_max === 1) {
                 T_disabled = true;
-                sizeT = 1;
             }
+            self.theT_avg = Math.min(self.theT_avg, T_max);
             // in case it's already been initialised:
             $("#vp_t_slider").slider("destroy");
 
             $("#vp_t_slider").slider({
-                max: sizeT,
+                max: T_max,
                 disabled: T_disabled,
                 min: 1,             // model is 0-based, UI is 1-based
                 value: self.theT_avg + 1,
                 slide: function(event, ui) {
                     var theT = ui.value;
-                    $("#vp_t_value").text(theT + "/" + sizeT);
+                    $("#vp_t_value").text(theT + "/" + (sizeT || '-'));
                     var dt = self.models[0].get('deltaT')[theT-1];
                     _.each(self.models, function(m){
                         if (m.get('deltaT')[theT-1] != dt) {
