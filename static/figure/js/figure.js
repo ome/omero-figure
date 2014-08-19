@@ -59,6 +59,16 @@
             if (attrs.theZ < 0) {
                 return "theZ too small";
             }
+            if (attrs.z_start !== undefined) {
+                if (attrs.z_start < 0 || attrs.z_start >= attrs.sizeZ) {
+                    return "z_start out of Z range"
+                }
+            }
+            if (attrs.z_end !== undefined) {
+                if (attrs.z_end < 0 || attrs.z_end >= attrs.sizeZ) {
+                    return "z_end out of Z range"
+                }
+            }
         },
 
         // Switch some attributes for new image...
@@ -2838,13 +2848,27 @@
 
         z_increment: function(event) {
             _.each(this.model.getSelected(), function(m){
-                m.set({'theZ': m.get('theZ') + 1}, {'validate': true});
+                var newZ = {};
+                if (m.get('z_projection')) {
+                    newZ.z_start = m.get('z_start') + 1;
+                    newZ.z_end = m.get('z_end') + 1;
+                } else {
+                    newZ.theZ = m.get('theZ') + 1;
+                }
+                m.set(newZ, {'validate': true});
             });
             return false;
         },
         z_decrement: function(event) {
             _.each(this.model.getSelected(), function(m){
-                m.set({'theZ': m.get('theZ') - 1}, {'validate': true});
+                var newZ = {};
+                if (m.get('z_projection')) {
+                    newZ.z_start = m.get('z_start') - 1;
+                    newZ.z_end = m.get('z_end') - 1;
+                } else {
+                    newZ.theZ = m.get('theZ') - 1;
+                }
+                m.set(newZ, {'validate': true});
             });
             return false;
         },
@@ -2882,7 +2906,7 @@
 
             _.each(this.models, function(m){
                 self.listenTo(m,
-                    'change:width change:height change:channels change:zoom change:theZ change:theT change:rotation change:z_projection',
+                    'change:width change:height change:channels change:zoom change:theZ change:theT change:rotation change:z_projection change:z_start change:z_end',
                     self.render);
                 zoom_sum += m.get('zoom');
 
