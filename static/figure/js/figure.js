@@ -3092,8 +3092,6 @@
                     z_projection = false;
                 }
             });
-            // Only continue if panels are all same w/h ratio
-            if (!same_wh) return;
 
             theZ_avg = sum_theZ/ this.models.length;
             this.theT_avg = sum_theT/ this.models.length;
