@@ -93,7 +93,7 @@ def createOriginalFileFromFileObj(
 
 
 @login_required()
-def index(request, conn=None, **kwargs):
+def index(request, fileId=None, conn=None, **kwargs):
     """
     Single page 'app' for creating a Figure, allowing you to choose images
     and lay them out in canvas by dragging & resizing etc
@@ -278,9 +278,20 @@ def make_web_figure(request, conn=None, **kwargs):
     figureJSON = unicodedata.normalize('NFKD', figureJSON).encode('ascii','ignore')
     webclient_uri = request.build_absolute_uri(reverse('webindex'))
 
+    figure_dict = json.loads(figureJSON)
+
     inputMap = {
         'Figure_JSON': wrap(figureJSON),
         'Webclient_URI': wrap(webclient_uri)}
+
+    # If the figure has been saved, construct URL to it...
+    if 'fileId' in figure_dict:
+        try:
+            figureUrl = reverse('load_figure', args=[figure_dict['fileId']])
+            figureUrl = request.build_absolute_uri(figureUrl)
+            inputMap['Figure_URI'] = wrap(figureUrl)
+        except:
+            pass
 
     rsp = run_script(request, conn, sId, inputMap, scriptName='Figure.pdf')
     return HttpResponse(json.dumps(rsp), content_type='json')

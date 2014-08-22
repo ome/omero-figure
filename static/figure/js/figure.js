@@ -59,6 +59,16 @@
             if (attrs.theZ < 0) {
                 return "theZ too small";
             }
+            if (attrs.z_start !== undefined) {
+                if (attrs.z_start < 0 || attrs.z_start >= attrs.sizeZ) {
+                    return "z_start out of Z range"
+                }
+            }
+            if (attrs.z_end !== undefined) {
+                if (attrs.z_end < 0 || attrs.z_end >= attrs.sizeZ) {
+                    return "z_end out of Z range"
+                }
+            }
         },
 
         // Switch some attributes for new image...
@@ -135,7 +145,7 @@
             // ... then add new labels ...
             for (var j=0; j<labels.length; j++) {
                 // check that we're not adding a white label outside panel (on a white background)
-                if (_.contains(["top", "bottom", "left", "right"], labels[j].position) &&
+                if (_.contains(["top", "bottom", "left", "right", "leftvert"], labels[j].position) &&
                         labels[j].color == "FFFFFF") {
                     labels[j].color = "000000";
                 }
@@ -584,6 +594,12 @@
                 width_mm: this.get('width_mm'),
                 orientation: this.get('orientation'),
             };
+            if (this.get('figureName')){
+                figureJSON.figureName = this.get('figureName')
+            }
+            if (this.get('fileId')){
+                figureJSON.fileId = this.get('fileId')
+            }
             return figureJSON;
         },
 
@@ -2832,13 +2848,27 @@
 
         z_increment: function(event) {
             _.each(this.model.getSelected(), function(m){
-                m.set({'theZ': m.get('theZ') + 1}, {'validate': true});
+                var newZ = {};
+                if (m.get('z_projection')) {
+                    newZ.z_start = m.get('z_start') + 1;
+                    newZ.z_end = m.get('z_end') + 1;
+                } else {
+                    newZ.theZ = m.get('theZ') + 1;
+                }
+                m.set(newZ, {'validate': true});
             });
             return false;
         },
         z_decrement: function(event) {
             _.each(this.model.getSelected(), function(m){
-                m.set({'theZ': m.get('theZ') - 1}, {'validate': true});
+                var newZ = {};
+                if (m.get('z_projection')) {
+                    newZ.z_start = m.get('z_start') - 1;
+                    newZ.z_end = m.get('z_end') - 1;
+                } else {
+                    newZ.theZ = m.get('theZ') - 1;
+                }
+                m.set(newZ, {'validate': true});
             });
             return false;
         },
@@ -2876,7 +2906,7 @@
 
             _.each(this.models, function(m){
                 self.listenTo(m,
-                    'change:width change:height change:channels change:zoom change:theZ change:theT change:rotation change:z_projection',
+                    'change:width change:height change:channels change:zoom change:theZ change:theT change:rotation change:z_projection change:z_start change:z_end',
                     self.render);
                 zoom_sum += m.get('zoom');
 
@@ -3039,6 +3069,7 @@
                 sum_theZ = 0,
                 max_theZ = 0,
                 sum_theT = 0,
+                min_sizeT = this.models[0].get('sizeT'),
                 max_theT = 0,
                 sum_deltaT = 0,
                 max_deltaT = 0,
@@ -3072,6 +3103,7 @@
                 max_theZ = Math.max(max_theZ, m.get('theZ'));
                 max_theT = Math.max(max_theT, theT);
                 max_deltaT = Math.max(max_deltaT, dT);
+                min_sizeT = Math.min(min_sizeT, m.get('sizeT'))
                 if (sizeZ != m.get('sizeZ')) {
                     sizeZ = undefined;
                 }
@@ -3084,8 +3116,6 @@
                     z_projection = false;
                 }
             });
-            // Only continue if panels are all same w/h ratio
-            if (!same_wh) return;
 
             theZ_avg = sum_theZ/ this.models.length;
             this.theT_avg = sum_theT/ this.models.length;
@@ -3122,10 +3152,11 @@
             this.dy = sum_dy/this.models.length;
 
             // update sliders
-            var Z_disabled = false;
+            var Z_disabled = false,
+                Z_max = sizeZ;
             if (!sizeZ || sizeZ === 1) {    // undefined or 1
                 Z_disabled = true;
-                sizeZ = 1;
+                Z_max = 1;
             }
 
             // in case it's already been initialised:
@@ -3135,7 +3166,7 @@
                 $("#vp_z_slider").slider({
                     orientation: "vertical",
                     range: true,
-                    max: sizeZ,
+                    max: Z_max,
                     disabled: Z_disabled,
                     min: 1,             // model is 0-based, UI is 1-based
                     values: [z_start + 1, z_end + 1],
@@ -3169,22 +3200,26 @@
                 });
             }
 
-            var T_disabled = false;
-            if (!sizeT || sizeT === 1) {    // undefined or 1
+            // T-slider should be enabled even if we have a mixture of sizeT values.
+            // Slider T_max is the minimum of sizeT values
+            // Slider value is average of theT values (but smaller than T_max)
+            var T_disabled = false,
+                T_max = min_sizeT;
+            if (T_max === 1) {
                 T_disabled = true;
-                sizeT = 1;
             }
+            self.theT_avg = Math.min(self.theT_avg, T_max);
             // in case it's already been initialised:
             $("#vp_t_slider").slider("destroy");
 
             $("#vp_t_slider").slider({
-                max: sizeT,
+                max: T_max,
                 disabled: T_disabled,
                 min: 1,             // model is 0-based, UI is 1-based
                 value: self.theT_avg + 1,
                 slide: function(event, ui) {
                     var theT = ui.value;
-                    $("#vp_t_value").text(theT + "/" + sizeT);
+                    $("#vp_t_value").text(theT + "/" + (sizeT || '-'));
                     var dt = self.models[0].get('deltaT')[theT-1];
                     _.each(self.models, function(m){
                         if (m.get('deltaT')[theT-1] != dt) {
