@@ -127,8 +127,9 @@ def imgData_json(request, imageId, conn=None, **kwargs):
         timeMap = {}
         for info in infoList:
             tIndex = info.theT.getValue()
-            deltaT = int(info.deltaT.getValue())
-            timeMap[tIndex] = deltaT
+            if info.deltaT is not None:
+                deltaT = int(info.deltaT.getValue())
+                timeMap[tIndex] = deltaT
         for t in range(image.getSizeT()):
             if t in timeMap:
                 timeList.append(timeMap[t])
