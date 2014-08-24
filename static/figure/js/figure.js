@@ -3134,8 +3134,8 @@
             var wh = sum_wh/this.models.length,
                 zoom = sum_zoom/this.models.length,
                 theZ = sum_theZ/this.models.length,
-                z_start = z_start_sum/this.models.length,
-                z_end = z_end_sum/this.models.length,
+                z_start = Math.round(z_start_sum/this.models.length),
+                z_end = Math.round(z_end_sum/this.models.length),
                 theT = sum_theT/this.models.length;
                 deltaT = sum_deltaT/this.models.length;
 
