@@ -272,23 +272,36 @@
                 z_start = this.get('z_start'),
                 z_end = this.get('z_end'),
                 sizeZ = this.get('sizeZ'),
-                theZ = this.get('theZ');
-            if (z_start === undefined) {
-                z_start = Math.max(theZ - 2, 0);
-            }
-            if (z_end === undefined) {
-                z_end = Math.min(theZ + 2, sizeZ - 1);
-            }
+                theZ = this.get('theZ'),
+                z_diff = 2;
 
             // Only allow Z-projection if sizeZ > 1
-            if (z_projection && sizeZ > 1) {
+            // If turning projection on...
+            if (z_projection && !zp && sizeZ > 1) {
+
+                // use existing z_diff interval if set
+                if (z_start && z_end) {
+                    z_diff = (z_end - z_start)/2;
+                    z_diff = Math.round(z_diff);
+                }
+                // reset z_start & z_end
+                z_start = Math.max(theZ - z_diff, 0);
+                z_end = Math.min(theZ + z_diff, sizeZ - 1);
                 this.set({
                     'z_projection': true,
                     'z_start': z_start,
                     'z_end': z_end
                 });
-            } else {
-                this.set('z_projection', false);
+            // If turning z-projection off...
+            } else if (zp) {
+                // reset theZ for average of z_start & z_end
+                if (z_start && z_end) {
+                    theZ = Math.round((z_end + z_start)/ 2 );
+                    this.set({'z_projection': false,
+                        'theZ': theZ});
+                } else {
+                    this.set('z_projection', false);
+                }
             }
         },
 
