@@ -229,11 +229,16 @@ var FileListItemView = Backbone.View.extend({
     },
 
     formatDate: function(secs) {
-        var d = new Date(secs * 1000),
+        // if secs is a number, create a Date...
+        if (secs * 1000) {
+            var d = new Date(secs * 1000),
             s = d.toISOString();        // "2014-02-26T23:09:09.415Z"
-        s = s.replace("T", " ");
-        s = s.substr(0, 16);
-        return s;
+            s = s.replace("T", " ");
+            s = s.substr(0, 16);
+            return s;
+        }
+        // handle string
+        return secs;
     },
 
     render:function () {
