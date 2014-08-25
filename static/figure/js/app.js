@@ -78,7 +78,7 @@ $(function(){
                     callback();
                 }
             };
-            if (figureModel.get("unsaved")) {
+            if (false) { // Don't save DEMO // (figureModel.get("unsaved")) {
 
                 var saveBtnTxt = "Save",
                     canEdit = figureModel.get('canEdit');
@@ -139,15 +139,15 @@ $(function(){
     });
 
     app = new FigureRouter();
-    Backbone.history.start({pushState: true, root: BASE_WEBFIGURE_URL});
+    Backbone.history.start();
 
     // We want 'a' links (E.g. to open_figure) to use app.navigate
     $(document).on('click', 'a', function (ev) {
         var href = $(this).attr('href');
         // check that links are 'internal' to this app
-        if (href.substring(0, BASE_WEBFIGURE_URL.length) === BASE_WEBFIGURE_URL) {
+        if (href.substring(0, 8) === '/figure/') {
             ev.preventDefault();
-            href = href.replace(BASE_WEBFIGURE_URL, "/");
+            href = href.replace('/figure', "");
             app.navigate(href, {trigger: true});
         }
     });

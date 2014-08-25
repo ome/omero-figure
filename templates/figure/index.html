@@ -1,4 +1,3 @@
-{% load url from future %}
 
 <!DOCTYPE html>
 <!--
@@ -19,6 +18,11 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 -->
 
+<!-- TO update static demo
+    cherry-pick something like https://github.com/will-moore/figure/commit/0ec9821
+
+-->
+
 <!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
 <!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
 <!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
@@ -30,34 +34,38 @@
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width">
 
-    <link rel="stylesheet" href="{% static 'figure/3rdparty/bootstrap3/css/bootstrap.css' %}">
-    <link rel="stylesheet" href="{% static 'figure/3rdparty/bootstrap-colorpicker/css/bootstrap-colorpicker.min.css' %}">
-    <link rel="stylesheet" href="{% static 'figure/css/figure.css' %}">
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="static/figure/css/bootstrap-colorpicker.min.css">
+    <link rel="stylesheet" href="static/figure/css/figure.css">
 
-    {% include "webgateway/base/includes/script_src_jquery.html" %}
-    {% include "webgateway/base/includes/jquery-ui.html" %}
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.7.2.min.js"></script>
+
+    <script type="text/javascript" src="//code.jquery.com/ui/1.8.19/jquery-ui.js"></script>
+
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.8.19/themes/smoothness/jquery-ui.css" type="text/css" />
 
     <script>
 
-    var RELEASE_VERSION = "v1.0.0";
+    var RELEASE_VERSION = "v1.1.0";
 
-    var BASE_WEBFIGURE_URL = "{% url 'figure_index' %}",
-        SAVE_WEBFIGURE_URL = "{% url 'save_web_figure' %}",
-        LIST_WEBFIGURES_URL = "{% url 'list_web_figures' %}",
-        DELETE_WEBFIGURE_URL = "{% url 'delete_web_figure' %}",
-        MAKE_WEBFIGURE_URL = "{% url 'make_web_figure' %}",
-        ACTIVITIES_JSON_URL = "{% url 'activities_json' %}",
-        WEBGATEWAYINDEX = "{% url 'webgateway' %}",
-        WEBINDEX_URL = "{% url 'webindex' %}",
-        ROIS_JSON_URL = WEBGATEWAYINDEX + "get_rois_json/",
-        USER_FULL_NAME = "{{ userFullName }}";
+
+    var BASE_WEBFIGURE_URL = "/figure/",
+        SAVE_WEBFIGURE_URL = "/figure/save_web_figure/",
+        LIST_WEBFIGURES_URL = "static/json/list_web_figures.json",
+        DELETE_WEBFIGURE_URL = "/figure/delete_web_figure/",
+        MAKE_WEBFIGURE_URL = "/figure/make_web_figure/",
+        ACTIVITIES_JSON_URL = "/webclient/activities_json/",
+        WEBGATEWAYINDEX = "/webgateway",
+        WEBINDEX_URL = "/webclient/",
+        ROIS_JSON_URL,
+        USER_FULL_NAME = "Will Moore";
 
     $(document).ready(function() {
 
         // keep-alive ping every minute, so that OMERO session doesn't die
-        setInterval(function (){
-            $.get("{% url 'keepalive_ping' %}");
-        }, 60000);
+        // setInterval(function (){
+        //     $.get("{% url 'keepalive_ping' %}");
+        // }, 60000);
 
         // load Panels from localStorage (if any)
         // figureModel.panels.fetch({
@@ -114,7 +122,7 @@
                         <a target="new" href="http://will-moore.github.io/figure/">OMERO.figure Home Page</a>
                     </p>
                     <p>
-                        &copy; 2013-{% now "Y" %} University of Dundee &amp; Open Microscopy Environment<br/>
+                        &copy; 2013-2015 University of Dundee &amp; Open Microscopy Environment<br/>
                         OMERO and OMERO.figure are distributed under the terms of the GNU GPL.<br/>
                         See: <a target="new" href="http://www.openmicroscopy.org">openmicroscopy.org</a>
                     </p>
@@ -395,7 +403,7 @@
     <div class="navbar navbar-inverse navbar-fixed-top">
         <div class="container">
             <div class="navbar-header" title="Back to OMERO.webclient">
-                <a class="navbar-brand" href="{% url 'webindex' %}">OMERO</a>
+                <a class="navbar-brand" href="/webclient/">OMERO</a>
             </div>
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
@@ -534,9 +542,9 @@
                         <span class="glyphicon glyphicon-download-alt" style="font-size: 14px"></span>
                     </a>
 
-                    <div class="btn-group" {% if scriptMissing %}title="PDF script not installed"{% endif %}>
+                    <div class="btn-group" title="PDF script not installed">
                         <button id="create_figure_pdf" title="Generate PDF for download"
-                            {% if scriptMissing %}disabled="disabled"{% endif %}
+                            disabled="disabled"
                             data-export-option="PDF"
                             type="button" class="btn btn-success btn-sm export_pdf">
                             Export PDF
@@ -656,38 +664,18 @@
     </div>
 
 
-    <script src="{% static 'figure/3rdparty/json2.js' %}"></script>
-    <script src="{% static 'figure/3rdparty/underscore.js' %}"></script>
-    <script src="{% static 'figure/3rdparty/backbone.js' %}"></script>
-    <!-- <script src="{% static 'figure/3rdparty/backbone-localstorage.js' %}"></script> -->
-    <script src="{% static 'figure/3rdparty/raphael/raphael-min.js' %}"></script>
-    <script src="{% static 'figure/3rdparty/mousetrap/mousetrap.min.js' %}"></script>
-    <script src="{% static 'figure/3rdparty/backbone.mousetrap/backbone.mousetrap.js' %}"></script>
-    <script src="{% static 'figure/3rdparty/bootstrap3/js/bootstrap.js' %}"></script>
-    <script src="{% static 'figure/3rdparty/bootstrap-colorpicker/js/bootstrap-colorpicker.min.js' %}"></script>
-    <script src="{% static 'figure/js/templates.js' %}"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/json2/20130526/json2.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.5.2/underscore-min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/backbone.js/1.0.0/backbone-min.js"></script>
+    <!-- <script src="/static/figure/3rdparty/backbone-localstorage.js"></script> -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/raphael/2.1.2/raphael-min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/mousetrap/1.4.6/mousetrap.min.js"></script>
+    <script src="static/figure/3rdparty/backbone.mousetrap/backbone.mousetrap.js"></script>
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+    <script src="static/figure/js/bootstrap-colorpicker.min.js' %}"></script>
 
-
-    <!-- All these can be concatenated with '$ grunt concat' into figure.js.... -->
-    <script src="{% static 'figure/js/models/figure_model.js' %}"></script>
-    <script src="{% static 'figure/js/models/panel_model.js' %}"></script>
-    <script src="{% static 'figure/js/models/undo.js' %}"></script>
-    <script src="{% static 'figure/js/views/figure_view.js' %}"></script>
-    <script src="{% static 'figure/js/views/files.js' %}"></script>
-    <script src="{% static 'figure/js/views/modal_views.js' %}"></script>
-    <script src="{% static 'figure/js/views/roi_modal_view.js' %}"></script>
-    <script src="{% static 'figure/js/views/panel_view.js' %}"></script>
-    <script src="{% static 'figure/js/views/raphael-rect.js' %}"></script>
-    <script src="{% static 'figure/js/views/right_panel_view.js' %}"></script>
-    <script src="{% static 'figure/js/views/svg_model_view.js' %}"></script>
-    <script src="{% static 'figure/js/views/util.js' %}"></script>
-    <script src="{% static 'figure/js/views/colorpicker.js' %}"></script>
-    <script src="{% static 'figure/js/app.js' %}"></script>
-
-
-    <!-- ...for release build.
-    <script type="text/javascript" src="{% static 'figure/js/figure-1.0.0.js' %}"></script>
-    -->
+    <script type="text/javascript" src="static/figure/js/templates.js"></script>
+    <script type="text/javascript" src="static/figure/js/figure.js"></script>
 
 
 </body>
