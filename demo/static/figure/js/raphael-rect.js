@@ -1,4 +1,22 @@
 
+//
+// Copyright (C) 2014 University of Dundee & Open Microscopy Environment.
+// All rights reserved.
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+
 var RectView = Backbone.View.extend({
 
     handle_wh: 6,
@@ -65,20 +83,34 @@ var RectView = Backbone.View.extend({
                 // Use dx & dy to update the location of the handle and the corresponding point of the parent
                 var new_x = this.ox + dx;
                 var new_y = this.oy + dy;
+                var newRect = {
+                    x: this.rect.x,
+                    y: this.rect.y,
+                    width: this.rect.width,
+                    height: this.rect.height
+                };
                 if (this.h_id.indexOf('e') > -1) {    // if we're dragging an 'EAST' handle, update width
-                    this.rect.width = new_x - self.x + self.handle_wh/2;
+                    newRect.width = new_x - self.x + self.handle_wh/2;
                 }
                 if (this.h_id.indexOf('s') > -1) {    // if we're dragging an 'SOUTH' handle, update height
-                    this.rect.height = new_y - self.y + self.handle_wh/2;
+                    newRect.height = new_y - self.y + self.handle_wh/2;
                 }
                 if (this.h_id.indexOf('n') > -1) {    // if we're dragging an 'NORTH' handle, update y and height
-                    this.rect.y = new_y + self.handle_wh/2;
-                    this.rect.height = this.obottom - new_y;
+                    newRect.y = new_y + self.handle_wh/2;
+                    newRect.height = this.obottom - new_y;
                 }
                 if (this.h_id.indexOf('w') > -1) {    // if we're dragging an 'WEST' handle, update x and width
-                    this.rect.x = new_x + self.handle_wh/2;
-                    this.rect.width = this.oright - new_x;
+                    newRect.x = new_x + self.handle_wh/2;
+                    newRect.width = this.oright - new_x;
                 }
+                // Don't allow zero sized rect.
+                if (newRect.width < 1 || newRect.height < 1) {
+                    return false;
+                }
+                this.rect.x = newRect.x;
+                this.rect.y = newRect.y;
+                this.rect.width = newRect.width;
+                this.rect.height = newRect.height;
                 this.rect.model.trigger("drag_resize", [this.rect.x, this.rect.y, this.rect.width, this.rect.height]);
                 this.rect.updateShape();
                 return false;
@@ -104,6 +136,9 @@ var RectView = Backbone.View.extend({
                 return false;
             };
         };
+        var _stop_event_propagation = function(e) {
+            e.stopImmediatePropagation();
+        }
         for (var key in this.handleIds) {
             var hx = this.handleIds[key][0];
             var hy = this.handleIds[key][1];
@@ -117,9 +152,7 @@ var RectView = Backbone.View.extend({
                 _handle_drag_start(),
                 _handle_drag_end()
             );
-            handle.mousedown(function(e){
-                e.stopImmediatePropagation();
-            });
+            handle.mousedown(_stop_event_propagation);
             self.handles.push(handle);
         }
         self.handles.hide();     // show on selection

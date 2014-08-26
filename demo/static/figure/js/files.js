@@ -1,4 +1,22 @@
 
+//
+// Copyright (C) 2014 University of Dundee & Open Microscopy Environment.
+// All rights reserved.
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+
 var FigureFile = Backbone.Model.extend({
 
     defaults: {
@@ -17,6 +35,20 @@ var FigureFile = Backbone.Model.extend({
             this.set('baseUrl', desc.baseUrl);
         }
     },
+
+    isVisible: function(filter) {
+        if (filter.owner) {
+            if (this.get('ownerFullName') !== filter.owner) {
+                return false;
+            }
+        }
+        if (filter.name) {
+            if (this.get('name').toLowerCase().indexOf(filter.name) < 0) {
+                return false;
+            }
+        }
+        return true;
+    }
 });
 
 
@@ -30,6 +62,11 @@ var FileList = Backbone.Collection.extend({
     },
 
     disable: function(fileId) {
+        // enable all first
+        this.where({disabled: true}).forEach(function(f){
+            f.set('disabled', false);
+        });
+
         var f = this.get(fileId);
         if (f) {
             f.set('disabled', true);
@@ -58,16 +95,15 @@ var FileList = Backbone.Collection.extend({
 
 var FileListView = Backbone.View.extend({
 
-    el: $("#figure_files"),
+    el: $("#openFigureModal"),
 
     initialize:function () {
         this.$tbody = $('tbody', this.$el);
+        this.$fileFilter = $('#file-filter');
         var self = this;
-        this.model.bind("reset remove sync sort", this.render, this);
-        this.model.bind("add", function (file) {
-            var e = new FileListItemView({model:file}).render().el;
-            self.$tbody.prepend(e);
-        });
+        // we automatically 'sort' on fetch, add etc.
+        this.model.bind("sync remove sort", this.render, this);
+        this.$fileFilter.val("");
     },
 
     events: {
@@ -75,6 +111,19 @@ var FileListView = Backbone.View.extend({
         "click .sort-created-reverse": "sort_created_reverse",
         "click .sort-name": "sort_name",
         "click .sort-name-reverse": "sort_name_reverse",
+        "click .pick-owner": "pick_owner",
+        "keyup #file-filter": "filter_files",
+        "click .refresh-files": "refresh_files",
+    },
+
+    refresh_files: function(event) {
+        // will trigger sort & render()
+        this.model.fetch();
+    },
+
+    filter_files: function(event) {
+        // render() will pick the new filter text
+        this.render();
     },
 
     sort_created: function(event) {
@@ -110,23 +159,52 @@ var FileListView = Backbone.View.extend({
     },
 
     render_sort_btn: function(event) {
-        $("th .btn", this.$el).addClass('muted');
+        $("th .btn-sm", this.$el).addClass('muted');
         $(event.target).removeClass('muted');
     },
 
+    pick_owner: function(event) {
+        event.preventDefault()
+        var owner = $(event.target).text();
+        if (owner != " -- Show All -- ") {
+            this.owner = owner;
+        } else {
+            delete this.owner;
+        }
+        this.render();
+    },
+
     render:function () {
-        var self = this;
+        var self = this,
+            filter = {},
+            filterVal = this.$fileFilter.val();
+        if (this.owner) {
+            filter.owner = this.owner;
+        }
+        if (filterVal.length > 0) {
+            filter.name = filterVal.toLowerCase();
+        }
         this.$tbody.empty();
         if (this.model.models.length === 0) {
             var msg = "<tr><td colspan='3'>" +
-                "You have no figures. Start by <a href='#new'>creating a new figure</a>" +
+                "You have no figures. Start by <a href='" + BASE_WEBFIGURE_URL + "new'>creating a new figure</a>" +
                 "</td></tr>";
             self.$tbody.html(msg);
         }
         _.each(this.model.models, function (file) {
-            var e = new FileListItemView({model:file}).render().el;
-            self.$tbody.prepend(e);
+            if (file.isVisible(filter)) {
+                var e = new FileListItemView({model:file}).render().el;
+                self.$tbody.prepend(e);
+            }
         });
+        owners = this.model.pluck("ownerFullName");
+        owners = _.uniq(owners, false);
+        var ownersHtml = "<li><a class='pick-owner' href='#'> -- Show All -- </a></li>";
+            ownersHtml += "<li class='divider'></li>";
+        _.each(owners, function(owner) {
+            ownersHtml += "<li><a class='pick-owner' href='#'>" + owner + "</a></li>";
+        });
+        $("#owner-menu").html(ownersHtml);
         return this;
     }
 });
@@ -135,7 +213,7 @@ var FileListItemView = Backbone.View.extend({
 
     tagName:"tr",
 
-    template: _.template($('#figure_file_item').html()),
+    template: JST["static/figure/templates/files/figure_file_item.html"],
 
     initialize:function () {
         this.model.bind("change", this.render, this);
@@ -151,18 +229,24 @@ var FileListItemView = Backbone.View.extend({
     },
 
     formatDate: function(secs) {
-        return secs;    // Don't need to format
-        var d = new Date(secs * 1000),
+        // if secs is a number, create a Date...
+        if (secs * 1000) {
+            var d = new Date(secs * 1000),
             s = d.toISOString();        // "2014-02-26T23:09:09.415Z"
-        s = s.replace("T", " ");
-        s = s.substr(0, 16);
-        return s;
+            s = s.replace("T", " ");
+            s = s.substr(0, 16);
+            return s;
+        }
+        // handle string
+        return secs;
     },
 
     render:function () {
         var json = this.model.toJSON(),
-            baseUrl = json.baseUrl || "/webgateway";
+            baseUrl = json.baseUrl;
+        baseUrl = baseUrl || WEBGATEWAYINDEX.slice(0, -1);  // remove last /
         json.thumbSrc = baseUrl + "/render_thumbnail/" + json.imageId + "/";
+        json.url = "#file/" + json.id;
         json.formatDate = this.formatDate;
         var h = this.template(json);
         $(this.el).html(h);

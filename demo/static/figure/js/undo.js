@@ -1,5 +1,23 @@
 // --------------- UNDO MANAGER ----------------------
 
+//
+// Copyright (C) 2014 University of Dundee & Open Microscopy Environment.
+// All rights reserved.
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+
 /*global Backbone:true */
 
 var UndoManager = Backbone.Model.extend({
@@ -144,7 +162,7 @@ var UndoManager = Backbone.Model.extend({
         }
 
         // in case we only got 'ignorable' changes
-        if (_.size(redo_attrs) == 0) {
+        if (_.size(redo_attrs) === 0) {
             return;
         }
 
@@ -160,7 +178,7 @@ var UndoManager = Backbone.Model.extend({
         // this could maybe moved to FigureModel itself
         var set_selected = function(selected) {
             for (var i=0; i<selected.length; i++) {
-                if (i == 0) {
+                if (i === 0) {
                     self.figureModel.setSelected(selected[i], true);
                 } else {
                     self.figureModel.addSelected(selected[i]);

@@ -1,4 +1,22 @@
 
+//
+// Copyright (C) 2014 University of Dundee & Open Microscopy Environment.
+// All rights reserved.
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+
 $(function(){
 
     var figureModel = new FigureModel();
@@ -60,16 +78,19 @@ $(function(){
             };
             if (false) { // Don't save DEMO // (figureModel.get("unsaved")) {
 
+                var saveBtnTxt = "Save",
+                    canEdit = figureModel.get('canEdit');
+                if (!canEdit) saveBtnTxt = "Save a Copy";
                 // show the confirm dialog...
                 figureConfirmDialog("Save Changes to Figure?",
                     "Your changes will be lost if you don't save them",
-                    ["Don't Save", "Save"],
+                    ["Don't Save", saveBtnTxt],
                     function(btnTxt){
-                        if (btnTxt === "Save") {
+                        if (btnTxt === saveBtnTxt) {
                              var options = {};
                             // Save current figure or New figure...
                             var fileId = figureModel.get('fileId');
-                            if (fileId) {
+                            if (fileId && canEdit) {
                                 options.fileId = fileId;
                             } else {
                                 var figureName = prompt("Enter Figure Name", "unsaved");
@@ -98,6 +119,7 @@ $(function(){
         },
 
         newFigure: function() {
+            $(".modal").modal('hide'); // hide any existing dialogs
             var cb = function() {
                 $('#addImagesModal').modal();
             };
@@ -105,6 +127,7 @@ $(function(){
          },
 
         loadFigure: function(id) {
+            console.log('loadFigure', id);
             $(".modal").modal('hide'); // hide any existing dialogs
             var fileId = parseInt(id, 10);
             var cb = function() {
