@@ -37,7 +37,7 @@ __p += '"\n                ';
  if (z_projection_disabled) { ;
 __p += 'disabled="disabled"';
  } ;
-__p += '\n                >\n            <span class="glyphicon"></span>\n        </button>\n    </div>\n';
+__p += '\n                style="display:none"\n                >\n            <span class="glyphicon"></span>\n        </button>\n    </div>\n';
 
 }
 return __p

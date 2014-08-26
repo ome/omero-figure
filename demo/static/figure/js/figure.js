@@ -996,6 +996,7 @@
             "click .save_as": "save_as_event",
             "click .new_figure": "goto_newfigure",
             "click .open_figure": "open_figure",
+            "click .export_json": "export_json",
             "click .delete_figure": "delete_figure",
             "click .paper_setup": "paper_setup",
             "click .export-options a": "select_export_option",
@@ -1275,6 +1276,15 @@
                 this.model.save_to_OMERO(options);
             }
 
+        },
+
+        export_json: function(event) {
+            event.preventDefault();
+
+            var figureJSON = this.model.figure_toJSON(),
+                figureText = JSON.stringify(figureJSON);
+            $('#exportJsonModal').modal('show');
+            $('#exportJsonModal textarea').text(figureText);
         },
 
         copy_selected_panels: function(event) {
