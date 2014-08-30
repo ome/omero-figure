@@ -1,25 +1,418 @@
-
-//
-// Copyright (C) 2014 University of Dundee & Open Microscopy Environment.
-// All rights reserved.
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Affero General Public License as
-// published by the Free Software Foundation, either version 3 of the
-// License, or (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Affero General Public License for more details.
-//
-// You should have received a copy of the GNU Affero General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
-//
-
-    // ----------------------- Backbone MODEL --------------------------------------------
-
+    
+    // Version of the json file we're saving.
+    // This only needs to increment when we make breaking changes (not linked to release versions.)
     var VERSION = 1;
+
+
+    // ------------------------- Figure Model -----------------------------------
+    // Has a PanelList as well as other attributes of the Figure
+    var FigureModel = Backbone.Model.extend({
+
+        defaults: {
+            // 'curr_zoom': 100,
+            'canEdit': true,
+            'unsaved': false,
+            'canvas_width': 10000,
+            'canvas_height': 8000,
+            // w & h from reportlab.
+            'paper_width': 612,
+            'paper_height': 792,
+            'orientation': 'vertical',
+            'page_size': 'A4',       // options [A4, letter, mm, pixels]
+            // see http://www.a4papersize.org/a4-paper-size-in-pixels.php
+            'width_mm': 210,    // A4 sizes, only used if user chooses page_size: 'mm'
+            'height_mm': 297,
+        },
+
+        initialize: function() {
+            this.panels = new PanelList();      //this.get("shapes"));
+
+            // wrap selection notification in a 'debounce', so that many rapid
+            // selection changes only trigger a single re-rendering 
+            this.notifySelectionChange = _.debounce( this.notifySelectionChange, 10);
+        },
+
+        syncOverride: function(method, model, options, error) {
+            this.set("unsaved", true);
+        },
+
+        load_from_OMERO: function(fileId, success) {
+
+            var load_url = BASE_WEBFIGURE_URL + "load_web_figure/" + fileId + "/",
+                self = this;
+
+
+            $.getJSON(load_url, function(data){
+
+                // bring older files up-to-date
+                data = self.version_transform(data);
+
+                var name = data.figureName || "UN-NAMED",
+                    n = {'fileId': fileId,
+                        'figureName': name,
+                        'canEdit': data.canEdit,
+                        'paper_width': data.paper_width,
+                        'paper_height': data.paper_height,
+                        'page_size': data.page_size || 'letter',
+                    };
+                // optional values - ignore if missing
+                if (data.orientation) n.orientation = data.orientation;
+                // if (data.page_size) n.page_size = data.page_size; // E.g. 'A4'
+                if (data.height_mm) n.height_mm = data.height_mm;
+                if (data.width_mm) n.width_mm = data.width_mm;
+
+                self.set(n);
+
+                _.each(data.panels, function(p){
+                    p.selected = false;
+                    self.panels.create(p);
+                });
+
+                self.set('unsaved', false);
+                // wait for undo/redo to handle above, then...
+                setTimeout(function() {
+                    self.trigger("reset_undo_redo");
+                }, 50);
+            });
+        },
+
+        // take Figure_JSON from a previous version,
+        // and transform it to latest version
+        version_transform: function(json) {
+            var v = json.version || 0;
+
+            // In version 1, we have pixel_size_x and y.
+            // Earlier versions only have pixel_size.
+            if (v < 1) {
+                _.each(json.panels, function(p){
+                    var ps = p.pixel_size;
+                    p.pixel_size_x = ps;
+                    p.pixel_size_y = ps;
+                    delete p.pixel_size;
+                });
+            }
+
+            return json;
+        },
+
+        figure_toJSON: function() {
+            // Turn panels into json
+            var p_json = [],
+                self = this;
+            this.panels.each(function(m) {
+                p_json.push(m.toJSON());
+            });
+
+            var figureJSON = {
+                version: VERSION,
+                panels: p_json,
+                paper_width: this.get('paper_width'),
+                paper_height: this.get('paper_height'),
+                page_size: this.get('page_size'),
+                height_mm: this.get('height_mm'),
+                width_mm: this.get('width_mm'),
+                orientation: this.get('orientation'),
+            };
+            if (this.get('figureName')){
+                figureJSON.figureName = this.get('figureName')
+            }
+            if (this.get('fileId')){
+                figureJSON.fileId = this.get('fileId')
+            }
+            return figureJSON;
+        },
+
+        save_to_OMERO: function(options) {
+
+            var self = this,
+                figureJSON = this.figure_toJSON();
+
+            var url = window.SAVE_WEBFIGURE_URL,
+                // fileId = self.get('fileId'),
+                data = {};
+
+            if (options.fileId) {
+                data.fileId = options.fileId;
+            }
+            if (options.figureName) {
+                data.figureName = options.figureName;
+            }
+            data.figureJSON = JSON.stringify(figureJSON);
+
+            // Save
+            $.post( url, data)
+                .done(function( data ) {
+                    var update = {
+                        'fileId': +data,
+                        'unsaved': false,
+                    };
+                    if (options.figureName) {
+                        update.figureName = options.figureName;
+                    }
+                    self.set(update);
+
+                    if (options.success) {
+                        options.success(data);
+                    }
+                });
+        },
+
+        clearFigure: function() {
+
+            var figureModel = this;
+            figureModel.unset('fileId');
+            figureModel.delete_panels();
+            figureModel.unset("figureName");
+            figureModel.trigger('reset_undo_redo');
+        },
+
+        nudge_right: function() {
+            this.nudge('x', 10);
+        },
+
+        nudge_left: function() {
+            this.nudge('x', -10);
+        },
+
+        nudge_down: function() {
+            this.nudge('y', 10);
+        },
+
+        nudge_up: function() {
+            this.nudge('y', -10);
+        },
+
+        nudge: function(axis, delta) {
+            var selected = this.getSelected(),
+                pos;
+
+            for (var j=0; j<selected.length; j++) {
+                pos = selected[j].get(axis);
+                selected[j].set(axis, pos + delta);
+            }
+        },
+
+        align_left: function() {
+            var selected = this.getSelected(),
+                x_vals = [];
+            for (var i=0; i<selected.length; i++) {
+                x_vals.push(selected[i].get('x'));
+            }
+            var min_x = Math.min.apply(window, x_vals);
+
+            for (var j=0; j<selected.length; j++) {
+                selected[j].set('x', min_x);
+            }
+        },
+
+        align_top: function() {
+            var selected = this.getSelected(),
+                y_vals = [];
+            for (var i=0; i<selected.length; i++) {
+                y_vals.push(selected[i].get('y'));
+            }
+            var min_y = Math.min.apply(window, y_vals);
+
+            for (var j=0; j<selected.length; j++) {
+                selected[j].set('y', min_y);
+            }
+        },
+
+        align_grid: function() {
+            var sel = this.getSelected(),
+                top_left = this.get_top_left_panel(sel),
+                top_x = top_left.get('x'),
+                top_y = top_left.get('y'),
+                grid = [],
+                row = [top_left],
+                next_panel = top_left;
+
+            // populate the grid, getting neighbouring panel each time
+            while (next_panel) {
+                c = next_panel.get_centre();
+                next_panel = this.get_panel_at(c.x + next_panel.get('width'), c.y, sel);
+
+                // if next_panel is not found, reached end of row. Try start new row...
+                if (typeof next_panel == 'undefined') {
+                    grid.push(row);
+                    // next_panel is below the first of the current row
+                    c = row[0].get_centre();
+                    next_panel = this.get_panel_at(c.x, c.y + row[0].get('height'), sel);
+                    row = [];
+                }
+                if (next_panel) {
+                    row.push(next_panel);
+                }
+            }
+
+            var spacer = top_left.get('width')/20,
+                new_x = top_x,
+                new_y = top_y,
+                max_h = 0;
+            for (var r=0; r<grid.length; r++) {
+                row = grid[r];
+                for (var c=0; c<row.length; c++) {
+                    panel = row[c];
+                    panel.save({'x':new_x, 'y':new_y});
+                    max_h = Math.max(max_h, panel.get('height'));
+                    new_x = new_x + spacer + panel.get('width');
+                }
+                new_y = new_y + spacer + max_h;
+                new_x = top_x;
+            }
+        },
+
+        get_panel_at: function(x, y, panels) {
+            for(var i=0; i<panels.length; i++) {
+                p = panels[i];
+                if ((p.get('x') < x && (p.get('x')+p.get('width')) > x) &&
+                        (p.get('y') < y && (p.get('y')+p.get('height')) > y)) {
+                    return p;
+                }
+            }
+        },
+
+        get_top_left_panel: function(panels) {
+            // top-left panel is one where x + y is least
+            var p, top_left;
+            for(var i=0; i<panels.length; i++) {
+                p = panels[i];
+                if (i === 0) {
+                    top_left = p;
+                } else {
+                    if ((p.get('x') + p.get('y')) < (top_left.get('x') + top_left.get('y'))) {
+                        top_left = p;
+                    }
+                }
+            }
+            return top_left;
+        },
+
+        align_size: function(width, height) {
+            var sel = this.getSelected(),
+                ref = this.get_top_left_panel(sel),
+                ref_width = width ? ref.get('width') : false,
+                ref_height = height ? ref.get('height') : false,
+                new_w, new_h,
+                p;
+
+            for (var i=0; i<sel.length; i++) {
+                p = sel[i];
+                if (ref_width && ref_height) {
+                    new_w = ref_width;
+                    new_h = ref_height;
+                } else if (ref_width) {
+                    new_w = ref_width;
+                    new_h = (ref_width/p.get('width')) * p.get('height');
+                } else if (ref_height) {
+                    new_h = ref_height;
+                    new_w = (ref_height/p.get('height')) * p.get('width');
+                }
+                p.save({'width':new_w, 'height':new_h});
+            }
+        },
+
+        // This can come from multi-select Rect OR any selected Panel
+        // Need to notify ALL panels and Multi-select Rect.
+        drag_xy: function(dx, dy, save) {
+            if (dx === 0 && dy === 0) return;
+
+            var minX = 10000,
+                minY = 10000,
+                xy;
+            // First we notidy all Panels
+            var selected = this.getSelected();
+            for (var i=0; i<selected.length; i++) {
+                xy = selected[i].drag_xy(dx, dy, save);
+                minX = Math.min(minX, xy.x);
+                minY = Math.min(minY, xy.y);
+            }
+            // Notify the Multi-select Rect of it's new X and Y
+            this.trigger('drag_xy', [minX, minY, save]);
+        },
+
+
+        // This comes from the Multi-Select Rect.
+        // Simply delegate to all the Panels
+        multiselectdrag: function(x1, y1, w1, h1, x2, y2, w2, h2, save) {
+            var selected = this.getSelected();
+            for (var i=0; i<selected.length; i++) {
+                selected[i].multiselectdrag(x1, y1, w1, h1, x2, y2, w2, h2, save);
+            }
+        },
+
+        // If already selected, do nothing (unless clearOthers is true)
+        setSelected: function(item, clearOthers) {
+            if ((!item.get('selected')) || clearOthers) {
+                this.clearSelected(false);
+                item.set('selected', true);
+                this.notifySelectionChange();
+            }
+        },
+
+        select_all:function() {
+            this.panels.each(function(p){
+                p.set('selected', true);
+            });
+            this.notifySelectionChange();
+        },
+
+        addSelected: function(item) {
+            item.set('selected', true);
+            this.notifySelectionChange();
+        },
+
+        clearSelected: function(trigger) {
+            this.panels.each(function(p){
+                p.set('selected', false);
+            });
+            if (trigger !== false) {
+                this.notifySelectionChange();
+            }
+        },
+
+        selectByRegion: function(coords) {
+            this.panels.each(function(p){
+                if (p.regionOverlaps(coords)) {
+                    p.set('selected', true);
+                }
+            });
+            this.notifySelectionChange();
+        },
+
+        getSelected: function() {
+            return this.panels.getSelected();
+        },
+
+        // Go through all selected and destroy them - trigger selection change
+        deleteSelected: function() {
+            var selected = this.getSelected();
+            for (var i=0; i<selected.length; i++) {
+                selected[i].destroy();
+            }
+            this.notifySelectionChange();
+        },
+
+        delete_panels: function() {
+            // make list that won't change as we destroy
+            var ps = [];
+            this.panels.each(function(p){
+                ps.push(p);
+            });
+            for (var i=ps.length-1; i>=0; i--) {
+                ps[i].destroy();
+            }
+            this.notifySelectionChange();
+        },
+
+        notifySelectionChange: function() {
+            this.trigger('change:selection');
+        }
+
+    });
+
+
+
     // ------------------------ Panel -----------------------------------------
     // Simple place-holder for each Panel. Will have E.g. imageId, rendering options etc
     // Attributes can be added as we need them.
@@ -497,414 +890,277 @@
         // localStorage: new Backbone.LocalStorage("figureShop-backbone")
     });
 
+// --------------- UNDO MANAGER ----------------------
 
-    // ------------------------- Figure Model -----------------------------------
-    // Has a PanelList as well as other attributes of the Figure
-    var FigureModel = Backbone.Model.extend({
+//
+// Copyright (C) 2014 University of Dundee & Open Microscopy Environment.
+// All rights reserved.
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 
-        defaults: {
-            // 'curr_zoom': 100,
-            'canEdit': true,
-            'unsaved': false,
-            'canvas_width': 10000,
-            'canvas_height': 8000,
-            // w & h from reportlab.
-            'paper_width': 612,
-            'paper_height': 792,
-            'orientation': 'vertical',
-            'page_size': 'A4',       // options [A4, letter, mm, pixels]
-            // see http://www.a4papersize.org/a4-paper-size-in-pixels.php
-            'width_mm': 210,    // A4 sizes, only used if user chooses page_size: 'mm'
-            'height_mm': 297,
-        },
+/*global Backbone:true */
 
-        initialize: function() {
-            this.panels = new PanelList();      //this.get("shapes"));
+var UndoManager = Backbone.Model.extend({
+    defaults: function(){
+        return {
+            undo_pointer: -1
+        };
+    },
+    initialize: function(opts) {
+        this.figureModel = opts.figureModel;    // need for setting selection etc
+        this.figureModel.on("change:paper_width change:paper_height", this.handleChange, this);
+        this.listenTo(this.figureModel, 'reset_undo_redo', this.resetQueue);
+        this.undoQueue = [];
+        this.undoInProgress = false;
+        //this.undo_pointer = -1;
+        // Might need to undo/redo multiple panels/objects
+        this.undo_functions = [];
+        this.redo_functions = [];
+    },
+    resetQueue: function() {
+        this.undoQueue = [];
+        this.set('undo_pointer', -1);
+        this.canUndo();
+    },
+    canUndo: function() {
+        return this.get('undo_pointer') >= 0;
+    },
+    undo: function() {
+        var pointer = this.get('undo_pointer');
+        if (pointer < 0) {
+            return;
+        }
+        this.undoQueue[pointer].undo();
+        this.set('undo_pointer',pointer-1); // trigger change
+    },
+    canRedo: function() {
+        return this.get('undo_pointer')+1 < this.undoQueue.length;
+    },
+    redo: function() {
+        var pointer = this.get('undo_pointer');
+        if (pointer+1 >= this.undoQueue.length) {
+            return;
+        }
+        this.undoQueue[pointer+1].redo();
+        this.set('undo_pointer', pointer+1); // trigger change event
+    },
+    postEdit: function(undo) {
+        var pointer = this.get('undo_pointer');
+        // remove any undo ahead of current position
+        if (this.undoQueue.length > pointer+1) {
+            this.undoQueue = this.undoQueue.slice(0, pointer+1);
+        }
+        this.undoQueue.push(undo);
+        this.set('undo_pointer', pointer+1); // trigger change event
+    },
 
-            // wrap selection notification in a 'debounce', so that many rapid
-            // selection changes only trigger a single re-rendering 
-            this.notifySelectionChange = _.debounce( this.notifySelectionChange, 10);
-        },
-
-        syncOverride: function(method, model, options, error) {
-            this.set("unsaved", true);
-        },
-
-        load_from_OMERO: function(fileId, success) {
-
-            var load_url = BASE_WEBFIGURE_URL + "load_web_figure/" + fileId + "/",
-                self = this;
-
-
-            $.getJSON(load_url, function(data){
-
-                // bring older files up-to-date
-                data = self.version_transform(data);
-
-                var name = data.figureName || "UN-NAMED",
-                    n = {'fileId': fileId,
-                        'figureName': name,
-                        'canEdit': data.canEdit,
-                        'paper_width': data.paper_width,
-                        'paper_height': data.paper_height,
-                        'page_size': data.page_size || 'letter',
-                    };
-                // optional values - ignore if missing
-                if (data.orientation) n.orientation = data.orientation;
-                // if (data.page_size) n.page_size = data.page_size; // E.g. 'A4'
-                if (data.height_mm) n.height_mm = data.height_mm;
-                if (data.width_mm) n.width_mm = data.width_mm;
-
-                self.set(n);
-
-                _.each(data.panels, function(p){
-                    p.selected = false;
-                    self.panels.create(p);
-                });
-
-                self.set('unsaved', false);
-                // wait for undo/redo to handle above, then...
-                setTimeout(function() {
-                    self.trigger("reset_undo_redo");
-                }, 50);
-            });
-        },
-
-        // take Figure_JSON from a previous version,
-        // and transform it to latest version
-        version_transform: function(json) {
-            var v = json.version || 0;
-
-            // In version 1, we have pixel_size_x and y.
-            // Earlier versions only have pixel_size.
-            if (v < 1) {
-                _.each(json.panels, function(p){
-                    var ps = p.pixel_size;
-                    p.pixel_size_x = ps;
-                    p.pixel_size_y = ps;
-                    delete p.pixel_size;
-                });
+    // START here - Listen to 'add' events...
+    listenToCollection: function(collection) {
+        var self = this;
+        // Add listener to changes in current models
+        collection.each(function(m){
+            self.listenToModel(m);
+        });
+        collection.on('add', function(m) {
+            // start listening for change events on the model
+            self.listenToModel(m);
+            if (!self.undoInProgress){
+                // post an 'undo'
+                self.handleAdd(m, collection);
             }
-
-            return json;
-        },
-
-        figure_toJSON: function() {
-            // Turn panels into json
-            var p_json = [],
-                self = this;
-            this.panels.each(function(m) {
-                p_json.push(m.toJSON());
-            });
-
-            var figureJSON = {
-                version: VERSION,
-                panels: p_json,
-                paper_width: this.get('paper_width'),
-                paper_height: this.get('paper_height'),
-                page_size: this.get('page_size'),
-                height_mm: this.get('height_mm'),
-                width_mm: this.get('width_mm'),
-                orientation: this.get('orientation'),
-            };
-            if (this.get('figureName')){
-                figureJSON.figureName = this.get('figureName')
+        });
+        collection.on('remove', function(m) {
+            if (!self.undoInProgress){
+                // post an 'undo'
+                self.handleRemove(m, collection);
             }
-            if (this.get('fileId')){
-                figureJSON.fileId = this.get('fileId')
+        });
+    },
+
+    handleRemove: function(m, collection) {
+        var self = this;
+        self.postEdit( {
+            name: "Undo Remove",
+            undo: function() {
+                self.undoInProgress = true;
+                collection.add(m);
+                self.figureModel.notifySelectionChange();
+                self.undoInProgress = false;
+            },
+            redo: function() {
+                self.undoInProgress = true;
+                m.destroy();
+                self.figureModel.notifySelectionChange();
+                self.undoInProgress = false;
             }
-            return figureJSON;
-        },
+        });
+    },
 
-        save_to_OMERO: function(options) {
-
-            var self = this,
-                figureJSON = this.figure_toJSON();
-
-            var url = window.SAVE_WEBFIGURE_URL,
-                // fileId = self.get('fileId'),
-                data = {};
-
-            if (options.fileId) {
-                data.fileId = options.fileId;
+    handleAdd: function(m, collection) {
+        var self = this;
+        self.postEdit( {
+            name: "Undo Add",
+            undo: function() {
+                self.undoInProgress = true;
+                m.destroy();
+                self.figureModel.notifySelectionChange();
+                self.undoInProgress = false;
+            },
+            redo: function() {
+                self.undoInProgress = true;
+                collection.add(m);
+                self.figureModel.notifySelectionChange();
+                self.undoInProgress = false;
             }
-            if (options.figureName) {
-                data.figureName = options.figureName;
-            }
-            data.figureJSON = JSON.stringify(figureJSON);
+        });
+    },
 
-            // Save
-            $.post( url, data)
-                .done(function( data ) {
-                    var update = {
-                        'fileId': +data,
-                        'unsaved': false,
-                    };
-                    if (options.figureName) {
-                        update.figureName = options.figureName;
-                    }
-                    self.set(update);
+    listenToModel: function(model) {
+        model.on("change", this.handleChange, this);
+    },
 
-                    if (options.success) {
-                        options.success(data);
-                    }
-                });
-        },
+    // Here we do most of the work, buiding Undo/Redo Edits when something changes
+    handleChange: function(m) {
+        var self = this;
 
-        clearFigure: function() {
-
-            var figureModel = this;
-            figureModel.unset('fileId');
-            figureModel.delete_panels();
-            figureModel.unset("figureName");
-            figureModel.trigger('reset_undo_redo');
-        },
-
-        nudge_right: function() {
-            this.nudge('x', 10);
-        },
-
-        nudge_left: function() {
-            this.nudge('x', -10);
-        },
-
-        nudge_down: function() {
-            this.nudge('y', 10);
-        },
-
-        nudge_up: function() {
-            this.nudge('y', -10);
-        },
-
-        nudge: function(axis, delta) {
-            var selected = this.getSelected(),
-                pos;
-
-            for (var j=0; j<selected.length; j++) {
-                pos = selected[j].get(axis);
-                selected[j].set(axis, pos + delta);
-            }
-        },
-
-        align_left: function() {
-            var selected = this.getSelected(),
-                x_vals = [];
-            for (var i=0; i<selected.length; i++) {
-                x_vals.push(selected[i].get('x'));
-            }
-            var min_x = Math.min.apply(window, x_vals);
-
-            for (var j=0; j<selected.length; j++) {
-                selected[j].set('x', min_x);
-            }
-        },
-
-        align_top: function() {
-            var selected = this.getSelected(),
-                y_vals = [];
-            for (var i=0; i<selected.length; i++) {
-                y_vals.push(selected[i].get('y'));
-            }
-            var min_y = Math.min.apply(window, y_vals);
-
-            for (var j=0; j<selected.length; j++) {
-                selected[j].set('y', min_y);
-            }
-        },
-
-        align_grid: function() {
-            var sel = this.getSelected(),
-                top_left = this.get_top_left_panel(sel),
-                top_x = top_left.get('x'),
-                top_y = top_left.get('y'),
-                grid = [],
-                row = [top_left],
-                next_panel = top_left;
-
-            // populate the grid, getting neighbouring panel each time
-            while (next_panel) {
-                c = next_panel.get_centre();
-                next_panel = this.get_panel_at(c.x + next_panel.get('width'), c.y, sel);
-
-                // if next_panel is not found, reached end of row. Try start new row...
-                if (typeof next_panel == 'undefined') {
-                    grid.push(row);
-                    // next_panel is below the first of the current row
-                    c = row[0].get_centre();
-                    next_panel = this.get_panel_at(c.x, c.y + row[0].get('height'), sel);
-                    row = [];
-                }
-                if (next_panel) {
-                    row.push(next_panel);
-                }
-            }
-
-            var spacer = top_left.get('width')/20,
-                new_x = top_x,
-                new_y = top_y,
-                max_h = 0;
-            for (var r=0; r<grid.length; r++) {
-                row = grid[r];
-                for (var c=0; c<row.length; c++) {
-                    panel = row[c];
-                    panel.save({'x':new_x, 'y':new_y});
-                    max_h = Math.max(max_h, panel.get('height'));
-                    new_x = new_x + spacer + panel.get('width');
-                }
-                new_y = new_y + spacer + max_h;
-                new_x = top_x;
-            }
-        },
-
-        get_panel_at: function(x, y, panels) {
-            for(var i=0; i<panels.length; i++) {
-                p = panels[i];
-                if ((p.get('x') < x && (p.get('x')+p.get('width')) > x) &&
-                        (p.get('y') < y && (p.get('y')+p.get('height')) > y)) {
-                    return p;
-                }
-            }
-        },
-
-        get_top_left_panel: function(panels) {
-            // top-left panel is one where x + y is least
-            var p, top_left;
-            for(var i=0; i<panels.length; i++) {
-                p = panels[i];
-                if (i === 0) {
-                    top_left = p;
-                } else {
-                    if ((p.get('x') + p.get('y')) < (top_left.get('x') + top_left.get('y'))) {
-                        top_left = p;
-                    }
-                }
-            }
-            return top_left;
-        },
-
-        align_size: function(width, height) {
-            var sel = this.getSelected(),
-                ref = this.get_top_left_panel(sel),
-                ref_width = width ? ref.get('width') : false,
-                ref_height = height ? ref.get('height') : false,
-                new_w, new_h,
-                p;
-
-            for (var i=0; i<sel.length; i++) {
-                p = sel[i];
-                if (ref_width && ref_height) {
-                    new_w = ref_width;
-                    new_h = ref_height;
-                } else if (ref_width) {
-                    new_w = ref_width;
-                    new_h = (ref_width/p.get('width')) * p.get('height');
-                } else if (ref_height) {
-                    new_h = ref_height;
-                    new_w = (ref_height/p.get('height')) * p.get('width');
-                }
-                p.save({'width':new_w, 'height':new_h});
-            }
-        },
-
-        // This can come from multi-select Rect OR any selected Panel
-        // Need to notify ALL panels and Multi-select Rect.
-        drag_xy: function(dx, dy, save) {
-            if (dx === 0 && dy === 0) return;
-
-            var minX = 10000,
-                minY = 10000,
-                xy;
-            // First we notidy all Panels
-            var selected = this.getSelected();
-            for (var i=0; i<selected.length; i++) {
-                xy = selected[i].drag_xy(dx, dy, save);
-                minX = Math.min(minX, xy.x);
-                minY = Math.min(minY, xy.y);
-            }
-            // Notify the Multi-select Rect of it's new X and Y
-            this.trigger('drag_xy', [minX, minY, save]);
-        },
-
-
-        // This comes from the Multi-Select Rect.
-        // Simply delegate to all the Panels
-        multiselectdrag: function(x1, y1, w1, h1, x2, y2, w2, h2, save) {
-            var selected = this.getSelected();
-            for (var i=0; i<selected.length; i++) {
-                selected[i].multiselectdrag(x1, y1, w1, h1, x2, y2, w2, h2, save);
-            }
-        },
-
-        // If already selected, do nothing (unless clearOthers is true)
-        setSelected: function(item, clearOthers) {
-            if ((!item.get('selected')) || clearOthers) {
-                this.clearSelected(false);
-                item.set('selected', true);
-                this.notifySelectionChange();
-            }
-        },
-
-        select_all:function() {
-            this.panels.each(function(p){
-                p.set('selected', true);
-            });
-            this.notifySelectionChange();
-        },
-
-        addSelected: function(item) {
-            item.set('selected', true);
-            this.notifySelectionChange();
-        },
-
-        clearSelected: function(trigger) {
-            this.panels.each(function(p){
-                p.set('selected', false);
-            });
-            if (trigger !== false) {
-                this.notifySelectionChange();
-            }
-        },
-
-        selectByRegion: function(coords) {
-            this.panels.each(function(p){
-                if (p.regionOverlaps(coords)) {
-                    p.set('selected', true);
-                }
-            });
-            this.notifySelectionChange();
-        },
-
-        getSelected: function() {
-            return this.panels.getSelected();
-        },
-
-        // Go through all selected and destroy them - trigger selection change
-        deleteSelected: function() {
-            var selected = this.getSelected();
-            for (var i=0; i<selected.length; i++) {
-                selected[i].destroy();
-            }
-            this.notifySelectionChange();
-        },
-
-        delete_panels: function() {
-            // make list that won't change as we destroy
-            var ps = [];
-            this.panels.each(function(p){
-                ps.push(p);
-            });
-            for (var i=ps.length-1; i>=0; i--) {
-                ps[i].destroy();
-            }
-            this.notifySelectionChange();
-        },
-
-        notifySelectionChange: function() {
-            this.trigger('change:selection');
+        // Make sure we don't listen to changes coming from Undo/Redo
+        if (self.undoInProgress) {
+            return;     // Don't undo the undo!
         }
 
-    });
+        // Ignore changes to certain attributes
+        var ignore_attrs = ["selected", "id"];  // change in id when new Panel is saved
 
+        var undo_attrs = {},
+            redo_attrs = {},
+            a;
+        for (a in m.changed) {
+            if (ignore_attrs.indexOf(a) < 0) {
+                undo_attrs[a] = m.previous(a);
+                redo_attrs[a] = m.get(a);
+            }
+        }
+
+        // in case we only got 'ignorable' changes
+        if (_.size(redo_attrs) === 0) {
+            return;
+        }
+
+        // We add each change to undo_functions array, which may contain several
+        // changes that happen at "the same time" (E.g. multi-drag)
+        self.undo_functions.push(function(){
+            m.save(undo_attrs);
+        });
+        self.redo_functions.push(function(){
+            m.save(redo_attrs);
+        });
+
+        // this could maybe moved to FigureModel itself
+        var set_selected = function(selected) {
+            for (var i=0; i<selected.length; i++) {
+                if (i === 0) {
+                    self.figureModel.setSelected(selected[i], true);
+                } else {
+                    self.figureModel.addSelected(selected[i]);
+                }
+            }
+        }
+
+        // This is used to copy the undo/redo_functions lists
+        // into undo / redo operations to go into our Edit below
+        var createUndo = function(callList) {
+            var undos = [];
+            for (var u=0; u<callList.length; u++) {
+                undos.push(callList[u]);
+            }
+            // get the currently selected panels
+            var selected = self.figureModel.getSelected();
+            return function() {
+                self.undoInProgress = true;
+                for (var u=0; u<undos.length; u++) {
+                    undos[u]();
+                }
+                set_selected(selected);     // restore selection
+                self.undoInProgress = false;
+            }
+        }
+
+        // if we get multiple changes in rapid succession,
+        // clear any existing timeout and re-create.
+        if (typeof self.createEditTimeout != 'undefined') {
+            clearTimeout(self.createEditTimeout);
+        }
+        // Only the last change will call createEditTimeout
+        self.createEditTimeout = setTimeout(function() {
+            self.postEdit( {
+                name: "Undo...",
+                undo: createUndo(self.undo_functions),
+                redo: createUndo(self.redo_functions)
+            });
+            self.undo_functions = [];
+            self.redo_functions = [];
+        }, 10);
+    }
+});
+
+var UndoView = Backbone.View.extend({
+    
+    el: $("#edit_actions"),
+    
+    events: {
+      "click .undo": "undo",
+      "click .redo": "redo"
+    },
+
+    // NB: requires backbone.mousetrap
+    keyboardEvents: {
+        'mod+z': 'undo',
+        'mod+y': 'redo'
+    },
+    
+    initialize: function() {
+      this.model.on('change', this.render, this);
+      this.undoEl = $(".undo", this.$el);
+      this.redoEl = $(".redo", this.$el);
+
+      this.render();
+    },
+    
+    render: function() {
+        if (this.model.canUndo()) {
+            this.undoEl.removeClass('disabled');
+        } else {
+            this.undoEl.addClass('disabled');
+        }
+        if (this.model.canRedo()) {
+            this.redoEl.removeClass('disabled');
+        } else {
+            this.redoEl.addClass('disabled');
+        }
+        return this;
+    },
+    
+    undo: function(event) {
+        event.preventDefault();
+        this.model.undo();
+    },
+    redo: function(event) {
+        event.preventDefault();
+        this.model.redo();
+    }
+});
 
     // -------------------------- Backbone VIEWS -----------------------------------------
 
@@ -1547,6 +1803,326 @@
     });
 
 
+
+    var AlignmentToolbarView = Backbone.View.extend({
+
+        el: $("#alignment-toolbar"),
+
+        model:FigureModel,
+
+        events: {
+            "click .aleft": "align_left",
+            "click .agrid": "align_grid",
+            "click .atop": "align_top",
+
+            "click .awidth": "align_width",
+            "click .aheight": "align_height",
+            "click .asize": "align_size",
+        },
+
+        initialize: function() {
+            this.listenTo(this.model, 'change:selection', this.render);
+            this.$buttons = $("button", this.$el);
+        },
+
+        align_left: function(event) {
+            event.preventDefault();
+            this.model.align_left();
+        },
+
+        align_grid: function(event) {
+            event.preventDefault();
+            this.model.align_grid();
+        },
+
+        align_width: function(event) {
+            event.preventDefault();
+            this.model.align_size(true, false);
+        },
+
+        align_height: function(event) {
+            event.preventDefault();
+            this.model.align_size(false, true);
+        },
+
+        align_size: function(event) {
+            event.preventDefault();
+            this.model.align_size(true, true);
+        },
+
+        align_top: function(event) {
+            event.preventDefault();
+            this.model.align_top();
+        },
+
+        render: function() {
+            if (this.model.getSelected().length > 1) {
+                this.$buttons.removeAttr("disabled");
+            } else {
+                this.$buttons.attr("disabled", "disabled");
+            }
+        }
+    });
+
+
+//
+// Copyright (C) 2014 University of Dundee & Open Microscopy Environment.
+// All rights reserved.
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+
+var FigureFile = Backbone.Model.extend({
+
+    defaults: {
+        disabled: false,
+    },
+
+    initialize: function() {
+
+        var desc = this.get('description');
+        if (desc && desc.imageId) {
+            this.set('imageId', desc.imageId);
+        } else {
+            this.set('imageId', 0);
+        }
+        if (desc && desc.baseUrl) {
+            this.set('baseUrl', desc.baseUrl);
+        }
+    },
+
+    isVisible: function(filter) {
+        if (filter.owner) {
+            if (this.get('ownerFullName') !== filter.owner) {
+                return false;
+            }
+        }
+        if (filter.name) {
+            if (this.get('name').toLowerCase().indexOf(filter.name) < 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+});
+
+
+var FileList = Backbone.Collection.extend({
+
+    model: FigureFile,
+
+    comparator: 'creationDate',
+
+    initialize: function() {
+    },
+
+    disable: function(fileId) {
+        // enable all first
+        this.where({disabled: true}).forEach(function(f){
+            f.set('disabled', false);
+        });
+
+        var f = this.get(fileId);
+        if (f) {
+            f.set('disabled', true);
+        }
+    },
+
+    deleteFile: function(fileId, name) {
+        // may not have fetched files...
+        var f = this.get(fileId),   // might be undefined
+            msg = "Delete '" + name + "'?",
+            self = this;
+        if (confirm(msg)) {
+            $.post( DELETE_WEBFIGURE_URL, { fileId: fileId })
+                .done(function(){
+                    self.remove(f);
+                    app.navigate("", {trigger: true});
+                });
+        }
+    },
+
+    url: function() {
+        return LIST_WEBFIGURES_URL;
+    }
+});
+
+
+var FileListView = Backbone.View.extend({
+
+    el: $("#openFigureModal"),
+
+    initialize:function () {
+        this.$tbody = $('tbody', this.$el);
+        this.$fileFilter = $('#file-filter');
+        var self = this;
+        // we automatically 'sort' on fetch, add etc.
+        this.model.bind("sync remove sort", this.render, this);
+        this.$fileFilter.val("");
+    },
+
+    events: {
+        "click .sort-created": "sort_created",
+        "click .sort-created-reverse": "sort_created_reverse",
+        "click .sort-name": "sort_name",
+        "click .sort-name-reverse": "sort_name_reverse",
+        "click .pick-owner": "pick_owner",
+        "keyup #file-filter": "filter_files",
+        "click .refresh-files": "refresh_files",
+    },
+
+    refresh_files: function(event) {
+        // will trigger sort & render()
+        this.model.fetch();
+    },
+
+    filter_files: function(event) {
+        // render() will pick the new filter text
+        this.render();
+    },
+
+    sort_created: function(event) {
+        this.render_sort_btn(event);
+        this.model.comparator = 'creationDate';
+        this.model.sort();
+    },
+
+    sort_created_reverse: function(event) {
+        this.render_sort_btn(event);
+        this.model.comparator = function(left, right) {
+            var l = left.get('creationDate'),
+                r = right.get('creationDate');
+            return l < r ? 1 : l > r ? -1 : 0;
+        };
+        this.model.sort();
+    },
+
+    sort_name: function(event) {
+        this.render_sort_btn(event);
+        this.model.comparator = 'name';
+        this.model.sort();
+    },
+
+    sort_name_reverse: function(event) {
+        this.render_sort_btn(event);
+        this.model.comparator = function(left, right) {
+            var l = left.get('name'),
+                r = right.get('name');
+            return l < r ? 1 : l > r ? -1 : 0;
+        };
+        this.model.sort();
+    },
+
+    render_sort_btn: function(event) {
+        $("th .btn-sm", this.$el).addClass('muted');
+        $(event.target).removeClass('muted');
+    },
+
+    pick_owner: function(event) {
+        event.preventDefault()
+        var owner = $(event.target).text();
+        if (owner != " -- Show All -- ") {
+            this.owner = owner;
+        } else {
+            delete this.owner;
+        }
+        this.render();
+    },
+
+    render:function () {
+        var self = this,
+            filter = {},
+            filterVal = this.$fileFilter.val();
+        if (this.owner) {
+            filter.owner = this.owner;
+        }
+        if (filterVal.length > 0) {
+            filter.name = filterVal.toLowerCase();
+        }
+        this.$tbody.empty();
+        if (this.model.models.length === 0) {
+            var msg = "<tr><td colspan='3'>" +
+                "You have no figures. Start by <a href='" + BASE_WEBFIGURE_URL + "new'>creating a new figure</a>" +
+                "</td></tr>";
+            self.$tbody.html(msg);
+        }
+        _.each(this.model.models, function (file) {
+            if (file.isVisible(filter)) {
+                var e = new FileListItemView({model:file}).render().el;
+                self.$tbody.prepend(e);
+            }
+        });
+        owners = this.model.pluck("ownerFullName");
+        owners = _.uniq(owners, false);
+        var ownersHtml = "<li><a class='pick-owner' href='#'> -- Show All -- </a></li>";
+            ownersHtml += "<li class='divider'></li>";
+        _.each(owners, function(owner) {
+            ownersHtml += "<li><a class='pick-owner' href='#'>" + owner + "</a></li>";
+        });
+        $("#owner-menu").html(ownersHtml);
+        return this;
+    }
+});
+
+var FileListItemView = Backbone.View.extend({
+
+    tagName:"tr",
+
+    template: JST["static/figure/templates/files/figure_file_item.html"],
+
+    initialize:function () {
+        this.model.bind("change", this.render, this);
+        this.model.bind("destroy", this.close, this);
+    },
+
+    events: {
+        "click a": "hide_file_chooser"
+    },
+
+    hide_file_chooser: function() {
+        $("#openFigureModal").modal('hide');
+    },
+
+    formatDate: function(secs) {
+        // if secs is a number, create a Date...
+        if (secs * 1000) {
+            var d = new Date(secs * 1000),
+            s = d.toISOString();        // "2014-02-26T23:09:09.415Z"
+            s = s.replace("T", " ");
+            s = s.substr(0, 16);
+            return s;
+        }
+        // handle string
+        return secs;
+    },
+
+    render:function () {
+        var json = this.model.toJSON(),
+            baseUrl = json.baseUrl;
+        baseUrl = baseUrl || WEBGATEWAYINDEX.slice(0, -1);  // remove last /
+        json.thumbSrc = baseUrl + "/render_thumbnail/" + json.imageId + "/";
+        json.url = BASE_WEBFIGURE_URL + "file/" + json.id;
+        json.formatDate = this.formatDate;
+        var h = this.template(json);
+        $(this.el).html(h);
+        return this;
+    }
+
+});
+
+// Events, show/hide and rendering for various Modal dialogs.
+
     var PaperSetupModalView = Backbone.View.extend({
 
         el: $("#paperSetupModal"),
@@ -2056,68 +2632,6 @@
     });
 
 
-    var AlignmentToolbarView = Backbone.View.extend({
-
-        el: $("#alignment-toolbar"),
-
-        model:FigureModel,
-
-        events: {
-            "click .aleft": "align_left",
-            "click .agrid": "align_grid",
-            "click .atop": "align_top",
-
-            "click .awidth": "align_width",
-            "click .aheight": "align_height",
-            "click .asize": "align_size",
-        },
-
-        initialize: function() {
-            this.listenTo(this.model, 'change:selection', this.render);
-            this.$buttons = $("button", this.$el);
-        },
-
-        align_left: function(event) {
-            event.preventDefault();
-            this.model.align_left();
-        },
-
-        align_grid: function(event) {
-            event.preventDefault();
-            this.model.align_grid();
-        },
-
-        align_width: function(event) {
-            event.preventDefault();
-            this.model.align_size(true, false);
-        },
-
-        align_height: function(event) {
-            event.preventDefault();
-            this.model.align_size(false, true);
-        },
-
-        align_size: function(event) {
-            event.preventDefault();
-            this.model.align_size(true, true);
-        },
-
-        align_top: function(event) {
-            event.preventDefault();
-            this.model.align_top();
-        },
-
-        render: function() {
-            if (this.model.getSelected().length > 1) {
-                this.$buttons.removeAttr("disabled");
-            } else {
-                this.$buttons.attr("disabled", "disabled");
-            }
-        }
-    });
-
-
-
     // -------------------------Panel View -----------------------------------
     // A Panel is a <div>, added to the #paper by the FigureView below.
     var PanelView = Backbone.View.extend({
@@ -2286,6 +2800,287 @@
             return this;
         }
     });
+
+
+//
+// Copyright (C) 2014 University of Dundee & Open Microscopy Environment.
+// All rights reserved.
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+
+var RectView = Backbone.View.extend({
+
+    handle_wh: 6,
+    default_line_attrs: {'stroke-width':0, 'stroke': '#4b80f9', 'cursor': 'default', 'fill-opacity':0.01, 'fill': '#fff'},
+    selected_line_attrs: {'stroke':'#4b80f9', 'stroke-width':2 },
+    handle_attrs: {'stroke':'#4b80f9', 'fill':'#fff', 'cursor': 'default', 'fill-opacity':1.0},
+
+    // make a child on click
+    events: {
+        //'mousedown': 'selectShape'    // we need to handle this more manually (see below)
+    },
+    initialize: function(options) {
+        // Here we create the shape itself, the drawing handles and
+        // bind drag events to all of them to drag/resize the rect.
+
+        var self = this;
+        this.paper = options.paper;
+        this.handle_wh = options.handle_wh || this.handle_wh;
+        this.handles_toFront = options.handles_toFront || false;
+        this.disable_handles = options.disable_handles || false;
+        // this.manager = options.manager;
+
+        // Set up our 'view' attributes (for rendering without updating model)
+        this.x = this.model.get("x");
+        this.y = this.model.get("y");
+        this.width = this.model.get("width");
+        this.height = this.model.get("height");
+
+        // ---- Create Handles -----
+        // map of centre-points for each handle
+        this.handleIds = {'nw': [this.x, this.y],
+            'n': [this.x+this.width/2,this.y],
+            'ne': [this.x+this.width,this.y],
+            'w': [this.x, this.y+this.height/2],
+            'e': [this.x+this.width, this.y+this.height/2],
+            'sw': [this.x, this.y+this.height],
+            's': [this.x+this.width/2, this.y+this.height],
+            'se': [this.x+this.width, this.y+this.height]
+        };
+        // draw handles
+        self.handles = this.paper.set();
+        var _handle_drag = function() {
+            return function (dx, dy, mouseX, mouseY, event) {
+                if (self.disable_handles) return false;
+                // on DRAG...
+
+                // If drag on corner handle, retain aspect ratio. dx/dy = aspect
+                var keep_ratio = true;  // event.shiftKey - used to be dependent on shift
+                if (keep_ratio && this.h_id.length === 2) {     // E.g. handle is corner 'ne' etc
+                    if (this.h_id === 'se' || this.h_id === 'nw') {
+                        if (Math.abs(dx/dy) > this.aspect) {
+                            dy = dx/this.aspect;
+                        } else {
+                            dx = dy*this.aspect;
+                        }
+                    } else {
+                        if (Math.abs(dx/dy) > this.aspect) {
+                            dy = -dx/this.aspect;
+                        } else {
+                            dx = -dy*this.aspect;
+                        }
+                    }
+                }
+                // Use dx & dy to update the location of the handle and the corresponding point of the parent
+                var new_x = this.ox + dx;
+                var new_y = this.oy + dy;
+                var newRect = {
+                    x: this.rect.x,
+                    y: this.rect.y,
+                    width: this.rect.width,
+                    height: this.rect.height
+                };
+                if (this.h_id.indexOf('e') > -1) {    // if we're dragging an 'EAST' handle, update width
+                    newRect.width = new_x - self.x + self.handle_wh/2;
+                }
+                if (this.h_id.indexOf('s') > -1) {    // if we're dragging an 'SOUTH' handle, update height
+                    newRect.height = new_y - self.y + self.handle_wh/2;
+                }
+                if (this.h_id.indexOf('n') > -1) {    // if we're dragging an 'NORTH' handle, update y and height
+                    newRect.y = new_y + self.handle_wh/2;
+                    newRect.height = this.obottom - new_y;
+                }
+                if (this.h_id.indexOf('w') > -1) {    // if we're dragging an 'WEST' handle, update x and width
+                    newRect.x = new_x + self.handle_wh/2;
+                    newRect.width = this.oright - new_x;
+                }
+                // Don't allow zero sized rect.
+                if (newRect.width < 1 || newRect.height < 1) {
+                    return false;
+                }
+                this.rect.x = newRect.x;
+                this.rect.y = newRect.y;
+                this.rect.width = newRect.width;
+                this.rect.height = newRect.height;
+                this.rect.model.trigger("drag_resize", [this.rect.x, this.rect.y, this.rect.width, this.rect.height]);
+                this.rect.updateShape();
+                return false;
+            };
+        };
+        var _handle_drag_start = function() {
+            return function () {
+                if (self.disable_handles) return false;
+                // START drag: simply note the location we started
+                this.ox = this.attr("x");
+                this.oy = this.attr("y");
+                this.oright = self.width + this.ox;
+                this.obottom = self.height + this.oy;
+                this.aspect = self.model.get('width') / self.model.get('height');
+                return false;
+            };
+        };
+        var _handle_drag_end = function() {
+            return function() {
+                if (self.disable_handles) return false;
+                this.rect.model.trigger('drag_resize_stop', [this.rect.x, this.rect.y,
+                    this.rect.width, this.rect.height]);
+                return false;
+            };
+        };
+        var _stop_event_propagation = function(e) {
+            e.stopImmediatePropagation();
+        }
+        for (var key in this.handleIds) {
+            var hx = this.handleIds[key][0];
+            var hy = this.handleIds[key][1];
+            var handle = this.paper.rect(hx-self.handle_wh/2, hy-self.handle_wh/2, self.handle_wh, self.handle_wh).attr(self.handle_attrs);
+            handle.attr({'cursor': key + '-resize'});     // css, E.g. ne-resize
+            handle.h_id = key;
+            handle.rect = self;
+
+            handle.drag(
+                _handle_drag(),
+                _handle_drag_start(),
+                _handle_drag_end()
+            );
+            handle.mousedown(_stop_event_propagation);
+            self.handles.push(handle);
+        }
+        self.handles.hide();     // show on selection
+
+
+        // ----- Create the rect itself ----
+        this.element = this.paper.rect();
+        this.element.attr( self.default_line_attrs );
+        // set "element" to the raphael node (allows Backbone to handle events)
+        this.setElement(this.element.node);
+        this.delegateEvents(this.events);   // we need to rebind the events
+
+        // Handle drag
+        this.element.drag(
+            function(dx, dy) {
+                // DRAG, update location and redraw
+                // TODO - need some way to disable drag if we're not in select state
+                //if (manager.getState() !== ShapeManager.STATES.SELECT) {
+                //    return;
+                //}
+                self.x = dx+this.ox;
+                self.y = this.oy+dy;
+                self.dragging = true;
+                self.model.trigger("drag_xy", [dx, dy]);
+                self.updateShape();
+                return false;
+            },
+            function() {
+                // START drag: note the location of all points (copy list)
+                this.ox = this.attr('x');
+                this.oy = this.attr('y');
+                return false;
+            },
+            function() {
+                // STOP: save current position to model
+                self.model.trigger('drag_xy_stop', [self.x-this.ox, self.y-this.oy]);
+                self.dragging = false;
+                return false;
+            }
+        );
+
+        // If we're starting DRAG, don't let event propogate up to dragdiv etc.
+        // https://groups.google.com/forum/?fromgroups=#!topic/raphaeljs/s06GIUCUZLk
+        this.element.mousedown(function(e){
+             e.stopImmediatePropagation();
+             self.selectShape(e);
+        });
+
+        this.updateShape();  // sync position, selection etc.
+
+        // Finally, we need to render when model changes
+        this.model.on('change', this.render, this);
+        this.model.on('destroy', this.destroy, this);
+
+    },
+
+    // render updates our local attributes from the Model AND updates coordinates
+    render: function(event) {
+        if (this.dragging) return;
+        this.x = this.model.get("x");
+        this.y = this.model.get("y");
+        this.width = this.model.get("width");
+        this.height = this.model.get("height");
+        this.updateShape();
+    },
+
+    // used to update during drags etc. Also called by render()
+    updateShape: function() {
+        this.element.attr({'x':this.x, 'y':this.y, 'width':this.width, 'height':this.height});
+
+        // TODO Draw diagonals on init - then simply update here (show if selected)
+        // var path1 = "M" + this.x +","+ this.y +"l"+ this.width +","+ this.height,
+        //     path2 = "M" + (this.x+this.width) +","+ this.y +"l-"+ this.width +","+ this.height;
+        //     // rectangle plus 2 diagonal lines
+        //     this.paper.path(path1).attr('stroke', '#4b80f9');
+        //     this.paper.path(path2).attr('stroke', '#4b80f9');
+
+        // if (this.manager.selected_shape_id === this.model.get("id")) {
+        if (this.model.get('selected')) {
+            this.element.attr( this.selected_line_attrs );  //.toFront();
+            var self = this;
+            // If several Rects get selected at the same time, one with handles_toFront will
+            // end up with the handles at the top
+            if (this.handles_toFront) {
+                setTimeout(function(){
+                    self.handles.show().toFront();
+                },50);
+            } else {
+                this.handles.show().toFront();
+            }
+        } else {
+            this.element.attr( this.default_line_attrs );    // this should be the shapes OWN line / fill colour etc.
+            this.handles.hide();
+        }
+
+        this.handleIds = {'nw': [this.x, this.y],
+        'n': [this.x+this.width/2,this.y],
+        'ne': [this.x+this.width,this.y],
+        'w': [this.x, this.y+this.height/2],
+        'e': [this.x+this.width, this.y+this.height/2],
+        'sw': [this.x, this.y+this.height],
+        's': [this.x+this.width/2, this.y+this.height],
+        'se': [this.x+this.width, this.y+this.height]};
+        var hnd, h_id, hx, hy;
+        for (var h=0, l=this.handles.length; h<l; h++) {
+            hnd = this.handles[h];
+            h_id = hnd.h_id;
+            hx = this.handleIds[h_id][0];
+            hy = this.handleIds[h_id][1];
+            hnd.attr({'x':hx-this.handle_wh/2, 'y':hy-this.handle_wh/2});
+        }
+    },
+
+    selectShape: function(event) {
+        // pass back to model to update all selection
+        this.model.handleClick(event);
+    },
+
+    // Destroy: remove Raphael elements and event listeners
+    destroy: function() {
+        this.element.remove();
+        this.handles.remove();
+        this.model.off('change', this.render, this);
+    }
+});
 
 
     // The 'Right Panel' is the floating Info, Preview etc display.
@@ -3523,6 +4318,7 @@
         }
     });
 
+
     // -------------- Selection Overlay Views ----------------------
 
 
@@ -3945,3 +4741,278 @@
         }
     });
 
+
+//
+// Copyright (C) 2014 University of Dundee & Open Microscopy Environment.
+// All rights reserved.
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+
+// http://www.sitepoint.com/javascript-json-serialization/
+JSON.stringify = JSON.stringify || function (obj) {
+    var t = typeof (obj);
+    if (t != "object" || obj === null) {
+        // simple data type
+        if (t == "string") obj = '"'+obj+'"';
+        return String(obj);
+    }
+    else {
+        // recurse array or object
+        var n, v, json = [], arr = (obj && obj.constructor == Array);
+        for (n in obj) {
+            v = obj[n]; t = typeof(v);
+            if (t == "string") v = '"'+v+'"';
+            else if (t == "object" && v !== null) v = JSON.stringify(v);
+            json.push((arr ? "" : '"' + n + '":') + String(v));
+        }
+        return (arr ? "[" : "{") + String(json) + (arr ? "]" : "}");
+    }
+};
+
+
+var figureConfirmDialog = function(title, message, buttons, callback) {
+    var $confirmModal = $("#confirmModal"),
+        $title = $(".modal-title", $confirmModal),
+        $body = $(".modal-body", $confirmModal),
+        $footer = $(".modal-footer", $confirmModal),
+        $btn = $(".btn:first", $footer);
+
+    // Update modal with params
+    $title.html(title);
+    $body.html('<p>' + message + '<p>');
+    $footer.empty();
+    _.each(buttons, function(txt){
+        $btn.clone().text(txt).appendTo($footer);
+    });
+    $(".btn", $footer).removeClass('btn-primary')
+        .addClass('btn-default')
+        .last()
+        .removeClass('btn-default')
+        .addClass('btn-primary');
+
+    // show modal
+    $confirmModal.modal('show');
+
+    // default handler for 'cancel' or 'close'
+    $confirmModal.one('hide.bs.modal', function() {
+        // remove the other 'one' handler below
+        $("#confirmModal .modal-footer .btn").off('click');
+        if (callback) {
+            callback();
+        }
+    });
+
+    // handle 'Save' btn click.
+    $("#confirmModal .modal-footer .btn").one('click', function(event) {
+        // remove the default 'one' handler above
+        $confirmModal.off('hide.bs.modal');
+        var btnText = $(event.target).text();
+        if (callback) {
+            callback(btnText);
+        }
+    });
+};
+
+
+$(function(){
+
+
+    $(".draggable-dialog").draggable();
+
+    $('#previewInfoTabs a').click(function (e) {
+        e.preventDefault();
+        $(this).tab('show');
+    });
+
+
+    // Header button tooltips
+    $('.btn-sm').tooltip({container: 'body', placement:'bottom', toggle:"tooltip"});
+    // Footer button tooltips
+    $('.btn-xs').tooltip({container: 'body', placement:'top', toggle:"tooltip"});
+
+
+    // If we're on Windows, update tool-tips for keyboard short cuts:
+    if (navigator.platform.toUpperCase().indexOf('WIN') > -1) {
+        $('.btn-sm').each(function(){
+            var $this = $(this),
+                tooltip = $this.attr('data-original-title');
+            if ($this.attr('data-original-title')) {
+                $this.attr('data-original-title', tooltip.replace("⌘", "Ctrl+"));
+            }
+        });
+        // refresh tooltips
+        $('.btn-sm, .navbar-header').tooltip({container: 'body', placement:'bottom', toggle:"tooltip"});
+
+        // Also update text in dropdown menus
+        $("ul.dropdown-menu li a").each(function(){
+            var $this = $(this);
+                $this.text($this.text().replace("⌘", "Ctrl+"));
+        });
+    }
+
+});
+
+//
+// Copyright (C) 2014 University of Dundee & Open Microscopy Environment.
+// All rights reserved.
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+
+$(function(){
+
+    var figureModel = new FigureModel();
+
+    // var figureFiles = new FileList();
+    // figureFiles.fetch();
+
+    // Backbone.unsaveSync = function(method, model, options, error) {
+    //     figureModel.set("unsaved", true);
+    // };
+
+    // Override 'Backbone.sync'...
+    Backbone.ajaxSync = Backbone.sync;
+
+    Backbone.getSyncMethod = function(model) {
+        if(model.syncOverride || (model.collection && model.collection.syncOverride))
+        {
+            return function(method, model, options, error) {
+                figureModel.set("unsaved", true);
+            };
+        }
+        return Backbone.ajaxSync;
+    };
+
+    // Override 'Backbone.sync' to default to localSync,
+    // the original 'Backbone.sync' is still available in 'Backbone.ajaxSync'
+    Backbone.sync = function(method, model, options, error) {
+        return Backbone.getSyncMethod(model).apply(this, [method, model, options, error]);
+    };
+
+
+    var view = new FigureView( {model: figureModel});   // uiState: uiState
+    var svgView = new SvgView( {model: figureModel});
+    new RightPanelView({model: figureModel});
+
+
+    // Undo Model and View
+    var undoManager = new UndoManager({'figureModel':figureModel}),
+    undoView = new UndoView({model:undoManager});
+    // Finally, start listening for changes to panels
+    undoManager.listenToCollection(figureModel.panels);
+
+
+    var FigureRouter = Backbone.Router.extend({
+
+        routes: {
+            "": "index",
+            "new(/)": "newFigure",
+            "file/:id(/)": "loadFigure",
+        },
+
+        checkSaveAndClear: function(callback) {
+
+            var doClear = function() {
+                figureModel.clearFigure();
+                if (callback) {
+                    callback();
+                }
+            };
+            if (figureModel.get("unsaved")) {
+
+                var saveBtnTxt = "Save",
+                    canEdit = figureModel.get('canEdit');
+                if (!canEdit) saveBtnTxt = "Save a Copy";
+                // show the confirm dialog...
+                figureConfirmDialog("Save Changes to Figure?",
+                    "Your changes will be lost if you don't save them",
+                    ["Don't Save", saveBtnTxt],
+                    function(btnTxt){
+                        if (btnTxt === saveBtnTxt) {
+                             var options = {};
+                            // Save current figure or New figure...
+                            var fileId = figureModel.get('fileId');
+                            if (fileId && canEdit) {
+                                options.fileId = fileId;
+                            } else {
+                                var figureName = prompt("Enter Figure Name", "unsaved");
+                                options.figureName = figureName || "unsaved";
+                            }
+                            options.success = doClear;
+                            figureModel.save_to_OMERO(options);
+                        } else if (btnTxt === "Don't Save") {
+                            figureModel.set("unsaved", false);
+                            doClear();
+                        } else {
+                            doClear();
+                        }
+                    });
+            } else {
+                doClear();
+            }
+        },
+
+        index: function() {
+            $(".modal").modal('hide'); // hide any existing dialogs
+            var cb = function() {
+                $('#welcomeModal').modal();
+            };
+            this.checkSaveAndClear(cb);
+        },
+
+        newFigure: function() {
+            $(".modal").modal('hide'); // hide any existing dialogs
+            var cb = function() {
+                $('#addImagesModal').modal();
+            };
+            this.checkSaveAndClear(cb);
+         },
+
+        loadFigure: function(id) {
+            $(".modal").modal('hide'); // hide any existing dialogs
+            var fileId = parseInt(id, 10);
+            var cb = function() {
+                figureModel.load_from_OMERO(fileId);
+            };
+            this.checkSaveAndClear(cb);
+        }
+    });
+
+    app = new FigureRouter();
+    Backbone.history.start({pushState: true, root: BASE_WEBFIGURE_URL});
+
+    // We want 'a' links (E.g. to open_figure) to use app.navigate
+    $(document).on('click', 'a', function (ev) {
+        var href = $(this).attr('href');
+        // check that links are 'internal' to this app
+        if (href.substring(0, BASE_WEBFIGURE_URL.length) === BASE_WEBFIGURE_URL) {
+            ev.preventDefault();
+            href = href.replace(BASE_WEBFIGURE_URL, "/");
+            app.navigate(href, {trigger: true});
+        }
+    });
+
+});

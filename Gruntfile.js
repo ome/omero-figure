@@ -45,12 +45,19 @@ module.exports = function (grunt) {
         // },
       },
     },
+    concat: {
+      js: {
+        src: ['static/figure/js/models/*.js', 'static/figure/js/views/*.js', 'static/figure/js/app.js'],
+        dest: 'static/figure/js/figure.js',
+      },
+    },
   })
 
   grunt.loadNpmTasks('grunt-contrib-jshint')
   grunt.loadNpmTasks('grunt-contrib-jasmine')
   grunt.loadNpmTasks('grunt-contrib-jst');
   grunt.loadNpmTasks('grunt-contrib-watch');
+  grunt.loadNpmTasks('grunt-contrib-concat');
 
   grunt.registerTask('test', ['jshint', 'jasmine'])
   grunt.registerTask('default', ['test'])
