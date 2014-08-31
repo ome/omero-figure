@@ -546,15 +546,26 @@
     <script src="{% static 'figure/3rdparty/backbone.mousetrap/backbone.mousetrap.js' %}"></script>
     <script src="{% static 'figure/3rdparty/bootstrap3/js/bootstrap.js' %}"></script>
 
-    <script type="text/javascript" src="{% static 'figure/js/templates.js' %}"></script>
+    <script src="{% static 'figure/js/templates.js' %}"></script>
+
+
+    <!-- All these can be concatenated with '$ grunt concat' into figure.js.... -->
+    <script src="{% static 'figure/js/models/figure_model.js' %}"></script>
+    <script src="{% static 'figure/js/models/panel_model.js' %}"></script>
+    <script src="{% static 'figure/js/models/undo.js' %}"></script>
+    <script src="{% static 'figure/js/views/figure_view.js' %}"></script>
+    <script src="{% static 'figure/js/views/files.js' %}"></script>
+    <script src="{% static 'figure/js/views/modal_views.js' %}"></script>
+    <script src="{% static 'figure/js/views/panel_view.js' %}"></script>
+    <script src="{% static 'figure/js/views/raphael-rect.js' %}"></script>
+    <script src="{% static 'figure/js/views/right_panel_view.js' %}"></script>
+    <script src="{% static 'figure/js/views/svg_model_view.js' %}"></script>
+    <script src="{% static 'figure/js/views/util.js' %}"></script>
+    <script src="{% static 'figure/js/app.js' %}"></script>
+
+    <!-- ...for release build.
     <script type="text/javascript" src="{% static 'figure/js/figure.js' %}"></script>
-<!--
-    <script type="text/javascript" src="{% static 'figure/js/undo.js' %}"></script>
-    <script type="text/javascript" src="{% static 'figure/js/raphael-rect.js' %}"></script>
-    <script type="text/javascript" src="{% static 'figure/js/util.js' %}"></script>
-    <script type="text/javascript" src="{% static 'figure/js/files.js' %}"></script>
-    <script type="text/javascript" src="{% static 'figure/js/app.js' %}"></script>
--->
+    -->
 
 </body>
 
