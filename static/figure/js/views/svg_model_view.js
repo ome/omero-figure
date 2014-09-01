@@ -194,8 +194,8 @@
                 max_y = Math.max(max_y, y+h);
             });
 
-            min_x = selected.minValue('x');
-            min_y = selected.minValue('y');
+            min_x = selected.getMin('x');
+            min_y = selected.getMin('y');
 
 
 

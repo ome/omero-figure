@@ -384,7 +384,7 @@
             event.preventDefault();
             var s = this.model.getSelected();
             this.clipboard_data = cd = [];
-            _.each(s, function(m) {
+            s.forEach(function(m) {
                 var copy = m.toJSON();
                 delete copy.id;
                 cd.push(copy);

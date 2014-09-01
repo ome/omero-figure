@@ -580,7 +580,7 @@
         },
 
         z_increment: function(event) {
-            _.each(this.model.getSelected(), function(m){
+            this.model.getSelected().forEach(function(m){
                 var newZ = {};
                 if (m.get('z_projection')) {
                     newZ.z_start = m.get('z_start') + 1;
@@ -593,7 +593,7 @@
             return false;
         },
         z_decrement: function(event) {
-            _.each(this.model.getSelected(), function(m){
+            this.model.getSelected().forEach(function(m){
                 var newZ = {};
                 if (m.get('z_projection')) {
                     newZ.z_start = m.get('z_start') - 1;
@@ -606,13 +606,13 @@
             return false;
         },
         time_increment: function(event) {
-            _.each(this.model.getSelected(), function(m){
+            this.model.getSelected().forEach(function(m){
                 m.set({'theT': m.get('theT') + 1}, {'validate': true});
             });
             return false;
         },
         time_decrement: function(event) {
-            _.each(this.model.getSelected(), function(m){
+            this.model.getSelected().forEach(function(m){
                 m.set({'theT': m.get('theT') - 1}, {'validate': true});
             });
             return false;
@@ -661,7 +661,7 @@
                         to_save.dx = 0;
                         to_save.dy = 0;
                     }
-                    _.each(self.models, function(m){
+                    self.models.forEach(function(m){
                         m.save(to_save);
                     });
                 }
@@ -796,12 +796,8 @@
             // only show viewport if original w / h ratio is same for all models
             var model = this.models.head(),
                 self = this;
-            var orig_wh,
-                sum_wh = 0,
-                sum_zoom = 0,
-                sum_theZ = 0,
+            var sum_wh = 0,
                 max_theZ = 0,
-                sum_theT = 0,
                 min_sizeT = Infinity, // this.models[0].get('sizeT'),
                 max_theT = 0,
                 sum_deltaT = 0,
@@ -821,17 +817,9 @@
             // first, work out frame w & h - use average w/h ratio of all selected panels
             this.models.forEach(function(m){
                 var wh = m.get('orig_width') / m.get('orig_height');
-                if (!orig_wh) {
-                    orig_wh = wh;
-                } else if (orig_wh != wh) {
-                    same_wh = false;
-                }
                 sum_wh += (m.get('width')/ m.get('height'));
-                sum_zoom += m.get('zoom');
-                sum_theZ += m.get('theZ');
                 var theT = m.get('theT'),
                     dT = m.get('deltaT')[theT] || 0;
-                sum_theT += theT;
                 sum_deltaT += dT;
                 max_theZ = Math.max(max_theZ, m.get('theZ'));
                 max_theT = Math.max(max_theT, theT);
@@ -850,17 +838,16 @@
                 }
             });
 
-            theZ_avg = sum_theZ/ this.models.length;
-            this.theT_avg = sum_theT/ this.models.length;
-
             // get average viewport frame w/h & zoom
             var wh = sum_wh/this.models.length,
-                zoom = sum_zoom/this.models.length,
-                theZ = sum_theZ/this.models.length,
+                zoom = this.models.getAverage('zoom'),
+                theZ = this.models.getAverage('theZ'),
                 z_start = Math.round(z_start_sum/this.models.length),
                 z_end = Math.round(z_end_sum/this.models.length),
-                theT = sum_theT/this.models.length;
+                theT = this.models.getAverage('theT'),
                 deltaT = sum_deltaT/this.models.length;
+            
+            this.theT_avg = theT;
 
             if (wh <= 1) {
                 frame_h = this.full_size;
@@ -907,7 +894,7 @@
                         $("#vp_z_value").text(ui.values[0] + "-" + ui.values[1] + "/" + sizeZ);
                     },
                     stop: function( event, ui ) {
-                        _.each(self.models, function(m){
+                        self.models.forEach(function(m){
                             m.save({
                                 'z_start': ui.values[0] - 1,
                                 'z_end': ui.values[1] -1
@@ -921,12 +908,12 @@
                     max: sizeZ,
                     disabled: Z_disabled,
                     min: 1,             // model is 0-based, UI is 1-based
-                    value: theZ_avg + 1,
+                    value: theZ + 1,
                     slide: function(event, ui) {
                         $("#vp_z_value").text(ui.value + "/" + sizeZ);
                     },
                     stop: function( event, ui ) {
-                        _.each(self.models, function(m){
+                        self.models.forEach(function(m){
                             m.save('theZ', ui.value - 1);
                         });
                     }
@@ -953,8 +940,8 @@
                 slide: function(event, ui) {
                     var theT = ui.value;
                     $("#vp_t_value").text(theT + "/" + (sizeT || '-'));
-                    var dt = self.models[0].get('deltaT')[theT-1];
-                    _.each(self.models, function(m){
+                    var dt = self.models.head().get('deltaT')[theT-1];
+                    self.models.forEach(function(m){
                         if (m.get('deltaT')[theT-1] != dt) {
                             dt = undefined;
                         }
@@ -962,7 +949,7 @@
                     $("#vp_deltaT").text(self.formatTime(dt));
                 },
                 stop: function( event, ui ) {
-                    _.each(self.models, function(m){
+                    self.models.forEach(function(m){
                         m.save('theT', ui.value - 1);
                     });
                 }

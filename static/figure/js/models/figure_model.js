@@ -322,11 +322,11 @@
                 xy;
             // First we notidy all Panels
             var selected = this.getSelected();
-            for (var i=0; i<selected.length; i++) {
-                xy = selected[i].drag_xy(dx, dy, save);
+            selected.forEach(function(m){
+                xy = m.drag_xy(dx, dy, save);
                 minX = Math.min(minX, xy.x);
                 minY = Math.min(minY, xy.y);
-            }
+            });
             // Notify the Multi-select Rect of it's new X and Y
             this.trigger('drag_xy', [minX, minY, save]);
         },
@@ -336,9 +336,9 @@
         // Simply delegate to all the Panels
         multiselectdrag: function(x1, y1, w1, h1, x2, y2, w2, h2, save) {
             var selected = this.getSelected();
-            for (var i=0; i<selected.length; i++) {
-                selected[i].multiselectdrag(x1, y1, w1, h1, x2, y2, w2, h2, save);
-            }
+            selected.forEach(function(m){
+                m.multiselectdrag(x1, y1, w1, h1, x2, y2, w2, h2, save);
+            });
         },
 
         // If already selected, do nothing (unless clearOthers is true)

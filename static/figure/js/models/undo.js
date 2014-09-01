@@ -177,13 +177,13 @@ var UndoManager = Backbone.Model.extend({
 
         // this could maybe moved to FigureModel itself
         var set_selected = function(selected) {
-            for (var i=0; i<selected.length; i++) {
+            selected.forEach(function(m, i){
                 if (i === 0) {
-                    self.figureModel.setSelected(selected[i], true);
+                    self.figureModel.setSelected(m, true);
                 } else {
-                    self.figureModel.addSelected(selected[i]);
+                    self.figureModel.addSelected(m);
                 }
-            }
+            });
         }
 
         // This is used to copy the undo/redo_functions lists

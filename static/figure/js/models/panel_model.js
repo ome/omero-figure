@@ -474,19 +474,19 @@
             return new PanelList(s);
         },
 
-        averageValue: function(attr) {
-            return this.sumValue(attr) / this.length;
+        getAverage: function(attr) {
+            return this.getSum(attr) / this.length;
         },
 
-        sumValue: function(attr) {
+        getSum: function(attr) {
             return this.inject(function(memo, num){ return memo + num.get(attr); }, 0);
         },
 
-        maxValue: function(attr) {
+        getMax: function(attr) {
             return this.inject(function(memo, num){ return Math.max(memo, num.get(attr)); }, 0);
         },
 
-        minValue: function(attr) {
+        getMin: function(attr) {
             return this.inject(function(memo, num){ return Math.min(memo, num.get(attr)); }, Infinity);
         },
 
