@@ -468,9 +468,26 @@
         model: Panel,
 
         getSelected: function() {
-            return this.filter(function(panel){
+            var s = this.filter(function(panel){
                 return panel.get('selected');
             });
+            return new PanelList(s);
+        },
+
+        averageValue: function(attr) {
+            return this.sumValue(attr) / this.length;
+        },
+
+        sumValue: function(attr) {
+            return this.inject(function(memo, num){ return memo + num.get(attr); }, 0);
+        },
+
+        maxValue: function(attr) {
+            return this.inject(function(memo, num){ return Math.max(memo, num.get(attr)); }, 0);
+        },
+
+        minValue: function(attr) {
+            return this.inject(function(memo, num){ return Math.min(memo, num.get(attr)); }, Infinity);
         },
 
         // localStorage: new Backbone.LocalStorage("figureShop-backbone")

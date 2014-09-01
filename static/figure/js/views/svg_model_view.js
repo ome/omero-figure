@@ -169,9 +169,6 @@
         // Need to re-draw on selection AND zoom changes
         updateSelection: function() {
 
-            var min_x = 100000, max_x = -10000,
-                min_y = 100000, max_y = -10000;
-
             var selected = this.figureModel.getSelected();
             if (selected.length < 1){
 
@@ -185,17 +182,22 @@
                 return;
             }
 
-            for (var i=0; i<selected.length; i++) {
-                var panel = selected[i],
-                    x = panel.get('x'),
+            var max_x = 0,
+                max_y = 0;
+
+            selected.forEach(function(panel){
+                var x = panel.get('x'),
                     y = panel.get('y'),
                     w = panel.get('width'),
                     h = panel.get('height');
-                min_x = Math.min(min_x, x);
                 max_x = Math.max(max_x, x+w);
-                min_y = Math.min(min_y, y);
                 max_y = Math.max(max_y, y+h);
-            }
+            });
+
+            min_x = selected.minValue('x');
+            min_y = selected.minValue('y');
+
+
 
             this.set( this.getSvgCoords({
                 'x': min_x,

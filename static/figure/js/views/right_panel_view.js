@@ -152,13 +152,12 @@
                 $(".new-label-form", this.$el).show();
                 // if none of the selected panels have time data, disable 'add_time_label's
                 var have_time = false, dTs;
-                for (var i=0; i<selected.length; i++) {
-                    dTs = selected[i].get('deltaT');
+                selected.forEach(function(p){
+                    dTs = p.get('deltaT');
                     if (dTs && dTs.length > 0) {
                         have_time = true;
-                        break;
                     }
-                }
+                });
                 if (have_time) {
                     $(".add_time_label", this.$el).removeClass('disabled');
                 } else {
@@ -214,7 +213,7 @@
             this.models = opts.models;
             var self = this;
 
-            _.each(this.models, function(m){
+            this.models.forEach(function(m){
                 self.listenTo(m, 'change:labels change:theT', self.render);
             });
         },
@@ -234,7 +233,7 @@
 
             deleteMap[key] = false;
 
-            _.each(this.models, function(m, i){
+            this.models.forEach(function(m){
                 m.edit_labels(deleteMap);
             });
             return false;
@@ -266,7 +265,7 @@
             var newlbls = {};
             newlbls[key] = new_label;
 
-            _.each(this.models, function(m, i){
+            this.models.forEach(function(m){
                 m.edit_labels(newlbls);
             });
             return false;
@@ -277,7 +276,7 @@
             var self = this,
                 positions = {'top':{}, 'bottom':{}, 'left':{}, 'leftvert':{}, 'right':{},
                     'topleft':{}, 'topright':{}, 'bottomleft':{}, 'bottomright':{}};
-            _.each(this.models, function(m, i){
+            this.models.forEach(function(m){
                 // group labels by position
                 _.each(m.get('labels'), function(l) {
                     // remove duplicates by mapping to unique key
@@ -325,7 +324,7 @@
             this.models = opts.models;
             var self = this;
 
-            _.each(this.models, function(m){
+            this.models.forEach(function(m){
                 self.listenTo(m, 'change:scalebar change:pixel_size_x', self.render);
             });
 
@@ -367,7 +366,7 @@
             if (val.length === 0) return;
             var pixel_size = parseFloat(val);
             if (isNaN(pixel_size)) return;
-            _.each(this.models, function(m, i){
+            this.models(function(m){
                 m.save('pixel_size_x', pixel_size);
             });
         },
@@ -378,7 +377,7 @@
         },
 
         hide_scalebar: function() {
-            _.each(this.models, function(m, i){
+            this.models.forEach(function(m){
                 m.hide_scalebar();
             });
         },
@@ -392,7 +391,7 @@
                 position = $('.label-position span:first', $form).attr('data-position'),
                 color = $('.label-color span:first', $form).attr('data-color');
 
-            _.each(this.models, function(m, i){
+            this.models.forEach(function(m){
                 var sb = {show: true};
                 if (length != '-') sb.length = parseInt(length, 10);
                 if (position != '-') sb.position = position;
@@ -409,7 +408,7 @@
                 hidden = false,
                 sb;
 
-            _.each(this.models, function(m, i){
+            this.models.forEach(function(m){
                 // start with json data from first Panel
                 if (!json.pixel_size_x) {
                     json.pixel_size_x = m.get('pixel_size_x');
@@ -469,11 +468,11 @@
             this.models = opts.models;
             if (opts.models.length > 1) {
                 var self = this;
-                _.each(this.models, function(m){
+                this.models.forEach(function(m){
                     self.listenTo(m, 'change:x change:y change:width change:height change:imageId change:zoom', self.render);
                 });
             } else if (opts.models.length == 1) {
-                this.model = opts.models[0];
+                this.model = opts.models.head();
                 this.listenTo(this.model, 'change:x change:y change:width change:height change:zoom', this.render);
                 this.listenTo(this.model, 'drag_resize', this.drag_resize);
             }
@@ -506,7 +505,7 @@
             var json,
                 title = this.models.length + " Panels Selected...",
                 imageIds = [];
-            _.each(this.models, function(m, i){
+            this.models.forEach(function(m) {
                 imageIds.push(m.get('imageId'));
                 // start with json data from first Panel
                 if (!json) {
@@ -638,7 +637,7 @@
             var self = this,
                 zoom_sum = 0;
 
-            _.each(this.models, function(m){
+            this.models.forEach(function(m){
                 self.listenTo(m,
                     'change:width change:height change:channels change:zoom change:theZ change:theT change:rotation change:z_projection change:z_start change:z_end',
                     self.render);
@@ -682,7 +681,7 @@
             this.dragging = true;
             this.dragstart_x = event.clientX;
             this.dragstart_y = event.clientY;
-            this.r = this.models[0].get('rotation');
+            this.r = this.models.head().get('rotation');
             return false;
         },
 
@@ -749,14 +748,14 @@
             if (this.$vp_img) {
                 var frame_w = this.$vp_frame.width() + 2,
                     frame_h = this.$vp_frame.height() + 2,
-                    zm_w = this.models[0].get('orig_width') / frame_w,
-                    zm_h = this.models[0].get('orig_height') / frame_h,
+                    zm_w = this.models.head().get('orig_width') / frame_w,
+                    zm_h = this.models.head().get('orig_height') / frame_h,
                     scale = Math.min(zm_w, zm_h);
                 dx = dx * scale;
                 dy = dy * scale;
                 dx += this.dx;
                 dy += this.dy;
-                this.$vp_img.css( this.models[0].get_vp_img_css(zoom, frame_w, frame_h, dx, dy) );
+                this.$vp_img.css( this.models.head().get_vp_img_css(zoom, frame_w, frame_h, dx, dy) );
                 this.$vp_zoom_value.text(zoom + "%");
 
                 if (save) {
@@ -764,7 +763,7 @@
                     if (typeof dy === "undefined") dy = 0;
                     this.dx = dx;
                     this.dy = dy;
-                    _.each(this.models, function(m){
+                    this.models.forEach(function(m){
                         m.save({'dx': dx,
                                 'dy': dy});
                     });
@@ -795,7 +794,7 @@
         render: function() {
 
             // only show viewport if original w / h ratio is same for all models
-            var model = this.models[0],
+            var model = this.models.head(),
                 self = this;
             var orig_wh,
                 sum_wh = 0,
@@ -803,7 +802,7 @@
                 sum_theZ = 0,
                 max_theZ = 0,
                 sum_theT = 0,
-                min_sizeT = this.models[0].get('sizeT'),
+                min_sizeT = Infinity, // this.models[0].get('sizeT'),
                 max_theT = 0,
                 sum_deltaT = 0,
                 max_deltaT = 0,
@@ -812,15 +811,15 @@
                 imgs_css = [],
                 same_wh = true,
                 // sizeZ = model.get('sizeZ');
-                sizeZ = this.models[0].get('sizeZ'),
-                sizeT = this.models[0].get('sizeT'),
+                sizeZ = this.models.head().get('sizeZ'),
+                sizeT = this.models.head().get('sizeT'),
                 z_start_sum = 0,
                 z_end_sum = 0,
                 z_projection = true;
 
 
             // first, work out frame w & h - use average w/h ratio of all selected panels
-            _.each(this.models, function(m){
+            this.models.forEach(function(m){
                 var wh = m.get('orig_width') / m.get('orig_height');
                 if (!orig_wh) {
                     orig_wh = wh;
@@ -872,7 +871,7 @@
             }
 
             // Now get img src & positioning css for each panel, 
-            _.each(this.models, function(m){
+            this.models.forEach(function(m){
                 sum_dx += m.get('dx');
                 sum_dy += m.get('dy');
                 var src = m.get_img_src(),
@@ -1013,7 +1012,7 @@
             // This View may apply to a single PanelModel or a list
             this.models = opts.models;
             var self = this;
-            _.each(this.models, function(m){
+            this.models.forEach(function(m){
                 self.listenTo(m, 'change:channels change:z_projection', self.render);
             });
         },
@@ -1028,7 +1027,7 @@
         z_projection:function(e) {
             // 'flat' means that some panels have z_projection on, some off
             var flat = $(e.currentTarget).hasClass('ch-btn-flat');
-            _.each(this.models, function(m){
+            this.models.forEach(function(m){
                 var p;
                 if (flat) {
                     p = true;
@@ -1073,7 +1072,7 @@
             if (this.model) {
                 this.model.save_channel(idx, 'color', color);
             } else if (this.models) {
-                _.each(this.models, function(m){
+                this.models.forEach(function(m){
                     m.save_channel(idx, 'color', color);
                 });
             }
@@ -1088,7 +1087,7 @@
             } else if (this.models) {
                 // 'flat' means that some panels have this channel on, some off
                 var flat = $(e.currentTarget).hasClass('ch-btn-flat');
-                _.each(this.models, function(m){
+                this.models.forEach(function(m){
                     if(flat) {
                         m.toggle_channel(idx, true);
                     } else {
@@ -1122,7 +1121,7 @@
                 json = [];
                 var compatible = true;
 
-                _.each(this.models, function(m, i){
+                this.models.forEach(function(m){
                     var chs = m.get('channels');
                     rotation = m.get('rotation');
                     max_rotation = Math.max(max_rotation, rotation);
