@@ -740,10 +740,16 @@
             return this;
         },
 
+        // This forces All panels in viewport to have SAME css
+        // while zooming / dragging.
+        // TODO: Update each panel separately.
         update_img_css: function(zoom, dx, dy, save) {
 
             dx = dx / (zoom/100);
             dy = dy / (zoom/100);
+
+            var avg_dx = this.models.getAverage('dx'),
+                avg_dy = this.models.getAverage('dy');
 
             if (this.$vp_img) {
                 var frame_w = this.$vp_frame.width() + 2,
@@ -753,16 +759,14 @@
                     scale = Math.min(zm_w, zm_h);
                 dx = dx * scale;
                 dy = dy * scale;
-                dx += this.dx;
-                dy += this.dy;
+                dx += avg_dx;
+                dy += avg_dy;
                 this.$vp_img.css( this.models.head().get_vp_img_css(zoom, frame_w, frame_h, dx, dy) );
                 this.$vp_zoom_value.text(zoom + "%");
 
                 if (save) {
                     if (typeof dx === "undefined") dx = 0;  // rare crazy-dragging case!
                     if (typeof dy === "undefined") dy = 0;
-                    this.dx = dx;
-                    this.dy = dy;
                     this.models.forEach(function(m){
                         m.save({'dx': dx,
                                 'dy': dy});
@@ -845,10 +849,6 @@
                 img_css.src = src;
                 imgs_css.push(img_css);
             });
-
-            // save these average offsets in hand for dragging (apply to all panels)
-            this.dx = this.models.getAverage('dx');
-            this.dy = this.models.getAverage('dy');
 
             // update sliders
             var Z_disabled = false,
