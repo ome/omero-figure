@@ -263,29 +263,21 @@
         },
 
         get_panel_at: function(x, y, panels) {
-            for(var i=0; i<panels.length; i++) {
-                p = panels[i];
-                if ((p.get('x') < x && (p.get('x')+p.get('width')) > x) &&
-                        (p.get('y') < y && (p.get('y')+p.get('height')) > y)) {
-                    return p;
-                }
-            }
+            return panels.find(function(p) {
+                return ((p.get('x') < x && (p.get('x')+p.get('width')) > x) &&
+                        (p.get('y') < y && (p.get('y')+p.get('height')) > y));
+            });
         },
 
         get_top_left_panel: function(panels) {
             // top-left panel is one where x + y is least
-            var p, top_left;
-            for(var i=0; i<panels.length; i++) {
-                p = panels[i];
-                if (i === 0) {
-                    top_left = p;
+            return panels.reduce(function(top_left, p){
+                if ((p.get('x') + p.get('y')) < (top_left.get('x') + top_left.get('y'))) {
+                    return p;
                 } else {
-                    if ((p.get('x') + p.get('y')) < (top_left.get('x') + top_left.get('y'))) {
-                        top_left = p;
-                    }
+                    return top_left;
                 }
-            }
-            return top_left;
+            });
         },
 
         align_size: function(width, height) {
@@ -296,8 +288,7 @@
                 new_w, new_h,
                 p;
 
-            for (var i=0; i<sel.length; i++) {
-                p = sel[i];
+            sel.forEach(function(p){
                 if (ref_width && ref_height) {
                     new_w = ref_width;
                     new_h = ref_height;
@@ -309,7 +300,7 @@
                     new_w = (ref_height/p.get('height')) * p.get('width');
                 }
                 p.save({'width':new_w, 'height':new_h});
-            }
+            });
         },
 
         // This can come from multi-select Rect OR any selected Panel

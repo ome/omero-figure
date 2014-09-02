@@ -479,7 +479,9 @@
         },
 
         getSum: function(attr) {
-            return this.inject(function(memo, num){ return memo + num.get(attr); }, 0);
+            return this.inject(function(memo, num){
+                return memo + (num.get(attr) || 0);
+            }, 0);
         },
 
         getMax: function(attr) {
@@ -489,6 +491,20 @@
         getMin: function(attr) {
             return this.inject(function(memo, num){ return Math.min(memo, num.get(attr)); }, Infinity);
         },
+
+        // check if all panels have the same value for named attribute
+        allEqual: function(attr) {
+            var vals = this.pluck(attr);
+            return _.max(vals) === _.min(vals);
+        },
+
+        // Return the value of named attribute IF it's the same for all panels, otherwise undefined
+        getIfEqual: function(attr) {
+            var vals = this.pluck(attr);
+            if (_.max(vals) === _.min(vals)) {
+                return _.max(vals);
+            }
+        }
 
         // localStorage: new Backbone.LocalStorage("figureShop-backbone")
     });

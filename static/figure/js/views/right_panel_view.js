@@ -797,20 +797,10 @@
             var model = this.models.head(),
                 self = this;
             var sum_wh = 0,
-                max_theZ = 0,
-                min_sizeT = Infinity, // this.models[0].get('sizeT'),
-                max_theT = 0,
                 sum_deltaT = 0,
                 max_deltaT = 0,
-                sum_dx = 0,
-                sum_dy = 0,
                 imgs_css = [],
                 same_wh = true,
-                // sizeZ = model.get('sizeZ');
-                sizeZ = this.models.head().get('sizeZ'),
-                sizeT = this.models.head().get('sizeT'),
-                z_start_sum = 0,
-                z_end_sum = 0,
                 z_projection = true;
 
 
@@ -821,18 +811,7 @@
                 var theT = m.get('theT'),
                     dT = m.get('deltaT')[theT] || 0;
                 sum_deltaT += dT;
-                max_theZ = Math.max(max_theZ, m.get('theZ'));
-                max_theT = Math.max(max_theT, theT);
                 max_deltaT = Math.max(max_deltaT, dT);
-                min_sizeT = Math.min(min_sizeT, m.get('sizeT'))
-                if (sizeZ != m.get('sizeZ')) {
-                    sizeZ = undefined;
-                }
-                if (sizeT != m.get('sizeT')) {
-                    sizeT = undefined;
-                }
-                z_start_sum += m.get('z_start') || 0;
-                z_end_sum += m.get('z_end') || 0;
                 if (!m.get('z_projection')) {
                     z_projection = false;
                 }
@@ -842,10 +821,12 @@
             var wh = sum_wh/this.models.length,
                 zoom = this.models.getAverage('zoom'),
                 theZ = this.models.getAverage('theZ'),
-                z_start = Math.round(z_start_sum/this.models.length),
-                z_end = Math.round(z_end_sum/this.models.length),
+                z_start = Math.round(this.models.getAverage('z_start')),
+                z_end = Math.round(this.models.getAverage('z_end')),
                 theT = this.models.getAverage('theT'),
-                deltaT = sum_deltaT/this.models.length;
+                deltaT = sum_deltaT/this.models.length,
+                sizeZ = this.models.getIfEqual('sizeZ'),
+                sizeT = this.models.getIfEqual('sizeT');
             
             this.theT_avg = theT;
 
@@ -859,8 +840,6 @@
 
             // Now get img src & positioning css for each panel, 
             this.models.forEach(function(m){
-                sum_dx += m.get('dx');
-                sum_dy += m.get('dy');
                 var src = m.get_img_src(),
                     img_css = m.get_vp_img_css(m.get('zoom'), frame_w, frame_h, m.get('dx'), m.get('dy'));
                 img_css.src = src;
@@ -868,8 +847,8 @@
             });
 
             // save these average offsets in hand for dragging (apply to all panels)
-            this.dx = sum_dx/this.models.length;
-            this.dy = sum_dy/this.models.length;
+            this.dx = this.models.getAverage('dx');
+            this.dy = this.models.getAverage('dy');
 
             // update sliders
             var Z_disabled = false,
@@ -924,16 +903,16 @@
             // Slider T_max is the minimum of sizeT values
             // Slider value is average of theT values (but smaller than T_max)
             var T_disabled = false,
-                T_max = min_sizeT;
-            if (T_max === 1) {
+                T_slider_max = self.models.getMin('sizeT');
+            if (T_slider_max === 1) {
                 T_disabled = true;
             }
-            self.theT_avg = Math.min(self.theT_avg, T_max);
+            self.theT_avg = Math.min(self.theT_avg, T_slider_max);
             // in case it's already been initialised:
             $("#vp_t_slider").slider("destroy");
 
             $("#vp_t_slider").slider({
-                max: T_max,
+                max: T_slider_max,
                 disabled: T_disabled,
                 min: 1,             // model is 0-based, UI is 1-based
                 value: self.theT_avg + 1,
@@ -968,10 +947,10 @@
             json.deltaT = deltaT;
             if (z_projection) {
                 json.theZ = (z_start + 1) + "-" + (z_end + 1);
-            } else if (max_theZ != theZ) {
+            } else if (!this.models.allEqual('theZ')) {
                 json.theZ = "-";
             }
-            if (max_theT != theT) {
+            if (!this.models.allEqual('theT')) {
                 json.theT = "-";
             }
             if (max_deltaT != deltaT || sizeT == 1) {
