@@ -378,8 +378,9 @@
         // Go through all selected and destroy them - trigger selection change
         deleteSelected: function() {
             var selected = this.getSelected();
-            for (var i=0; i<selected.length; i++) {
-                selected[i].destroy();
+            var model;
+            while (model = selected.first()) {
+                model.destroy();
             }
             this.notifySelectionChange();
         },

@@ -1187,7 +1187,7 @@
                                 $div.children('.ch_end').text(ui.values[1]);
                             },
                             stop: function(event, ui) {
-                                _.each(self.models, function(m) {
+                                self.models.forEach(function(m) {
                                     m.save_channel_window(idx, {'start': ui.values[0], 'end': ui.values[1]});
                                 });
                             }
