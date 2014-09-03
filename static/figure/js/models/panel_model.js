@@ -149,6 +149,11 @@
             this.add_labels(newLabels);
         },
 
+        getDeltaT: function() {
+            var theT = this.get('theT');
+            return this.get('deltaT')[theT] || 0;
+        },
+
         get_time_label_text: function(format) {
             var pad = function(digit) {
                 var d = digit + "";
@@ -478,18 +483,31 @@
             return this.getSum(attr) / this.length;
         },
 
+        getAverageWH: function() {
+            var sumWH = this.inject(function(memo, m){
+                return memo + (m.get('width')/ m.get('height'));
+            }, 0);
+            return sumWH / this.length;
+        },
+
         getSum: function(attr) {
-            return this.inject(function(memo, num){
-                return memo + (num.get(attr) || 0);
+            return this.inject(function(memo, m){
+                return memo + (m.get(attr) || 0);
             }, 0);
         },
 
         getMax: function(attr) {
-            return this.inject(function(memo, num){ return Math.max(memo, num.get(attr)); }, 0);
+            return this.inject(function(memo, m){ return Math.max(memo, m.get(attr)); }, 0);
         },
 
         getMin: function(attr) {
-            return this.inject(function(memo, num){ return Math.min(memo, num.get(attr)); }, Infinity);
+            return this.inject(function(memo, m){ return Math.min(memo, m.get(attr)); }, Infinity);
+        },
+
+        allTrue: function(attr) {
+            return this.inject(function(memo, m){
+                return (memo && m.get(attr));
+            }, true);
         },
 
         // check if all panels have the same value for named attribute
@@ -504,7 +522,14 @@
             if (_.max(vals) === _.min(vals)) {
                 return _.max(vals);
             }
-        }
+        },
+
+        getDeltaTIfEqual: function() {
+            var vals = this.map(function(m){ return m.getDeltaT() });
+            if (_.max(vals) === _.min(vals)) {
+                return _.max(vals);
+            }
+        },
 
         // localStorage: new Backbone.LocalStorage("figureShop-backbone")
     });

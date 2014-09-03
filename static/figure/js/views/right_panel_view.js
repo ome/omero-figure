@@ -800,37 +800,20 @@
             // only show viewport if original w / h ratio is same for all models
             var model = this.models.head(),
                 self = this;
-            var sum_wh = 0,
-                sum_deltaT = 0,
-                max_deltaT = 0,
-                imgs_css = [],
-                same_wh = true,
-                z_projection = true;
-
-
-            // first, work out frame w & h - use average w/h ratio of all selected panels
-            this.models.forEach(function(m){
-                var wh = m.get('orig_width') / m.get('orig_height');
-                sum_wh += (m.get('width')/ m.get('height'));
-                var theT = m.get('theT'),
-                    dT = m.get('deltaT')[theT] || 0;
-                sum_deltaT += dT;
-                max_deltaT = Math.max(max_deltaT, dT);
-                if (!m.get('z_projection')) {
-                    z_projection = false;
-                }
-            });
+            var imgs_css = [];
 
             // get average viewport frame w/h & zoom
-            var wh = sum_wh/this.models.length,
+            var wh = this.models.getAverageWH(),
                 zoom = this.models.getAverage('zoom'),
                 theZ = this.models.getAverage('theZ'),
                 z_start = Math.round(this.models.getAverage('z_start')),
                 z_end = Math.round(this.models.getAverage('z_end')),
                 theT = this.models.getAverage('theT'),
-                deltaT = sum_deltaT/this.models.length,
+                // deltaT = sum_deltaT/this.models.length,
                 sizeZ = this.models.getIfEqual('sizeZ'),
-                sizeT = this.models.getIfEqual('sizeT');
+                sizeT = this.models.getIfEqual('sizeT'),
+                deltaT = this.models.getDeltaTIfEqual(),
+                z_projection = this.models.allTrue('z_projection');
             
             this.theT_avg = theT;
 
@@ -953,7 +936,7 @@
             if (!this.models.allEqual('theT')) {
                 json.theT = "-";
             }
-            if (max_deltaT != deltaT || sizeT == 1) {
+            if (!deltaT || sizeT == 1) {
                 json.deltaT = "";
             } else {
                 json.deltaT = this.formatTime(deltaT);
