@@ -104,7 +104,7 @@
             var selected = this.model.getSelected();
 
             if (label_text == '[channels]') {
-                _.each(selected, function(m) {
+                selected.forEach(function(m) {
                     m.create_labels_from_channels({position:position, size:font_size});
                 });
                 return false;
@@ -112,7 +112,7 @@
 
             if (label_text.slice(0, 5) == '[time') {
                 var format = label_text.slice(6, -1);   // 'secs', 'hrs:mins' etc
-                _.each(selected, function(m) {
+                selected.forEach(function(m) {
                     m.create_labels_from_time({format: format,
                             position:position,
                             size:font_size,
@@ -129,7 +129,7 @@
                 color: color
             };
 
-            _.each(selected, function(m) {
+            selected.forEach(function(m) {
                 if (label_text === "[image-name]") {
                     var pathnames = m.get('name').split('/');
                     label.text = pathnames[pathnames.length-1];
@@ -1005,7 +1005,7 @@
                     },
                     stop: function( event, ui ) {
                         self.rotation = ui.value;
-                        _.each(self.models, function(m){
+                        self.models.forEach(function(m){
                             m.save('rotation', ui.value);
                         });
                     }

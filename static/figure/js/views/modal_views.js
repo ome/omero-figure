@@ -194,7 +194,7 @@
 
             if (!self.newImg)   return;
 
-            _.each(sel, function(p) {
+            sel.forEach(function(p) {
                 p.setId(self.newImg);
             });
 
@@ -210,7 +210,7 @@
                 self.selectedImage = null;
                 return; // shouldn't happen
             }
-            selImg = sel[0];
+            selImg = sel.head();
             json.selImg = selImg.toJSON();
             json.newImg = {};
             json.comp = {};
