@@ -29,6 +29,14 @@
 	"creationDate": "2014-03-10",
 	"canEdit": false,
 	"name": "Zatulovskiy et al, Chemotaxis"
+},
+{
+	"description": {"baseUrl": "http://jcb-dataviewer.rupress.org/jcb", "imageId": 623051},
+	"ownerFullName": "Will Moore",
+	"id": 6,
+	"creationDate": "2014-09-18",
+	"canEdit": false,
+	"name": "Scotland Decides 2014"
 }
 
 ]
