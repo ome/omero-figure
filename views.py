@@ -102,8 +102,10 @@ def index(request, fileId=None, conn=None, **kwargs):
     scriptService = conn.getScriptService()
     sId = scriptService.getScriptID(SCRIPT_PATH)
     scriptMissing = sId <= 0
+    userFullName = conn.getUser().getFullName()
 
-    context = {'scriptMissing': scriptMissing}
+    context = {'scriptMissing': scriptMissing,
+            'userFullName': userFullName}
     return render_to_response("figure/index.html", context)
 
 
