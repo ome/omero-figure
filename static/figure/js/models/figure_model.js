@@ -186,36 +186,36 @@
             var selected = this.getSelected(),
                 pos;
 
-            for (var j=0; j<selected.length; j++) {
-                pos = selected[j].get(axis);
-                selected[j].set(axis, pos + delta);
-            }
+            selected.forEach(function(p){
+                pos = p.get(axis);
+                p.set(axis, pos + delta);
+            });
         },
 
         align_left: function() {
             var selected = this.getSelected(),
                 x_vals = [];
-            for (var i=0; i<selected.length; i++) {
-                x_vals.push(selected[i].get('x'));
-            }
+            selected.forEach(function(p){
+                x_vals.push(p.get('x'));
+            });
             var min_x = Math.min.apply(window, x_vals);
 
-            for (var j=0; j<selected.length; j++) {
-                selected[j].set('x', min_x);
-            }
+            selected.forEach(function(p){
+                p.set('x', min_x);
+            });
         },
 
         align_top: function() {
             var selected = this.getSelected(),
                 y_vals = [];
-            for (var i=0; i<selected.length; i++) {
-                y_vals.push(selected[i].get('y'));
-            }
+            selected.forEach(function(p){
+                y_vals.push(p.get('y'));
+            });
             var min_y = Math.min.apply(window, y_vals);
 
-            for (var j=0; j<selected.length; j++) {
-                selected[j].set('y', min_y);
-            }
+            selected.forEach(function(p){
+                p.set('y', min_y);
+            });
         },
 
         align_grid: function() {
