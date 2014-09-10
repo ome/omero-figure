@@ -200,6 +200,14 @@ var FileListView = Backbone.View.extend({
         });
         owners = this.model.pluck("ownerFullName");
         owners = _.uniq(owners, false);
+        // Sort by last name
+        owners.sort(function compare(a, b) {
+            var aNames = a.split(" "),
+                aN = aNames[aNames.length - 1],
+                bNames = b.split(" "),
+                bN = bNames[bNames.length - 1];
+            return aN > bN;
+        });
         var ownersHtml = "<li><a class='pick-owner' href='#'> -- Show All -- </a></li>";
             ownersHtml += "<li class='divider'></li>";
         _.each(owners, function(owner) {
