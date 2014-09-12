@@ -264,7 +264,7 @@
             if (z_projection && !zp && sizeZ > 1) {
 
                 // use existing z_diff interval if set
-                if (z_start && z_end) {
+                if (z_start !== undefined && z_end !== undefined) {
                     z_diff = (z_end - z_start)/2;
                     z_diff = Math.round(z_diff);
                 }
@@ -277,9 +277,9 @@
                     'z_end': z_end
                 });
             // If turning z-projection off...
-            } else if (zp) {
+            } else if (!z_projection && zp) {
                 // reset theZ for average of z_start & z_end
-                if (z_start && z_end) {
+                if (z_start !== undefined && z_end !== undefined) {
                     theZ = Math.round((z_end + z_start)/ 2 );
                     this.set({'z_projection': false,
                         'theZ': theZ});
