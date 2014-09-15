@@ -148,6 +148,7 @@ def save_web_figure(request, conn=None, **kwargs):
     name 'figureName' from POST.
     """
 
+    update = conn.getUpdateService()
     if not request.method == 'POST':
         return HttpResponse("Need to use POST")
 
@@ -156,6 +157,19 @@ def save_web_figure(request, conn=None, **kwargs):
         return HttpResponse("No 'figureJSON' in POST")
     # See https://github.com/will-moore/figure/issues/16
     figureJSON = unicodedata.normalize('NFKD', figureJSON).encode('ascii','ignore')
+
+    imageIds = []
+    firstImgId = None
+    try:
+        json_data = json.loads(figureJSON)
+        for panel in json_data['panels']:
+            imageIds.append(panel['imageId'])
+        if len(imageIds) > 0:
+            firstImgId = long(imageIds[0])
+        # remove duplicates
+        imageIds = list(set(imageIds))
+    except:
+        pass
 
     fileId = request.POST.get('fileId')
 
@@ -171,24 +185,14 @@ def save_web_figure(request, conn=None, **kwargs):
             figureName = str(figureName)
         # we store json in description field...
         description = {}
-        try:
-            # ...such as first imageId (used for figure thumbnail)
-            json_data = json.loads(figureJSON)
-            panel = json_data['panels'][0]
-            firstImgId = panel['imageId']
-            description['imageId'] = long(firstImgId)
+        if firstImgId is not None:
+            description['imageId'] = firstImgId
             if 'baseUrl' in panel:
                 description['baseUrl'] = panel['baseUrl']
-        except:
-            # Maybe give user warning that figure json is invalid?
-            pass
 
         # Try to set Group context to the same as first image
         currGid = conn.SERVICE_OPTS.getOmeroGroup()
         try:
-            json_data = json.loads(figureJSON)
-            panel = json_data['panels'][0]
-            firstImgId = panel['imageId']
             conn.SERVICE_OPTS.setOmeroGroup('-1')
             i = conn.getObject("Image", firstImgId)
             if i is not None:
@@ -210,7 +214,7 @@ def save_web_figure(request, conn=None, **kwargs):
         fa.setNs(wrap(JSON_FILEANN_NS))
         desc = json.dumps(description)
         fa.setDescription(wrap(desc))
-        fa = conn.getUpdateService().saveAndReturnObject(fa, conn.SERVICE_OPTS)
+        fa = update.saveAndReturnObject(fa, conn.SERVICE_OPTS)
         fileId = fa.id.val
 
     else:
@@ -224,7 +228,7 @@ def save_web_figure(request, conn=None, **kwargs):
         origFile = fa._obj.file
         size = len(figureJSON)
         origFile.setSize(rlong(size))
-        origFile = conn.getUpdateService().saveAndReturnObject(
+        origFile = update.saveAndReturnObject(
             origFile, conn.SERVICE_OPTS)
         # upload file
         rawFileStore = conn.createRawFileStore()
@@ -235,6 +239,26 @@ def save_web_figure(request, conn=None, **kwargs):
         # awFileStore.close(conn.SERVICE_OPTS)
         rawFileStore.save(conn.SERVICE_OPTS)
         rawFileStore.close()
+
+    # Link file annotation to all images (remove from any others)
+    currentLinks = conn.getAnnotationLinks("Image", ann_ids=[fileId])
+    for l in currentLinks:
+        if l.parent.id.val not in imageIds:
+            # remove old link
+            update.deleteObject(l._obj, conn.SERVICE_OPTS)
+        else:
+            # we don't need to create links for these
+            imageIds.remove(l.parent.id.val)
+
+    # create new links
+    links = []
+    for i in imageIds:
+        l = omero.model.ImageAnnotationLinkI()
+        l.parent = omero.model.ImageI(i, False)
+        l.child = omero.model.FileAnnotationI(fileId, False)
+        links.append(l)
+    update.saveArray(links, conn.SERVICE_OPTS)
+
 
     return HttpResponse(str(fileId))
 
