@@ -186,36 +186,36 @@
             var selected = this.getSelected(),
                 pos;
 
-            for (var j=0; j<selected.length; j++) {
-                pos = selected[j].get(axis);
-                selected[j].set(axis, pos + delta);
-            }
+            selected.forEach(function(p){
+                pos = p.get(axis);
+                p.set(axis, pos + delta);
+            });
         },
 
         align_left: function() {
             var selected = this.getSelected(),
                 x_vals = [];
-            for (var i=0; i<selected.length; i++) {
-                x_vals.push(selected[i].get('x'));
-            }
+            selected.forEach(function(p){
+                x_vals.push(p.get('x'));
+            });
             var min_x = Math.min.apply(window, x_vals);
 
-            for (var j=0; j<selected.length; j++) {
-                selected[j].set('x', min_x);
-            }
+            selected.forEach(function(p){
+                p.set('x', min_x);
+            });
         },
 
         align_top: function() {
             var selected = this.getSelected(),
                 y_vals = [];
-            for (var i=0; i<selected.length; i++) {
-                y_vals.push(selected[i].get('y'));
-            }
+            selected.forEach(function(p){
+                y_vals.push(p.get('y'));
+            });
             var min_y = Math.min.apply(window, y_vals);
 
-            for (var j=0; j<selected.length; j++) {
-                selected[j].set('y', min_y);
-            }
+            selected.forEach(function(p){
+                p.set('y', min_y);
+            });
         },
 
         align_grid: function() {
@@ -263,29 +263,21 @@
         },
 
         get_panel_at: function(x, y, panels) {
-            for(var i=0; i<panels.length; i++) {
-                p = panels[i];
-                if ((p.get('x') < x && (p.get('x')+p.get('width')) > x) &&
-                        (p.get('y') < y && (p.get('y')+p.get('height')) > y)) {
-                    return p;
-                }
-            }
+            return panels.find(function(p) {
+                return ((p.get('x') < x && (p.get('x')+p.get('width')) > x) &&
+                        (p.get('y') < y && (p.get('y')+p.get('height')) > y));
+            });
         },
 
         get_top_left_panel: function(panels) {
             // top-left panel is one where x + y is least
-            var p, top_left;
-            for(var i=0; i<panels.length; i++) {
-                p = panels[i];
-                if (i === 0) {
-                    top_left = p;
+            return panels.reduce(function(top_left, p){
+                if ((p.get('x') + p.get('y')) < (top_left.get('x') + top_left.get('y'))) {
+                    return p;
                 } else {
-                    if ((p.get('x') + p.get('y')) < (top_left.get('x') + top_left.get('y'))) {
-                        top_left = p;
-                    }
+                    return top_left;
                 }
-            }
-            return top_left;
+            });
         },
 
         align_size: function(width, height) {
@@ -296,8 +288,7 @@
                 new_w, new_h,
                 p;
 
-            for (var i=0; i<sel.length; i++) {
-                p = sel[i];
+            sel.forEach(function(p){
                 if (ref_width && ref_height) {
                     new_w = ref_width;
                     new_h = ref_height;
@@ -309,7 +300,7 @@
                     new_w = (ref_height/p.get('height')) * p.get('width');
                 }
                 p.save({'width':new_w, 'height':new_h});
-            }
+            });
         },
 
         // This can come from multi-select Rect OR any selected Panel
@@ -322,11 +313,11 @@
                 xy;
             // First we notidy all Panels
             var selected = this.getSelected();
-            for (var i=0; i<selected.length; i++) {
-                xy = selected[i].drag_xy(dx, dy, save);
+            selected.forEach(function(m){
+                xy = m.drag_xy(dx, dy, save);
                 minX = Math.min(minX, xy.x);
                 minY = Math.min(minY, xy.y);
-            }
+            });
             // Notify the Multi-select Rect of it's new X and Y
             this.trigger('drag_xy', [minX, minY, save]);
         },
@@ -336,9 +327,9 @@
         // Simply delegate to all the Panels
         multiselectdrag: function(x1, y1, w1, h1, x2, y2, w2, h2, save) {
             var selected = this.getSelected();
-            for (var i=0; i<selected.length; i++) {
-                selected[i].multiselectdrag(x1, y1, w1, h1, x2, y2, w2, h2, save);
-            }
+            selected.forEach(function(m){
+                m.multiselectdrag(x1, y1, w1, h1, x2, y2, w2, h2, save);
+            });
         },
 
         // If already selected, do nothing (unless clearOthers is true)
@@ -387,8 +378,9 @@
         // Go through all selected and destroy them - trigger selection change
         deleteSelected: function() {
             var selected = this.getSelected();
-            for (var i=0; i<selected.length; i++) {
-                selected[i].destroy();
+            var model;
+            while (model = selected.first()) {
+                model.destroy();
             }
             this.notifySelectionChange();
         },
@@ -563,6 +555,11 @@
             this.add_labels(newLabels);
         },
 
+        getDeltaT: function() {
+            var theT = this.get('theT');
+            return this.get('deltaT')[theT] || 0;
+        },
+
         get_time_label_text: function(format) {
             var pad = function(digit) {
                 var d = digit + "";
@@ -673,7 +670,7 @@
             if (z_projection && !zp && sizeZ > 1) {
 
                 // use existing z_diff interval if set
-                if (z_start && z_end) {
+                if (z_start !== undefined && z_end !== undefined) {
                     z_diff = (z_end - z_start)/2;
                     z_diff = Math.round(z_diff);
                 }
@@ -686,9 +683,9 @@
                     'z_end': z_end
                 });
             // If turning z-projection off...
-            } else if (zp) {
+            } else if (!z_projection && zp) {
                 // reset theZ for average of z_start & z_end
-                if (z_start && z_end) {
+                if (z_start !== undefined && z_end !== undefined) {
                     theZ = Math.round((z_end + z_start)/ 2 );
                     this.set({'z_projection': false,
                         'theZ': theZ});
@@ -882,9 +879,62 @@
         model: Panel,
 
         getSelected: function() {
-            return this.filter(function(panel){
+            var s = this.filter(function(panel){
                 return panel.get('selected');
             });
+            return new PanelList(s);
+        },
+
+        getAverage: function(attr) {
+            return this.getSum(attr) / this.length;
+        },
+
+        getAverageWH: function() {
+            var sumWH = this.inject(function(memo, m){
+                return memo + (m.get('width')/ m.get('height'));
+            }, 0);
+            return sumWH / this.length;
+        },
+
+        getSum: function(attr) {
+            return this.inject(function(memo, m){
+                return memo + (m.get(attr) || 0);
+            }, 0);
+        },
+
+        getMax: function(attr) {
+            return this.inject(function(memo, m){ return Math.max(memo, m.get(attr)); }, 0);
+        },
+
+        getMin: function(attr) {
+            return this.inject(function(memo, m){ return Math.min(memo, m.get(attr)); }, Infinity);
+        },
+
+        allTrue: function(attr) {
+            return this.inject(function(memo, m){
+                return (memo && m.get(attr));
+            }, true);
+        },
+
+        // check if all panels have the same value for named attribute
+        allEqual: function(attr) {
+            var vals = this.pluck(attr);
+            return _.max(vals) === _.min(vals);
+        },
+
+        // Return the value of named attribute IF it's the same for all panels, otherwise undefined
+        getIfEqual: function(attr) {
+            var vals = this.pluck(attr);
+            if (_.max(vals) === _.min(vals)) {
+                return _.max(vals);
+            }
+        },
+
+        getDeltaTIfEqual: function() {
+            var vals = this.map(function(m){ return m.getDeltaT() });
+            if (_.max(vals) === _.min(vals)) {
+                return _.max(vals);
+            }
         },
 
         // localStorage: new Backbone.LocalStorage("figureShop-backbone")
@@ -1069,13 +1119,13 @@ var UndoManager = Backbone.Model.extend({
 
         // this could maybe moved to FigureModel itself
         var set_selected = function(selected) {
-            for (var i=0; i<selected.length; i++) {
+            selected.forEach(function(m, i){
                 if (i === 0) {
-                    self.figureModel.setSelected(selected[i], true);
+                    self.figureModel.setSelected(m, true);
                 } else {
-                    self.figureModel.addSelected(selected[i]);
+                    self.figureModel.addSelected(m);
                 }
-            }
+            });
         }
 
         // This is used to copy the undo/redo_functions lists
@@ -1547,7 +1597,7 @@ var UndoView = Backbone.View.extend({
             event.preventDefault();
             var s = this.model.getSelected();
             this.clipboard_data = cd = [];
-            _.each(s, function(m) {
+            s.forEach(function(m) {
                 var copy = m.toJSON();
                 delete copy.id;
                 cd.push(copy);
@@ -1966,6 +2016,7 @@ var FileListView = Backbone.View.extend({
     initialize:function () {
         this.$tbody = $('tbody', this.$el);
         this.$fileFilter = $('#file-filter');
+        this.owner = USER_FULL_NAME;
         var self = this;
         // we automatically 'sort' on fetch, add etc.
         this.model.bind("sync remove sort", this.render, this);
@@ -2044,7 +2095,7 @@ var FileListView = Backbone.View.extend({
         var self = this,
             filter = {},
             filterVal = this.$fileFilter.val();
-        if (this.owner) {
+        if (this.owner && this.owner.length > 0) {
             filter.owner = this.owner;
         }
         if (filterVal.length > 0) {
@@ -2065,6 +2116,14 @@ var FileListView = Backbone.View.extend({
         });
         owners = this.model.pluck("ownerFullName");
         owners = _.uniq(owners, false);
+        // Sort by last name
+        owners.sort(function compare(a, b) {
+            var aNames = a.split(" "),
+                aN = aNames[aNames.length - 1],
+                bNames = b.split(" "),
+                bN = bNames[bNames.length - 1];
+            return aN > bN;
+        });
         var ownersHtml = "<li><a class='pick-owner' href='#'> -- Show All -- </a></li>";
             ownersHtml += "<li class='divider'></li>";
         _.each(owners, function(owner) {
@@ -2316,7 +2375,7 @@ var FileListItemView = Backbone.View.extend({
 
             if (!self.newImg)   return;
 
-            _.each(sel, function(p) {
+            sel.forEach(function(p) {
                 p.setId(self.newImg);
             });
 
@@ -2332,7 +2391,7 @@ var FileListItemView = Backbone.View.extend({
                 self.selectedImage = null;
                 return; // shouldn't happen
             }
-            selImg = sel[0];
+            selImg = sel.head();
             json.selImg = selImg.toJSON();
             json.newImg = {};
             json.comp = {};
@@ -3188,7 +3247,7 @@ var RectView = Backbone.View.extend({
             var selected = this.model.getSelected();
 
             if (label_text == '[channels]') {
-                _.each(selected, function(m) {
+                selected.forEach(function(m) {
                     m.create_labels_from_channels({position:position, size:font_size});
                 });
                 return false;
@@ -3196,7 +3255,7 @@ var RectView = Backbone.View.extend({
 
             if (label_text.slice(0, 5) == '[time') {
                 var format = label_text.slice(6, -1);   // 'secs', 'hrs:mins' etc
-                _.each(selected, function(m) {
+                selected.forEach(function(m) {
                     m.create_labels_from_time({format: format,
                             position:position,
                             size:font_size,
@@ -3213,7 +3272,7 @@ var RectView = Backbone.View.extend({
                 color: color
             };
 
-            _.each(selected, function(m) {
+            selected.forEach(function(m) {
                 if (label_text === "[image-name]") {
                     var pathnames = m.get('name').split('/');
                     label.text = pathnames[pathnames.length-1];
@@ -3236,13 +3295,12 @@ var RectView = Backbone.View.extend({
                 $(".new-label-form", this.$el).show();
                 // if none of the selected panels have time data, disable 'add_time_label's
                 var have_time = false, dTs;
-                for (var i=0; i<selected.length; i++) {
-                    dTs = selected[i].get('deltaT');
+                selected.forEach(function(p){
+                    dTs = p.get('deltaT');
                     if (dTs && dTs.length > 0) {
                         have_time = true;
-                        break;
                     }
-                }
+                });
                 if (have_time) {
                     $(".add_time_label", this.$el).removeClass('disabled');
                 } else {
@@ -3298,7 +3356,7 @@ var RectView = Backbone.View.extend({
             this.models = opts.models;
             var self = this;
 
-            _.each(this.models, function(m){
+            this.models.forEach(function(m){
                 self.listenTo(m, 'change:labels change:theT', self.render);
             });
         },
@@ -3318,7 +3376,7 @@ var RectView = Backbone.View.extend({
 
             deleteMap[key] = false;
 
-            _.each(this.models, function(m, i){
+            this.models.forEach(function(m){
                 m.edit_labels(deleteMap);
             });
             return false;
@@ -3350,7 +3408,7 @@ var RectView = Backbone.View.extend({
             var newlbls = {};
             newlbls[key] = new_label;
 
-            _.each(this.models, function(m, i){
+            this.models.forEach(function(m){
                 m.edit_labels(newlbls);
             });
             return false;
@@ -3361,7 +3419,7 @@ var RectView = Backbone.View.extend({
             var self = this,
                 positions = {'top':{}, 'bottom':{}, 'left':{}, 'leftvert':{}, 'right':{},
                     'topleft':{}, 'topright':{}, 'bottomleft':{}, 'bottomright':{}};
-            _.each(this.models, function(m, i){
+            this.models.forEach(function(m){
                 // group labels by position
                 _.each(m.get('labels'), function(l) {
                     // remove duplicates by mapping to unique key
@@ -3409,7 +3467,7 @@ var RectView = Backbone.View.extend({
             this.models = opts.models;
             var self = this;
 
-            _.each(this.models, function(m){
+            this.models.forEach(function(m){
                 self.listenTo(m, 'change:scalebar change:pixel_size_x', self.render);
             });
 
@@ -3451,7 +3509,7 @@ var RectView = Backbone.View.extend({
             if (val.length === 0) return;
             var pixel_size = parseFloat(val);
             if (isNaN(pixel_size)) return;
-            _.each(this.models, function(m, i){
+            this.models(function(m){
                 m.save('pixel_size_x', pixel_size);
             });
         },
@@ -3462,7 +3520,7 @@ var RectView = Backbone.View.extend({
         },
 
         hide_scalebar: function() {
-            _.each(this.models, function(m, i){
+            this.models.forEach(function(m){
                 m.hide_scalebar();
             });
         },
@@ -3476,7 +3534,7 @@ var RectView = Backbone.View.extend({
                 position = $('.label-position span:first', $form).attr('data-position'),
                 color = $('.label-color span:first', $form).attr('data-color');
 
-            _.each(this.models, function(m, i){
+            this.models.forEach(function(m){
                 var sb = {show: true};
                 if (length != '-') sb.length = parseInt(length, 10);
                 if (position != '-') sb.position = position;
@@ -3493,7 +3551,7 @@ var RectView = Backbone.View.extend({
                 hidden = false,
                 sb;
 
-            _.each(this.models, function(m, i){
+            this.models.forEach(function(m){
                 // start with json data from first Panel
                 if (!json.pixel_size_x) {
                     json.pixel_size_x = m.get('pixel_size_x');
@@ -3553,11 +3611,11 @@ var RectView = Backbone.View.extend({
             this.models = opts.models;
             if (opts.models.length > 1) {
                 var self = this;
-                _.each(this.models, function(m){
+                this.models.forEach(function(m){
                     self.listenTo(m, 'change:x change:y change:width change:height change:imageId change:zoom', self.render);
                 });
             } else if (opts.models.length == 1) {
-                this.model = opts.models[0];
+                this.model = opts.models.head();
                 this.listenTo(this.model, 'change:x change:y change:width change:height change:zoom', this.render);
                 this.listenTo(this.model, 'drag_resize', this.drag_resize);
             }
@@ -3590,7 +3648,7 @@ var RectView = Backbone.View.extend({
             var json,
                 title = this.models.length + " Panels Selected...",
                 imageIds = [];
-            _.each(this.models, function(m, i){
+            this.models.forEach(function(m) {
                 imageIds.push(m.get('imageId'));
                 // start with json data from first Panel
                 if (!json) {
@@ -3665,7 +3723,7 @@ var RectView = Backbone.View.extend({
         },
 
         z_increment: function(event) {
-            _.each(this.model.getSelected(), function(m){
+            this.model.getSelected().forEach(function(m){
                 var newZ = {};
                 if (m.get('z_projection')) {
                     newZ.z_start = m.get('z_start') + 1;
@@ -3678,7 +3736,7 @@ var RectView = Backbone.View.extend({
             return false;
         },
         z_decrement: function(event) {
-            _.each(this.model.getSelected(), function(m){
+            this.model.getSelected().forEach(function(m){
                 var newZ = {};
                 if (m.get('z_projection')) {
                     newZ.z_start = m.get('z_start') - 1;
@@ -3691,13 +3749,13 @@ var RectView = Backbone.View.extend({
             return false;
         },
         time_increment: function(event) {
-            _.each(this.model.getSelected(), function(m){
+            this.model.getSelected().forEach(function(m){
                 m.set({'theT': m.get('theT') + 1}, {'validate': true});
             });
             return false;
         },
         time_decrement: function(event) {
-            _.each(this.model.getSelected(), function(m){
+            this.model.getSelected().forEach(function(m){
                 m.set({'theT': m.get('theT') - 1}, {'validate': true});
             });
             return false;
@@ -3722,7 +3780,7 @@ var RectView = Backbone.View.extend({
             var self = this,
                 zoom_sum = 0;
 
-            _.each(this.models, function(m){
+            this.models.forEach(function(m){
                 self.listenTo(m,
                     'change:width change:height change:channels change:zoom change:theZ change:theT change:rotation change:z_projection change:z_start change:z_end',
                     self.render);
@@ -3746,7 +3804,7 @@ var RectView = Backbone.View.extend({
                         to_save.dx = 0;
                         to_save.dy = 0;
                     }
-                    _.each(self.models, function(m){
+                    self.models.forEach(function(m){
                         m.save(to_save);
                     });
                 }
@@ -3766,7 +3824,7 @@ var RectView = Backbone.View.extend({
             this.dragging = true;
             this.dragstart_x = event.clientX;
             this.dragstart_y = event.clientY;
-            this.r = this.models[0].get('rotation');
+            this.r = this.models.head().get('rotation');
             return false;
         },
 
@@ -3825,30 +3883,34 @@ var RectView = Backbone.View.extend({
             return this;
         },
 
+        // This forces All panels in viewport to have SAME css
+        // while zooming / dragging.
+        // TODO: Update each panel separately.
         update_img_css: function(zoom, dx, dy, save) {
 
             dx = dx / (zoom/100);
             dy = dy / (zoom/100);
 
+            var avg_dx = this.models.getAverage('dx'),
+                avg_dy = this.models.getAverage('dy');
+
             if (this.$vp_img) {
                 var frame_w = this.$vp_frame.width() + 2,
                     frame_h = this.$vp_frame.height() + 2,
-                    zm_w = this.models[0].get('orig_width') / frame_w,
-                    zm_h = this.models[0].get('orig_height') / frame_h,
+                    zm_w = this.models.head().get('orig_width') / frame_w,
+                    zm_h = this.models.head().get('orig_height') / frame_h,
                     scale = Math.min(zm_w, zm_h);
                 dx = dx * scale;
                 dy = dy * scale;
-                dx += this.dx;
-                dy += this.dy;
-                this.$vp_img.css( this.models[0].get_vp_img_css(zoom, frame_w, frame_h, dx, dy) );
+                dx += avg_dx;
+                dy += avg_dy;
+                this.$vp_img.css( this.models.head().get_vp_img_css(zoom, frame_w, frame_h, dx, dy) );
                 this.$vp_zoom_value.text(zoom + "%");
 
                 if (save) {
                     if (typeof dx === "undefined") dx = 0;  // rare crazy-dragging case!
                     if (typeof dy === "undefined") dy = 0;
-                    this.dx = dx;
-                    this.dy = dy;
-                    _.each(this.models, function(m){
+                    this.models.forEach(function(m){
                         m.save({'dx': dx,
                                 'dy': dy});
                     });
@@ -3879,73 +3941,24 @@ var RectView = Backbone.View.extend({
         render: function() {
 
             // only show viewport if original w / h ratio is same for all models
-            var model = this.models[0],
+            var model = this.models.head(),
                 self = this;
-            var orig_wh,
-                sum_wh = 0,
-                sum_zoom = 0,
-                sum_theZ = 0,
-                max_theZ = 0,
-                sum_theT = 0,
-                min_sizeT = this.models[0].get('sizeT'),
-                max_theT = 0,
-                sum_deltaT = 0,
-                max_deltaT = 0,
-                sum_dx = 0,
-                sum_dy = 0,
-                imgs_css = [],
-                same_wh = true,
-                // sizeZ = model.get('sizeZ');
-                sizeZ = this.models[0].get('sizeZ'),
-                sizeT = this.models[0].get('sizeT'),
-                z_start_sum = 0,
-                z_end_sum = 0,
-                z_projection = true;
-
-
-            // first, work out frame w & h - use average w/h ratio of all selected panels
-            _.each(this.models, function(m){
-                var wh = m.get('orig_width') / m.get('orig_height');
-                if (!orig_wh) {
-                    orig_wh = wh;
-                } else if (orig_wh != wh) {
-                    same_wh = false;
-                }
-                sum_wh += (m.get('width')/ m.get('height'));
-                sum_zoom += m.get('zoom');
-                sum_theZ += m.get('theZ');
-                var theT = m.get('theT'),
-                    dT = m.get('deltaT')[theT] || 0;
-                sum_theT += theT;
-                sum_deltaT += dT;
-                max_theZ = Math.max(max_theZ, m.get('theZ'));
-                max_theT = Math.max(max_theT, theT);
-                max_deltaT = Math.max(max_deltaT, dT);
-                min_sizeT = Math.min(min_sizeT, m.get('sizeT'))
-                if (sizeZ != m.get('sizeZ')) {
-                    sizeZ = undefined;
-                }
-                if (sizeT != m.get('sizeT')) {
-                    sizeT = undefined;
-                }
-                z_start_sum += m.get('z_start') || 0;
-                z_end_sum += m.get('z_end') || 0;
-                if (!m.get('z_projection')) {
-                    z_projection = false;
-                }
-            });
-
-            theZ_avg = sum_theZ/ this.models.length;
-            this.theT_avg = sum_theT/ this.models.length;
+            var imgs_css = [];
 
             // get average viewport frame w/h & zoom
-            var wh = sum_wh/this.models.length,
-                zoom = sum_zoom/this.models.length,
-                theZ = sum_theZ/this.models.length,
-                z_start = Math.round(z_start_sum/this.models.length),
-                z_end = Math.round(z_end_sum/this.models.length),
-                theT = sum_theT/this.models.length;
-                deltaT = sum_deltaT/this.models.length;
+            var wh = this.models.getAverageWH(),
+                zoom = this.models.getAverage('zoom'),
+                theZ = this.models.getAverage('theZ'),
+                z_start = Math.round(this.models.getAverage('z_start')),
+                z_end = Math.round(this.models.getAverage('z_end')),
+                theT = this.models.getAverage('theT'),
+                // deltaT = sum_deltaT/this.models.length,
+                sizeZ = this.models.getIfEqual('sizeZ'),
+                sizeT = this.models.getIfEqual('sizeT'),
+                deltaT = this.models.getDeltaTIfEqual(),
+                z_projection = this.models.allTrue('z_projection');
+            
+            this.theT_avg = theT;
 
             if (wh <= 1) {
                 frame_h = this.full_size;
@@ -3956,18 +3969,12 @@ var RectView = Backbone.View.extend({
             }
 
             // Now get img src & positioning css for each panel, 
-            _.each(this.models, function(m){
-                sum_dx += m.get('dx');
-                sum_dy += m.get('dy');
+            this.models.forEach(function(m){
                 var src = m.get_img_src(),
                     img_css = m.get_vp_img_css(m.get('zoom'), frame_w, frame_h, m.get('dx'), m.get('dy'));
                 img_css.src = src;
                 imgs_css.push(img_css);
             });
-
-            // save these average offsets in hand for dragging (apply to all panels)
-            this.dx = sum_dx/this.models.length;
-            this.dy = sum_dy/this.models.length;
 
             // update sliders
             var Z_disabled = false,
@@ -3992,7 +3999,7 @@ var RectView = Backbone.View.extend({
                         $("#vp_z_value").text(ui.values[0] + "-" + ui.values[1] + "/" + sizeZ);
                     },
                     stop: function( event, ui ) {
-                        _.each(self.models, function(m){
+                        self.models.forEach(function(m){
                             m.save({
                                 'z_start': ui.values[0] - 1,
                                 'z_end': ui.values[1] -1
@@ -4006,12 +4013,12 @@ var RectView = Backbone.View.extend({
                     max: sizeZ,
                     disabled: Z_disabled,
                     min: 1,             // model is 0-based, UI is 1-based
-                    value: theZ_avg + 1,
+                    value: theZ + 1,
                     slide: function(event, ui) {
                         $("#vp_z_value").text(ui.value + "/" + sizeZ);
                     },
                     stop: function( event, ui ) {
-                        _.each(self.models, function(m){
+                        self.models.forEach(function(m){
                             m.save('theZ', ui.value - 1);
                         });
                     }
@@ -4022,24 +4029,24 @@ var RectView = Backbone.View.extend({
             // Slider T_max is the minimum of sizeT values
             // Slider value is average of theT values (but smaller than T_max)
             var T_disabled = false,
-                T_max = min_sizeT;
-            if (T_max === 1) {
+                T_slider_max = self.models.getMin('sizeT');
+            if (T_slider_max === 1) {
                 T_disabled = true;
             }
-            self.theT_avg = Math.min(self.theT_avg, T_max);
+            self.theT_avg = Math.min(self.theT_avg, T_slider_max);
             // in case it's already been initialised:
             $("#vp_t_slider").slider("destroy");
 
             $("#vp_t_slider").slider({
-                max: T_max,
+                max: T_slider_max,
                 disabled: T_disabled,
                 min: 1,             // model is 0-based, UI is 1-based
                 value: self.theT_avg + 1,
                 slide: function(event, ui) {
                     var theT = ui.value;
                     $("#vp_t_value").text(theT + "/" + (sizeT || '-'));
-                    var dt = self.models[0].get('deltaT')[theT-1];
-                    _.each(self.models, function(m){
+                    var dt = self.models.head().get('deltaT')[theT-1];
+                    self.models.forEach(function(m){
                         if (m.get('deltaT')[theT-1] != dt) {
                             dt = undefined;
                         }
@@ -4047,7 +4054,7 @@ var RectView = Backbone.View.extend({
                     $("#vp_deltaT").text(self.formatTime(dt));
                 },
                 stop: function( event, ui ) {
-                    _.each(self.models, function(m){
+                    self.models.forEach(function(m){
                         m.save('theT', ui.value - 1);
                     });
                 }
@@ -4066,13 +4073,13 @@ var RectView = Backbone.View.extend({
             json.deltaT = deltaT;
             if (z_projection) {
                 json.theZ = (z_start + 1) + "-" + (z_end + 1);
-            } else if (max_theZ != theZ) {
+            } else if (!this.models.allEqual('theZ')) {
                 json.theZ = "-";
             }
-            if (max_theT != theT) {
+            if (!this.models.allEqual('theT')) {
                 json.theT = "-";
             }
-            if (max_deltaT != deltaT || sizeT == 1) {
+            if (!deltaT || sizeT == 1) {
                 json.deltaT = "";
             } else {
                 json.deltaT = this.formatTime(deltaT);
@@ -4097,7 +4104,7 @@ var RectView = Backbone.View.extend({
             // This View may apply to a single PanelModel or a list
             this.models = opts.models;
             var self = this;
-            _.each(this.models, function(m){
+            this.models.forEach(function(m){
                 self.listenTo(m, 'change:channels change:z_projection', self.render);
             });
         },
@@ -4112,13 +4119,15 @@ var RectView = Backbone.View.extend({
         z_projection:function(e) {
             // 'flat' means that some panels have z_projection on, some off
             var flat = $(e.currentTarget).hasClass('ch-btn-flat');
-            _.each(this.models, function(m){
+            console.log(flat, e.currentTarget);
+            this.models.forEach(function(m){
                 var p;
                 if (flat) {
                     p = true;
                 } else {
                     p = !m.get('z_projection');
                 }
+                console.log(p);
                 m.set_z_projection(p);
             });
         },
@@ -4141,7 +4150,7 @@ var RectView = Backbone.View.extend({
                     },
                     stop: function( event, ui ) {
                         self.rotation = ui.value;
-                        _.each(self.models, function(m){
+                        self.models.forEach(function(m){
                             m.save('rotation', ui.value);
                         });
                     }
@@ -4157,7 +4166,7 @@ var RectView = Backbone.View.extend({
             if (this.model) {
                 this.model.save_channel(idx, 'color', color);
             } else if (this.models) {
-                _.each(this.models, function(m){
+                this.models.forEach(function(m){
                     m.save_channel(idx, 'color', color);
                 });
             }
@@ -4172,7 +4181,7 @@ var RectView = Backbone.View.extend({
             } else if (this.models) {
                 // 'flat' means that some panels have this channel on, some off
                 var flat = $(e.currentTarget).hasClass('ch-btn-flat');
-                _.each(this.models, function(m){
+                this.models.forEach(function(m){
                     if(flat) {
                         m.toggle_channel(idx, true);
                     } else {
@@ -4206,7 +4215,7 @@ var RectView = Backbone.View.extend({
                 json = [];
                 var compatible = true;
 
-                _.each(this.models, function(m, i){
+                this.models.forEach(function(m){
                     var chs = m.get('channels');
                     rotation = m.get('rotation');
                     max_rotation = Math.max(max_rotation, rotation);
@@ -4306,7 +4315,7 @@ var RectView = Backbone.View.extend({
                                 $div.children('.ch_end').text(ui.values[1]);
                             },
                             stop: function(event, ui) {
-                                _.each(self.models, function(m) {
+                                self.models.forEach(function(m) {
                                     m.save_channel_window(idx, {'start': ui.values[0], 'end': ui.values[1]});
                                 });
                             }
@@ -4489,9 +4498,6 @@ var RectView = Backbone.View.extend({
         // Need to re-draw on selection AND zoom changes
         updateSelection: function() {
 
-            var min_x = 100000, max_x = -10000,
-                min_y = 100000, max_y = -10000;
-
             var selected = this.figureModel.getSelected();
             if (selected.length < 1){
 
@@ -4505,17 +4511,22 @@ var RectView = Backbone.View.extend({
                 return;
             }
 
-            for (var i=0; i<selected.length; i++) {
-                var panel = selected[i],
-                    x = panel.get('x'),
+            var max_x = 0,
+                max_y = 0;
+
+            selected.forEach(function(panel){
+                var x = panel.get('x'),
                     y = panel.get('y'),
                     w = panel.get('width'),
                     h = panel.get('height');
-                min_x = Math.min(min_x, x);
                 max_x = Math.max(max_x, x+w);
-                min_y = Math.min(min_y, y);
                 max_y = Math.max(max_y, y+h);
-            }
+            });
+
+            min_x = selected.getMin('x');
+            min_y = selected.getMin('y');
+
+
 
             this.set( this.getSvgCoords({
                 'x': min_x,
