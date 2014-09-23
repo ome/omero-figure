@@ -19,6 +19,7 @@
 
             if (this.vp) {
                 this.vp.clear().remove();
+                delete this.vp;     // so we don't call clear() on it again.
             }
             if (selected.length > 0) {
                 this.vp = new ImageViewerView({models: selected}); // auto-renders on init
@@ -366,7 +367,7 @@
             if (val.length === 0) return;
             var pixel_size = parseFloat(val);
             if (isNaN(pixel_size)) return;
-            this.models(function(m){
+            this.models.forEach(function(m){
                 m.save('pixel_size_x', pixel_size);
             });
         },
@@ -841,8 +842,11 @@
                 Z_max = 1;
             }
 
-            // in case it's already been initialised:
-            $("#vp_z_slider").slider("destroy");
+            // Destroy any existing slider...
+            try {
+                // ...but will throw if not already a slider
+                $("#vp_z_slider").slider("destroy");
+            } catch (e) {}
 
             if (z_projection) {
                 $("#vp_z_slider").slider({
@@ -892,7 +896,9 @@
             }
             self.theT_avg = Math.min(self.theT_avg, T_slider_max);
             // in case it's already been initialised:
-            $("#vp_t_slider").slider("destroy");
+            try {
+                $("#vp_t_slider").slider("destroy");
+            } catch (e) {}
 
             $("#vp_t_slider").slider({
                 max: T_slider_max,
@@ -1049,7 +1055,9 @@
 
         clear: function() {
             $(".ch_slider").slider("destroy");
-            this.$el.find('.rotation-slider').slider("destroy");
+            try {
+                this.$el.find('.rotation-slider').slider("destroy");
+            } catch (e) {}
             $("#channel_sliders").empty();
             return this;
         },
