@@ -246,7 +246,7 @@
                 if (json.selImg.sizeT != json.newImg.sizeT) {
                     // check if any existing images have theT > new.sizeT
                     var tooSmallT = false;
-                    _.each(sel, function(o){
+                    sel.forEach(function(o){
                         if (o.get('theT') > json.newImg.sizeT) tooSmallT = true;
                     });
                     if (tooSmallT) {
