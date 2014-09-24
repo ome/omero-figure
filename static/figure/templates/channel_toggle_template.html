@@ -3,12 +3,14 @@
     <% _.each(channels, function(c, i) { %>
         <div class="btn-group" style="padding:2px">
             <button type="button"
+            title="Turn channel on/off"
 class="btn btn-default channel-btn <% if(c.active) { %>ch-btn-down<% } else if (typeof c.active == 'boolean') { %>ch-btn-up<% } else { %>ch-btn-flat<% }%>"
                     data-index="<%= i %>"
                     style="background-color:#<%= c.color %>">
                 &nbsp
             </button>
-            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+            <button type="button" class="btn btn-default dropdown-toggle"
+                    data-toggle="dropdown" title="Pick channel color">
                 <span class="caret"></span>
             </button>
             <ul class="dropdown-menu colorpicker" data-index="<%= i %>">
