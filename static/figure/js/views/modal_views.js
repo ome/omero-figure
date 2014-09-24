@@ -226,6 +226,9 @@
                 return rv;
             };
 
+            // thumbnail
+            json.selThumbSrc = WEBGATEWAYINDEX + "render_thumbnail/" + json.selImg.imageId + "/";
+
             // minor attributes ('info' only)
             var attrs = ["sizeZ", "orig_width", "orig_height"],
                 attrName = ['Z size', 'Width', 'Height'];
@@ -280,6 +283,9 @@
                         }
                     }
                 }
+
+                // thumbnail
+                json.newThumbSrc = WEBGATEWAYINDEX + "render_thumbnail/" + json.newImg.imageId + "/";
 
                 $(".doSetId", this.$el).removeAttr('disabled');
             } else {

@@ -5,12 +5,12 @@
                 <div class="col-sm-3">Compare:</div>
                 <div class="col-sm-3">
                     <img class="small-thumb" title="<%= selImg.name %>"
-                        src="/webclient/render_thumbnail/<%= selImg.imageId %>/" />
+                        src="<%= selThumbSrc %>" />
                 </div>
                 <div class="col-sm-3">
                     <% if(newImg.imageId) { %>
                         <img class="small-thumb" title="<%= newImg.name %>"
-                            src="/webclient/render_thumbnail/<%= newImg.imageId %>/" />
+                            src="<%= newThumbSrc %>" />
                     <% } else { %>
                         <div style="width:40px; height:40px; background-color:#ddd"></div>
                     <% } %>
