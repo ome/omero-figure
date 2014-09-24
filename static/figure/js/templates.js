@@ -25,7 +25,7 @@ __p += '"\n                    data-index="' +
  }); ;
 __p += '\n\n    <div class="btn-group rotation-controls" style="padding:2px">\n        <button type="button" class="btn btn-default btn-sm show-rotation" title="Rotate image">\n            <span class="glyphicon glyphicon-repeat"></span>\n            <span class="rotation_value">' +
 ((__t = ( rotation )) == null ? '' : __t) +
-'</span> &deg;\n        </button>\n\n        <div class="rotation-slider"></div>\n    </div>\n\n\n    <div class="btn-group" style="padding:2px" title="Maximum intensity Z-projection">\n        <button type="button" class="btn btn-default btn-sm z-projection\n                ';
+'</span> &deg;\n        </button>\n\n        <div class="rotation-slider"></div>\n    </div>\n\n\n    <div class="btn-group" style="padding:2px" title="Maximum intensity Z-projection (choose range with 2 handles on Z-slider)">\n        <button type="button" class="btn btn-default btn-sm z-projection\n                ';
  if(z_projection) { ;
 __p += 'zp-btn-down';
  } else if (typeof z_projection == 'boolean') { ;
