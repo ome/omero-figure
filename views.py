@@ -252,9 +252,11 @@ def save_web_figure(request, conn=None, **kwargs):
 
     # create new links
     links = []
-    for i in imageIds:
+    for i in conn.getObjects("Image", imageIds):
+        if not i.canAnnotate():
+            continue
         l = omero.model.ImageAnnotationLinkI()
-        l.parent = omero.model.ImageI(i, False)
+        l.parent = omero.model.ImageI(i.getId(), False)
         l.child = omero.model.FileAnnotationI(fileId, False)
         links.append(l)
     update.saveArray(links, conn.SERVICE_OPTS)
