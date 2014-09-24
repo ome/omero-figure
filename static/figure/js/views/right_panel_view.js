@@ -505,9 +505,13 @@
         render: function() {
             var json,
                 title = this.models.length + " Panels Selected...",
+                remoteUrl,
                 imageIds = [];
             this.models.forEach(function(m) {
                 imageIds.push(m.get('imageId'));
+                if (m.get('baseUrl')) {
+                    remoteUrl = m.get('baseUrl') + "/img_detail/" + m.get('imageId') + "/";
+                }
                 // start with json data from first Panel
                 if (!json) {
                     json = m.toJSON();
@@ -546,11 +550,19 @@
                 }
             });
 
-            json.imageIds = _.uniq(imageIds);
-            json.webclientBaseUrl = WEBINDEX_URL;
+            // Link IF we have a single remote image, E.g. http://jcb-dataviewer.rupress.org/jcb/img_detail/625679/
+            json.imageLink = false;
+            if (remoteUrl) {
+                if (imageIds.length == 1) {
+                    json.imageLink = remoteUrl;
+                }
+            // OR all the images are local
+            } else {
+                json.imageLink = WEBINDEX_URL + "?show=image-" + imageIds.join('|image-');
+            }
 
             // all setId if we have a single Id
-            json.setImageId = json.imageIds.length == 1;
+            json.setImageId = _.uniq(imageIds).length == 1;
 
             if (json) {
                 var html = this.template(json),

@@ -5,10 +5,12 @@
     <table class="table">
         <tbody>
             <tr><td>Image
+                <% if (imageLink) { %>
                 <a class="pull-right" target="new"
-                    href="<%= webclientBaseUrl %>?show=image-<% print(imageIds.join('|image-')) %>">
+                    href="<%= imageLink %>">
                     <span class="glyphicon glyphicon-share"></span> Show in Webclient
                 </a>
+                <% } %>
             </td></tr>
             <tr><td>
                 <div class="col-sm-6"><small><strong>Image ID</strong>:</small></div>
