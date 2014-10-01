@@ -3472,7 +3472,7 @@
                 this.rotation = avg_rotation;
 
                 // if all panels have sizeZ == 1, don't allow z_projection
-                z_projection_disabled = (sum_sizeZ === this.models.length);
+                z_projection_disabled = true; // Not supported on JCB etc. (sum_sizeZ === this.models.length);
 
                 if (!compatible) {
                     json = [];

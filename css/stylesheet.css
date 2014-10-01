@@ -420,4 +420,8 @@ Small Device Styles
     font-size: 11px;
   }
 
+  table.demo-table {
+    border: solid red 1px;
+  }
+
 }
