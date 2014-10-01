@@ -250,17 +250,22 @@ def save_web_figure(request, conn=None, **kwargs):
             # we don't need to create links for these
             imageIds.remove(l.parent.id.val)
 
-    # create new links
+    # create new links if desired (disabled for now)
+    LINK_TO_IMAGES = False
     links = []
-    for i in conn.getObjects("Image", imageIds):
-        if not i.canAnnotate():
-            continue
-        l = omero.model.ImageAnnotationLinkI()
-        l.parent = omero.model.ImageI(i.getId(), False)
-        l.child = omero.model.FileAnnotationI(fileId, False)
-        links.append(l)
-    update.saveArray(links, conn.SERVICE_OPTS)
-
+    if LINK_TO_IMAGES and len(imageIds) > 0:
+        for i in conn.getObjects("Image", imageIds):
+            if not i.canAnnotate():
+                continue
+            l = omero.model.ImageAnnotationLinkI()
+            l.parent = omero.model.ImageI(i.getId(), False)
+            l.child = omero.model.FileAnnotationI(fileId, False)
+            links.append(l)
+        # Don't want to fail at this point due to strange permissions combo
+        try:
+            update.saveArray(links, conn.SERVICE_OPTS)
+        except:
+            pass
 
     return HttpResponse(str(fileId))
 
