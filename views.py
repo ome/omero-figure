@@ -241,31 +241,32 @@ def save_web_figure(request, conn=None, **kwargs):
         rawFileStore.close()
 
     # Link file annotation to all images (remove from any others)
-    currentLinks = conn.getAnnotationLinks("Image", ann_ids=[fileId])
-    for l in currentLinks:
-        if l.parent.id.val not in imageIds:
-            # remove old link
-            update.deleteObject(l._obj, conn.SERVICE_OPTS)
-        else:
-            # we don't need to create links for these
-            imageIds.remove(l.parent.id.val)
+    LINK_TO_IMAGES = False      # Disabled for now
+    if LINK_TO_IMAGES:
+        currentLinks = conn.getAnnotationLinks("Image", ann_ids=[fileId])
+        for l in currentLinks:
+            if l.parent.id.val not in imageIds:
+                # remove old link
+                update.deleteObject(l._obj, conn.SERVICE_OPTS)
+            else:
+                # we don't need to create links for these
+                imageIds.remove(l.parent.id.val)
 
-    # create new links if desired (disabled for now)
-    LINK_TO_IMAGES = False
-    links = []
-    if LINK_TO_IMAGES and len(imageIds) > 0:
-        for i in conn.getObjects("Image", imageIds):
-            if not i.canAnnotate():
-                continue
-            l = omero.model.ImageAnnotationLinkI()
-            l.parent = omero.model.ImageI(i.getId(), False)
-            l.child = omero.model.FileAnnotationI(fileId, False)
-            links.append(l)
-        # Don't want to fail at this point due to strange permissions combo
-        try:
-            update.saveArray(links, conn.SERVICE_OPTS)
-        except:
-            pass
+        # create new links if necessary
+        links = []
+        if len(imageIds) > 0:
+            for i in conn.getObjects("Image", imageIds):
+                if not i.canAnnotate():
+                    continue
+                l = omero.model.ImageAnnotationLinkI()
+                l.parent = omero.model.ImageI(i.getId(), False)
+                l.child = omero.model.FileAnnotationI(fileId, False)
+                links.append(l)
+            # Don't want to fail at this point due to strange permissions combo
+            try:
+                update.saveArray(links, conn.SERVICE_OPTS)
+            except:
+                pass
 
     return HttpResponse(str(fileId))
 
