@@ -20,14 +20,14 @@ very stable.
 Maximum-Intensity projection:
 
   - For Z-stack images, you can click a button (below the channel buttons) to turn on Z-projection.
-    The range of Z-indicies can then be chosen using a 2-handled Z-slider.
+    The range of Z-indices can then be chosen using a 2-handled Z-slider.
   - Initially, the Z-range is only 5 slices and is centered on the current Z-index.
     This allows you include objects just above and below the current position in the projection,
     without losing your place in the Z-stack.
   - If you want a projection of the entire Z-stack, you can simply drag the sliders to
     the full range.
 
-Increment Z and T indicies:
+Increment Z and T indices:
 
   - Small arrow buttons at the ends of the Z and T sliders now allow you to increment the Z or T index of
     all the selected panels by 1 at a time.
