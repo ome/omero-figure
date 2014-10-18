@@ -108,10 +108,6 @@ title: OMERO.figure
               rename the unzipped directory to 'figure'.
             </li>
             <li>
-              <strong>OR</strong>, to install the development version:
-              <code>$ git clone git://github.com/will-moore/figure.git</code>
-            </li>
-            <li>
               Place 'figure' <strong>within</strong> a directory that is on your PYTHONPATH, or
               in the OMERO <code style="display:inline">lib/python/omeroweb/</code> directory. NB: for OMERO 4.4.9 and earlier, you will
               have to use lib/python/omeroweb/ (other locations not supported).
@@ -121,9 +117,12 @@ title: OMERO.figure
               NB: for OMERO 4.4.x you'll need to 'set' the whole list (append not supported):
               <code> $ bin/omero config set omero.web.apps '["figure"]' &nbsp # OMERO 4.4 only</code>
             </li>
-            <li>Display a link to 'Figure' at the top of the webclient, with 'target' set to open the link in a new tab:
+            <li>Display a link to 'Figure' at the top of the webclient: 
+              <!-- with 'target' set to open the link in a new tab: -->
               <code style="width:650px">
-                $ bin/omero config append omero.web.ui.top_links '["Figure", "figure_index", {"target": "figure"}]'
+                <!-- $ bin/omero config append omero.web.ui.top_links '["Figure", "figure_index", {"target": "figure"}]' -->
+                $ bin/omero config append omero.web.ui.top_links '["Figure", "figure_index"]'
+
               </code>
             </li>
             <li>Restart web: 
