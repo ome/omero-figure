@@ -190,7 +190,9 @@
         },
 
         get_label_key: function(label) {
-            return label.text + '_' + label.size + '_' + label.color + '_' + label.position;
+            var key = label.text + '_' + label.size + '_' + label.color + '_' + label.position;
+            key = _.escape(key);
+            return key;
         },
 
         // labels_map is {labelKey: {size:s, text:t, position:p, color:c}} or {labelKey: false} to delete
