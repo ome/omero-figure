@@ -103,6 +103,9 @@
                 var ljson = $.extend(true, {}, l);
                 if (typeof ljson.text == 'undefined' && ljson.time) {
                     ljson.text = self.model.get_time_label_text(ljson.time);
+                } else {
+                    // Escape all labels so they are safe
+                    ljson.text = _.escape(ljson.text);
                 }
                 positions[l.position].push(ljson);
             });
