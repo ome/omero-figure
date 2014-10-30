@@ -2222,18 +2222,6 @@ var FileListItemView = Backbone.View.extend({
             if (size == 'A4') {
                 w_mm = 210;
                 h_mm = 297;
-            } else if (size == 'A3') {
-                w_mm = 297;
-                h_mm = 420;
-            } else if (size == 'A2') {
-                w_mm = 420;
-                h_mm = 594;
-            } else if (size == 'A1') {
-                w_mm = 594;
-                h_mm = 841;
-            } else if (size == 'A0') {
-                w_mm = 841;
-                h_mm = 1189;
             } else if (size == 'letter') {
                 w_mm = 216;
                 h_mm = 280;
