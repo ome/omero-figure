@@ -1,4 +1,22 @@
 
+    <div class="col-sm-12">
+
+        <div class="form-horizontal">
+            <div class="form-group col-sm-6">
+                <label>Number of Pages</label>
+                <select class="pageCountSelect form-control">
+                    <% _.each([1,2,3,4,5,6,7,8,9,10],function(p){
+                        print ("<option value='"+p+"'" + ((p == page_count) ? " selected " : "") + " >"+p+"</option>")
+                    }); %>
+                </select>
+            </div>
+            <div class="form-group col-sm-6"></div>
+            <div class="clearfix"></div>
+        </div>
+
+    </div>
+
+
     <div class="col-sm-6">
         <label>Size</label>
         <div class="form-horizontal">

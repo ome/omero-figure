@@ -22,7 +22,7 @@
             this.$main = $('main');
             this.$canvas = $("#canvas");
             this.$canvas_wrapper = $("#canvas_wrapper");
-            this.$paper = $("#paper");
+            this.$figure = $("#figure");
             this.$copyBtn = $(".copy");
             this.$pasteBtn = $(".paste");
             this.$saveBtn = $(".save_figure.btn");
@@ -33,7 +33,7 @@
             var self = this;
 
             // Render on changes to the model
-            this.model.on('change:paper_width change:paper_height', this.render, this);
+            this.model.on('change:paper_width change:paper_height change:page_count', this.render, this);
 
             // If a panel is added...
             this.model.panels.on("add", this.addOne, this);
@@ -488,9 +488,8 @@
 
         // Centre the viewport on the middle of the paper
         reCentre: function() {
-            var paper_w = this.model.get('paper_width'),
-                paper_h = this.model.get('paper_height');
-            this.setCentre( {'x':paper_w/2, 'y':paper_h/2} );
+            var size = this.model.getFigureSize();
+            this.setCentre( {'x':size.w/2, 'y':size.h/2} );
         },
 
         // Get the coordinates on the paper of the viewport center.
@@ -515,16 +514,18 @@
                 cy = -offst_top + viewport_h/2,
                 zm_fraction = curr_zoom * 0.01;
 
-            var paper_left = (m.get('canvas_width') - m.get('paper_width'))/2,
-                paper_top = (m.get('canvas_height') - m.get('paper_height'))/2;
+            var size = this.model.getFigureSize();
+            var paper_left = (m.get('canvas_width') - size.w)/2,
+                paper_top = (m.get('canvas_height') - size.h)/2;
             return {'x':(cx/zm_fraction)-paper_left, 'y':(cy/zm_fraction)-paper_top};
         },
 
         // Scroll viewport to place a specified paper coordinate at the centre
         setCentre: function(cx_cy, speed) {
             var m = this.model,
-                paper_left = (m.get('canvas_width') - m.get('paper_width'))/2,
-                paper_top = (m.get('canvas_height') - m.get('paper_height'))/2;
+                size = this.model.getFigureSize(),
+                paper_left = (m.get('canvas_width') - size.w)/2,
+                paper_top = (m.get('canvas_height') - size.h)/2;
             var curr_zoom = m.get('curr_zoom'),
                 zm_fraction = curr_zoom * 0.01,
                 cx = (cx_cy.x+paper_left) * zm_fraction,
@@ -543,19 +544,17 @@
         zoom_paper_to_fit: function(event) {
 
             var m = this.model,
-                pw = m.get('paper_width'),
-                ph = m.get('paper_height'),
+                size = this.model.getFigureSize(),
                 viewport_w = this.$main.width(),
                 viewport_h = this.$main.height();
 
-            var zoom_x = viewport_w/pw,
-                zoom_y = viewport_h/ph,
+            var zoom_x = viewport_w/(size.w + 100),
+                zoom_y = viewport_h/(size.h + 100),
                 zm = Math.min(zoom_x, zoom_y);
             zm = (zm * 100) >> 0;
 
-            // TODO: Need to update slider!
-            m.set('curr_zoom', zm-5) ;
-            $("#zoom_slider").slider({ value: zm-5 });
+            m.set('curr_zoom', zm) ;
+            $("#zoom_slider").slider({ value: zm });
 
             // seems we sometimes need to wait to workaround bugs
             var self = this;
@@ -567,7 +566,7 @@
         // Add a panel to the view
         addOne: function(panel) {
             var view = new PanelView({model:panel});    // uiState:this.uiState
-            this.$paper.append(view.render().el);
+            this.$figure.append(view.render().el);
         },
 
         renderFigureName: function() {
@@ -620,17 +619,39 @@
             var m = this.model,
                 zoom = m.get('curr_zoom') * 0.01;
 
-            var paper_w = m.get('paper_width'),
-                paper_h = m.get('paper_height'),
-                canvas_w = m.get('canvas_width'),
-                canvas_h = m.get('canvas_height'),
-                paper_left = (canvas_w - paper_w)/2,
-                paper_top = (canvas_h - paper_h)/2;
+            var page_w = m.get('paper_width'),
+                page_h = m.get('paper_height'),
+                size = this.model.getFigureSize(),
+                canvas_w = Math.max(m.get('canvas_width'), size.w),
+                canvas_h = Math.max(m.get('canvas_height'), size.h),
+                page_count = m.get('page_count'),
+                paper_spacing = m.get('paper_spacing'),
+                figure_left = (canvas_w - size.w)/2,
+                figure_top = (canvas_h - size.h)/2;
 
-            this.$paper.css({'width': paper_w, 'height': paper_h,
-                    'left': paper_left, 'top': paper_top});
-            $("#canvas").css({'width': this.model.get('canvas_width'),
-                    'height': this.model.get('canvas_height')});
+            var $pages = $(".paper"),
+                left, top, row, col;
+            if ($pages.length !== page_count) {
+                $pages.remove();
+                for (var p=0; p<page_count; p++) {
+                    row = Math.floor(p/size.cols);
+                    col = p % size.cols;
+                    top = row * (page_h + paper_spacing);
+                    left = col * (page_w + paper_spacing);
+                    $("<div class='paper'></div>")
+                        .css({'left': left, 'top': top})
+                        .prependTo(this.$figure);
+                }
+                $pages = $(".paper");
+            }
+
+            $pages.css({'width': page_w, 'height': page_h});
+
+            this.$figure.css({'width': size.w, 'height': size.h,
+                    'left': figure_left, 'top': figure_top});
+
+            $("#canvas").css({'width': canvas_w,
+                    'height': canvas_h});
 
             // always want to do this?
             this.zoom_paper_to_fit();

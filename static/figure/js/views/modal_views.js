@@ -31,11 +31,13 @@
             // On form submit, need to work out paper width & height
             var $form = $('form', this.$el),
                 dpi = 72,
+                pageCount = $('.pageCountSelect', $form).val(),
                 size = $('.paperSizeSelect', $form).val(),
                 orientation = $form.find('input[name="pageOrientation"]:checked').val(),
                 custom_w = parseInt($("#paperWidth").val(), 10),
                 custom_h = parseInt($("#paperHeight").val(), 10),
                 units = $('.wh_units:first', $form).text();
+
 
             var w_mm, h_m, w_pixels, h_pixels;
             if (size == 'A4') {
@@ -85,6 +87,7 @@
                 'height_mm': h_mm,
                 'paper_width': w_pixels,
                 'paper_height': h_pixels,
+                'page_count': pageCount,
             };
             return rv;
         },
