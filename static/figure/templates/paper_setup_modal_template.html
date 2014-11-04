@@ -7,6 +7,18 @@
                     <option value="A4" <% if (page_size == 'A4') { print('selected') } %> >
                         A4 (210 x 297 mm)
                     </option>
+                    <option value="A3" <% if (page_size == 'A3') { print('selected') } %> >
+                        A3 (297 x 420 mm)
+                    </option>
+                    <option value="A2" <% if (page_size == 'A2') { print('selected') } %> >
+                        A2 (420 x 594 mm)
+                    </option>
+                    <option value="A1" <% if (page_size == 'A1') { print('selected') } %> >
+                        A1 (594 x 841 mm)
+                    </option>
+                    <option value="A0" <% if (page_size == 'A0') { print('selected') } %> >
+                        A0 (841 x 1189 mm)
+                    </option>
                     <option value="letter" <% if (page_size == 'letter') { print('selected') } %> >
                         Letter (216 x 280 mm)
                     </option>
@@ -22,7 +34,7 @@
         <label>Orientation</label>
         <div class="form-horizontal">
             <div class="form-group col-sm-6">
-                <input type="radio" name="pageOrientation" value="vertical" 
+                <input type="radio" name="pageOrientation" value="vertical"
                     <% if (orientation == 'vertical') { print('checked') } %> >
                 <label class="control-label text-muted">Vertical</label>
             </div>
@@ -34,12 +46,12 @@
         </div>
     </div>
     <div class="clearfix"></div>
-    
+
     <div class="col-sm-3<% if (wh_disabled) { print(' wh_disabled')} %>">
         <label>Width</label>
         <div class="form-horizontal">
             <div class="form-group col-sm-10">
-                <input id='paperWidth' type="number" 
+                <input id='paperWidth' type="number"
                     <% if (wh_disabled) { print('disabled')} %>
                     class="form-control" value="<%= width_mm %>">
             </div>

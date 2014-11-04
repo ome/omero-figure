@@ -155,17 +155,25 @@ function print() { __p += __j.call(arguments, '') }
 with (obj) {
 __p += '\n    <div class="col-sm-6">\n        <label>Size</label>\n        <div class="form-horizontal">\n            <div class="form-group col-sm-12">\n                <select class="paperSizeSelect form-control">\n                    <option value="A4" ';
  if (page_size == 'A4') { print('selected') } ;
-__p += ' >\n                        A4 (210 x 297 mm)\n                    </option>\n                    <option value="letter" ';
+__p += ' >\n                        A4 (210 x 297 mm)\n                    </option>\n                    <option value="A3" ';
+ if (page_size == 'A3') { print('selected') } ;
+__p += ' >\n                        A3 (297 x 420 mm)\n                    </option>\n                    <option value="A2" ';
+ if (page_size == 'A2') { print('selected') } ;
+__p += ' >\n                        A2 (420 x 594 mm)\n                    </option>\n                    <option value="A1" ';
+ if (page_size == 'A1') { print('selected') } ;
+__p += ' >\n                        A1 (594 x 841 mm)\n                    </option>\n                    <option value="A0" ';
+ if (page_size == 'A0') { print('selected') } ;
+__p += ' >\n                        A0 (841 x 1189 mm)\n                    </option>\n                    <option value="letter" ';
  if (page_size == 'letter') { print('selected') } ;
 __p += ' >\n                        Letter (216 x 280 mm)\n                    </option>\n                    <option value="mm" ';
  if (page_size == 'mm') { print('selected') } ;
-__p += ' >\n                        Custom (mm)\n                    </option>\n                </select>\n            </div>\n            <!-- <label for="inputPassword" class="col-sm-2 control-label">Password</label> -->\n        </div>\n    </div>\n    <div class="col-sm-6">\n        <label>Orientation</label>\n        <div class="form-horizontal">\n            <div class="form-group col-sm-6">\n                <input type="radio" name="pageOrientation" value="vertical" \n                    ';
+__p += ' >\n                        Custom (mm)\n                    </option>\n                </select>\n            </div>\n            <!-- <label for="inputPassword" class="col-sm-2 control-label">Password</label> -->\n        </div>\n    </div>\n    <div class="col-sm-6">\n        <label>Orientation</label>\n        <div class="form-horizontal">\n            <div class="form-group col-sm-6">\n                <input type="radio" name="pageOrientation" value="vertical"\n                    ';
  if (orientation == 'vertical') { print('checked') } ;
 __p += ' >\n                <label class="control-label text-muted">Vertical</label>\n            </div>\n            <div class="form-group col-sm-6">\n                <input type="radio" name="pageOrientation" value="horizontal"\n                    ';
  if (orientation == 'horizontal') { print('checked') } ;
-__p += ' >\n                <label class="control-label text-muted">Horizontal</label>\n            </div>\n        </div>\n    </div>\n    <div class="clearfix"></div>\n    \n    <div class="col-sm-3';
+__p += ' >\n                <label class="control-label text-muted">Horizontal</label>\n            </div>\n        </div>\n    </div>\n    <div class="clearfix"></div>\n\n    <div class="col-sm-3';
  if (wh_disabled) { print(' wh_disabled')} ;
-__p += '">\n        <label>Width</label>\n        <div class="form-horizontal">\n            <div class="form-group col-sm-10">\n                <input id=\'paperWidth\' type="number" \n                    ';
+__p += '">\n        <label>Width</label>\n        <div class="form-horizontal">\n            <div class="form-group col-sm-10">\n                <input id=\'paperWidth\' type="number"\n                    ';
  if (wh_disabled) { print('disabled')} ;
 __p += '\n                    class="form-control" value="' +
 ((__t = ( width_mm )) == null ? '' : __t) +

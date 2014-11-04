@@ -1,4 +1,4 @@
-    
+
     // Version of the json file we're saving.
     // This only needs to increment when we make breaking changes (not linked to release versions.)
     var VERSION = 1;
@@ -28,7 +28,7 @@
             this.panels = new PanelList();      //this.get("shapes"));
 
             // wrap selection notification in a 'debounce', so that many rapid
-            // selection changes only trigger a single re-rendering 
+            // selection changes only trigger a single re-rendering
             this.notifySelectionChange = _.debounce( this.notifySelectionChange, 10);
         },
 
@@ -586,7 +586,7 @@
         },
 
         create_labels_from_time: function(options) {
-            
+
             this.add_labels([{
                     'time': options.format,
                     'size': options.size,
@@ -1166,9 +1166,9 @@ var UndoManager = Backbone.Model.extend({
 });
 
 var UndoView = Backbone.View.extend({
-    
+
     el: $("#edit_actions"),
-    
+
     events: {
       "click .undo": "undo",
       "click .redo": "redo"
@@ -1179,7 +1179,7 @@ var UndoView = Backbone.View.extend({
         'mod+z': 'undo',
         'mod+y': 'redo'
     },
-    
+
     initialize: function() {
       this.model.on('change', this.render, this);
       this.undoEl = $(".undo", this.$el);
@@ -1187,7 +1187,7 @@ var UndoView = Backbone.View.extend({
 
       this.render();
     },
-    
+
     render: function() {
         if (this.model.canUndo()) {
             this.undoEl.removeClass('disabled');
@@ -1201,7 +1201,7 @@ var UndoView = Backbone.View.extend({
         }
         return this;
     },
-    
+
     undo: function(event) {
         event.preventDefault();
         this.model.undo();
@@ -3976,7 +3976,7 @@ var RectView = Backbone.View.extend({
                 sizeT = this.models.getIfEqual('sizeT'),
                 deltaT = this.models.getDeltaTIfEqual(),
                 z_projection = this.models.allTrue('z_projection');
-            
+
             this.theT_avg = theT;
 
             if (wh <= 1) {
@@ -3987,7 +3987,7 @@ var RectView = Backbone.View.extend({
                 frame_h = this.full_size / wh;
             }
 
-            // Now get img src & positioning css for each panel, 
+            // Now get img src & positioning css for each panel,
             this.models.forEach(function(m){
                 var src = m.get_img_src(),
                     img_css = m.get_vp_img_css(m.get('zoom'), frame_w, frame_h, m.get('dx'), m.get('dy'));
@@ -4428,7 +4428,7 @@ var RectView = Backbone.View.extend({
             this.drag_xy(xy, true);
         },
 
-        // Called on trigger from the RectView on resize. 
+        // Called on trigger from the RectView on resize.
         // Need to convert from Svg coords to Model and notify the PanelModel without saving.
         drag_resize: function(xywh) {
             var coords = this.getModelCoords({'x':xywh[0], 'y':xywh[1], 'width':xywh[2], 'height':xywh[3]});
@@ -4739,7 +4739,7 @@ var RectView = Backbone.View.extend({
             rv.selected_line_attrs = {'stroke-width': 1, 'stroke':'#4b80f9'};
         },
 
-        // A panel has been added - We add a corresponding Raphael Rect 
+        // A panel has been added - We add a corresponding Raphael Rect
         addOne: function(m) {
 
             var rectModel = new ProxyRectModel({panel: m, figure:this.model});
