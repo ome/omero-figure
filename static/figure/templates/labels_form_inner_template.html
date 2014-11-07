@@ -1,7 +1,7 @@
 
     <div class="input-group pull-left">
         <input type="text" class="label-text form-control input-sm" 
-                placeholder="Label" value="<%= l.text %>" style="max-height:29px"/>
+                placeholder="Label" value="<% print(_.escape(l.text)) %>" style="max-height:29px"/>
         <% if (!edit){ %>
             <div class="input-group-btn">
                 <button type="button" class="btn btn-default btn-sm dropdown-toggle"

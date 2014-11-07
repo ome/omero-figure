@@ -1,5 +1,5 @@
 
-    <p><%= name %></p>
+    <p><% print(_.escape(name)) %></p>
     <div class="clearfix"></div>
 
     <table class="table">
@@ -33,7 +33,7 @@
                 <div class="col-sm-6"><small><strong>Channels</strong>:</small></div>
                 <div class="col-sm-6"><small>
                     <% _.each(channel_labels, function(c, i) {
-                        print(c); print((i < channels.length-1) ? ", " : "");
+                        print(_.escape(c)); print((i < channels.length-1) ? ", " : "");
                     }); %>
                 </small></div>
             </td></tr>

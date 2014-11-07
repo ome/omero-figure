@@ -255,6 +255,8 @@
                 color = $('.label-color span:first', $form).attr('data-color'),
                 key = $form.attr('data-key');
 
+            // the 'key' will now be unescaped, so we need to escape it again to compare with model
+            key = _.escape(key);
             var new_label = {text:label_text, size:font_size, position:position, color:color};
 
             // if we're editing a 'time' label, preserve the 'time' attribute
