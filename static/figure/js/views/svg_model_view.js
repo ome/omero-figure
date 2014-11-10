@@ -13,8 +13,9 @@
     // Used by a couple of different models below
     var getModelCoords = function(coords) {
         var zoom = this.figureModel.get('curr_zoom') * 0.01,
-            paper_top = (this.figureModel.get('canvas_height') - this.figureModel.get('paper_height'))/2,
-            paper_left = (this.figureModel.get('canvas_width') - this.figureModel.get('paper_width'))/2,
+            size = this.figureModel.getFigureSize(),
+            paper_top = (this.figureModel.get('canvas_height') - size.h)/2,
+            paper_left = (this.figureModel.get('canvas_width') - size.w)/2,
             x = (coords.x/zoom) - paper_left - 1,
             y = (coords.y/zoom) - paper_top - 1,
             w = coords.width/zoom,
@@ -31,7 +32,7 @@
             this.renderFromModel();
 
             // Refresh c
-            this.listenTo(this.figureModel, 'change:curr_zoom change:paper_width change:paper_height', this.renderFromModel);
+            this.listenTo(this.figureModel, 'change:curr_zoom change:paper_width change:paper_height change:page_count', this.renderFromModel);
             this.listenTo(this.panelModel, 'change:x change:y change:width change:height', this.renderFromModel);
             // when PanelModel is being dragged, but NOT by this ProxyRectModel...
             this.listenTo(this.panelModel, 'drag_resize', this.renderFromTrigger);
@@ -48,8 +49,9 @@
         // return the SVG x, y, w, h (converting from figureModel)
         getSvgCoords: function(coords) {
             var zoom = this.figureModel.get('curr_zoom') * 0.01,
-                paper_top = (this.figureModel.get('canvas_height') - this.figureModel.get('paper_height'))/2,
-                paper_left = (this.figureModel.get('canvas_width') - this.figureModel.get('paper_width'))/2,
+                size = this.figureModel.getFigureSize(),
+                paper_top = (this.figureModel.get('canvas_height') - size.h)/2,
+                paper_left = (this.figureModel.get('canvas_width') - size.w)/2,
                 rect_x = (paper_left + 1 + coords.x) * zoom,
                 rect_y = (paper_top + 1 + coords.y) * zoom,
                 rect_w = coords.width * zoom,

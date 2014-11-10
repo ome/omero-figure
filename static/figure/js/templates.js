@@ -58,9 +58,9 @@ obj || (obj = {});
 var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
 function print() { __p += __j.call(arguments, '') }
 with (obj) {
-__p += '\n    <p>' +
-((__t = ( name )) == null ? '' : __t) +
-'</p>\n    <div class="clearfix"></div>\n\n    <table class="table">\n        <tbody>\n            <tr><td>Image\n                ';
+__p += '\n    <p>';
+ print(_.escape(name)) ;
+__p += '</p>\n    <div class="clearfix"></div>\n\n    <table class="table">\n        <tbody>\n            <tr><td>Image\n                ';
  if (imageLink) { ;
 __p += '\n                <a class="pull-right" target="new"\n                    href="' +
 ((__t = ( imageLink )) == null ? '' : __t) +
@@ -82,7 +82,7 @@ __p += '\n                            class="btn btn-small btn-success setId">\n
 ((__t = ( sizeT )) == null ? '' : __t) +
 '</small></div>\n                <div class="clearfix"></div>\n                <div class="col-sm-6"><small><strong>Channels</strong>:</small></div>\n                <div class="col-sm-6"><small>\n                    ';
  _.each(channel_labels, function(c, i) {
-                        print(c); print((i < channels.length-1) ? ", " : "");
+                        print(_.escape(c)); print((i < channels.length-1) ? ", " : "");
                     }); ;
 __p += '\n                </small></div>\n            </td></tr>\n        </tbody>\n    </table>\n';
 
@@ -95,9 +95,9 @@ obj || (obj = {});
 var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
 function print() { __p += __j.call(arguments, '') }
 with (obj) {
-__p += '\n    <div class="input-group pull-left">\n        <input type="text" class="label-text form-control input-sm" \n                placeholder="Label" value="' +
-((__t = ( l.text )) == null ? '' : __t) +
-'" style="max-height:29px"/>\n        ';
+__p += '\n    <div class="input-group pull-left">\n        <input type="text" class="label-text form-control input-sm" \n                placeholder="Label" value="';
+ print(_.escape(l.text)) ;
+__p += '" style="max-height:29px"/>\n        ';
  if (!edit){ ;
 __p += '\n            <div class="input-group-btn">\n                <button type="button" class="btn btn-default btn-sm dropdown-toggle"\n                        data-toggle="dropdown" title="Label from data...">\n                    <span class="caret"></span>\n                </button>\n                <ul class="dropdown-menu pull-right">\n                    <li role="presentation" class="dropdown-header">Create Label(s) From:</li>\n                    <li role="presentation" class="divider"></li>\n                    <li><a href="#" data-label="[image-name]">Image Name</a></li>\n                    <li><a href="#" data-label="[dataset-name]">Dataset Name</a></li>\n                    <li><a href="#" data-label="[channels]">Channels</a></li>\n                    <li class="add_time_label">\n                        <a href="#" data-label="[time-secs]">Time (secs)</a>\n                    </li>\n                    <li class="add_time_label">\n                        <a href="#" data-label="[time-mins]">Time (mins)</a>\n                    </li>\n                    <li class="add_time_label">\n                        <a href="#" data-label="[time-hrs:mins:secs]">Time (hrs:mins:secs)</a>\n                    </li>\n                    <li class="add_time_label">\n                        <a href="#" data-label="[time-hrs:mins]">Time (hrs:mins)</a>\n                    </li>\n                </ul>\n            </div>\n        ';
  } ;
@@ -153,7 +153,13 @@ obj || (obj = {});
 var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
 function print() { __p += __j.call(arguments, '') }
 with (obj) {
-__p += '\n    <div class="col-sm-6">\n        <label>Size</label>\n        <div class="form-horizontal">\n            <div class="form-group col-sm-12">\n                <select class="paperSizeSelect form-control">\n                    <option value="A4" ';
+__p += '\n    <div class="col-sm-12">\n\n        <div class="form-horizontal">\n            <div class="form-group col-sm-6">\n                <label>Number of Pages</label>\n                ' +
+((__t = ( page_count )) == null ? '' : __t) +
+'\n                <select class="pageCountSelect form-control">\n                    ';
+ _.each([1,2,3,4,5,6,7,8,9,10],function(p){
+                        print ("<option value='"+p+"'" + ((p == page_count) ? " selected " : "") + " >"+p+"</option>")
+                    }); ;
+__p += '\n                </select>\n            </div>\n            <div class="form-group col-sm-6"></div>\n            <div class="clearfix"></div>\n        </div>\n\n    </div>\n\n\n    <div class="col-sm-6">\n        <label>Size</label>\n        <div class="form-horizontal">\n            <div class="form-group col-sm-12">\n                <select class="paperSizeSelect form-control">\n                    <option value="A4" ';
  if (page_size == 'A4') { print('selected') } ;
 __p += ' >\n                        A4 (210 x 297 mm)\n                    </option>\n                    <option value="A3" ';
  if (page_size == 'A3') { print('selected') } ;

@@ -59,18 +59,23 @@
         -ms-interpolation-mode: nearest-neighbor;
     }
 
-    #paper {
+    /* #figure is a container of .paper */
+    #figure {
+        position: absolute;
+    }
+
+    .paper {
         position: absolute;
         border: solid gray 2px;
         background: white;
     }
 
-    #paper .imagePanel {
+    #figure .imagePanel {
         position: absolute;
         background: #ddd;
     }
 
-    #paper .dragging{
+    #figure .dragging{
         background: none;
     }
 

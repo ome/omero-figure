@@ -163,6 +163,7 @@
             figureModel.unset('fileId');
             figureModel.delete_panels();
             figureModel.unset("figureName");
+            figureModel.set(figureModel.defaults);
             figureModel.trigger('reset_undo_redo');
         },
 

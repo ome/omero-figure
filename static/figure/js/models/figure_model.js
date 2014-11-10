@@ -12,11 +12,13 @@
             // 'curr_zoom': 100,
             'canEdit': true,
             'unsaved': false,
-            'canvas_width': 10000,
+            'canvas_width': 13000,
             'canvas_height': 8000,
             // w & h from reportlab.
             'paper_width': 612,
             'paper_height': 792,
+            'page_count': 1,
+            'paper_spacing': 50,    // between each page
             'orientation': 'vertical',
             'page_size': 'A4',       // options [A4, letter, mm, pixels]
             // see http://www.a4papersize.org/a4-paper-size-in-pixels.php
@@ -54,12 +56,13 @@
                         'paper_width': data.paper_width,
                         'paper_height': data.paper_height,
                         'page_size': data.page_size || 'letter',
+                        'page_count': data.page_count,
+                        'orientation': data.orientation,
                     };
-                // optional values - ignore if missing
-                if (data.orientation) n.orientation = data.orientation;
-                // if (data.page_size) n.page_size = data.page_size; // E.g. 'A4'
-                if (data.height_mm) n.height_mm = data.height_mm;
-                if (data.width_mm) n.width_mm = data.width_mm;
+
+                // For missing attributes, we fill in with defaults
+                // so as to clear everything from previous figure.
+                n = $.extend({}, self.defaults, n);
 
                 self.set(n);
 
@@ -109,6 +112,7 @@
                 paper_width: this.get('paper_width'),
                 paper_height: this.get('paper_height'),
                 page_size: this.get('page_size'),
+                page_count: this.get('page_count'),
                 height_mm: this.get('height_mm'),
                 width_mm: this.get('width_mm'),
                 orientation: this.get('orientation'),
@@ -158,12 +162,31 @@
         },
 
         clearFigure: function() {
-
             var figureModel = this;
             figureModel.unset('fileId');
             figureModel.delete_panels();
             figureModel.unset("figureName");
+            figureModel.set(figureModel.defaults);
             figureModel.trigger('reset_undo_redo');
+        },
+
+        // Used to position the #figure within canvas and also to coordinate svg layout.
+        getFigureSize: function() {
+            var pc = this.get('page_count'),
+                gap = this.get('paper_spacing'),
+                pw = this.get('paper_width'),
+                ph = this.get('paper_height'),
+                cols, rows;
+            if (pc < 5) {
+                cols = pc;
+                rows = 1;
+            } else {
+                cols = Math.ceil(pc/2);
+                rows = 2;
+            }
+            var w = cols * pw + (cols - 1) * gap,
+                h = rows * ph + (rows - 1) * gap;
+            return {'w': w, 'h': h, 'cols': cols, 'rows': rows}
         },
 
         nudge_right: function() {
