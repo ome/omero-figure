@@ -37,6 +37,7 @@ var RectView = Backbone.View.extend({
         this.handle_wh = options.handle_wh || this.handle_wh;
         this.handles_toFront = options.handles_toFront || false;
         this.disable_handles = options.disable_handles || false;
+        this.fixed_ratio = options.fixed_ratio || false;
         // this.manager = options.manager;
 
         // Set up our 'view' attributes (for rendering without updating model)
@@ -64,7 +65,7 @@ var RectView = Backbone.View.extend({
                 // on DRAG...
 
                 // If drag on corner handle, retain aspect ratio. dx/dy = aspect
-                var keep_ratio = true;  // event.shiftKey - used to be dependent on shift
+                var keep_ratio = self.fixed_ratio || event.shiftKey;
                 if (keep_ratio && this.h_id.length === 2) {     // E.g. handle is corner 'ne' etc
                     if (this.h_id === 'se' || this.h_id === 'nw') {
                         if (Math.abs(dx/dy) > this.aspect) {
@@ -268,7 +269,7 @@ var RectView = Backbone.View.extend({
 
     selectShape: function(event) {
         // pass back to model to update all selection
-        this.model.handleClick(event);
+        this.model.trigger('clicked', [event]);
     },
 
     // Destroy: remove Raphael elements and event listeners

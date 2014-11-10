@@ -411,6 +411,14 @@
         width: 20px;
         height: 20px;
     }
+    .crop-btn {
+        padding: 3px 5px 1px;
+    }
+    .crop-btn span{
+        background-image: url("../images/crop20.png");
+        width: 20px;
+        height: 20px;
+    }
     .tab-pane .ui-slider-vertical .ui-slider-handle {
         left: -7px;
     }
@@ -582,4 +590,10 @@
     }
     .muted {
         opacity: 0.4;
+    }
+
+    #roi_paper svg {
+        cursor:  crosshair;
+        cursor:  url("../images/crop20.png") 10 10, crosshair;
+        z-index: 10;
     }

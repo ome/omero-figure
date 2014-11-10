@@ -37,7 +37,7 @@ __p += '"\n                ';
  if (z_projection_disabled) { ;
 __p += 'disabled="disabled"';
  } ;
-__p += '\n                >\n            <span class="glyphicon"></span>\n        </button>\n    </div>\n';
+__p += '\n                >\n            <span class="glyphicon"></span>\n        </button>\n    </div>\n\n    <div class="btn-group" style="padding:2px" title="Crop">\n        <button type="button" class="btn btn-default btn-sm crop-btn">\n            <span class="glyphicon"></span>\n        </button>\n    </div>\n';
 
 }
 return __p
@@ -153,9 +153,7 @@ obj || (obj = {});
 var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
 function print() { __p += __j.call(arguments, '') }
 with (obj) {
-__p += '\n    <div class="col-sm-12">\n\n        <div class="form-horizontal">\n            <div class="form-group col-sm-6">\n                <label>Number of Pages</label>\n                ' +
-((__t = ( page_count )) == null ? '' : __t) +
-'\n                <select class="pageCountSelect form-control">\n                    ';
+__p += '\n    <div class="col-sm-12">\n\n        <div class="form-horizontal">\n            <div class="form-group col-sm-6">\n                <label>Number of Pages</label>\n                <select class="pageCountSelect form-control">\n                    ';
  _.each([1,2,3,4,5,6,7,8,9,10],function(p){
                         print ("<option value='"+p+"'" + ((p == page_count) ? " selected " : "") + " >"+p+"</option>")
                     }); ;
@@ -265,6 +263,22 @@ __p += '\n    ';
         print("<div class='alert alert-success'>Perfect Match!</div>")
     } ;
 __p += '\n';
+
+}
+return __p
+};
+
+this["JST"]["static/figure/templates/roi_modal_template.html"] = function(obj) {
+obj || (obj = {});
+var __t, __p = '', __e = _.escape;
+with (obj) {
+__p += '\n<div id="roi_paper" style="position: relative; height: ' +
+((__t = ( h )) == null ? '' : __t) +
+'px; width: ' +
+((__t = ( w )) == null ? '' : __t) +
+'px">\n<img class="roi_image" style="position: absolute; top: 0; left:0" src="' +
+((__t = ( src )) == null ? '' : __t) +
+'" />';
 
 }
 return __p

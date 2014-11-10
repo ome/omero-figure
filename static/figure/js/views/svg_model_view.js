@@ -44,6 +44,11 @@
             this.listenTo(this, 'drag_resize', this.drag_resize);
             // listen to change to this model - update PanelModel
             this.listenTo(this, 'drag_resize_stop', this.drag_resize_stop);
+
+            // reduce coupling between this and rect by using triggers to handle click.
+            this.bind('clicked', function(args) {
+                this.handleClick(args[0]);
+            });
         },
 
         // return the SVG x, y, w, h (converting from figureModel)

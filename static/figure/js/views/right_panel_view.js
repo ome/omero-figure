@@ -991,6 +991,13 @@
             "click .dropdown-menu a": "pick_color",
             "click .show-rotation": "show_rotation",
             "click .z-projection": "z_projection",
+            "click .crop-btn": "show_crop_dialog",
+        },
+
+        show_crop_dialog: function(event) {
+            event.preventDefault();
+            // Simply show dialog - Everything else handled by that
+            $("#roiModal").modal('show');
         },
 
         z_projection:function(e) {

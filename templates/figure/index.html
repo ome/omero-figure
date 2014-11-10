@@ -160,6 +160,26 @@
             </div>
         </div>
     </div>
+    <!-- ROI Modal -->
+    <div class="modal" id="roiModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title">Pick ROIs</h4>
+                </div>
+                <form class="roiForm" role="form">
+                    <div class="modal-body">
+                        <!-- Content added... -->
+                    </div>
+                    <div class="modal-footer" style="margin-top: 0">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">OK</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
     <!-- SetId Modal - behaviour handled by SetIdModalView -->
     <div class="modal" id="setIdModal" tabindex="-1" role="dialog" aria-labelledby="setIdLabel" aria-hidden="true">
         <div class="modal-dialog">
@@ -558,6 +578,7 @@
     <script src="{% static 'figure/js/views/figure_view.js' %}"></script>
     <script src="{% static 'figure/js/views/files.js' %}"></script>
     <script src="{% static 'figure/js/views/modal_views.js' %}"></script>
+    <script src="{% static 'figure/js/views/roi_modal_view.js' %}"></script>
     <script src="{% static 'figure/js/views/panel_view.js' %}"></script>
     <script src="{% static 'figure/js/views/raphael-rect.js' %}"></script>
     <script src="{% static 'figure/js/views/right_panel_view.js' %}"></script>
