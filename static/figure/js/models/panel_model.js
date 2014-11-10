@@ -319,6 +319,34 @@
             }
         },
 
+        // resize, zoom and pan to show the specified region.
+        // new panel will fit inside existing panel
+        cropToRoi: function(coords) {
+            var targetWH = coords.width/coords.height,
+                currentWH = this.get('width')/this.get('height'),
+                newW, newH,
+                targetCx = Math.round(coords.x + (coords.width/2)),
+                targetCy = Math.round(coords.y + (coords.height/2)),
+                // centre panel at centre of ROI
+                dx = (this.get('orig_width')/2) - targetCx,
+                dy = (this.get('orig_height')/2) - targetCy;
+            // make panel correct w/h ratio
+            if (targetWH < currentWH) {
+                // make it thinner
+                newH = this.get('height');
+                newW = targetWH * newH;
+            } else {
+                newW = this.get('width');
+                newH = newW / targetWH;
+            }
+            // zoom to correct percentage
+            var xPercent = this.get('orig_width') / coords.width,
+                yPercent = this.get('orig_height') / coords.height,
+                zoom = Math.min(xPercent, yPercent) * 100;
+
+            this.set({'width': newW, 'height': newH, 'dx': dx, 'dy': dy, 'zoom': zoom});
+        },
+
         // Drag resizing - notify the PanelView without saving
         drag_resize: function(x, y, w, h) {
             this.trigger('drag_resize', [x, y, w, h] );

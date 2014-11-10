@@ -22,6 +22,21 @@ var RoiModalView = Backbone.View.extend({
             "mousedown svg": "mousedown",
             "mousemove svg": "mousemove",
             "mouseup svg": "mouseup",
+            "submit .roiModalForm": "handleRoiForm"
+        },
+
+        handleRoiForm: function(event) {
+            event.preventDefault();
+            // var json = this.processForm();
+            var c = this.cropModel,
+                roiX = c.get('x'),
+                roiY = c.get('y'),
+                roiW = c.get('width'),
+                roiH = c.get('height');
+            this.model.getSelected().each(function(m){
+                m.cropToRoi({'x': roiX, 'y': roiY, 'width': roiW, 'height': roiH});
+            });
+            $("#roiModal").modal('hide');
         },
 
         mousedown: function(event) {
@@ -58,7 +73,8 @@ var RoiModalView = Backbone.View.extend({
         render: function() {
 
             if (this.paper) {
-                paper.remove();     // destroy any previous paper
+                // TODO: cleanup refs to other objects previously created below!
+                this.paper.remove();     // destroy any previous paper
             }
 
             var m = this.model.getSelected().head();
