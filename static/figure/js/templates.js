@@ -148,142 +148,6 @@ __p += '\n        </div>\n';
 return __p
 };
 
-this["JST"]["static/figure/templates/paper_setup_modal_template.html"] = function(obj) {
-obj || (obj = {});
-var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
-function print() { __p += __j.call(arguments, '') }
-with (obj) {
-__p += '\n    <div class="col-sm-12">\n\n        <div class="form-horizontal">\n            <div class="form-group col-sm-6">\n                <label>Number of Pages</label>\n                <select class="pageCountSelect form-control">\n                    ';
- _.each([1,2,3,4,5,6,7,8,9,10],function(p){
-                        print ("<option value='"+p+"'" + ((p == page_count) ? " selected " : "") + " >"+p+"</option>")
-                    }); ;
-__p += '\n                </select>\n            </div>\n            <div class="form-group col-sm-6"></div>\n            <div class="clearfix"></div>\n        </div>\n\n    </div>\n\n\n    <div class="col-sm-6">\n        <label>Size</label>\n        <div class="form-horizontal">\n            <div class="form-group col-sm-12">\n                <select class="paperSizeSelect form-control">\n                    <option value="A4" ';
- if (page_size == 'A4') { print('selected') } ;
-__p += ' >\n                        A4 (210 x 297 mm)\n                    </option>\n                    <option value="A3" ';
- if (page_size == 'A3') { print('selected') } ;
-__p += ' >\n                        A3 (297 x 420 mm)\n                    </option>\n                    <option value="A2" ';
- if (page_size == 'A2') { print('selected') } ;
-__p += ' >\n                        A2 (420 x 594 mm)\n                    </option>\n                    <option value="A1" ';
- if (page_size == 'A1') { print('selected') } ;
-__p += ' >\n                        A1 (594 x 841 mm)\n                    </option>\n                    <option value="A0" ';
- if (page_size == 'A0') { print('selected') } ;
-__p += ' >\n                        A0 (841 x 1189 mm)\n                    </option>\n                    <option value="letter" ';
- if (page_size == 'letter') { print('selected') } ;
-__p += ' >\n                        Letter (216 x 280 mm)\n                    </option>\n                    <option value="mm" ';
- if (page_size == 'mm') { print('selected') } ;
-__p += ' >\n                        Custom (mm)\n                    </option>\n                </select>\n            </div>\n            <!-- <label for="inputPassword" class="col-sm-2 control-label">Password</label> -->\n        </div>\n    </div>\n    <div class="col-sm-6">\n        <label>Orientation</label>\n        <div class="form-horizontal">\n            <div class="form-group col-sm-6">\n                <input type="radio" name="pageOrientation" value="vertical"\n                    ';
- if (orientation == 'vertical') { print('checked') } ;
-__p += ' >\n                <label class="control-label text-muted">Vertical</label>\n            </div>\n            <div class="form-group col-sm-6">\n                <input type="radio" name="pageOrientation" value="horizontal"\n                    ';
- if (orientation == 'horizontal') { print('checked') } ;
-__p += ' >\n                <label class="control-label text-muted">Horizontal</label>\n            </div>\n        </div>\n    </div>\n    <div class="clearfix"></div>\n\n    <div class="col-sm-3';
- if (wh_disabled) { print(' wh_disabled')} ;
-__p += '">\n        <label>Width</label>\n        <div class="form-horizontal">\n            <div class="form-group col-sm-10">\n                <input id=\'paperWidth\' type="number"\n                    ';
- if (wh_disabled) { print('disabled')} ;
-__p += '\n                    class="form-control" value="' +
-((__t = ( width_mm )) == null ? '' : __t) +
-'">\n            </div>\n            <label class="col-sm-4 control-label text-muted wh_units" style="text-align:left">\n                mm\n            </label>\n        </div>\n    </div>\n    <div class="col-sm-3';
- if (wh_disabled) { print(' wh_disabled')} ;
-__p += '">\n        <label>Height</label>\n        <div class="form-horizontal">\n            <div class="form-group col-sm-10">\n                <input id=\'paperHeight\' type="number"\n                    ';
- if (wh_disabled) { print('disabled')} ;
-__p += '\n                    class="form-control" value="' +
-((__t = ( height_mm )) == null ? '' : __t) +
-'">\n            </div>\n            <label class="col-sm-4 control-label text-muted wh_units" style="text-align:left">\n                mm\n            </label>\n        </div>\n    </div>\n';
-
-}
-return __p
-};
-
-this["JST"]["static/figure/templates/preview_Id_change_template.html"] = function(obj) {
-obj || (obj = {});
-var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
-function print() { __p += __j.call(arguments, '') }
-with (obj) {
-__p += '\n    <table class="table" style="margin-bottom:0">\n        <tbody>\n            <tr><td>\n                <div class="col-sm-3">Compare:</div>\n                <div class="col-sm-3">\n                    <img class="small-thumb" title="' +
-((__t = ( selImg.name )) == null ? '' : __t) +
-'"\n                        src="' +
-((__t = ( selThumbSrc )) == null ? '' : __t) +
-'" />\n                </div>\n                <div class="col-sm-3">\n                    ';
- if(newImg.imageId) { ;
-__p += '\n                        <img class="small-thumb" title="' +
-((__t = ( newImg.name )) == null ? '' : __t) +
-'"\n                            src="' +
-((__t = ( newThumbSrc )) == null ? '' : __t) +
-'" />\n                    ';
- } else { ;
-__p += '\n                        <div style="width:40px; height:40px; background-color:#ddd"></div>\n                    ';
- } ;
-__p += '\n                </div>\n                <div class="col-sm-3">Matching</div>\n            </td></tr>\n            <tr><td>\n                <div class="col-sm-3"><small><strong>Dimensions (XY)</strong>:</small></div>\n                <div class="col-sm-3"><small>' +
-((__t = ( selImg.orig_width )) == null ? '' : __t) +
-' x ' +
-((__t = ( selImg.orig_height )) == null ? '' : __t) +
-'</small></div>\n                <div class="col-sm-3"><small>\n                    ' +
-((__t = ( newImg.orig_width || "-" )) == null ? '' : __t) +
-' x ' +
-((__t = ( newImg.orig_height || "-"  )) == null ? '' : __t) +
-'\n                </small></div>\n                <div class="col-sm-3">\n                    ' +
-((__t = ( ok(comp.orig_width, comp.orig_height) )) == null ? '' : __t) +
-'\n                </div>\n\n                <div class="col-sm-3"><small><strong>Z-sections</strong>:</small></div>\n                <div class="col-sm-3"><small>' +
-((__t = ( selImg.sizeZ )) == null ? '' : __t) +
-'</small></div>\n                <div class="col-sm-3"><small>' +
-((__t = ( newImg.sizeZ || "-" )) == null ? '' : __t) +
-'</small></div>\n                <div class="col-sm-3">' +
-((__t = ( ok(comp.sizeZ) )) == null ? '' : __t) +
-'</div>\n\n                <div class="col-sm-3"><small><strong>Time-points</strong>:</small></div>\n                <div class="col-sm-3"><small>' +
-((__t = ( selImg.sizeT )) == null ? '' : __t) +
-'</small></div>\n                <div class="col-sm-3"><small>' +
-((__t = ( newImg.sizeT || "-" )) == null ? '' : __t) +
-'</small></div>\n                <div class="col-sm-3"><small>' +
-((__t = ( ok(comp.sizeT) )) == null ? '' : __t) +
-'</small></div>\n\n                <div class="col-sm-3"><small><strong>Channels</strong>:</small></div>\n                <div class="col-sm-3"><small>\n                    ';
- _.each(selImg.channels, function(ch, i) { ;
-__p += '\n                        ' +
-((__t = ( ch.label )) == null ? '' : __t);
- if(i < selImg.channels.length-1){print(',')} ;
-__p += '\n                    ';
- }); ;
-__p += '\n                </small></div>\n                <div class="col-sm-3"><small>\n                    ';
- if(newImg.channels){ _.each(newImg.channels, function(ch, i) { ;
-__p += '\n                        ' +
-((__t = ( ch.label )) == null ? '' : __t);
- if(i < newImg.channels.length-1){print(',')} ;
-__p += '\n                    ';
- }) } else { print("-") } ;
-__p += '\n                </small></div>\n                <div class="col-sm-3"><small>' +
-((__t = ( comp.channels || "-" )) == null ? '' : __t) +
-'</small></div>\n\n            </td></tr>\n        </tbody>\n    </table>\n    ';
- _.each(messages, function(m) { ;
-__p += '\n        <div class="alert alert-' +
-((__t = ( m.status )) == null ? '' : __t) +
-'">' +
-((__t = ( m.text )) == null ? '' : __t) +
-'</div>\n    ';
- }); ;
-__p += '\n    ';
- if (newImg.imageId && messages.length == 0) {
-        print("<div class='alert alert-success'>Perfect Match!</div>")
-    } ;
-__p += '\n';
-
-}
-return __p
-};
-
-this["JST"]["static/figure/templates/roi_modal_template.html"] = function(obj) {
-obj || (obj = {});
-var __t, __p = '', __e = _.escape;
-with (obj) {
-__p += '\n<div id="roi_paper" style="position: relative; height: ' +
-((__t = ( h )) == null ? '' : __t) +
-'px; width: ' +
-((__t = ( w )) == null ? '' : __t) +
-'px">\n<img class="roi_image" style="position: absolute; top: 0; left:0" src="' +
-((__t = ( src )) == null ? '' : __t) +
-'" />';
-
-}
-return __p
-};
-
 this["JST"]["static/figure/templates/scalebar_form_template.html"] = function(obj) {
 obj || (obj = {});
 var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
@@ -503,6 +367,170 @@ __p += '\n                <div style=\'color:#' +
 '</div>\n            ';
  }); ;
 __p += '\n        </div>\n    </div>\n';
+
+}
+return __p
+};
+
+this["JST"]["static/figure/templates/modal_dialogs/paper_setup_modal_template.html"] = function(obj) {
+obj || (obj = {});
+var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
+function print() { __p += __j.call(arguments, '') }
+with (obj) {
+__p += '\n    <div class="col-sm-12">\n\n        <div class="form-horizontal">\n            <div class="form-group col-sm-6">\n                <label>Number of Pages</label>\n                <select class="pageCountSelect form-control">\n                    ';
+ _.each([1,2,3,4,5,6,7,8,9,10],function(p){
+                        print ("<option value='"+p+"'" + ((p == page_count) ? " selected " : "") + " >"+p+"</option>")
+                    }); ;
+__p += '\n                </select>\n            </div>\n            <div class="form-group col-sm-6"></div>\n            <div class="clearfix"></div>\n        </div>\n\n    </div>\n\n\n    <div class="col-sm-6">\n        <label>Size</label>\n        <div class="form-horizontal">\n            <div class="form-group col-sm-12">\n                <select class="paperSizeSelect form-control">\n                    <option value="A4" ';
+ if (page_size == 'A4') { print('selected') } ;
+__p += ' >\n                        A4 (210 x 297 mm)\n                    </option>\n                    <option value="A3" ';
+ if (page_size == 'A3') { print('selected') } ;
+__p += ' >\n                        A3 (297 x 420 mm)\n                    </option>\n                    <option value="A2" ';
+ if (page_size == 'A2') { print('selected') } ;
+__p += ' >\n                        A2 (420 x 594 mm)\n                    </option>\n                    <option value="A1" ';
+ if (page_size == 'A1') { print('selected') } ;
+__p += ' >\n                        A1 (594 x 841 mm)\n                    </option>\n                    <option value="A0" ';
+ if (page_size == 'A0') { print('selected') } ;
+__p += ' >\n                        A0 (841 x 1189 mm)\n                    </option>\n                    <option value="letter" ';
+ if (page_size == 'letter') { print('selected') } ;
+__p += ' >\n                        Letter (216 x 280 mm)\n                    </option>\n                    <option value="mm" ';
+ if (page_size == 'mm') { print('selected') } ;
+__p += ' >\n                        Custom (mm)\n                    </option>\n                </select>\n            </div>\n            <!-- <label for="inputPassword" class="col-sm-2 control-label">Password</label> -->\n        </div>\n    </div>\n    <div class="col-sm-6">\n        <label>Orientation</label>\n        <div class="form-horizontal">\n            <div class="form-group col-sm-6">\n                <input type="radio" name="pageOrientation" value="vertical"\n                    ';
+ if (orientation == 'vertical') { print('checked') } ;
+__p += ' >\n                <label class="control-label text-muted">Vertical</label>\n            </div>\n            <div class="form-group col-sm-6">\n                <input type="radio" name="pageOrientation" value="horizontal"\n                    ';
+ if (orientation == 'horizontal') { print('checked') } ;
+__p += ' >\n                <label class="control-label text-muted">Horizontal</label>\n            </div>\n        </div>\n    </div>\n    <div class="clearfix"></div>\n\n    <div class="col-sm-3';
+ if (wh_disabled) { print(' wh_disabled')} ;
+__p += '">\n        <label>Width</label>\n        <div class="form-horizontal">\n            <div class="form-group col-sm-10">\n                <input id=\'paperWidth\' type="number"\n                    ';
+ if (wh_disabled) { print('disabled')} ;
+__p += '\n                    class="form-control" value="' +
+((__t = ( width_mm )) == null ? '' : __t) +
+'">\n            </div>\n            <label class="col-sm-4 control-label text-muted wh_units" style="text-align:left">\n                mm\n            </label>\n        </div>\n    </div>\n    <div class="col-sm-3';
+ if (wh_disabled) { print(' wh_disabled')} ;
+__p += '">\n        <label>Height</label>\n        <div class="form-horizontal">\n            <div class="form-group col-sm-10">\n                <input id=\'paperHeight\' type="number"\n                    ';
+ if (wh_disabled) { print('disabled')} ;
+__p += '\n                    class="form-control" value="' +
+((__t = ( height_mm )) == null ? '' : __t) +
+'">\n            </div>\n            <label class="col-sm-4 control-label text-muted wh_units" style="text-align:left">\n                mm\n            </label>\n        </div>\n    </div>\n';
+
+}
+return __p
+};
+
+this["JST"]["static/figure/templates/modal_dialogs/preview_Id_change_template.html"] = function(obj) {
+obj || (obj = {});
+var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
+function print() { __p += __j.call(arguments, '') }
+with (obj) {
+__p += '\n    <table class="table" style="margin-bottom:0">\n        <tbody>\n            <tr><td>\n                <div class="col-sm-3">Compare:</div>\n                <div class="col-sm-3">\n                    <img class="small-thumb" title="' +
+((__t = ( selImg.name )) == null ? '' : __t) +
+'"\n                        src="' +
+((__t = ( selThumbSrc )) == null ? '' : __t) +
+'" />\n                </div>\n                <div class="col-sm-3">\n                    ';
+ if(newImg.imageId) { ;
+__p += '\n                        <img class="small-thumb" title="' +
+((__t = ( newImg.name )) == null ? '' : __t) +
+'"\n                            src="' +
+((__t = ( newThumbSrc )) == null ? '' : __t) +
+'" />\n                    ';
+ } else { ;
+__p += '\n                        <div style="width:40px; height:40px; background-color:#ddd"></div>\n                    ';
+ } ;
+__p += '\n                </div>\n                <div class="col-sm-3">Matching</div>\n            </td></tr>\n            <tr><td>\n                <div class="col-sm-3"><small><strong>Dimensions (XY)</strong>:</small></div>\n                <div class="col-sm-3"><small>' +
+((__t = ( selImg.orig_width )) == null ? '' : __t) +
+' x ' +
+((__t = ( selImg.orig_height )) == null ? '' : __t) +
+'</small></div>\n                <div class="col-sm-3"><small>\n                    ' +
+((__t = ( newImg.orig_width || "-" )) == null ? '' : __t) +
+' x ' +
+((__t = ( newImg.orig_height || "-"  )) == null ? '' : __t) +
+'\n                </small></div>\n                <div class="col-sm-3">\n                    ' +
+((__t = ( ok(comp.orig_width, comp.orig_height) )) == null ? '' : __t) +
+'\n                </div>\n\n                <div class="col-sm-3"><small><strong>Z-sections</strong>:</small></div>\n                <div class="col-sm-3"><small>' +
+((__t = ( selImg.sizeZ )) == null ? '' : __t) +
+'</small></div>\n                <div class="col-sm-3"><small>' +
+((__t = ( newImg.sizeZ || "-" )) == null ? '' : __t) +
+'</small></div>\n                <div class="col-sm-3">' +
+((__t = ( ok(comp.sizeZ) )) == null ? '' : __t) +
+'</div>\n\n                <div class="col-sm-3"><small><strong>Time-points</strong>:</small></div>\n                <div class="col-sm-3"><small>' +
+((__t = ( selImg.sizeT )) == null ? '' : __t) +
+'</small></div>\n                <div class="col-sm-3"><small>' +
+((__t = ( newImg.sizeT || "-" )) == null ? '' : __t) +
+'</small></div>\n                <div class="col-sm-3"><small>' +
+((__t = ( ok(comp.sizeT) )) == null ? '' : __t) +
+'</small></div>\n\n                <div class="col-sm-3"><small><strong>Channels</strong>:</small></div>\n                <div class="col-sm-3"><small>\n                    ';
+ _.each(selImg.channels, function(ch, i) { ;
+__p += '\n                        ' +
+((__t = ( ch.label )) == null ? '' : __t);
+ if(i < selImg.channels.length-1){print(',')} ;
+__p += '\n                    ';
+ }); ;
+__p += '\n                </small></div>\n                <div class="col-sm-3"><small>\n                    ';
+ if(newImg.channels){ _.each(newImg.channels, function(ch, i) { ;
+__p += '\n                        ' +
+((__t = ( ch.label )) == null ? '' : __t);
+ if(i < newImg.channels.length-1){print(',')} ;
+__p += '\n                    ';
+ }) } else { print("-") } ;
+__p += '\n                </small></div>\n                <div class="col-sm-3"><small>' +
+((__t = ( comp.channels || "-" )) == null ? '' : __t) +
+'</small></div>\n\n            </td></tr>\n        </tbody>\n    </table>\n    ';
+ _.each(messages, function(m) { ;
+__p += '\n        <div class="alert alert-' +
+((__t = ( m.status )) == null ? '' : __t) +
+'">' +
+((__t = ( m.text )) == null ? '' : __t) +
+'</div>\n    ';
+ }); ;
+__p += '\n    ';
+ if (newImg.imageId && messages.length == 0) {
+        print("<div class='alert alert-success'>Perfect Match!</div>")
+    } ;
+__p += '\n';
+
+}
+return __p
+};
+
+this["JST"]["static/figure/templates/modal_dialogs/roi_modal_roi.html"] = function(obj) {
+obj || (obj = {});
+var __t, __p = '', __e = _.escape;
+with (obj) {
+__p += '\n<tr>\n    <td>\n        <div class="roi_wrapper" style="position: relative; overflow: hidden; margin: 5px; height: ' +
+((__t = ( h )) == null ? '' : __t) +
+'px; width: ' +
+((__t = ( w )) == null ? '' : __t) +
+'px">\n            <img class="roi_content" style="position: absolute; top: ' +
+((__t = ( top )) == null ? '' : __t) +
+'px; left: ' +
+((__t = ( left )) == null ? '' : __t) +
+'px; width: ' +
+((__t = ( img_w )) == null ? '' : __t) +
+'px; height: ' +
+((__t = ( img_h )) == null ? '' : __t) +
+'px" src="' +
+((__t = ( src )) == null ? '' : __t) +
+'" />\n        </div>\n    </td>\n    <td>' +
+((__t = ( theZ )) == null ? '' : __t) +
+'</td>\n    <td>' +
+((__t = ( theT )) == null ? '' : __t) +
+'</td>\n</tr>\n';
+
+}
+return __p
+};
+
+this["JST"]["static/figure/templates/modal_dialogs/roi_modal_template.html"] = function(obj) {
+obj || (obj = {});
+var __t, __p = '', __e = _.escape;
+with (obj) {
+__p += '\n<div id="roi_paper" style="position: relative; height: ' +
+((__t = ( h )) == null ? '' : __t) +
+'px; width: ' +
+((__t = ( w )) == null ? '' : __t) +
+'px">\n<img class="roi_image" style="position: absolute; top: 0; left:0" src="' +
+((__t = ( src )) == null ? '' : __t) +
+'" />\n</div>';
 
 }
 return __p

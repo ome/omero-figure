@@ -389,7 +389,7 @@
 
             var multiSelectRect = new MultiSelectRectModel({figureModel: this.model}),
                 rv = new RectView({'model':multiSelectRect, 'paper':this.raphael_paper,
-                        'handle_wh':7, 'handles_toFront': true});
+                        'handle_wh':7, 'handles_toFront': true, 'fixed_ratio': true});
             rv.selected_line_attrs = {'stroke-width': 1, 'stroke':'#4b80f9'};
         },
 
@@ -398,7 +398,7 @@
 
             var rectModel = new ProxyRectModel({panel: m, figure:this.model});
             new RectView({'model':rectModel, 'paper':this.raphael_paper,
-                    'handle_wh':5, 'disable_handles': true});
+                    'handle_wh':5, 'disable_handles': true, 'fixed_ratio': true});
         },
 
         // TODO
