@@ -173,7 +173,7 @@
                     <div class="modal-body">
                         <div class="col-xs-4">
                             <h4>ROIs</h4>
-                            <table id="roiPicker" class="table table-condensed">
+                            <table class="roiPicker table table-condensed">
                                 <thead><td></td><td>Z-index</td><td>T-index</td></thead>
                                 <tbody>
                                 <!-- ROIs loaded here... -->
@@ -184,6 +184,12 @@
                             <h4>Select Region</h4>
                             <div id="roiViewer">
                                 <!-- Show / add ROIs on image -->
+                                <div id="roi_paper" style="position: absolute">
+                                    <!-- svg is added here by Raphael.js -->
+                                </div>
+                                <div id="roi_image" style="position: absolute">
+                                    <!-- img added here by roi_modal_view.js -->
+                                </div>
                             </div>
                         </div>
                     </div>

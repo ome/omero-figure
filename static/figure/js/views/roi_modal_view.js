@@ -14,17 +14,49 @@ var RoiModalView = Backbone.View.extend({
 
             var self = this;
             $("#roiModal").bind("show.bs.modal", function(){
+                var m = self.model.getSelected().head();
+                self.listenTo(m, 'change:theZ change:theT', self.render);
                 self.render();
                 self.loadRois();
             });
 
+            this.cropModel = new Backbone.Model({
+                'x':0, 'y': 0, 'width': 0, 'height': 0,
+                'selected': false});
+            // since resizes don't actually update model automatically, we do it...
+            this.cropModel.bind('drag_resize_stop', function(args) {
+                this.set({'x': args[0], 'y': args[1], 'width': args[2], 'height': args[3]});
+            });
+
+            // Now set up Raphael paper...
+            this.paper = Raphael("roi_paper", 500, 500);
+            this.rect = new RectView({'model':this.cropModel, 'paper': this.paper});
         },
 
         events: {
+            "click .roi_wrapper": "roiPicked",
             "mousedown svg": "mousedown",
             "mousemove svg": "mousemove",
             "mouseup svg": "mouseup",
             "submit .roiModalForm": "handleRoiForm"
+        },
+
+        roiPicked: function(event) {
+
+            var $roi = $(event.target),
+                x = parseInt($roi.attr('data-x'), 10),
+                y = parseInt($roi.attr('data-y'), 10),
+                width = parseInt($roi.attr('data-width'), 10),
+                height = parseInt($roi.attr('data-height'), 10),
+                theT = parseInt($roi.attr('data-theT'), 10),
+                theZ = parseInt($roi.attr('data-theZ'), 10);
+
+            var m = this.model.getSelected().head().set({'theT': theT, 'theZ': theZ});
+
+            this.cropModel.set({
+                'x':x, 'y':y, 'width':width, 'height':height,
+                'selected': true
+            });
         },
 
         handleRoiForm: function(event) {
@@ -161,6 +193,7 @@ var RoiModalView = Backbone.View.extend({
 
                 var json = {
                     'src': src,
+                    'rect': rect,
                     'w': div_w,
                     'h': div_h,
                     'top': top,
@@ -172,36 +205,22 @@ var RoiModalView = Backbone.View.extend({
                 }
                 html += this.roiTemplate(json);
             }
-            $("#roiPicker tbody").html(html);
+            $(".roiPicker tbody").html(html);
         },
 
         render: function() {
 
-            if (this.paper) {
-                // TODO: cleanup refs to other objects previously created below!
-                this.paper.remove();     // destroy any previous paper
-            }
-
+            console.log('render');
             var m = this.model.getSelected().head();
 
             var w = m.get('orig_width'),
                 h = m.get('orig_height');
             var json = {'src': m.get_img_src(), 'w': w, 'h': h};
 
+            $("#roi_paper").css({'height': h, 'width': w});
+            this.paper.setSize(w, h);
+
             var html = this.template(json);
-            $("#roiViewer").html(html);
-            // Now set up Raphael paper...
-
-            this.cropModel = new Backbone.Model({
-                'x':0, 'y': 0, 'width': 0, 'height': 0,
-                'selected': false});
-
-            // since resizes don't actually update model automatically, we do it...
-            this.cropModel.bind('drag_resize_stop', function(args) {
-                this.set({'x': args[0], 'y': args[1], 'width': args[2], 'height': args[3]});
-            });
-
-            this.paper = Raphael("roi_paper", w, h);
-            this.rect = new RectView({'model':this.cropModel, 'paper': this.paper});
+            $("#roi_image").html(html);
         }
     });
