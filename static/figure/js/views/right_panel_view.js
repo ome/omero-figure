@@ -966,7 +966,9 @@
 
             this.$vp_frame = $(".vp_frame", this.$el);  // cache for later
             this.$vp_img = $(".vp_img", this.$el);
-            this.$vp_zoom_value.text((zoom >> 0) + "%");
+            this.zoom_avg = zoom >> 0;
+            this.$vp_zoom_value.text(this.zoom_avg + "%");
+            $("#vp_zoom_slider").slider({value: this.zoom_avg});
 
             return this;
         }
