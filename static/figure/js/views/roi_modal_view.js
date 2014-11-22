@@ -14,8 +14,8 @@ var RoiModalView = Backbone.View.extend({
 
             var self = this;
             $("#roiModal").bind("show.bs.modal", function(){
-                var m = self.model.getSelected().head();
-                self.listenTo(m, 'change:theZ change:theT', self.render);
+                self.m = self.model.getSelected().head().clone();
+                self.listenTo(self.m, 'change:theZ change:theT', self.render);
                 self.render();
                 self.loadRois();
             });
@@ -51,7 +51,7 @@ var RoiModalView = Backbone.View.extend({
                 theT = parseInt($roi.attr('data-theT'), 10),
                 theZ = parseInt($roi.attr('data-theZ'), 10);
 
-            var m = this.model.getSelected().head().set({'theT': theT, 'theZ': theZ});
+            this.m.set({'theT': theT, 'theZ': theZ});
 
             this.cropModel.set({
                 'x':x, 'y':y, 'width':width, 'height':height,
@@ -66,9 +66,12 @@ var RoiModalView = Backbone.View.extend({
                 roiX = c.get('x'),
                 roiY = c.get('y'),
                 roiW = c.get('width'),
-                roiH = c.get('height');
+                roiH = c.get('height'),
+                theZ = this.m.get('theZ'),
+                theT = this.m.get('theT');
             this.model.getSelected().each(function(m){
                 m.cropToRoi({'x': roiX, 'y': roiY, 'width': roiW, 'height': roiH});
+                m.set({'theZ': theZ, 'theT': theT});
             });
             $("#roiModal").modal('hide');
         },
@@ -115,15 +118,14 @@ var RoiModalView = Backbone.View.extend({
         },
 
         loadRois: function() {
-            var m = this.model.getSelected().head(),
-                self = this,
-                iid = m.get('imageId');
+            var self = this,
+                iid = self.m.get('imageId');
             $.getJSON(ROIS_JSON_URL + iid, function(data){
 
                 // get a representative Rect from each ROI.
                 // Include a z and t index, trying to pick current z/t if ROI includes a shape there
-                var currT = m.get('theT'),
-                    currZ = m.get('theZ');
+                var currT = self.m.get('theT'),
+                    currZ = self.m.get('theZ');
                 var rects = [],
                     roi, shape, theT, theZ, z, t, rect, tkeys, zkeys,
                     shapes; // dict of all shapes by z & t index
@@ -165,9 +167,8 @@ var RoiModalView = Backbone.View.extend({
 
         renderRois: function(rects) {
 
-            var m = this.model.getSelected().head().clone(),
-                orig_width = m.get('orig_width'),
-                orig_height = m.get('orig_height');
+            var orig_width = this.m.get('orig_width'),
+                orig_height = this.m.get('orig_height');
 
             var html = "",
                 size = 50,
@@ -175,9 +176,9 @@ var RoiModalView = Backbone.View.extend({
                 top, left, div_w, div_h, img_w, img_h;
             for (var r=0; r<rects.length; r++) {
                 rect = rects[r];
-                if (rect.theT > -1) m.set('theT', rect.theT)
-                if (rect.theZ > -1) m.set('theZ', rect.theZ)
-                src = m.get_img_src();
+                if (rect.theT > -1) this.m.set('theT', rect.theT, {'silent': true});
+                if (rect.theZ > -1) this.m.set('theZ', rect.theZ, {'silent': true});
+                src = this.m.get_img_src();
                 if (rect.width > rect.height) {
                     div_w = size;
                     div_h = (rect.height/rect.width) * div_w;
@@ -211,11 +212,10 @@ var RoiModalView = Backbone.View.extend({
         render: function() {
 
             console.log('render');
-            var m = this.model.getSelected().head();
 
-            var w = m.get('orig_width'),
-                h = m.get('orig_height');
-            var json = {'src': m.get_img_src(), 'w': w, 'h': h};
+            var w = this.m.get('orig_width'),
+                h = this.m.get('orig_height');
+            var json = {'src': this.m.get_img_src(), 'w': w, 'h': h};
 
             $("#roi_paper").css({'height': h, 'width': w});
             this.paper.setSize(w, h);
