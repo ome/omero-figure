@@ -170,7 +170,7 @@
                     <h4 class="modal-title">Crop to Region</h4>
                 </div>
                 <form class="roiModalForm" role="form">
-                    <div class="modal-body">
+                    <div class="modal-body" style="height: 500px; max-height: 500px">
                         <div class="col-xs-4">
                             <h4>ROIs</h4>
                             <table class="roiPicker table table-condensed">
@@ -181,14 +181,13 @@
                             </table>
                         </div>
                         <div class="col-xs-8">
-                            <h4>Select Region</h4>
                             <div id="roiViewer">
                                 <!-- Show / add ROIs on image -->
-                                <div id="roi_paper" style="position: absolute">
+                                <div id="roi_paper" style="position: absolute; top: 0; left: 0; right: 10px; bottom:10px; overflow: hidden">
                                     <!-- svg is added here by Raphael.js -->
                                 </div>
                                 <div id="roi_image" style="position: absolute">
-                                    <!-- img added here by roi_modal_view.js -->
+                                    <img class="roi_image" style="position: absolute; top: 0; left:0" />
                                 </div>
                             </div>
                         </div>
@@ -552,6 +551,9 @@
                             <div id="vp_zoom_slider"></div>
                         </div>
                         <div id="vp_zoom_value" class="col-sm-4" style="padding:5px"></div>
+                        <button type="button" class="btn btn-default btn-sm reset-zoom-shape" title="Reset Zoom and Shape">
+                            <span class="glyphicon glyphicon-sound-stereo"></span>
+                        </button>
                         <div class='clearfix'></div>
                     </div>
                 </div>

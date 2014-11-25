@@ -25,6 +25,10 @@
                 this.vp = new ImageViewerView({models: selected}); // auto-renders on init
                 $("#viewportContainer").append(this.vp.el);
             }
+            if (selected.length > 0) {
+                this.zmp = new ZoomView({models: selected}); // auto-renders on init
+                // $("#viewportContainer").append(this.zmp.el);
+            }
 
             if (this.ipv) {
                 this.ipv.remove();
@@ -972,6 +976,35 @@
 
             return this;
         }
+    });
+
+
+    var ZoomView = Backbone.View.extend({
+
+        el: $("#previewTab .tab-footer"),
+
+        initialize: function(opts) {
+
+            this.models = opts.models;
+        },
+
+        events: {
+            "click .reset-zoom-shape": "resetZoomShape",
+        },
+
+        resetZoomShape: function(event) {
+            console.log('resetZoomShape');
+            event.preventDefault();
+            this.models.forEach(function(m){
+                console.log(m.get('orig_width'));
+                m.cropToRoi({
+                    'x': 0,
+                    'y': 0,
+                    'width': m.get('orig_width'),
+                    'height': m.get('orig_height')
+                });
+            });
+        },
     });
 
     // Coloured Buttons to Toggle Channels on/off.

@@ -16,10 +16,16 @@ var RoiModalView = Backbone.View.extend({
             $("#roiModal").bind("show.bs.modal", function(){
                 self.m = self.model.getSelected().head().clone();
                 self.listenTo(self.m, 'change:theZ change:theT', self.render);
-                self.render();
+                self.cropModel.set({'selected': false});    // hide crop roi
+                self.zoomToFit();   // includes render()
                 self.loadRois();
             });
 
+            // keep track of currently selected ROI
+            this.currentROI = {'x':0, 'y': 0, 'width': 0, 'height': 0}
+
+            // used by model underlying Rect.
+            // NB: values in cropModel are scaled by zoom percent
             this.cropModel = new Backbone.Model({
                 'x':0, 'y': 0, 'width': 0, 'height': 0,
                 'selected': false});
@@ -31,6 +37,7 @@ var RoiModalView = Backbone.View.extend({
             // Now set up Raphael paper...
             this.paper = Raphael("roi_paper", 500, 500);
             this.rect = new RectView({'model':this.cropModel, 'paper': this.paper});
+            this.$roiImg = $('.roi_image', this.$el);
         },
 
         events: {
@@ -53,8 +60,13 @@ var RoiModalView = Backbone.View.extend({
 
             this.m.set({'theT': theT, 'theZ': theZ});
 
+            this.currentROI = {
+                'x':x, 'y':y, 'width':width, 'height':height
+            }
+
+            this.render();
+
             this.cropModel.set({
-                'x':x, 'y':y, 'width':width, 'height':height,
                 'selected': true
             });
         },
@@ -209,18 +221,48 @@ var RoiModalView = Backbone.View.extend({
             $(".roiPicker tbody").html(html);
         },
 
-        render: function() {
-
-            console.log('render');
-
-            var w = this.m.get('orig_width'),
+        zoomToFit: function() {
+            var $roiViewer = $("#roiViewer"),
+                viewer_w = $roiViewer.width(),
+                viewer_h = $roiViewer.height(),
+                w = this.m.get('orig_width'),
                 h = this.m.get('orig_height');
-            var json = {'src': this.m.get_img_src(), 'w': w, 'h': h};
+                scale = Math.min(viewer_w/w, viewer_h/h);
+            console.log('zoomToFit'), viewer_w, viewer_h, w, h, scale;
+            this.setZoom(scale * 100);
 
-            $("#roi_paper").css({'height': h, 'width': w});
-            this.paper.setSize(w, h);
+        },
 
-            var html = this.template(json);
-            $("#roi_image").html(html);
+        setZoom: function(percent) {
+            console.log(percent);
+            this.zoom = percent;
+            this.render();
+        },
+
+        render: function() {
+            var scale = this.zoom / 100,
+                roi = this.currentROI,
+                w = this.m.get('orig_width'),
+                h = this.m.get('orig_height');
+            var newW = w * scale,
+                newH = h * scale;
+            var src = this.m.get_img_src()
+
+            this.paper.setSize(newW, newH);
+            $("#roi_paper").css({'height': newH, 'width': newW});
+
+            this.$roiImg.css({'height': newH, 'width': newW})
+                    .attr('src', src);
+
+            var roiX = this.currentROI.x * scale,
+                roiY = this.currentROI.y * scale,
+                roiW = this.currentROI.width * scale,
+                roiH = this.currentROI.height * scale;
+            console.log({
+                'x': roiX, 'y': roiY, 'width': roiW, 'height': roiH
+            });
+            this.cropModel.set({
+                'x': roiX, 'y': roiY, 'width': roiW, 'height': roiH
+            });
         }
     });

@@ -149,6 +149,14 @@
         height: 14px;
         border-radius: 5px;
     }
+    .reset-zoom-shape {
+        position: absolute;
+        right: 5px;
+        bottom: 5px;
+        font-size: 16px;
+        border-color: transparent;
+        color: #666;
+    }
     .toggle_channel {
         border-radius: 6px 6px 6px 6px;
         margin: 2px;
@@ -590,6 +598,13 @@
     }
     .muted {
         opacity: 0.4;
+    }
+
+    #roiViewer {
+        width: 500px;
+        height: 450px;
+        overflow: auto;
+        position: relative;
     }
 
     #roi_paper svg {
