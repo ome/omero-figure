@@ -31,7 +31,16 @@ var RoiModalView = Backbone.View.extend({
                 'selected': false});
             // since resizes don't actually update model automatically, we do it...
             this.cropModel.bind('drag_resize_stop', function(args) {
+                // cropModel's x, y, w, h are relative to current Zoom level
                 this.set({'x': args[0], 'y': args[1], 'width': args[2], 'height': args[3]});
+                // we also need to update the absolute ROI coords...
+                var scale = self.zoom / 100;
+                self.currentROI = {
+                    'x': args[0] / scale,
+                    'y': args[1] / scale,
+                    'width': args[2] / scale,
+                    'height': args[3] / scale
+                }
             });
 
             // Now set up Raphael paper...
@@ -74,11 +83,11 @@ var RoiModalView = Backbone.View.extend({
         handleRoiForm: function(event) {
             event.preventDefault();
             // var json = this.processForm();
-            var c = this.cropModel,
-                roiX = c.get('x'),
-                roiY = c.get('y'),
-                roiW = c.get('width'),
-                roiH = c.get('height'),
+            var r = this.currentROI,
+                roiX = r.x,
+                roiY = r.y,
+                roiW = r.width,
+                roiH = r.height,
                 theZ = this.m.get('theZ'),
                 theT = this.m.get('theT');
             this.model.getSelected().each(function(m){
@@ -228,13 +237,10 @@ var RoiModalView = Backbone.View.extend({
                 w = this.m.get('orig_width'),
                 h = this.m.get('orig_height');
                 scale = Math.min(viewer_w/w, viewer_h/h);
-            console.log('zoomToFit'), viewer_w, viewer_h, w, h, scale;
             this.setZoom(scale * 100);
-
         },
 
         setZoom: function(percent) {
-            console.log(percent);
             this.zoom = percent;
             this.render();
         },
