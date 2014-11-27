@@ -25,9 +25,13 @@
                 this.vp = new ImageViewerView({models: selected}); // auto-renders on init
                 $("#viewportContainer").append(this.vp.el);
             }
+            if (this.zmp) {
+                this.zmp.remove();
+                delete this.zmp;
+            }
             if (selected.length > 0) {
                 this.zmp = new ZoomView({models: selected}); // auto-renders on init
-                // $("#viewportContainer").append(this.zmp.el);
+                $("#reset-zoom-view").append(this.zmp.el);
             }
 
             if (this.ipv) {
@@ -981,11 +985,10 @@
 
     var ZoomView = Backbone.View.extend({
 
-        el: $("#previewTab .tab-footer"),
-
         initialize: function(opts) {
 
             this.models = opts.models;
+            this.render();
         },
 
         events: {
@@ -993,10 +996,8 @@
         },
 
         resetZoomShape: function(event) {
-            console.log('resetZoomShape');
             event.preventDefault();
             this.models.forEach(function(m){
-                console.log(m.get('orig_width'));
                 m.cropToRoi({
                     'x': 0,
                     'y': 0,
@@ -1005,6 +1006,13 @@
                 });
             });
         },
+
+        render: function() {
+
+            this.$el.html('<button type="button" class="btn btn-default btn-sm reset-zoom-shape" title="Reset Zoom and Shape">'+
+                            '<span class="glyphicon glyphicon-sound-stereo"></span>'+
+                            '</button>');
+        }
     });
 
     // Coloured Buttons to Toggle Channels on/off.
