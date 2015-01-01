@@ -52,6 +52,9 @@ def applyRdefs(image, channels):
     windows = []
     colors = []
 
+    # OMERO.figure doesn't support greyscale rendering
+    image.setColorRenderingModel()
+
     for i, c in enumerate(channels):
         if c['active']:
             cIdxs.append(i+1)
