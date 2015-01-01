@@ -131,13 +131,18 @@ def get_time_label_text(deltaT, format):
     return text
 
 
-def drawLabels(conn, c, panel, pageHeight):
+def drawLabels(conn, c, panel, page):
 
     labels = panel['labels']
     x = panel['x']
     y = panel['y']
     width = panel['width']
     height = panel['height']
+
+    # Handle page offsets
+    pageHeight = page['height']
+    x = x - page['x']
+    y = y - page['y']
 
     spacer = 5
 
@@ -382,7 +387,7 @@ def getPanelImage(image, panel):
     return pilImg
 
 
-def drawPanel(conn, c, panel, pageHeight, idx):
+def drawPanel(conn, c, panel, page, idx):
 
     imageId = panel['imageId']
     channels = panel['channels']
@@ -390,6 +395,11 @@ def drawPanel(conn, c, panel, pageHeight, idx):
     y = panel['y']
     width = panel['width']
     height = panel['height']
+
+    # Handle page offsets
+    pageHeight = page['height']
+    x = x - page['x']
+    y = y - page['y']
 
     # Since coordinate system is 'bottom-up', convert from 'top-down'
     y = pageHeight - height - y
@@ -490,9 +500,43 @@ def addInfoPage(conn, scriptParams, c, panels_json, figureName):
 
     f = Frame(inch, inch, pageWidth-2*inch, pageHeight-2*inch)
     f.addFromList(story, c)
-    c.save()
+    # c.save()
 
     #c.showPage()
+
+def panel_is_on_page(panel, page):
+    """ Return true if panel overlaps with this page """
+
+    px = panel['x']
+    px2 = px + panel['width']
+    py = panel['y']
+    py2 = py + panel['height']
+    cx = page['x']
+    cx2 = cx + page['width']
+    cy = page['y']
+    cy2 = cy + page['height']
+    #overlap needs overlap on x-axis...
+    return px < cx2 and cx < px2 and py < cy2 and cy < py2
+
+
+def add_panels_to_page(conn, c, panels_json, imageIds, page):
+
+    # TODO - use page['x'] and page['y'] to offset panels (if on page)
+
+    for i, panel in enumerate(panels_json):
+
+        if not panel_is_on_page(panel, page):
+            print 'Panel', panel['imageId'], 'not on page...'
+            continue
+
+        print "\n-------------------------------- "
+        imageId = panel['imageId']
+        print "Adding PANEL - Image ID:", imageId
+        image = drawPanel(conn, c, panel, page, i)
+        if image.canAnnotate():
+            imageIds.add(imageId)
+        drawLabels(conn, c, panel, page)
+        print ""
 
 
 def create_pdf(conn, scriptParams):
@@ -528,23 +572,32 @@ def create_pdf(conn, scriptParams):
     imageIds = set()
 
     groupId = None
-    for i, panel in enumerate(panels_json):
+    # We get our group from the first image
+    id1 = panels_json[0]['imageId']
+    conn.getObject("Image", id1).getDetails().group.id.val
 
-        print "\n---------------- "
-        imageId = panel['imageId']
-        print "IMAGE", i, imageId
-        image = drawPanel(conn, c, panel, pageHeight, i)
-        if image.canAnnotate():
-            imageIds.add(imageId)
-        drawLabels(conn, c, panel, pageHeight)
-        # We get our group from the first image
-        if groupId is None:
-            groupId = image.getDetails().group.id.val
+    # test to see if we've got multiple pages
+    page_count = 'page_count' in figure_json and figure_json['page_count'] or 1
+    page_count = int(page_count)
+    paper_spacing = 'paper_spacing' in figure_json and figure_json['paper_spacing'] or 50
+    page_col_count = 'page_col_count' in figure_json and figure_json['page_col_count'] or 1
 
-    # complete page and save
-    c.showPage()
+    # For each page, add panels...
+    col = 0
+    row = 0
+    for p in range(page_count):
+        print "\n------------------------- PAGE ", p + 1, "--------------------------"
+        px = col * (pageWidth + paper_spacing)
+        py = row * (pageHeight + paper_spacing)
+        page = {'x': px, 'y': py, 'width': pageWidth, 'height': pageHeight}
+        add_panels_to_page(conn, c, panels_json, imageIds, page)
 
-    print panels_json
+        # complete page and save
+        c.showPage()
+        col = col + 1
+        if col >= page_col_count:
+            col = 0
+            row = row + 1
 
     # Add thumbnails and links page
     addInfoPage(conn, scriptParams, c, panels_json, figureName)
