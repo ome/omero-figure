@@ -18,6 +18,7 @@
             'paper_width': 612,
             'paper_height': 792,
             'page_count': 1,
+            'page_col_count': 1,    // pages laid out in grid
             'paper_spacing': 50,    // between each page
             'orientation': 'vertical',
             'page_size': 'A4',       // options [A4, letter, mm, pixels]
@@ -57,6 +58,8 @@
                         'paper_height': data.paper_height,
                         'page_size': data.page_size || 'letter',
                         'page_count': data.page_count,
+                        'paper_spacing': data.paper_spacing,
+                        'page_col_count': data.page_col_count,
                         'orientation': data.orientation,
                     };
 
@@ -113,6 +116,8 @@
                 paper_height: this.get('paper_height'),
                 page_size: this.get('page_size'),
                 page_count: this.get('page_count'),
+                paper_spacing: this.get('paper_spacing'),
+                page_col_count: this.get('page_col_count'),
                 height_mm: this.get('height_mm'),
                 width_mm: this.get('width_mm'),
                 orientation: this.get('orientation'),
@@ -173,17 +178,12 @@
         // Used to position the #figure within canvas and also to coordinate svg layout.
         getFigureSize: function() {
             var pc = this.get('page_count'),
+                cols = this.get('page_col_count'),
                 gap = this.get('paper_spacing'),
                 pw = this.get('paper_width'),
                 ph = this.get('paper_height'),
-                cols, rows;
-            if (pc < 5) {
-                cols = pc;
-                rows = 1;
-            } else {
-                cols = Math.ceil(pc/2);
-                rows = 2;
-            }
+                rows;
+            rows = Math.ceil(pc / cols);
             var w = cols * pw + (cols - 1) * gap,
                 h = rows * ph + (rows - 1) * gap;
             return {'w': w, 'h': h, 'cols': cols, 'rows': rows}
