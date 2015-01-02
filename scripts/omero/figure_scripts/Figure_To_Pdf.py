@@ -33,7 +33,7 @@ try:
     from reportlab.pdfgen import canvas
     from reportlab.lib.styles import getSampleStyleSheet
     from reportlab.lib.units import inch
-    from reportlab.platypus import Paragraph, Frame
+    from reportlab.platypus import Paragraph, Frame, CondPageBreak
     # from reportlab.lib.pagesizes import letter, A4
     reportlabInstalled = True
 except ImportError:
@@ -439,6 +439,8 @@ def addInfoPage(conn, scriptParams, c, panels_json, figureName):
         base_url = scriptParams['Webclient_URI']
     pageWidth = scriptParams['Page_Width']
     pageHeight = scriptParams['Page_Height']
+    availHeight = pageHeight-2*inch
+    print 'availHeight', availHeight
 
     # Need to sort panels from top (left) -> bottom of Figure
     panels_json.sort(key=lambda x: int(x['y']) + x['y'] * 0.01)
@@ -461,7 +463,9 @@ def addInfoPage(conn, scriptParams, c, panels_json, figureName):
         attrs = "spaceBefore='%s' spaceAfter='%s' " \
             "fontSize='%s'" % (spaceBefore, spaceAfter, fontSize)
         para = "<para %s>%s</para>" % (attrs, text)
-        story.append(Paragraph(para, style))
+        p = Paragraph(para, style)
+        print "p.wrap()", p.wrap(pageWidth, pageHeight)
+        story.append(p)
 
 
     story.append(Paragraph(figureName, styleH))
@@ -472,7 +476,9 @@ def addInfoPage(conn, scriptParams, c, panels_json, figureName):
         addPara(["Link to Figure: <a href='%s' color='blue'>%s</a>" % (fileUrl, fileUrl)])
 
     # addPara( ["Figure contains the following images:"])
-    story.append(Paragraph("Figure contains the following images:", styleH2))
+    h2 = Paragraph("Figure contains the following images:", styleH2)
+    print "h2.wrap()", h2.wrap(pageWidth, pageHeight)
+    story.append(h2)
 
 
     # Go through sorted panels, adding paragraph for each unique image
@@ -500,6 +506,7 @@ def addInfoPage(conn, scriptParams, c, panels_json, figureName):
 
     f = Frame(inch, inch, pageWidth-2*inch, pageHeight-2*inch)
     f.addFromList(story, c)
+    f.drawBoundary(c)
     # c.save()
 
     #c.showPage()
