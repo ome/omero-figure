@@ -33,8 +33,7 @@ try:
     from reportlab.pdfgen import canvas
     from reportlab.lib.styles import getSampleStyleSheet
     from reportlab.lib.units import inch
-    from reportlab.platypus import Paragraph, Frame, CondPageBreak
-    # from reportlab.lib.pagesizes import letter, A4
+    from reportlab.platypus import Paragraph
     reportlabInstalled = True
 except ImportError:
     reportlabInstalled = False
@@ -450,35 +449,49 @@ def addInfoPage(conn, scriptParams, c, panels_json, figureName):
     styleN = styles['Normal']
     styleH = styles['Heading1']
     styleH2 = styles['Heading2']
-    story = []
+
+
     scalebars = []
-
-    fontSize = 10
-    spaceBefore = 15
-    spaceAfter = 15
     thumbSize = 25
+    spacer = 10
+    aW = pageWidth - (inch * 2)
+    maxH = pageHeight - inch
+    imgw = imgh = thumbSize
 
-    def addPara(lines, style=styleN):
-        text = "<br />".join(lines)
-        attrs = "spaceBefore='%s' spaceAfter='%s' " \
-            "fontSize='%s'" % (spaceBefore, spaceAfter, fontSize)
-        para = "<para %s>%s</para>" % (attrs, text)
-        p = Paragraph(para, style)
-        print "p.wrap()", p.wrap(pageWidth, pageHeight)
-        story.append(p)
+    # Start adding at the top, update pageY as we add paragraphs
+    pageY = maxH
+
+    def addParaWithThumb(text, pageY, style=styleN, thumbSrc=None):
+        """ Adds paragraph text to point on page """
+
+        para=Paragraph(text, style)
+        w,h = para.wrap(aW, pageY) # find required space
+        if thumbSrc is not None:
+            parah = max(h, imgh)
+        else:
+            parah = h
+        # If there's not enough space, start a new page
+        if parah > (pageY - inch):
+            print "new page"
+            c.save()
+            pageY = maxH    # reset to top of new page
+        indent = inch
+        if thumbSrc is not None:
+            c.drawImage(thumbSrc, inch, pageY - imgh, imgw, imgh)
+            indent = indent + imgw + spacer
+        para.drawOn(c, indent, pageY - h)
+        return pageY - parah - spacer # reduce the available height
 
 
-    story.append(Paragraph(figureName, styleH))
+    pageY = addParaWithThumb(figureName, pageY, style=styleH)
 
     if "Figure_URI" in scriptParams:
         fileUrl = scriptParams["Figure_URI"]
         print "Figure URL", fileUrl
-        addPara(["Link to Figure: <a href='%s' color='blue'>%s</a>" % (fileUrl, fileUrl)])
+        figureLink = "Link to Figure: <a href='%s' color='blue'>%s</a>" % (fileUrl, fileUrl)
+        pageY = addParaWithThumb(figureLink, pageY)
 
-    # addPara( ["Figure contains the following images:"])
-    h2 = Paragraph("Figure contains the following images:", styleH2)
-    print "h2.wrap()", h2.wrap(pageWidth, pageHeight)
-    story.append(h2)
+    pageY = addParaWithThumb("Figure contains the following images:", pageY, style=styleH2)
 
 
     # Go through sorted panels, adding paragraph for each unique image
@@ -491,25 +504,23 @@ def addInfoPage(conn, scriptParams, c, panels_json, figureName):
             continue    # ignore images we've already handled
         imgIds.add(iid)
         thumbSrc = getThumbnail(conn, iid)
-        thumb = "<img src='%s' width='%s' height='%s' " \
-                "valign='middle' />" % (thumbSrc, thumbSize, thumbSize)
-        line = [thumb]
-        line.append(p['name'])
+        # thumb = "<img src='%s' width='%s' height='%s' " \
+        #         "valign='middle' />" % (thumbSrc, thumbSize, thumbSize)
+        lines = []
+        lines.append(p['name'])
         img_url = "%s?show=image-%s" % (base_url, iid)
-        line.append("<a href='%s' color='blue'>%s</a>" % (img_url, img_url))
-        addPara([" ".join(line)])
+        lines.append("<a href='%s' color='blue'>%s</a>" % (img_url, img_url))
+        # addPara([" ".join(line)])
+        line = " ".join(lines)
+        pageY = addParaWithThumb(line, pageY, thumbSrc=thumbSrc)
 
     if len(scalebars) > 0:
-        story.append(Paragraph("Scalebars", styleH))
+        # f.addFromList([Paragraph("Scalebars", styleH)], c)
+        pageY = addParaWithThumb("Scalebars", pageY, style=styleH2)
         sbs = [str(s) for s in scalebars]
-        addPara(["Scalebars: %s microns" % " microns, ".join(sbs)])
+        # addPara(["Scalebars: %s microns" % " microns, ".join(sbs)])
+        pageY = addParaWithThumb("Scalebars: %s microns" % " microns, ".join(sbs), pageY)
 
-    f = Frame(inch, inch, pageWidth-2*inch, pageHeight-2*inch)
-    f.addFromList(story, c)
-    f.drawBoundary(c)
-    # c.save()
-
-    #c.showPage()
 
 def panel_is_on_page(panel, page):
     """ Return true if panel overlaps with this page """
@@ -527,8 +538,7 @@ def panel_is_on_page(panel, page):
 
 
 def add_panels_to_page(conn, c, panels_json, imageIds, page):
-
-    # TODO - use page['x'] and page['y'] to offset panels (if on page)
+    """ Add panels that are within the bounds of this page """
 
     for i, panel in enumerate(panels_json):
 
