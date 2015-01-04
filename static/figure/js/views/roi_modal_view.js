@@ -29,17 +29,22 @@ var RoiModalView = Backbone.View.extend({
             this.cropModel = new Backbone.Model({
                 'x':0, 'y': 0, 'width': 0, 'height': 0,
                 'selected': false});
-            // since resizes don't actually update model automatically, we do it...
+            // since resizes & drags don't actually update cropModel automatically, we do it...
             this.cropModel.bind('drag_resize_stop', function(args) {
-                // cropModel's x, y, w, h are relative to current Zoom level
                 this.set({'x': args[0], 'y': args[1], 'width': args[2], 'height': args[3]});
-                // we also need to update the absolute ROI coords...
+            });
+            this.cropModel.bind('drag_xy_stop', function(args) {
+                this.set({'x': args[0] + this.get('x'), 'y': args[1] + this.get('y')});
+            });
+
+            // we also need to update the scaled ROI coords...
+            this.listenTo(this.cropModel, 'change:x change:y change:width change:height', function(m){
                 var scale = self.zoom / 100;
                 self.currentROI = {
-                    'x': args[0] / scale,
-                    'y': args[1] / scale,
-                    'width': args[2] / scale,
-                    'height': args[3] / scale
+                    'x': m.get('x') / scale,
+                    'y': m.get('y') / scale,
+                    'width': m.get('width') / scale,
+                    'height': m.get('height') / scale
                 }
             });
 
@@ -50,7 +55,7 @@ var RoiModalView = Backbone.View.extend({
         },
 
         events: {
-            "click .roi_wrapper": "roiPicked",
+            "click .roi_content": "roiPicked",
             "mousedown svg": "mousedown",
             "mousemove svg": "mousemove",
             "mouseup svg": "mouseup",
