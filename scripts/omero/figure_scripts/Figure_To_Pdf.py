@@ -33,8 +33,7 @@ try:
     from reportlab.pdfgen import canvas
     from reportlab.lib.styles import getSampleStyleSheet
     from reportlab.lib.units import inch
-    from reportlab.platypus import Paragraph, Frame
-    # from reportlab.lib.pagesizes import letter, A4
+    from reportlab.platypus import Paragraph
     reportlabInstalled = True
 except ImportError:
     reportlabInstalled = False
@@ -51,6 +50,9 @@ def applyRdefs(image, channels):
     cIdxs = []
     windows = []
     colors = []
+
+    # OMERO.figure doesn't support greyscale rendering
+    image.setColorRenderingModel()
 
     for i, c in enumerate(channels):
         if c['active']:
@@ -128,13 +130,18 @@ def get_time_label_text(deltaT, format):
     return text
 
 
-def drawLabels(conn, c, panel, pageHeight):
+def drawLabels(conn, c, panel, page):
 
     labels = panel['labels']
     x = panel['x']
     y = panel['y']
     width = panel['width']
     height = panel['height']
+
+    # Handle page offsets
+    pageHeight = page['height']
+    x = x - page['x']
+    y = y - page['y']
 
     spacer = 5
 
@@ -379,7 +386,7 @@ def getPanelImage(image, panel):
     return pilImg
 
 
-def drawPanel(conn, c, panel, pageHeight, idx):
+def drawPanel(conn, c, panel, page, idx):
 
     imageId = panel['imageId']
     channels = panel['channels']
@@ -387,6 +394,11 @@ def drawPanel(conn, c, panel, pageHeight, idx):
     y = panel['y']
     width = panel['width']
     height = panel['height']
+
+    # Handle page offsets
+    pageHeight = page['height']
+    x = x - page['x']
+    y = y - page['y']
 
     # Since coordinate system is 'bottom-up', convert from 'top-down'
     y = pageHeight - height - y
@@ -426,6 +438,8 @@ def addInfoPage(conn, scriptParams, c, panels_json, figureName):
         base_url = scriptParams['Webclient_URI']
     pageWidth = scriptParams['Page_Width']
     pageHeight = scriptParams['Page_Height']
+    availHeight = pageHeight-2*inch
+    print 'availHeight', availHeight
 
     # Need to sort panels from top (left) -> bottom of Figure
     panels_json.sort(key=lambda x: int(x['y']) + x['y'] * 0.01)
@@ -435,31 +449,49 @@ def addInfoPage(conn, scriptParams, c, panels_json, figureName):
     styleN = styles['Normal']
     styleH = styles['Heading1']
     styleH2 = styles['Heading2']
-    story = []
+
+
     scalebars = []
-
-    fontSize = 10
-    spaceBefore = 15
-    spaceAfter = 15
     thumbSize = 25
+    spacer = 10
+    aW = pageWidth - (inch * 2)
+    maxH = pageHeight - inch
+    imgw = imgh = thumbSize
 
-    def addPara(lines, style=styleN):
-        text = "<br />".join(lines)
-        attrs = "spaceBefore='%s' spaceAfter='%s' " \
-            "fontSize='%s'" % (spaceBefore, spaceAfter, fontSize)
-        para = "<para %s>%s</para>" % (attrs, text)
-        story.append(Paragraph(para, style))
+    # Start adding at the top, update pageY as we add paragraphs
+    pageY = maxH
+
+    def addParaWithThumb(text, pageY, style=styleN, thumbSrc=None):
+        """ Adds paragraph text to point on page """
+
+        para=Paragraph(text, style)
+        w,h = para.wrap(aW, pageY) # find required space
+        if thumbSrc is not None:
+            parah = max(h, imgh)
+        else:
+            parah = h
+        # If there's not enough space, start a new page
+        if parah > (pageY - inch):
+            print "new page"
+            c.save()
+            pageY = maxH    # reset to top of new page
+        indent = inch
+        if thumbSrc is not None:
+            c.drawImage(thumbSrc, inch, pageY - imgh, imgw, imgh)
+            indent = indent + imgw + spacer
+        para.drawOn(c, indent, pageY - h)
+        return pageY - parah - spacer # reduce the available height
 
 
-    story.append(Paragraph(figureName, styleH))
+    pageY = addParaWithThumb(figureName, pageY, style=styleH)
 
     if "Figure_URI" in scriptParams:
         fileUrl = scriptParams["Figure_URI"]
         print "Figure URL", fileUrl
-        addPara(["Link to Figure: <a href='%s' color='blue'>%s</a>" % (fileUrl, fileUrl)])
+        figureLink = "Link to Figure: <a href='%s' color='blue'>%s</a>" % (fileUrl, fileUrl)
+        pageY = addParaWithThumb(figureLink, pageY)
 
-    # addPara( ["Figure contains the following images:"])
-    story.append(Paragraph("Figure contains the following images:", styleH2))
+    pageY = addParaWithThumb("Figure contains the following images:", pageY, style=styleH2)
 
 
     # Go through sorted panels, adding paragraph for each unique image
@@ -472,24 +504,56 @@ def addInfoPage(conn, scriptParams, c, panels_json, figureName):
             continue    # ignore images we've already handled
         imgIds.add(iid)
         thumbSrc = getThumbnail(conn, iid)
-        thumb = "<img src='%s' width='%s' height='%s' " \
-                "valign='middle' />" % (thumbSrc, thumbSize, thumbSize)
-        line = [thumb]
-        line.append(p['name'])
+        # thumb = "<img src='%s' width='%s' height='%s' " \
+        #         "valign='middle' />" % (thumbSrc, thumbSize, thumbSize)
+        lines = []
+        lines.append(p['name'])
         img_url = "%s?show=image-%s" % (base_url, iid)
-        line.append("<a href='%s' color='blue'>%s</a>" % (img_url, img_url))
-        addPara([" ".join(line)])
+        lines.append("<a href='%s' color='blue'>%s</a>" % (img_url, img_url))
+        # addPara([" ".join(line)])
+        line = " ".join(lines)
+        pageY = addParaWithThumb(line, pageY, thumbSrc=thumbSrc)
 
     if len(scalebars) > 0:
-        story.append(Paragraph("Scalebars", styleH))
+        # f.addFromList([Paragraph("Scalebars", styleH)], c)
+        pageY = addParaWithThumb("Scalebars", pageY, style=styleH2)
         sbs = [str(s) for s in scalebars]
-        addPara(["Scalebars: %s microns" % " microns, ".join(sbs)])
+        # addPara(["Scalebars: %s microns" % " microns, ".join(sbs)])
+        pageY = addParaWithThumb("Scalebars: %s microns" % " microns, ".join(sbs), pageY)
 
-    f = Frame(inch, inch, pageWidth-2*inch, pageHeight-2*inch)
-    f.addFromList(story, c)
-    c.save()
 
-    #c.showPage()
+def panel_is_on_page(panel, page):
+    """ Return true if panel overlaps with this page """
+
+    px = panel['x']
+    px2 = px + panel['width']
+    py = panel['y']
+    py2 = py + panel['height']
+    cx = page['x']
+    cx2 = cx + page['width']
+    cy = page['y']
+    cy2 = cy + page['height']
+    #overlap needs overlap on x-axis...
+    return px < cx2 and cx < px2 and py < cy2 and cy < py2
+
+
+def add_panels_to_page(conn, c, panels_json, imageIds, page):
+    """ Add panels that are within the bounds of this page """
+
+    for i, panel in enumerate(panels_json):
+
+        if not panel_is_on_page(panel, page):
+            print 'Panel', panel['imageId'], 'not on page...'
+            continue
+
+        print "\n-------------------------------- "
+        imageId = panel['imageId']
+        print "Adding PANEL - Image ID:", imageId
+        image = drawPanel(conn, c, panel, page, i)
+        if image.canAnnotate():
+            imageIds.add(imageId)
+        drawLabels(conn, c, panel, page)
+        print ""
 
 
 def create_pdf(conn, scriptParams):
@@ -525,23 +589,32 @@ def create_pdf(conn, scriptParams):
     imageIds = set()
 
     groupId = None
-    for i, panel in enumerate(panels_json):
+    # We get our group from the first image
+    id1 = panels_json[0]['imageId']
+    conn.getObject("Image", id1).getDetails().group.id.val
 
-        print "\n---------------- "
-        imageId = panel['imageId']
-        print "IMAGE", i, imageId
-        image = drawPanel(conn, c, panel, pageHeight, i)
-        if image.canAnnotate():
-            imageIds.add(imageId)
-        drawLabels(conn, c, panel, pageHeight)
-        # We get our group from the first image
-        if groupId is None:
-            groupId = image.getDetails().group.id.val
+    # test to see if we've got multiple pages
+    page_count = 'page_count' in figure_json and figure_json['page_count'] or 1
+    page_count = int(page_count)
+    paper_spacing = 'paper_spacing' in figure_json and figure_json['paper_spacing'] or 50
+    page_col_count = 'page_col_count' in figure_json and figure_json['page_col_count'] or 1
 
-    # complete page and save
-    c.showPage()
+    # For each page, add panels...
+    col = 0
+    row = 0
+    for p in range(page_count):
+        print "\n------------------------- PAGE ", p + 1, "--------------------------"
+        px = col * (pageWidth + paper_spacing)
+        py = row * (pageHeight + paper_spacing)
+        page = {'x': px, 'y': py, 'width': pageWidth, 'height': pageHeight}
+        add_panels_to_page(conn, c, panels_json, imageIds, page)
 
-    print panels_json
+        # complete page and save
+        c.showPage()
+        col = col + 1
+        if col >= page_col_count:
+            col = 0
+            row = row + 1
 
     # Add thumbnails and links page
     addInfoPage(conn, scriptParams, c, panels_json, figureName)

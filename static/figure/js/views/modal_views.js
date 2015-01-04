@@ -79,6 +79,11 @@
                 tmp = w_pixels; w_pixels = h_pixels; h_pixels = tmp;
             }
 
+            var cols = pageCount;
+            if (pageCount > 4) {
+                cols = Math.ceil(pageCount/2);
+            }
+
             var rv = {
                 // 'dpi': dpi,
                 'page_size': size,
@@ -88,6 +93,7 @@
                 'paper_width': w_pixels,
                 'paper_height': h_pixels,
                 'page_count': pageCount,
+                'page_col_count': cols,
             };
             return rv;
         },
