@@ -37,7 +37,7 @@ __p += '"\n                ';
  if (z_projection_disabled) { ;
 __p += 'disabled="disabled"';
  } ;
-__p += '\n                >\n            <span class="glyphicon"></span>\n        </button>\n    </div>\n\n    <div class="btn-group" style="padding:2px" title="Crop">\n        <button type="button" class="btn btn-default btn-sm crop-btn">\n            <span class="glyphicon"></span>\n        </button>\n    </div>\n';
+__p += '\n                >\n            <span class="glyphicon"></span>\n        </button>\n    </div>\n';
 
 }
 return __p
@@ -496,11 +496,23 @@ this["JST"]["static/figure/templates/modal_dialogs/roi_modal_roi.html"] = functi
 obj || (obj = {});
 var __t, __p = '', __e = _.escape;
 with (obj) {
-__p += '\n<tr>\n    <td>\n        <div class="roi_wrapper" style="position: relative; overflow: hidden; margin: 5px; height: ' +
+__p += '\n<tr class="roiPickMe">\n    <td>\n        <div class="roi_wrapper" style="position: relative; overflow: hidden; margin: 5px; height: ' +
 ((__t = ( h )) == null ? '' : __t) +
 'px; width: ' +
 ((__t = ( w )) == null ? '' : __t) +
-'px">\n            <img class="roi_content" style="position: absolute; top: ' +
+'px">\n            <img class="roi_content"\n                data-x="' +
+((__t = ( rect.x )) == null ? '' : __t) +
+'" data-y="' +
+((__t = ( rect.y )) == null ? '' : __t) +
+'" \n                data-width="' +
+((__t = ( rect.width )) == null ? '' : __t) +
+'" data-height="' +
+((__t = ( rect.height )) == null ? '' : __t) +
+'"\n                data-theT="' +
+((__t = ( rect.theT )) == null ? '' : __t) +
+'" data-theZ="' +
+((__t = ( rect.theZ )) == null ? '' : __t) +
+'"\n                style="position: absolute; top: ' +
 ((__t = ( top )) == null ? '' : __t) +
 'px; left: ' +
 ((__t = ( left )) == null ? '' : __t) +
@@ -515,22 +527,6 @@ __p += '\n<tr>\n    <td>\n        <div class="roi_wrapper" style="position: rela
 '</td>\n    <td>' +
 ((__t = ( theT )) == null ? '' : __t) +
 '</td>\n</tr>\n';
-
-}
-return __p
-};
-
-this["JST"]["static/figure/templates/modal_dialogs/roi_modal_template.html"] = function(obj) {
-obj || (obj = {});
-var __t, __p = '', __e = _.escape;
-with (obj) {
-__p += '\n<div id="roi_paper" style="position: relative; height: ' +
-((__t = ( h )) == null ? '' : __t) +
-'px; width: ' +
-((__t = ( w )) == null ? '' : __t) +
-'px">\n<img class="roi_image" style="position: absolute; top: 0; left:0" src="' +
-((__t = ( src )) == null ? '' : __t) +
-'" />\n</div>';
 
 }
 return __p
