@@ -993,6 +993,13 @@
 
         events: {
             "click .reset-zoom-shape": "resetZoomShape",
+            "click .crop-btn": "show_crop_dialog",
+        },
+
+        show_crop_dialog: function(event) {
+            event.preventDefault();
+            // Simply show dialog - Everything else handled by that
+            $("#roiModal").modal('show');
         },
 
         resetZoomShape: function(event) {
@@ -1009,9 +1016,13 @@
 
         render: function() {
 
-            this.$el.html('<button type="button" class="btn btn-default btn-sm reset-zoom-shape" title="Reset Zoom and Shape">'+
-                            '<span class="glyphicon glyphicon-sound-stereo"></span>'+
-                            '</button>');
+            this.$el.html('<div class="btn-group">'+
+                '<button type="button" title="Crop panel" class="btn btn-default btn-sm crop-btn">' +
+                    '<span class="glyphicon"></span>' +
+                '</button>'+
+                '<button type="button" class="btn btn-default btn-sm reset-zoom-shape" title="Reset Zoom and Shape">'+
+                    '<span class="glyphicon glyphicon-sound-stereo"></span>'+
+                '</button></div>');
         }
     });
 
@@ -1034,13 +1045,6 @@
             "click .dropdown-menu a": "pick_color",
             "click .show-rotation": "show_rotation",
             "click .z-projection": "z_projection",
-            "click .crop-btn": "show_crop_dialog",
-        },
-
-        show_crop_dialog: function(event) {
-            event.preventDefault();
-            // Simply show dialog - Everything else handled by that
-            $("#roiModal").modal('show');
         },
 
         z_projection:function(e) {
