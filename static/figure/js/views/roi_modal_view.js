@@ -16,7 +16,7 @@ var RoiModalView = Backbone.View.extend({
             $("#roiModal").bind("show.bs.modal", function(){
                 self.m = self.model.getSelected().head().clone();
                 self.listenTo(self.m, 'change:theZ change:theT', self.render);
-                self.cropModel.set({'selected': false});    // hide crop roi
+                self.cropModel.set({'selected': false, 'width': 0, 'height': 0});    // hide crop roi
                 self.zoomToFit();   // includes render()
                 self.loadRois();
             });
