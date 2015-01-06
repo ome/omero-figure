@@ -676,6 +676,7 @@
             "click .awidth": "align_width",
             "click .aheight": "align_height",
             "click .asize": "align_size",
+            "click .amagnification": "align_magnification",
         },
 
         initialize: function() {
@@ -706,6 +707,11 @@
         align_size: function(event) {
             event.preventDefault();
             this.model.align_size(true, true);
+        },
+
+        align_magnification: function(event) {
+            event.preventDefault();
+            this.model.align_magnification();
         },
 
         align_top: function(event) {
