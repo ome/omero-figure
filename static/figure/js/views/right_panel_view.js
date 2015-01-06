@@ -336,6 +336,7 @@
 
         events: {
             "submit .scalebar_form": "update_scalebar",
+            "click .scalebar_label": "toggle_scalebar_label",
             "change .btn": "dropdown_btn_changed",
             "click .hide_scalebar": "hide_scalebar",
             "click .pixel_size_display": "edit_pixel_size",
@@ -382,6 +383,13 @@
         hide_scalebar: function() {
             this.models.forEach(function(m){
                 m.hide_scalebar();
+            });
+        },
+
+        toggle_scalebar_label: function(event) {
+            var show_label = $(event.target).prop('checked');
+            this.models.forEach(function(m){
+                m.set('scalebar_label', show_label);
             });
         },
 
@@ -450,6 +458,7 @@
             json.units = json.units || 'um';
             json.position = json.position || 'bottomright';
             json.color = json.color || 'FFFFFF';
+            json.scalebar_label = this.models.allTrue('scalebar_label');
 
             var html = this.template(json);
             this.$el.html(html);

@@ -87,6 +87,12 @@
         </ul>
     </div>
 
+    <div class="checkbox">
+        <label>
+            <input type="checkbox" class="scalebar_label" <% if (scalebar_label) print("checked") %> > Label
+        </label>
+    </div>
+
     <% if (show){ %>
         <button type="submit" class="show_scalebar btn btn-sm btn-success pull-right">Show</button>
     <% } else { %>

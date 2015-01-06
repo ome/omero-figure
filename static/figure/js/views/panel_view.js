@@ -17,7 +17,7 @@
             this.listenTo(this.model,
                 'change:x change:y change:width change:height change:zoom change:dx change:dy change:rotation',
                 this.render_layout);
-            this.listenTo(this.model, 'change:scalebar change:pixel_size_x', this.render_scalebar);
+            this.listenTo(this.model, 'change:scalebar change:pixel_size_x change:scalebar_label', this.render_scalebar);
             this.listenTo(this.model, 'change:channels change:theZ change:theT change:z_start change:z_end change:z_projection', this.render_image);
             this.listenTo(this.model, 'change:labels change:theT change:deltaT', this.render_labels);
             // This could be handled by backbone.relational, but do it manually for now...
@@ -136,12 +136,14 @@
             if (this.$scalebar) {
                 this.$scalebar.remove();
             }
-            var sb = this.model.get('scalebar');
+            var sb = this.model.get('scalebar'),
+                show_label = this.model.get('scalebar_label');
             if (sb && sb.show) {
                 var sb_json = {};
                 sb_json.position = sb.position;
                 sb_json.color = sb.color;
-                sb_json.width = sb.pixels;  // TODO * scale
+                sb_json.length = sb.length;
+                sb_json.show_label = show_label;
 
                 var sb_html = this.scalebar_template(sb_json);
                 this.$el.append(sb_html);

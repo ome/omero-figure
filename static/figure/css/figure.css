@@ -188,6 +188,19 @@
         margin-right: 4px;
     }
 
+    .scalebar {
+        height: 2px;
+        position: absolute;
+        margin: 5%;
+    }
+
+    .scalebar-label {
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+        text-align: center;
+    }
+
     .edit-label-form .input-group {
         width:140px;
         margin-right: 4px;

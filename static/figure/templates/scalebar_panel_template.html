@@ -1,2 +1,4 @@
 
-    <div class="scalebar label_<%= position %>" style="height: 2px; width: <%= width %>px; position: absolute; margin:5%; background-color: #<%= color %>"></div>
+    <div class="scalebar label_<%= position %>" style="background-color: #<%= color %>">
+        <% if (show_label) print("<div class='scalebar-label' style='color: #" + color + "'>" + length + " &#181;m</div>") %>
+    </div>

@@ -15,7 +15,9 @@
             labels: [],
             deltaT: [],     // list of deltaTs (secs) for tIndexes of movie
             rotation: 0,
-            selected: false
+            selected: false,
+            scalebar_label: false,
+            // scalebar: length in microns
         },
 
         initialize: function() {
