@@ -191,14 +191,20 @@
     .scalebar {
         height: 2px;
         position: absolute;
-        margin: 5%;
+        margin: 5% !important;
     }
 
     .scalebar-label {
         position: absolute;
-        bottom: 0;
-        width: 100%;
+        left: -100%;
+        width: 300%;
         text-align: center;
+    }
+    .label_topleft .scalebar-label, .label_topright .scalebar-label {
+        top: 0;
+    }
+    .label_bottomleft .scalebar-label, .label_bottomright .scalebar-label {
+        bottom: 0;
     }
 
     .edit-label-form .input-group {
