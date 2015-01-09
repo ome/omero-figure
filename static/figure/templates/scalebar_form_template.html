@@ -93,6 +93,19 @@
         </label>
     </div>
 
+    <div class="btn-group">
+        <button type="button" class="scalebar-label-size btn btn-default btn-sm dropdown-toggle" title="Label Size"
+            data-toggle="dropdown" style="width:33px">
+            <span>12</span>
+            <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu" role="menu">
+        <% _.each([6,8,10,12,14,18,21,24,36,48],function(p){
+            print ("<li><a href='#'><span>"+p+"</span></a></li>")
+        }); %>
+        </ul>
+    </div>
+
     <% if (show){ %>
         <button type="submit" class="show_scalebar btn btn-sm btn-success pull-right">Show</button>
     <% } else { %>
