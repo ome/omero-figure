@@ -95,7 +95,7 @@
 
     <div class="btn-group">
         <button type="button" class="scalebar-label-size btn btn-default btn-sm dropdown-toggle" title="Label Size"
-            data-toggle="dropdown" style="width:33px">
+            data-toggle="dropdown" style="width:33px; <% if (!scalebar_label) print("display:none") %>">
             <span>12</span>
             <span class="caret"></span>
         </button>

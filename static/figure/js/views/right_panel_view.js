@@ -328,7 +328,7 @@
             var self = this;
 
             this.models.forEach(function(m){
-                self.listenTo(m, 'change:scalebar change:pixel_size_x', self.render);
+                self.listenTo(m, 'change:scalebar change:pixel_size_x change:scalebar_label', self.render);
             });
 
             // this.$el = $("#scalebar_form");
