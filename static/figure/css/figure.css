@@ -199,12 +199,13 @@
         left: -100%;
         width: 300%;
         text-align: center;
+        line-height: 1;
     }
     .label_topleft .scalebar-label, .label_topright .scalebar-label {
-        top: 0;
+        top: 3px;
     }
     .label_bottomleft .scalebar-label, .label_bottomright .scalebar-label {
-        bottom: 0;
+        bottom: 4px;
     }
 
     .edit-label-form .input-group {

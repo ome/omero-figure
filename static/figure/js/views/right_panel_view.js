@@ -336,7 +336,7 @@
 
         events: {
             "submit .scalebar_form": "update_scalebar",
-            "click .scalebar_label": "toggle_scalebar_label",
+            "click .scalebar_label": "update_scalebar",
             "change .btn": "dropdown_btn_changed",
             "click .hide_scalebar": "hide_scalebar",
             "click .pixel_size_display": "edit_pixel_size",
@@ -386,13 +386,6 @@
             });
         },
 
-        toggle_scalebar_label: function(event) {
-            var show_label = $(event.target).prop('checked');
-            this.models.forEach(function(m){
-                m.save('scalebar_label', show_label);
-            });
-        },
-
         // called when form changes
         update_scalebar: function(event) {
 
@@ -401,6 +394,7 @@
             var length = $('.scalebar-length', $form).val(),
                 position = $('.label-position span:first', $form).attr('data-position'),
                 color = $('.label-color span:first', $form).attr('data-color'),
+                show_label = $('.scalebar_label', $form).prop('checked'),
                 font_size = $('.scalebar_font_size span:first', $form).text().trim();
 
             this.models.forEach(function(m){
@@ -408,6 +402,7 @@
                 if (length != '-') sb.length = parseInt(length, 10);
                 if (position != '-') sb.position = position;
                 if (color != '-') sb.color = color;
+                sb.show_label = show_label;
                 sb.font_size = font_size;
 
                 m.save_scalebar(sb);
@@ -417,7 +412,7 @@
 
         render: function() {
 
-            var json = {show: false},
+            var json = {show: false, show_label: false},
                 hidden = false,
                 sb;
 
@@ -441,6 +436,7 @@
                         json.units = sb.units;
                         json.position = sb.position;
                         json.color = sb.color;
+                        json.show_label = sb.show_label;
                         json.font_size = sb.font_size;
                     }
                     else {
@@ -448,6 +444,7 @@
                         if (json.units != sb.units) json.units = '-';
                         if (json.position != sb.position) json.position = '-';
                         if (json.color != sb.color) json.color = '-';
+                        if (!sb.show_label) json.show_label = false;
                         if (json.font_size != sb.font_size) json.font_size = '-';
                     }
                 }
@@ -462,8 +459,7 @@
             json.units = json.units || 'um';
             json.position = json.position || 'bottomright';
             json.color = json.color || 'FFFFFF';
-            json.font_size = json.font_size || 12;
-            json.scalebar_label = this.models.allTrue('scalebar_label');
+            json.font_size = json.font_size || 10;
 
             var html = this.template(json);
             this.$el.html(html);

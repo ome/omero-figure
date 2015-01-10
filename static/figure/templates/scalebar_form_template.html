@@ -89,13 +89,13 @@
 
     <div class="checkbox">
         <label>
-            <input type="checkbox" class="scalebar_label" <% if (scalebar_label) print("checked") %> > Label
+            <input type="checkbox" class="scalebar_label" <% if (show_label) print("checked") %> > Label
         </label>
     </div>
 
     <div class="btn-group">
         <button type="button" class="scalebar_font_size btn btn-default btn-sm dropdown-toggle" title="Label Size"
-            data-toggle="dropdown" style="width:33px; <% if (!scalebar_label) print("display:none") %>">
+            data-toggle="dropdown" style="width:33px; <% if (!show_label) print("display:none") %>">
             <span><%= font_size %></span>
             <span class="caret"></span>
         </button>
