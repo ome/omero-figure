@@ -389,7 +389,7 @@
         toggle_scalebar_label: function(event) {
             var show_label = $(event.target).prop('checked');
             this.models.forEach(function(m){
-                m.set('scalebar_label', show_label);
+                m.save('scalebar_label', show_label);
             });
         },
 
@@ -400,13 +400,15 @@
 
             var length = $('.scalebar-length', $form).val(),
                 position = $('.label-position span:first', $form).attr('data-position'),
-                color = $('.label-color span:first', $form).attr('data-color');
+                color = $('.label-color span:first', $form).attr('data-color'),
+                font_size = $('.scalebar_font_size span:first', $form).text().trim();
 
             this.models.forEach(function(m){
                 var sb = {show: true};
                 if (length != '-') sb.length = parseInt(length, 10);
                 if (position != '-') sb.position = position;
                 if (color != '-') sb.color = color;
+                sb.font_size = font_size;
 
                 m.save_scalebar(sb);
             });
@@ -439,12 +441,14 @@
                         json.units = sb.units;
                         json.position = sb.position;
                         json.color = sb.color;
+                        json.font_size = sb.font_size;
                     }
                     else {
                         if (json.length != sb.length) json.length = '-';
                         if (json.units != sb.units) json.units = '-';
                         if (json.position != sb.position) json.position = '-';
                         if (json.color != sb.color) json.color = '-';
+                        if (json.font_size != sb.font_size) json.font_size = '-';
                     }
                 }
                 // if any panels don't have scalebar - we allow to add
@@ -458,6 +462,7 @@
             json.units = json.units || 'um';
             json.position = json.position || 'bottomright';
             json.color = json.color || 'FFFFFF';
+            json.font_size = json.font_size || 12;
             json.scalebar_label = this.models.allTrue('scalebar_label');
 
             var html = this.template(json);
