@@ -141,7 +141,9 @@
                 var sb_json = {};
                 sb_json.position = sb.position;
                 sb_json.color = sb.color;
-                sb_json.width = sb.pixels;  // TODO * scale
+                sb_json.length = sb.length;
+                sb_json.font_size = sb.font_size;
+                sb_json.show_label = sb.show_label;
 
                 var sb_html = this.scalebar_template(sb_json);
                 this.$el.append(sb_html);

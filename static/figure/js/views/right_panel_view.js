@@ -328,7 +328,7 @@
             var self = this;
 
             this.models.forEach(function(m){
-                self.listenTo(m, 'change:scalebar change:pixel_size_x', self.render);
+                self.listenTo(m, 'change:scalebar change:pixel_size_x change:scalebar_label', self.render);
             });
 
             // this.$el = $("#scalebar_form");
@@ -336,6 +336,7 @@
 
         events: {
             "submit .scalebar_form": "update_scalebar",
+            "click .scalebar_label": "update_scalebar",
             "change .btn": "dropdown_btn_changed",
             "click .hide_scalebar": "hide_scalebar",
             "click .pixel_size_display": "edit_pixel_size",
@@ -392,13 +393,17 @@
 
             var length = $('.scalebar-length', $form).val(),
                 position = $('.label-position span:first', $form).attr('data-position'),
-                color = $('.label-color span:first', $form).attr('data-color');
+                color = $('.label-color span:first', $form).attr('data-color'),
+                show_label = $('.scalebar_label', $form).prop('checked'),
+                font_size = $('.scalebar_font_size span:first', $form).text().trim();
 
             this.models.forEach(function(m){
                 var sb = {show: true};
                 if (length != '-') sb.length = parseInt(length, 10);
                 if (position != '-') sb.position = position;
                 if (color != '-') sb.color = color;
+                sb.show_label = show_label;
+                sb.font_size = font_size;
 
                 m.save_scalebar(sb);
             });
@@ -407,7 +412,7 @@
 
         render: function() {
 
-            var json = {show: false},
+            var json = {show: false, show_label: false},
                 hidden = false,
                 sb;
 
@@ -431,12 +436,16 @@
                         json.units = sb.units;
                         json.position = sb.position;
                         json.color = sb.color;
+                        json.show_label = sb.show_label;
+                        json.font_size = sb.font_size;
                     }
                     else {
                         if (json.length != sb.length) json.length = '-';
                         if (json.units != sb.units) json.units = '-';
                         if (json.position != sb.position) json.position = '-';
                         if (json.color != sb.color) json.color = '-';
+                        if (!sb.show_label) json.show_label = false;
+                        if (json.font_size != sb.font_size) json.font_size = '-';
                     }
                 }
                 // if any panels don't have scalebar - we allow to add
@@ -450,6 +459,7 @@
             json.units = json.units || 'um';
             json.position = json.position || 'bottomright';
             json.color = json.color || 'FFFFFF';
+            json.font_size = json.font_size || 10;
 
             var html = this.template(json);
             this.$el.html(html);

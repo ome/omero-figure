@@ -15,7 +15,11 @@
             labels: [],
             deltaT: [],     // list of deltaTs (secs) for tIndexes of movie
             rotation: 0,
-            selected: false
+            selected: false,
+
+            // model includes 'scalebar' object, e.g:
+            // scalebar: {length: 10, position: 'bottomleft', color: 'FFFFFF',
+            //                show: false, show_label: false; font_size: 10}
         },
 
         initialize: function() {
