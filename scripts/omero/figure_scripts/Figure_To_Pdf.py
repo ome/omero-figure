@@ -262,12 +262,18 @@ def drawLabels(conn, c, panel, page):
                 drawLab(c, l, lx, ly, align='vertical')
 
 
-def drawScalebar(c, panel, region_width, pageHeight):
+def drawScalebar(c, panel, region_width, page):
 
     x = panel['x']
     y = panel['y']
     width = panel['width']
     height = panel['height']
+
+    # Handle page offsets
+    pageHeight = page['height']
+    x = x - page['x']
+    y = y - page['y']
+
     if not ('scalebar' in panel and 'show' in panel['scalebar']
             and panel['scalebar']['show']):
         return
@@ -414,7 +420,7 @@ def drawPanel(conn, c, panel, page, idx):
 
     c.drawImage(tempName, x, y, width, height)
 
-    drawScalebar(c, panel, tile_width, pageHeight)
+    drawScalebar(c, panel, tile_width, page)
 
     return image
 
