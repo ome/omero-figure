@@ -293,42 +293,55 @@ def drawScalebar(c, panel, region_width, page):
     blue = int(color[4:6], 16)
     c.setStrokeColorRGB(red, green, blue)
 
-    def draw_sb(sb_x, sb_y, align='left'):
 
-        print "Adding Scalebar of %s microns." % sb['length'],
-        print "Pixel size is %s microns" % panel['pixel_size_x']
-        pixels_length = sb['length'] / panel['pixel_size_x']
-        scale_to_canvas = panel['width'] / float(region_width)
-        canvas_length = pixels_length * scale_to_canvas
-        print 'Scalebar length (panel pixels):', pixels_length
-        print 'Scale by %s to page ' \
-              'coordinate length: %s' % (scale_to_canvas, canvas_length)
-        sb_y = pageHeight - sb_y
-        if align == 'left':
-            c.line(sb_x, sb_y, sb_x + canvas_length, sb_y)
-        else:
-            c.line(sb_x, sb_y, sb_x - canvas_length, sb_y)
-
-    position = sb['position']
-    print 'position', position
+    position = 'position' in sb and sb['position'] or 'bottomright'
+    print 'scalebar.position', position
+    align='left'
 
     if position == 'topleft':
         lx = x + spacer
         ly = y + spacer
-        draw_sb(lx, ly)
     elif position == 'topright':
         lx = x + width - spacer
         ly = y + spacer
-        draw_sb(lx, ly, align="right")
+        align = "right"
     elif position == 'bottomleft':
         lx = x + spacer
         ly = y + height - spacer
-        draw_sb(lx, ly)
     elif position == 'bottomright':
         lx = x + width - spacer
         ly = y + height - spacer
-        draw_sb(lx, ly, align="right")
+        align = "right"
 
+
+    print "Adding Scalebar of %s microns." % sb['length'],
+    print "Pixel size is %s microns" % panel['pixel_size_x']
+    pixels_length = sb['length'] / panel['pixel_size_x']
+    scale_to_canvas = panel['width'] / float(region_width)
+    canvas_length = pixels_length * scale_to_canvas
+    print 'Scalebar length (panel pixels):', pixels_length
+    print 'Scale by %s to page ' \
+          'coordinate length: %s' % (scale_to_canvas, canvas_length)
+    ly = pageHeight - ly
+    if align == 'left':
+        lx_end = lx + canvas_length
+    else:
+        lx_end = lx - canvas_length
+    c.line(lx, ly, lx_end, ly)
+
+    if 'show_label' in sb and sb['show_label']:
+        label = u"%s \u00B5m" % sb['length']
+        font_size = 10
+        try:
+            font_size = int(sb['font_size'])
+        except:
+            pass
+        c.setFont("Helvetica", font_size)
+        label_y = ly - font_size
+        if 'bottom' in position:
+            label_y = ly + 5
+        c.setFillColorRGB(red, green, blue)
+        c.drawCentredString((lx + lx_end)/2, label_y, label)
 
 def getPanelImage(image, panel):
 
