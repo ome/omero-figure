@@ -332,7 +332,6 @@
                 ref = this.get_top_left_panel(sel),
                 ref_pixSize = ref.get('pixel_size_x'),
                 targetMag;
-            console.log(ref_pixSize);
             if (!ref_pixSize) {
                 alert('Top-left panel has no pixel size set');
                 return;
