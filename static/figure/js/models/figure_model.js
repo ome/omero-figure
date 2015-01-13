@@ -322,7 +322,34 @@
                     new_h = ref_height;
                     new_w = (ref_height/p.get('height')) * p.get('width');
                 }
-                p.save({'width':new_w, 'height':new_h});
+                p.set({'width':new_w, 'height':new_h});
+            });
+        },
+
+        // Resize panels so they all show same magnification
+        align_magnification: function() {
+            var sel = this.getSelected(),
+                ref = this.get_top_left_panel(sel),
+                ref_pixSize = ref.get('pixel_size_x'),
+                targetMag;
+            if (!ref_pixSize) {
+                alert('Top-left panel has no pixel size set');
+                return;
+            }
+            // E.g. 10 microns / inch
+            targetMag = ref_pixSize * ref.getPanelDpi();
+
+            sel.forEach(function(p){
+                var dpi = p.getPanelDpi(),
+                    pixSize = p.get('pixel_size_x');
+                if (!pixSize) {
+                    return;
+                }
+                var panelMag = dpi * pixSize,
+                    scale = panelMag / targetMag,
+                    new_w = p.get('width') * scale,
+                    new_h = p.get('height') * scale;
+                p.set({'width':new_w, 'height':new_h});
             });
         },
 
