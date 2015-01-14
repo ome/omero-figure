@@ -1021,7 +1021,7 @@
                     '<span class="glyphicon"></span>' +
                 '</button>'+
                 '<button type="button" class="btn btn-default btn-sm reset-zoom-shape" title="Reset Zoom and Shape">'+
-                    '<span class="glyphicon glyphicon-sound-stereo"></span>'+
+                    '<span class="glyphicon glyphicon-resize-full"></span>'+
                 '</button></div>');
         }
     });
