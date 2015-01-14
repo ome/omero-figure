@@ -200,6 +200,11 @@ var RoiModalView = Backbone.View.extend({
                 size = 50,
                 rect, src, zoom,
                 top, left, div_w, div_h, img_w, img_h;
+
+            // loop through ROIs, using our cloned model to generate src urls
+            // first, get the current Z and T of cloned model...
+            var origT = this.m.get('theT'),
+                origZ = this.m.get('theZ');
             for (var r=0; r<rects.length; r++) {
                 rect = rects[r];
                 if (rect.theT > -1) this.m.set('theT', rect.theT, {'silent': true});
@@ -233,6 +238,9 @@ var RoiModalView = Backbone.View.extend({
                 html += this.roiTemplate(json);
             }
             $(".roiPicker tbody").html(html);
+
+            // reset Z/T as before
+            this.m.set({'theT': origT, 'theZ': origZ});
         },
 
         zoomToFit: function() {
