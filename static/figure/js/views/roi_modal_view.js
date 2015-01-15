@@ -277,9 +277,6 @@ var RoiModalView = Backbone.View.extend({
                 roiY = this.currentROI.y * scale,
                 roiW = this.currentROI.width * scale,
                 roiH = this.currentROI.height * scale;
-            console.log({
-                'x': roiX, 'y': roiY, 'width': roiW, 'height': roiH
-            });
             this.cropModel.set({
                 'x': roiX, 'y': roiY, 'width': roiW, 'height': roiH
             });
