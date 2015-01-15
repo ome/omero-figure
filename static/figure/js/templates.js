@@ -174,7 +174,17 @@ __p += '"></span>\n            <span class="caret"></span>\n        </button>\n 
 ((__t = ( color )) == null ? '' : __t) +
 '" style="background-color:#' +
 ((__t = ( color )) == null ? '' : __t) +
-'">&nbsp &nbsp &nbsp</span>\n            <span class="caret"></span>\n        </button>\n        <ul class="dropdown-menu colorpicker" role="menu">\n            <li><a href="#">\n                <span data-color="000000" style="background-color:#000">&nbsp &nbsp &nbsp</span>&nbsp Black\n            </a></li>\n            <li><a href="#">\n                <span data-color="0000FF" style="background-color:#00f">&nbsp &nbsp &nbsp</span>&nbsp Blue\n            </a></li>\n            <li><a href="#">\n                <span data-color="00FF00" style="background-color:#0f0">&nbsp &nbsp &nbsp</span>&nbsp Green\n            </a></li>\n            <li><a href="#">\n                <span data-color="FF0000" style="background-color:#f00">&nbsp &nbsp &nbsp</span>&nbsp Red\n            </a></li>\n            <li><a href="#">\n                <span data-color="FFFF00" style="background-color:#ff0">&nbsp &nbsp &nbsp</span>&nbsp Yellow\n            </a></li>\n            <li><a href="#">\n                <span data-color="FFFFFF" style="background-color:#fff">&nbsp &nbsp &nbsp</span>&nbsp White\n            </a></li>\n            <li><a href="#">\n                <span data-color="FF00FF" style="background-color:#f0f">&nbsp &nbsp &nbsp</span>&nbsp Magenta\n            </a></li>\n        </ul>\n    </div>\n\n    ';
+'">&nbsp &nbsp &nbsp</span>\n            <span class="caret"></span>\n        </button>\n        <ul class="dropdown-menu colorpicker" role="menu">\n            <li><a href="#">\n                <span data-color="000000" style="background-color:#000">&nbsp &nbsp &nbsp</span>&nbsp Black\n            </a></li>\n            <li><a href="#">\n                <span data-color="0000FF" style="background-color:#00f">&nbsp &nbsp &nbsp</span>&nbsp Blue\n            </a></li>\n            <li><a href="#">\n                <span data-color="00FF00" style="background-color:#0f0">&nbsp &nbsp &nbsp</span>&nbsp Green\n            </a></li>\n            <li><a href="#">\n                <span data-color="FF0000" style="background-color:#f00">&nbsp &nbsp &nbsp</span>&nbsp Red\n            </a></li>\n            <li><a href="#">\n                <span data-color="FFFF00" style="background-color:#ff0">&nbsp &nbsp &nbsp</span>&nbsp Yellow\n            </a></li>\n            <li><a href="#">\n                <span data-color="FFFFFF" style="background-color:#fff">&nbsp &nbsp &nbsp</span>&nbsp White\n            </a></li>\n            <li><a href="#">\n                <span data-color="FF00FF" style="background-color:#f0f">&nbsp &nbsp &nbsp</span>&nbsp Magenta\n            </a></li>\n        </ul>\n    </div>\n\n    <div class="checkbox">\n        <label>\n            <input type="checkbox" class="scalebar_label" ';
+ if (show_label) print("checked") ;
+__p += ' > Label\n        </label>\n    </div>\n\n    <div class="btn-group">\n        <button type="button" class="scalebar_font_size btn btn-default btn-sm dropdown-toggle" title="Label Size"\n            data-toggle="dropdown" style="width:33px; ';
+ if (!show_label) print("display:none") ;
+__p += '">\n            <span>' +
+((__t = ( font_size )) == null ? '' : __t) +
+'</span>\n            <span class="caret"></span>\n        </button>\n        <ul class="dropdown-menu" role="menu">\n        ';
+ _.each([6,8,10,12,14,18,21,24,36,48],function(p){
+            print ("<li><a href='#'><span>"+p+"</span></a></li>")
+        }); ;
+__p += '\n        </ul>\n    </div>\n\n    ';
  if (show){ ;
 __p += '\n        <button type="submit" class="show_scalebar btn btn-sm btn-success pull-right">Show</button>\n    ';
  } else { ;
@@ -188,15 +198,24 @@ return __p
 
 this["JST"]["static/figure/templates/scalebar_panel_template.html"] = function(obj) {
 obj || (obj = {});
-var __t, __p = '', __e = _.escape;
+var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
+function print() { __p += __j.call(arguments, '') }
 with (obj) {
 __p += '\n    <div class="scalebar label_' +
 ((__t = ( position )) == null ? '' : __t) +
-'" style="height: 2px; width: ' +
-((__t = ( width )) == null ? '' : __t) +
-'px; position: absolute; margin:5%; background-color: #' +
+'" style="background-color: #' +
 ((__t = ( color )) == null ? '' : __t) +
-'"></div>\n';
+'">\n        ';
+ if (show_label) { ;
+__p += '\n            <div class=\'scalebar-label\' style=\'color: #' +
+((__t = ( color )) == null ? '' : __t) +
+'; font-size: ' +
+((__t = ( font_size )) == null ? '' : __t) +
+'px\'>\n                ' +
+((__t = ( length )) == null ? '' : __t) +
+' &#181;m\n            </div>\n        ';
+ } ;
+__p += '\n    </div>\n';
 
 }
 return __p
