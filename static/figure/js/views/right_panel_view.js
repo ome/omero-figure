@@ -25,6 +25,14 @@
                 this.vp = new ImageViewerView({models: selected}); // auto-renders on init
                 $("#viewportContainer").append(this.vp.el);
             }
+            if (this.zmp) {
+                this.zmp.remove();
+                delete this.zmp;
+            }
+            if (selected.length > 0) {
+                this.zmp = new ZoomView({models: selected}); // auto-renders on init
+                $("#reset-zoom-view").append(this.zmp.el);
+            }
 
             if (this.ipv) {
                 this.ipv.remove();
@@ -976,9 +984,55 @@
 
             this.$vp_frame = $(".vp_frame", this.$el);  // cache for later
             this.$vp_img = $(".vp_img", this.$el);
-            this.$vp_zoom_value.text((zoom >> 0) + "%");
+            this.zoom_avg = zoom >> 0;
+            this.$vp_zoom_value.text(this.zoom_avg + "%");
+            $("#vp_zoom_slider").slider({value: this.zoom_avg});
 
             return this;
+        }
+    });
+
+
+    var ZoomView = Backbone.View.extend({
+
+        initialize: function(opts) {
+
+            this.models = opts.models;
+            this.render();
+        },
+
+        events: {
+            "click .reset-zoom-shape": "resetZoomShape",
+            "click .crop-btn": "show_crop_dialog",
+        },
+
+        show_crop_dialog: function(event) {
+            event.preventDefault();
+            // Simply show dialog - Everything else handled by that
+            $("#roiModal").modal('show');
+        },
+
+        resetZoomShape: function(event) {
+            event.preventDefault();
+            this.models.forEach(function(m){
+                m.cropToRoi({
+                    'x': 0,
+                    'y': 0,
+                    'width': m.get('orig_width'),
+                    'height': m.get('orig_height')
+                });
+            });
+        },
+
+        render: function() {
+
+            this.$el.html('<div class="btn-group">'+
+                '<button type="button" title="Crop panel" class="btn btn-default btn-sm crop-btn">' +
+                    '<span class="glyphicon"></span>' +
+                '</button>'+
+                '<button type="button" class="btn btn-default btn-sm reset-zoom-shape" title="Reset Zoom and Shape">'+
+                    '<span class="glyphicon glyphicon-resize-full"></span>'+
+                '</button></div>');
         }
     });
 

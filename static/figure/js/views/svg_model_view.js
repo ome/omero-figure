@@ -44,6 +44,11 @@
             this.listenTo(this, 'drag_resize', this.drag_resize);
             // listen to change to this model - update PanelModel
             this.listenTo(this, 'drag_resize_stop', this.drag_resize_stop);
+
+            // reduce coupling between this and rect by using triggers to handle click.
+            this.bind('clicked', function(args) {
+                this.handleClick(args[0]);
+            });
         },
 
         // return the SVG x, y, w, h (converting from figureModel)
@@ -384,7 +389,7 @@
 
             var multiSelectRect = new MultiSelectRectModel({figureModel: this.model}),
                 rv = new RectView({'model':multiSelectRect, 'paper':this.raphael_paper,
-                        'handle_wh':7, 'handles_toFront': true});
+                        'handle_wh':7, 'handles_toFront': true, 'fixed_ratio': true});
             rv.selected_line_attrs = {'stroke-width': 1, 'stroke':'#4b80f9'};
         },
 
@@ -393,7 +398,7 @@
 
             var rectModel = new ProxyRectModel({panel: m, figure:this.model});
             new RectView({'model':rectModel, 'paper':this.raphael_paper,
-                    'handle_wh':5, 'disable_handles': true});
+                    'handle_wh':5, 'disable_handles': true, 'fixed_ratio': true});
         },
 
         // TODO
