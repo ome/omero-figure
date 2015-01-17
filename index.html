@@ -10,18 +10,18 @@ title: OMERO.figure
     <script>
       $(function(){
 
-        var now = Date();
+        // var now = Date();
 
-        function msToTime(s) {
-          var ms = s % 1000;
-          s = (s - ms) / 1000;
-          var secs = s % 60;
-          s = (s - secs) / 60;
-          var mins = s % 60;
-          var hrs = (s - mins) / 60;
+        // function msToTime(s) {
+        //   var ms = s % 1000;
+        //   s = (s - ms) / 1000;
+        //   var secs = s % 60;
+        //   s = (s - secs) / 60;
+        //   var mins = s % 60;
+        //   var hrs = (s - mins) / 60;
 
-          return hrs + ':' + mins + ':' + secs + '.' + ms;
-        }
+        //   return hrs + ':' + mins + ':' + secs + '.' + ms;
+        // }
 
         // Thu Jan 15 2015 23:52:19 GMT+0000 (GMT)  -->  Thu Jan 15 2015
         var formatDate = function formatDate(d) {
@@ -38,7 +38,7 @@ title: OMERO.figure
           setTimeout(scrollTicker, 4000);
         }
 
-        // Get the json data for the image...
+        // Get commits data from github, add to page then scroll through.
         $.ajax({
             url: "https://api.github.com/repos/will-moore/figure/commits",
             jsonp: "callback",
@@ -59,6 +59,24 @@ title: OMERO.figure
             }
         });
 
+        // On hover over the ticket, wait before showing
+        var $github_ticker = $("#github_ticker"),
+            hoverTimeout;
+        $github_ticker.hover(
+          function() {
+            if (hoverTimeout) {
+              clearTimeout(hoverTimeout);
+            }
+            hoverTimeout = setTimeout(function(){
+              $github_ticker.addClass("hover");
+            }, 1000);
+          },
+          function(){
+            if (hoverTimeout) {
+              clearTimeout(hoverTimeout);
+            }
+            $github_ticker.removeClass("hover");
+          });
       });
     </script>
 
@@ -70,7 +88,7 @@ title: OMERO.figure
         top: 0px;
         width: 100%;
       }
-      .github_ticker:hover {
+      .github_ticker.hover {
         overflow: visible;
       }
       .github_ticker ul {
@@ -104,7 +122,7 @@ title: OMERO.figure
 
     </style>
 
-        <div id="github_ticker" class="github_ticker">
+        <div id="github_ticker" class="github_ticker" title="Recent commits to OMERO.figure on GitHub">
           <ul></ul>
         </div>
 
