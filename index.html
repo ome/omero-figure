@@ -5,7 +5,110 @@ title: OMERO.figure
 
     <!-- MAIN CONTENT -->
 
-        <h1>Fast figures from your OMERO images</h1>
+    <script src="https://code.jquery.com/jquery-1.11.2.min.js"></script>
+
+    <script>
+      $(function(){
+
+        var now = Date();
+
+        function msToTime(s) {
+          var ms = s % 1000;
+          s = (s - ms) / 1000;
+          var secs = s % 60;
+          s = (s - secs) / 60;
+          var mins = s % 60;
+          var hrs = (s - mins) / 60;
+
+          return hrs + ':' + mins + ':' + secs + '.' + ms;
+        }
+
+        // Thu Jan 15 2015 23:52:19 GMT+0000 (GMT)  -->  Thu Jan 15 2015
+        var formatDate = function formatDate(d) {
+          d = new Date(d);
+          return ("" + d).split(" ").slice(1,4).join(" ");
+        }
+
+        var $tickerList = $("#github_ticker ul");
+        var scrollTicker = function scrollTicker() {
+          var t = parseInt($tickerList.css('top'), 10);
+          t -= 40;
+          if (t < -240) t = 0;
+          $tickerList.css('top', t + "px");
+          setTimeout(scrollTicker, 4000);
+        }
+
+        // Get the json data for the image...
+        $.ajax({
+            url: "https://api.github.com/repos/will-moore/figure/commits",
+            jsonp: "callback",
+            success: function( data ) {
+              var commit, message, date, html = "";
+              for (var i=0; i<data.length; i++) {
+                commit = data[i];
+                message = commit.commit.message;
+                date = commit.commit.author.date;
+                // Ignore merge commits.
+                if (message.slice(0, 18) == "Merge pull request") {
+                  continue;
+                }
+                html += "<li>" + formatDate(date) + " <span class='message'>" + message + "</span></li>";
+              }
+              $(html).appendTo("#github_ticker ul");
+              setTimeout(scrollTicker, 4000);
+            }
+        });
+
+      });
+    </script>
+
+    <style type="text/css">
+      .github_ticker {
+        height: 40px;
+        overflow: hidden;
+        position: absolute;
+        top: 0px;
+        width: 100%;
+      }
+      .github_ticker:hover {
+        overflow: visible;
+      }
+      .github_ticker ul {
+        font: 13px/1.4 Helvetica, arial, freesans, clean, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol";
+        position: absolute;
+        top: 0px;
+        background: white;
+        display: table;
+        table-layout: fixed;
+        width: 100%;
+        color: #999;
+        border-bottom: 1px solid #e5e5e5;
+        -webkit-transition: top 1s;
+        transition: top 1s;
+        padding-left: 0px;
+      }
+      .github_ticker li {
+        list-style: none;
+        display: block;
+        height: 40px;
+        border-bottom: 1px solid #e5e5e5;
+        box-sizing: border-box;
+        font-size: 15px;
+        padding: 9px
+      }
+      .github_ticker li .message {
+        color: #333;
+        font-weight: bold;
+        margin-left: 10px;
+      }
+
+    </style>
+
+        <div id="github_ticker" class="github_ticker">
+          <ul></ul>
+        </div>
+
+        <h1 style="margin-top:20px">Fast figures from your OMERO images</h1>
 
         <!-- <img src="https://raw.github.com/will-moore/figure/gh-pages/images/figure_screenshot_1.png" /> -->
         <iframe width="640" height="360" src="//www.youtube.com/embed/JNFvT8JwY7E?rel=0" frameborder="0" allowfullscreen></iframe>
