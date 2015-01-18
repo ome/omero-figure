@@ -94,6 +94,9 @@
         </header>
     </div>
 
+    {% if page.url == '/index.html' %}
+      {% include github_ticker.html %}
+    {% endif %}
 
     <div id="main_content_wrap" class="outer">
       <section id="main_content" class="inner">
