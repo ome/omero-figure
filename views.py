@@ -130,7 +130,9 @@ def imgData_json(request, imageId, conn=None, **kwargs):
         for info in infoList:
             tIndex = info.theT.getValue()
             if info.deltaT is not None:
-                deltaT = int(info.deltaT.getValue())
+                # planeInfo.deltaT gives number only (no units)
+                # Therefore compatible with OMERO 5.0 and 5.1
+                deltaT = int(round(info.deltaT.getValue()))
                 timeMap[tIndex] = deltaT
         for t in range(image.getSizeT()):
             if t in timeMap:
