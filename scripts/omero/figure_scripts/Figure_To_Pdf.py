@@ -1,6 +1,6 @@
 
 #
-# Copyright (c) 2014 University of Dundee.
+# Copyright (c) 2014-2015 University of Dundee.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -19,6 +19,7 @@
 import json
 
 from datetime import datetime
+from os import path
 
 from omero.model import ImageAnnotationLinkI, ImageI
 import omero.scripts as scripts
@@ -601,6 +602,9 @@ def create_pdf(conn, scriptParams):
     pdfName = figureName
     if not pdfName.endswith('.pdf'):
         pdfName = "%s.pdf" % pdfName
+
+    # in case we have path/to/pdfName.pdf, just use pdfName.pdf
+    pdfName = path.basename(pdfName)
 
     c = canvas.Canvas(pdfName, pagesize=(pageWidth, pageHeight))
 
