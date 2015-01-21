@@ -114,6 +114,8 @@ title: OMERO.figure
             </li>
             <li>Add the app to OMERO.web:
               <code> $ bin/omero config append omero.web.apps '"figure"' &nbsp # NB: double quotes</code>
+              NB: On Windows, you'll need to escape the inner quotes:
+              <code> $ bin/omero config append omero.web.apps "\"figure\""</code>
               NB: for OMERO 4.4.x you'll need to 'set' the whole list (append not supported):
               <code> $ bin/omero config set omero.web.apps '["figure"]' &nbsp # OMERO 4.4 only</code>
             </li>
