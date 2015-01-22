@@ -410,7 +410,7 @@
                 if (length != '-') sb.length = parseInt(length, 10);
                 if (position != '-') sb.position = position;
                 if (color != '-') sb.color = color;
-                if (show_label) sb.show_label = show_label;
+                sb.show_label = show_label;
                 if (font_size != '-') sb.font_size = font_size;
 
                 m.save_scalebar(sb);
