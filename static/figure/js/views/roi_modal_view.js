@@ -94,10 +94,16 @@ var RoiModalView = Backbone.View.extend({
                 roiW = r.width,
                 roiH = r.height,
                 theZ = this.m.get('theZ'),
-                theT = this.m.get('theT');
-            this.model.getSelected().each(function(m){
+                theT = this.m.get('theT'),
+                setZT = false;
+                sel = this.model.getSelected();
+            // Don't set Z/T if we already have different Z/T indecies.
+            if (sel.allEqual('theT') && sel.allEqual('theT')) setZT = true;
+            sel.each(function(m){
                 m.cropToRoi({'x': roiX, 'y': roiY, 'width': roiW, 'height': roiH});
-                m.set({'theZ': theZ, 'theT': theT});
+                if (setZT) {
+                    m.set({'theZ': theZ, 'theT': theT});
+                }
             });
             $("#roiModal").modal('hide');
         },
