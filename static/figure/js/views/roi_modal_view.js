@@ -168,9 +168,15 @@ var RoiModalView = Backbone.View.extend({
                         shape = roi.shapes[s];
                         if (shape.type !== "Rectangle") continue;
                         theT = shape.theT;
-                        if (theT === undefined) theT = -1;
+                        if (theT === undefined) {
+                            theT = currT;
+                            shape.theT = currT;
+                        }
                         theZ = shape.theZ;
-                        if (theZ === undefined) theZ = -1;
+                        if (theZ === undefined) {
+                            theZ = currZ;
+                            shape.theZ = currZ;
+                        }
                         if (shapes[theZ] === undefined) {
                             shapes[theZ] = {};
                         }
