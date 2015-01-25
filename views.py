@@ -113,10 +113,19 @@ def index(request, fileId=None, conn=None, **kwargs):
 def imgData_json(request, imageId, conn=None, **kwargs):
 
     image = conn.getObject("Image", imageId)
+
+    # Test if we have Units support (OMERO 5.1)
+    px = image.getPrimaryPixels().getPhysicalSizeX()
+    pixSizeX = str(px)  # As string E.g. "0.13262 MICROMETER"
+    unitsSupport = " " in pixSizeX
+
     if image is None:
         raise Http404("Image not found")
     rv = imageMarshal(image)
 
+    if unitsSupport:
+        rv['pixel_size']['symbolX'] = px.getSymbol()
+        rv['pixel_size']['unitX'] = str(px.getUnit())
     sizeT = image.getSizeT()
     timeList = []
     if sizeT > 1:
