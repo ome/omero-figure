@@ -158,7 +158,11 @@ def save_web_figure(request, conn=None, **kwargs):
     if figureJSON is None:
         return HttpResponse("No 'figureJSON' in POST")
     # See https://github.com/will-moore/figure/issues/16
-    figureJSON = unicodedata.normalize('NFKD', figureJSON).encode('ascii','ignore')
+    print type(figureJSON)
+    print figureJSON.encode('utf8')
+
+    # figureJSON = unicodedata.normalize('NFKD', figureJSON).encode('ascii','ignore')
+    figureJSON = figureJSON.encode('utf8')
 
     imageIds = []
     firstImgId = None
@@ -184,7 +188,7 @@ def save_web_figure(request, conn=None, **kwargs):
             figureName = "Figure_%s-%s-%s_%s-%s-%s.json" % \
                 (n.year, n.month, n.day, n.hour, n.minute, n.second)
         else:
-            figureName = str(figureName)
+            figureName = unicodedata.normalize('NFKD', figureName).encode('ascii','ignore')
         # we store json in description field...
         description = {}
         if firstImgId is not None:
@@ -283,6 +287,7 @@ def load_web_figure(request, fileId, conn=None, **kwargs):
     if fileAnn is None:
         raise Http404("Figure File-Annotation %s not found" % fileId)
     figureJSON = "".join(list(fileAnn.getFileInChunks()))
+    figureJSON = figureJSON.decode('utf8')
     jsonFile = fileAnn.getFile()
     ownerId = jsonFile.getDetails().getOwner().getId()
     try:
@@ -292,7 +297,7 @@ def load_web_figure(request, fileId, conn=None, **kwargs):
         json_data['figureName'] = jsonFile.getName()
     except:
         # If the json failed to parse, return the string anyway
-        return HttpResponse(json_data, content_type='json')
+        return HttpResponse(figureJSON, content_type='json')
 
     return HttpResponse(json.dumps(json_data), content_type='json')
 
