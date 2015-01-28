@@ -428,12 +428,16 @@
                 // start with json data from first Panel
                 if (!json.pixel_size_x) {
                     json.pixel_size_x = m.get('pixel_size_x');
+                    json.symbol = m.get('pixel_size_x_symbol');
                 } else {
                     pix_sze = m.get('pixel_size_x');
                     // account for floating point imprecision when comparing
                     if (json.pixel_size_x != '-' &&
                         json.pixel_size_x.toFixed(10) != pix_sze.toFixed(10)) {
                             json.pixel_size_x = '-';
+                    }
+                    if (json.symbol != m.get('pixel_size_x_symbol')) {
+                        json.symbol = '-';
                     }
                 }
                 sb = m.get('scalebar');
@@ -468,6 +472,7 @@
             json.position = json.position || 'bottomright';
             json.color = json.color || 'FFFFFF';
             json.font_size = json.font_size || 10;
+            json.symbol = json.symbol || '-';
 
             var html = this.template(json);
             this.$el.html(html);

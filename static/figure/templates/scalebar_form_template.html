@@ -2,7 +2,7 @@
     <div class="pixel_size_form" style="position:relative">
         <div class="pixel_size_div">
             Pixel Size:
-            <input class="input-sm form-control pixel_size_input" placeholder="Pixel Size (&#181;)"
+            <input class="input-sm form-control pixel_size_input" placeholder="Pixel Size (<%= symbol %>)"
                     style="width:100px; display:none" value="<%= pixel_size_x %>">
             <span class="pixel_size_display">
                 <% if (pixel_size_x == 0)
@@ -24,7 +24,7 @@
     </div>
 
     <div class="form-group"><div class="checkbox checkbox-inline">
-        <label>&#181;m</label>
+        <label><%= symbol %></label>
         </div>
     </div>
 

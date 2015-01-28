@@ -16,6 +16,8 @@
             deltaT: [],     // list of deltaTs (secs) for tIndexes of movie
             rotation: 0,
             selected: false,
+            pixel_size_x_symbol: '&#181;m',     // microns by default
+            pixel_size_x_unit: 'MICROMETER',
 
             // model includes 'scalebar' object, e.g:
             // scalebar: {length: 10, position: 'bottomleft', color: 'FFFFFF',
@@ -68,6 +70,8 @@
                 'datasetName': data.datasetName,
                 'pixel_size_x': data.pixel_size_x,
                 'pixel_size_y': data.pixel_size_y,
+                'pixel_size_x_symbol': data.pixel_size.symbolX,
+                'pixel_size_x_unit': data.pixel_size.unitX,
                 'deltaT': data.deltaT,
             };
 

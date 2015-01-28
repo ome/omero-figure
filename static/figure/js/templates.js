@@ -153,7 +153,9 @@ obj || (obj = {});
 var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
 function print() { __p += __j.call(arguments, '') }
 with (obj) {
-__p += '\n    <div class="pixel_size_form" style="position:relative">\n        <div class="pixel_size_div">\n            Pixel Size:\n            <input class="input-sm form-control pixel_size_input" placeholder="Pixel Size (&#181;)"\n                    style="width:100px; display:none" value="' +
+__p += '\n    <div class="pixel_size_form" style="position:relative">\n        <div class="pixel_size_div">\n            Pixel Size:\n            <input class="input-sm form-control pixel_size_input" placeholder="Pixel Size (' +
+((__t = ( symbol )) == null ? '' : __t) +
+')"\n                    style="width:100px; display:none" value="' +
 ((__t = ( pixel_size_x )) == null ? '' : __t) +
 '">\n            <span class="pixel_size_display">\n                ';
  if (pixel_size_x == 0)
@@ -164,7 +166,9 @@ __p += '\n    <div class="pixel_size_form" style="position:relative">\n        <
                     {print(pixel_size_x + " &#181;m")} ;
 __p += '\n            </span>\n        </div>\n\n    </div>\n\n    <form class="scalebar_form form-inline">\n\n    <div class="input-group pull-left">\n        <input type="text" class="scalebar-length form-control input-sm" \n                placeholder="Length" value="' +
 ((__t = ( length )) == null ? '' : __t) +
-'" />\n    </div>\n\n    <div class="form-group"><div class="checkbox checkbox-inline">\n        <label>&#181;m</label>\n        </div>\n    </div>\n\n    <div class="btn-group">\n        <button type="button" class="label-position btn btn-default btn-sm dropdown-toggle" \n                title="Position" data-toggle="dropdown">\n            <span data-position="' +
+'" />\n    </div>\n\n    <div class="form-group"><div class="checkbox checkbox-inline">\n        <label>' +
+((__t = ( symbol )) == null ? '' : __t) +
+'</label>\n        </div>\n    </div>\n\n    <div class="btn-group">\n        <button type="button" class="label-position btn btn-default btn-sm dropdown-toggle" \n                title="Position" data-toggle="dropdown">\n            <span data-position="' +
 ((__t = ( position )) == null ? '' : __t) +
 '" class="labelicon-' +
 ((__t = ( position )) == null ? '' : __t) +
@@ -213,7 +217,9 @@ __p += '\n            <div class=\'scalebar-label\' style=\'color: #' +
 ((__t = ( font_size )) == null ? '' : __t) +
 'px\'>\n                ' +
 ((__t = ( length )) == null ? '' : __t) +
-' &#181;m\n            </div>\n        ';
+' ' +
+((__t = ( symbol )) == null ? '' : __t) +
+'\n            </div>\n        ';
  } ;
 __p += '\n    </div>\n';
 

@@ -126,6 +126,9 @@ def imgData_json(request, imageId, conn=None, **kwargs):
     if unitsSupport:
         rv['pixel_size']['symbolX'] = px.getSymbol()
         rv['pixel_size']['unitX'] = str(px.getUnit())
+        py = image.getPrimaryPixels().getPhysicalSizeY()
+        rv['pixel_size']['symbolY'] = py.getSymbol()
+        rv['pixel_size']['unitY'] = str(py.getUnit())
     sizeT = image.getSizeT()
     timeList = []
     if sizeT > 1:
