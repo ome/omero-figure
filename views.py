@@ -158,10 +158,6 @@ def save_web_figure(request, conn=None, **kwargs):
     if figureJSON is None:
         return HttpResponse("No 'figureJSON' in POST")
     # See https://github.com/will-moore/figure/issues/16
-    print type(figureJSON)
-    print figureJSON.encode('utf8')
-
-    # figureJSON = unicodedata.normalize('NFKD', figureJSON).encode('ascii','ignore')
     figureJSON = figureJSON.encode('utf8')
 
     imageIds = []
