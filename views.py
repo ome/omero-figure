@@ -158,7 +158,7 @@ def save_web_figure(request, conn=None, **kwargs):
     if figureJSON is None:
         return HttpResponse("No 'figureJSON' in POST")
     # See https://github.com/will-moore/figure/issues/16
-    figureJSON = unicodedata.normalize('NFKD', figureJSON).encode('ascii','ignore')
+    figureJSON = figureJSON.encode('utf8')
 
     imageIds = []
     firstImgId = None
@@ -177,17 +177,19 @@ def save_web_figure(request, conn=None, **kwargs):
 
     if fileId is None:
         # Create new file
-        figureName = request.POST.get('figureName')
-        if figureName is None:
-            n = datetime.now()
+        if 'figureName' in json_data and len(json_data['figureName']) > 0:
+            figureName = json_data['figureName']
+        else:
+            n = datetime.now( )
             # time-stamp name by default: WebFigure_2013-10-29_22-43-53.json
             figureName = "Figure_%s-%s-%s_%s-%s-%s.json" % \
                 (n.year, n.month, n.day, n.hour, n.minute, n.second)
-        else:
-            figureName = str(figureName)
         # we store json in description field...
         description = {}
         if firstImgId is not None:
+            # We duplicate the figure name here for quicker access when listing files
+            # (use this instead of file name because it supports unicode)
+            description['name'] = figureName
             description['imageId'] = firstImgId
             if 'baseUrl' in panel:
                 description['baseUrl'] = panel['baseUrl']
@@ -209,6 +211,8 @@ def save_web_figure(request, conn=None, **kwargs):
         fileSize = len(figureJSON)
         f = StringIO()
         f.write(figureJSON)
+        # Can't use unicode for file name
+        figureName = unicodedata.normalize('NFKD', figureName).encode('ascii','ignore')
         origF = createOriginalFileFromFileObj(
             conn, f, '', figureName, fileSize, mimetype="application/json")
         fa = omero.model.FileAnnotationI()
@@ -283,16 +287,24 @@ def load_web_figure(request, fileId, conn=None, **kwargs):
     if fileAnn is None:
         raise Http404("Figure File-Annotation %s not found" % fileId)
     figureJSON = "".join(list(fileAnn.getFileInChunks()))
+    figureJSON = figureJSON.decode('utf8')
     jsonFile = fileAnn.getFile()
     ownerId = jsonFile.getDetails().getOwner().getId()
     try:
         # parse the json, so we can add info...
         json_data = json.loads(figureJSON)
         json_data['canEdit'] = ownerId == conn.getUserId()
-        json_data['figureName'] = jsonFile.getName()
+        # Figure name may not be populated: check in description...
+        if 'figureName' not in json_data:
+            desc = fileAnn.getDescription()
+            description = json.loads(desc)
+            if 'name' in description:
+                json_data['figureName'] = description['name']
+            else:
+                json_data['figureName'] = jsonFile.getName()
     except:
         # If the json failed to parse, return the string anyway
-        return HttpResponse(json_data, content_type='json')
+        return HttpResponse(figureJSON, content_type='json')
 
     return HttpResponse(json.dumps(json_data), content_type='json')
 
@@ -359,6 +371,9 @@ def list_web_figures(request, conn=None, **kwargs):
             desc = fa.getDescription()
             description = json.loads(desc)
             figFile['description'] = description
+            # Overwrite the file name. (json supports unicode file name)
+            if 'name' in description:
+                figFile['name'] = description['name']
         except:
             pass
 

@@ -144,7 +144,8 @@
                 data.fileId = options.fileId;
             }
             if (options.figureName) {
-                data.figureName = options.figureName;
+                // Include figure name in JSON saved to file
+                figureJSON.figureName = options.figureName;
             }
             data.figureJSON = JSON.stringify(figureJSON);
 
