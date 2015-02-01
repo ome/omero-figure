@@ -47,4 +47,10 @@ urlpatterns = patterns('django.views.generic.simple',
 
     # Delete file annotations of saved Figures - 'POST' with 'fileId' of file annotation
     url( r'^delete_web_figure/$', views.delete_web_figure, name='delete_web_figure'),
+
+    # Converts Lengths of value in 'fromUnit' to 'toUnit'.
+    # E.g. unit_conversion/1.12/MICROMETER/ANGSTROM/.
+    # Returns result as json with keys of 'value', 'unit' and 'symbol'
+    url( r'^unit_conversion/(?P<value>[0-9.]+)/(?P<fromUnit>[A-Z]+)/(?P<toUnit>[A-Z]+)/$',
+            views.unit_conversion, name='unit_conversion'),
 )

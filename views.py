@@ -407,3 +407,34 @@ def delete_web_figure(request, conn=None, **kwargs):
     # fileAnn = conn.getObject("FileAnnotation", fileId)
     conn.deleteObjects("Annotation", [fileId])
     return HttpResponse("Deleted OK")
+
+def unit_conversion(request, value, fromUnit, toUnit, conn=None, **kwargs):
+    """
+    OMERO 5.1 only: Converts Lengths of value in 'fromUnit' to 'toUnit'.
+    E.g. unit_conversion/1.12/MICROMETER/ANGSTROM/.
+    Returns result as json with keys of 'value', 'unit' and 'symbol'
+    """
+
+    error = None
+    try:
+        from omero.model.enums import UnitsLength
+        fromUnit = getattr(UnitsLength, str(fromUnit))
+        toUnit = getattr(UnitsLength, str(toUnit))
+        value = float(value)
+    except ImportError, ex:
+        error = ("Failed to import omero.model.enums.UnitsLength."
+                 " Requires OMERO 5.1")
+    except AttributeError, ex:
+        error = ex.message
+
+    if error:
+        return HttpResponse(json.dumps({'error':error}), content_type='json')
+
+    fromValue = omero.model.LengthI(value, fromUnit)
+    toValue = omero.model.LengthI(fromValue, toUnit)
+
+    rsp = {'value': toValue.getValue(),
+           'unit': str(toValue.getUnit()),
+           'symbol': toValue.getSymbol()}
+
+    return HttpResponse(json.dumps(rsp), content_type='json')
