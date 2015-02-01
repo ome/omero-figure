@@ -337,20 +337,49 @@
                 alert('Top-left panel has no pixel size set');
                 return;
             }
-            // E.g. 10 microns / inch
-            targetMag = ref_pixSize * ref.getPanelDpi();
 
-            sel.forEach(function(p){
-                var dpi = p.getPanelDpi(),
-                    pixSize = p.get('pixel_size_x');
-                if (!pixSize) {
-                    return;
+            // This could return an AJAX call if we need to convert units.
+            // Whenever we use this below, wrap it with $.when().then()
+            var getPixSizeInMicrons = function(m) {
+                var unit = m.get("pixel_size_x_unit"),
+                    size = m.get("pixel_size_x");
+                if (unit === "MICROMETER") {
+                    return {'value':size};
                 }
-                var panelMag = dpi * pixSize,
-                    scale = panelMag / targetMag,
-                    new_w = p.get('width') * scale,
-                    new_h = p.get('height') * scale;
-                p.set({'width':new_w, 'height':new_h});
+                if (!size) {
+                    return {'value': size}
+                }
+                // convert to MICROMETER
+                var url = BASE_WEBFIGURE_URL + "unit_conversion/" + size + "/" + unit + "/MICROMETER/";
+                return $.getJSON(url);
+            }
+
+            // First, get reference pixel size...
+            $.when( getPixSizeInMicrons(ref) ).then(function(data){
+                ref_pixSize = data.value;
+                // E.g. 10 microns / inch
+                targetMag = ref_pixSize * ref.getPanelDpi();
+
+                // Loop through all selected, updating size of each...
+                sel.forEach(function(p){
+
+                    // ignore the ref panel
+                    if (p.cid === ref.cid) return;
+
+                    $.when( getPixSizeInMicrons(p) ).then(function(data){
+
+                        var dpi = p.getPanelDpi(),
+                            pixSize = data.value;
+                        if (!pixSize) {
+                            return;
+                        }
+                        var panelMag = dpi * pixSize,
+                            scale = panelMag / targetMag,
+                            new_w = p.get('width') * scale,
+                            new_h = p.get('height') * scale;
+                        p.set({'width':new_w, 'height':new_h});
+                    });
+                });
             });
         },
 
