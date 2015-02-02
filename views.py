@@ -335,17 +335,14 @@ def make_web_figure(request, conn=None, **kwargs):
     sId = scriptService.getScriptID(SCRIPT_PATH)
 
     figureJSON = request.POST.get('figureJSON')
-    # see https://github.com/will-moore/figure/issues/16
-    figureJSON = unicodedata.normalize('NFKD', figureJSON).encode('ascii','ignore')
     webclient_uri = request.build_absolute_uri(reverse('webindex'))
 
-    figure_dict = json.loads(figureJSON)
-
     inputMap = {
-        'Figure_JSON': wrap(figureJSON),
+        'Figure_JSON': wrap(figureJSON.encode('utf8')),
         'Webclient_URI': wrap(webclient_uri)}
 
     # If the figure has been saved, construct URL to it...
+    figure_dict = json.loads(figureJSON)
     if 'fileId' in figure_dict:
         try:
             figureUrl = reverse('load_figure', args=[figure_dict['fileId']])

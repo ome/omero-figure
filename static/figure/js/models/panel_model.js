@@ -16,7 +16,7 @@
             deltaT: [],     // list of deltaTs (secs) for tIndexes of movie
             rotation: 0,
             selected: false,
-            pixel_size_x_symbol: '&#181;m',     // microns by default
+            pixel_size_x_symbol: '\xB5m',     // microns by default
             pixel_size_x_unit: 'MICROMETER',
 
             // model includes 'scalebar' object, e.g:
