@@ -17,6 +17,7 @@
 #
 
 import json
+import unicodedata
 
 from datetime import datetime
 from os import path
@@ -331,7 +332,10 @@ def drawScalebar(c, panel, region_width, page):
     c.line(lx, ly, lx_end, ly)
 
     if 'show_label' in sb and sb['show_label']:
-        label = u"%s \u00B5m" % sb['length']
+        symbol = u"\u00B5m"
+        if 'pixel_size_x_symbol' in panel:
+            symbol = panel['pixel_size_x_symbol']
+        label = "%s %s" % (sb['length'], symbol)
         font_size = 10
         try:
             font_size = int(sb['font_size'])
@@ -518,8 +522,12 @@ def addInfoPage(conn, scriptParams, c, panels_json, figureName):
     for p in panels_json:
         iid = p['imageId']
         # list unique scalebar lengths
-        if 'scalebar' in p and p['scalebar']['length'] not in scalebars:
-            scalebars.append(p['scalebar']['length'])
+        if 'scalebar' in p:
+            sb_length = p['scalebar']['length']
+            symbol = u"\u00B5m"
+            if 'pixel_size_x_symbol' in p:
+                symbol = p['pixel_size_x_symbol']
+            scalebars.append("%s %s" % (sb_length, symbol))
         if iid in imgIds:
             continue    # ignore images we've already handled
         imgIds.add(iid)
@@ -535,11 +543,9 @@ def addInfoPage(conn, scriptParams, c, panels_json, figureName):
         pageY = addParaWithThumb(line, pageY, thumbSrc=thumbSrc)
 
     if len(scalebars) > 0:
-        # f.addFromList([Paragraph("Scalebars", styleH)], c)
+        scalebars = list(set(scalebars))
         pageY = addParaWithThumb("Scalebars", pageY, style=styleH2)
-        sbs = [str(s) for s in scalebars]
-        # addPara(["Scalebars: %s microns" % " microns, ".join(sbs)])
-        pageY = addParaWithThumb("Scalebars: %s microns" % " microns, ".join(sbs), pageY)
+        pageY = addParaWithThumb("Scalebars: %s" % ", ".join(scalebars), pageY)
 
 
 def panel_is_on_page(panel, page):
@@ -582,6 +588,8 @@ def create_pdf(conn, scriptParams):
     conn.SERVICE_OPTS.setOmeroGroup(-1)
 
     figure_json_string = scriptParams['Figure_JSON']
+    # Since unicode can't be wrapped by rstring
+    figure_json_string = figure_json_string.decode('utf8')
     figure_json = json.loads(figure_json_string)
 
     n = datetime.now()
@@ -589,7 +597,7 @@ def create_pdf(conn, scriptParams):
     figureName = "Figure_%s-%s-%s_%s-%s-%s." \
         "pdf" % (n.year, n.month, n.day, n.hour, n.minute, n.second)
     if 'figureName' in figure_json:
-        figureName = str(figure_json['figureName'])
+        figureName = figure_json['figureName']
 
 
     # get Figure width & height...
@@ -599,7 +607,7 @@ def create_pdf(conn, scriptParams):
     scriptParams['Page_Width'] = pageWidth
     scriptParams['Page_Height'] = pageHeight
 
-    pdfName = figureName
+    pdfName = unicodedata.normalize('NFKD', figureName).encode('ascii','ignore')
     if not pdfName.endswith('.pdf'):
         pdfName = "%s.pdf" % pdfName
 
