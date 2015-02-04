@@ -46,6 +46,9 @@ var RoiModalView = Backbone.View.extend({
                     'width': m.get('width') / scale,
                     'height': m.get('height') / scale
                 }
+                // No-longer correspond to saved ROI coords
+                console.log("cropModel update - undefined");
+                self.currentRoiId = undefined;
             });
 
             // Now set up Raphael paper...
@@ -83,11 +86,20 @@ var RoiModalView = Backbone.View.extend({
             this.cropModel.set({
                 'selected': true
             });
+
+            // Save ROI ID
+            this.currentRoiId = $roi.attr('data-roiId');
+            console.log(this.currentRoiId);
+
         },
 
         handleRoiForm: function(event) {
             event.preventDefault();
             // var json = this.processForm();
+            console.log('this.currentRoiId', this.currentRoiId);
+            if (this.currentRoiId) {
+                console.log(this.cachedRois[this.currentRoiId]);
+            }
             var r = this.currentROI,
                 roiX = r.x,
                 roiY = r.y,
@@ -159,6 +171,7 @@ var RoiModalView = Backbone.View.extend({
                 var currT = self.m.get('theT'),
                     currZ = self.m.get('theZ');
                 var rects = [],
+                    cachedRois = {},    // roiId: shapes (z/t dict)
                     roi, shape, theT, theZ, z, t, rect, tkeys, zkeys,
                     shapes; // dict of all shapes by z & t index
                 for (var r=0; r<data.length; r++) {
@@ -182,24 +195,39 @@ var RoiModalView = Backbone.View.extend({
                         }
                         shapes[theZ][theT] = shape;
                     }
+                    console.log("shapes", shapes);
+                    cachedRois[roi.id] = shapes;
                     // get shape on current plane or...?
-                    zkeys = _.keys(shapes);
+                    zkeys = _.keys(shapes).sort();
                     if (zkeys.length === 0) continue;   // no Rectangles
                     if (shapes[currZ]) {
                         z = currZ;
                     } else {
-                        z = zkeys.sort()[(zkeys.length/2)>>0]
+                        z = zkeys[(zkeys.length/2)>>0]
                     }
-                    tkeys = _.keys(shapes[z]);
+                    tkeys = _.keys(shapes[z]).sort();
                     if (shapes[z][currT]) {
                         t = currT;
                     } else {
-                        t = tkeys.sort()[(tkeys.length/2)>>0]
+                        t = tkeys[(tkeys.length/2)>>0]
                     }
-                    rects.push(shapes[z][t])
+                    shape = shapes[z][t]
+                    rects.push({'theZ': shape.theZ,
+                                'theT': shape.theT,
+                                'x': shape.x,
+                                'y': shape.y,
+                                'width': shape.width,
+                                'height': shape.height,
+                                'roiId': roi.id,
+                                'tStart': tkeys[0],
+                                'tEnd': tkeys[tkeys.length-1],
+                                'zStart': zkeys[0],
+                                'zEnd': zkeys[zkeys.length-1]});
                 }
+                console.log(rects);
                 // Show ROIS...
                 self.renderRois(rects);
+                self.cachedRois = cachedRois;
             });
         },
 
@@ -245,7 +273,12 @@ var RoiModalView = Backbone.View.extend({
                     'img_w': img_w,
                     'img_h': img_h,
                     'theZ': rect.theZ + 1,
-                    'theT': rect.theT + 1
+                    'theT': rect.theT + 1,
+                    'zStart': (+rect.zStart) + 1,
+                    'zEnd': (+rect.zEnd) + 1,
+                    'tStart': (+rect.tStart) + 1,
+                    'tEnd': (+rect.tEnd) + 1,
+                    'roiId': rect.roiId,
                 }
                 html += this.roiTemplate(json);
             }
