@@ -89,31 +89,71 @@ var RoiModalView = Backbone.View.extend({
 
             // Save ROI ID
             this.currentRoiId = $roi.attr('data-roiId');
-            console.log(this.currentRoiId);
-
         },
 
         handleRoiForm: function(event) {
             event.preventDefault();
             // var json = this.processForm();
-            console.log('this.currentRoiId', this.currentRoiId);
-            if (this.currentRoiId) {
-                console.log(this.cachedRois[this.currentRoiId]);
-            }
-            var r = this.currentROI,
-                roiX = r.x,
-                roiY = r.y,
-                roiW = r.width,
-                roiH = r.height,
+            var self = this,
+                r = this.currentROI,
                 theZ = this.m.get('theZ'),
                 theT = this.m.get('theT'),
-                setZT = false;
-                sel = this.model.getSelected();
+                sel = this.model.getSelected(),
+                sameZT = sel.allEqual('theT') && sel.allEqual('theT');
+
+            var getShape = function getShape(z, t) {
+
+                var rv = {'x': r.x,
+                        'y': r.y,
+                        'width': r.width,
+                        'height': r.height,
+                        'theZ': z,
+                        'theT': t,
+                    }
+                return rv;
+            }
+
+            // IF we have an ROI selected (instead of hand-drawn shape)
+            // AND we have a range of Z/T for selected panels,
+            // then try to maintain current Z/T and use appropriate shape
+            // for that plane.
+            if (this.currentRoiId && !sameZT) {
+
+                getShape = function getShape(currZ, currT) {
+
+                    var ztShapeMap = self.cachedRois[self.currentRoiId],
+                        zkeys = _.keys(ztShapeMap).sort(),
+                        tkeys, z, t, s;
+
+                    if (ztShapeMap[currZ]) {
+                        z = currZ;
+                    } else {
+                        z = zkeys[parseInt(zkeys.length/2 ,10)]
+                    }
+                    tkeys = _.keys(ztShapeMap[currZ]).sort();
+                    if (ztShapeMap[z][currT]) {
+                        t = currT;
+                    } else {
+                        t = tkeys[parseInt(tkeys.length/2, 10)]
+                    }
+                    s = ztShapeMap[z][t]
+
+                    console.log(s.x, s.y, s.width, s.height);
+
+                    return {'x': s.x,
+                            'y': s.y,
+                            'width': s.width,
+                            'height': s.height,
+                        }
+                };
+            }
+
             // Don't set Z/T if we already have different Z/T indecies.
-            if (sel.allEqual('theT') && sel.allEqual('theT')) setZT = true;
             sel.each(function(m){
-                m.cropToRoi({'x': roiX, 'y': roiY, 'width': roiW, 'height': roiH});
-                if (setZT) {
+                var sh = getShape(m.get('theZ'), m.get('theT'));
+
+                m.cropToRoi({'x': sh.x, 'y': sh.y, 'width': sh.width, 'height': sh.height});
+                if (sameZT) {
                     m.set({'theZ': theZ, 'theT': theT});
                 }
             });
