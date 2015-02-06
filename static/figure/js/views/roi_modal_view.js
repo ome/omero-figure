@@ -137,6 +137,11 @@ var RoiModalView = Backbone.View.extend({
                     }
                     s = tzShapeMap[t][z]
 
+                    // if we have a range of T values, don't change T!
+                    if (!sel.allEqual('theT')) {
+                        t = currT;
+                    }
+
                     return {'x': s.x,
                             'y': s.y,
                             'width': s.width,
