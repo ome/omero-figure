@@ -47,7 +47,6 @@ var RoiModalView = Backbone.View.extend({
                     'height': m.get('height') / scale
                 }
                 // No-longer correspond to saved ROI coords
-                console.log("cropModel update - undefined");
                 self.currentRoiId = undefined;
             });
 
@@ -98,8 +97,8 @@ var RoiModalView = Backbone.View.extend({
                 r = this.currentROI,
                 theZ = this.m.get('theZ'),
                 theT = this.m.get('theT'),
-                sel = this.model.getSelected(),
-                sameZT = sel.allEqual('theT') && sel.allEqual('theT');
+                sel = this.model.getSelected();
+                // sameZT = sel.allEqual('theT') && sel.allEqual('theT');
 
             var getShape = function getShape(z, t) {
 
@@ -117,33 +116,33 @@ var RoiModalView = Backbone.View.extend({
             // AND we have a range of Z/T for selected panels,
             // then try to maintain current Z/T and use appropriate shape
             // for that plane.
-            if (this.currentRoiId && !sameZT) {
+            if (this.currentRoiId) {
 
                 getShape = function getShape(currZ, currT) {
 
-                    var ztShapeMap = self.cachedRois[self.currentRoiId],
-                        zkeys = _.keys(ztShapeMap).sort(),
-                        tkeys, z, t, s;
+                    var tzShapeMap = self.cachedRois[self.currentRoiId],
+                        tkeys = _.keys(tzShapeMap).sort(),
+                        zkeys, z, t, s;
 
-                    if (ztShapeMap[currZ]) {
-                        z = currZ;
-                    } else {
-                        z = zkeys[parseInt(zkeys.length/2 ,10)]
-                    }
-                    tkeys = _.keys(ztShapeMap[currZ]).sort();
-                    if (ztShapeMap[z][currT]) {
+                    if (tzShapeMap[currT]) {
                         t = currT;
                     } else {
-                        t = tkeys[parseInt(tkeys.length/2, 10)]
+                        t = tkeys[parseInt(tkeys.length/2 ,10)]
                     }
-                    s = ztShapeMap[z][t]
-
-                    console.log(s.x, s.y, s.width, s.height);
+                    zkeys = _.keys(tzShapeMap[t]).sort();
+                    if (tzShapeMap[t][currZ]) {
+                        z = currZ;
+                    } else {
+                        z = zkeys[parseInt(zkeys.length/2, 10)]
+                    }
+                    s = tzShapeMap[t][z]
 
                     return {'x': s.x,
                             'y': s.y,
                             'width': s.width,
                             'height': s.height,
+                            'theZ': z,
+                            'theT': t,
                         }
                 };
             }
@@ -153,9 +152,7 @@ var RoiModalView = Backbone.View.extend({
                 var sh = getShape(m.get('theZ'), m.get('theT'));
 
                 m.cropToRoi({'x': sh.x, 'y': sh.y, 'width': sh.width, 'height': sh.height});
-                if (sameZT) {
-                    m.set({'theZ': theZ, 'theT': theT});
-                }
+                m.set({'theZ': sh.theZ, 'theT': sh.theT});
             });
             $("#roiModal").modal('hide');
         },
@@ -213,45 +210,53 @@ var RoiModalView = Backbone.View.extend({
                 var rects = [],
                     cachedRois = {},    // roiId: shapes (z/t dict)
                     roi, shape, theT, theZ, z, t, rect, tkeys, zkeys,
+                    minT, maxT,
                     shapes; // dict of all shapes by z & t index
                 for (var r=0; r<data.length; r++) {
                     roi = data[r];
                     shapes = {};
+                    minT = undefined;
+                    maxT = 0;
                     for (var s=0; s<roi.shapes.length; s++) {
                         shape = roi.shapes[s];
                         if (shape.type !== "Rectangle") continue;
-                        theT = shape.theT;
-                        if (theT === undefined) {
-                            theT = currT;
-                            shape.theT = currT;
-                        }
-                        theZ = shape.theZ;
-                        if (theZ === undefined) {
-                            theZ = currZ;
+                        // Handle null Z/T
+                        if (shape.theZ === undefined) {
                             shape.theZ = currZ;
                         }
-                        if (shapes[theZ] === undefined) {
-                            shapes[theZ] = {};
+                        theZ = shape.theZ;
+                        if (shape.theT === undefined) {
+                            shape.theT = currT;
                         }
-                        shapes[theZ][theT] = shape;
+                        theT = shape.theT;
+                        // Keep track of min/max T for display
+                        if (minT === undefined) {minT = theT}
+                        else {minT = Math.min(minT, theT)}
+                        maxT = Math.max(maxT, theT);
+
+                        // Build our map of shapes[t][z]
+                        if (shapes[theT] === undefined) {
+                            shapes[theT] = {};
+                        }
+                        shapes[theT][theZ] = shape;
                     }
-                    console.log("shapes", shapes);
                     cachedRois[roi.id] = shapes;
-                    // get shape on current plane or...?
-                    zkeys = _.keys(shapes).sort();
-                    if (zkeys.length === 0) continue;   // no Rectangles
-                    if (shapes[currZ]) {
-                        z = currZ;
-                    } else {
-                        z = zkeys[(zkeys.length/2)>>0]
-                    }
-                    tkeys = _.keys(shapes[z]).sort();
-                    if (shapes[z][currT]) {
+                    // get display shape for picking ROI
+                    // on current plane or pick median T/Z...
+                    tkeys = _.keys(shapes).sort();
+                    if (tkeys.length === 0) continue;   // no Rectangles
+                    if (shapes[currT]) {
                         t = currT;
                     } else {
                         t = tkeys[(tkeys.length/2)>>0]
                     }
-                    shape = shapes[z][t]
+                    zkeys = _.keys(shapes[t]).sort();
+                    if (shapes[t][currZ]) {
+                        z = currZ;
+                    } else {
+                        z = zkeys[(zkeys.length/2)>>0]
+                    }
+                    shape = shapes[t][z]
                     rects.push({'theZ': shape.theZ,
                                 'theT': shape.theT,
                                 'x': shape.x,
@@ -259,12 +264,11 @@ var RoiModalView = Backbone.View.extend({
                                 'width': shape.width,
                                 'height': shape.height,
                                 'roiId': roi.id,
-                                'tStart': tkeys[0],
-                                'tEnd': tkeys[tkeys.length-1],
+                                'tStart': minT,
+                                'tEnd': maxT,
                                 'zStart': zkeys[0],
                                 'zEnd': zkeys[zkeys.length-1]});
                 }
-                console.log(rects);
                 // Show ROIS...
                 self.renderRois(rects);
                 self.cachedRois = cachedRois;
