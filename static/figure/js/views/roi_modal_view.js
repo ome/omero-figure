@@ -113,9 +113,7 @@ var RoiModalView = Backbone.View.extend({
             }
 
             // IF we have an ROI selected (instead of hand-drawn shape)
-            // AND we have a range of Z/T for selected panels,
-            // then try to maintain current Z/T and use appropriate shape
-            // for that plane.
+            // then try to use appropriate shape for that plane.
             if (this.currentRoiId) {
 
                 getShape = function getShape(currZ, currT) {
@@ -157,7 +155,8 @@ var RoiModalView = Backbone.View.extend({
                 var sh = getShape(m.get('theZ'), m.get('theT'));
 
                 m.cropToRoi({'x': sh.x, 'y': sh.y, 'width': sh.width, 'height': sh.height});
-                m.set({'theZ': sh.theZ, 'theT': sh.theT});
+                m.set({'theZ': parseInt(sh.theZ, 10),
+                       'theT': parseInt(sh.theT, 10)});
             });
             $("#roiModal").modal('hide');
         },
@@ -292,6 +291,7 @@ var RoiModalView = Backbone.View.extend({
 
             // loop through ROIs, using our cloned model to generate src urls
             // first, get the current Z and T of cloned model...
+            this.m.set('z_projection', false);      // in case z_projection is true
             var origT = this.m.get('theT'),
                 origZ = this.m.get('theZ');
             for (var r=0; r<rects.length; r++) {
