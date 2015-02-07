@@ -519,13 +519,16 @@ return __p
 
 this["JST"]["static/figure/templates/modal_dialogs/roi_modal_roi.html"] = function(obj) {
 obj || (obj = {});
-var __t, __p = '', __e = _.escape;
+var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
+function print() { __p += __j.call(arguments, '') }
 with (obj) {
 __p += '\n<tr class="roiPickMe">\n    <td>\n        <div class="roi_wrapper" style="position: relative; overflow: hidden; margin: 5px; height: ' +
 ((__t = ( h )) == null ? '' : __t) +
 'px; width: ' +
 ((__t = ( w )) == null ? '' : __t) +
-'px">\n            <img class="roi_content"\n                data-x="' +
+'px">\n            <img class="roi_content"\n                data-roiId="' +
+((__t = ( roiId )) == null ? '' : __t) +
+'"\n                data-x="' +
 ((__t = ( rect.x )) == null ? '' : __t) +
 '" data-y="' +
 ((__t = ( rect.y )) == null ? '' : __t) +
@@ -547,11 +550,15 @@ __p += '\n<tr class="roiPickMe">\n    <td>\n        <div class="roi_wrapper" sty
 ((__t = ( img_h )) == null ? '' : __t) +
 'px" src="' +
 ((__t = ( src )) == null ? '' : __t) +
-'" />\n        </div>\n    </td>\n    <td>' +
-((__t = ( theZ )) == null ? '' : __t) +
-'</td>\n    <td>' +
-((__t = ( theT )) == null ? '' : __t) +
-'</td>\n</tr>\n';
+'" />\n        </div>\n    </td>\n    <td>\n        ' +
+((__t = ( zStart )) == null ? '' : __t) +
+'\n        ';
+ if (zStart !== zEnd) print(" - " + zEnd); ;
+__p += '\n    </td>\n    <td>\n        ' +
+((__t = ( tStart )) == null ? '' : __t) +
+'\n        ';
+ if (tStart !== tEnd) print(" - " + tEnd); ;
+__p += '\n    </td>\n</tr>\n';
 
 }
 return __p
