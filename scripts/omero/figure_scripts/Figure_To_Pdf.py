@@ -387,6 +387,11 @@ def getPanelImage(image, panel):
         crop_top = int(dy * -2)
     else:
         crop_bottom = crop_bottom - int(dy * 2)
+
+    # convert to RGBA so we can control background after crop/rotate...
+    # See http://stackoverflow.com/questions/5252170/
+    mde = pilImg.mode
+    pilImg = pilImg.convert('RGBA')
     pilImg = pilImg.crop((crop_left, crop_top, crop_right, crop_bottom))
 
     # Optional rotation
@@ -407,7 +412,13 @@ def getPanelImage(image, panel):
 
     pilImg = pilImg.crop((crop_left, crop_top, crop_right, crop_bottom))
 
-    return pilImg
+    # ...paste image with transparent blank areas onto white background
+    fff = Image.new('RGBA', pilImg.size, (255, 255, 255, 255))
+    out = Image.composite(pilImg, fff, pilImg)
+    # and convert back to original mode
+    out.convert(mde)
+
+    return out
 
 
 def drawPanel(conn, c, panel, page, idx):
