@@ -97,7 +97,8 @@ var RoiModalView = Backbone.View.extend({
                 r = this.currentROI,
                 theZ = this.m.get('theZ'),
                 theT = this.m.get('theT'),
-                sel = this.model.getSelected();
+                sel = this.model.getSelected(),
+                sameT = sel.allEqual('theT');
                 // sameZT = sel.allEqual('theT') && sel.allEqual('theT');
 
             var getShape = function getShape(z, t) {
@@ -136,7 +137,7 @@ var RoiModalView = Backbone.View.extend({
                     s = tzShapeMap[t][z]
 
                     // if we have a range of T values, don't change T!
-                    if (!sel.allEqual('theT')) {
+                    if (!sameT) {
                         t = currT;
                     }
 
