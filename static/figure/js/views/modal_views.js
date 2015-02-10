@@ -80,7 +80,7 @@
             }
 
             var cols = pageCount;
-            if (pageCount > 4) {
+            if (pageCount > 3) {
                 cols = Math.ceil(pageCount/2);
             }
 
