@@ -82,6 +82,7 @@
 
         events: {
             "click .export_pdf": "export_pdf",
+            "click .export_options li": "export_options",
             "click .add_panel": "addPanel",
             "click .delete_panel": "deleteSelectedPanels",
             "click .copy": "copy_selected_panels",
@@ -111,6 +112,21 @@
             'up' : 'nudge_up',
             'left' : 'nudge_left',
             'right' : 'nudge_right',
+        },
+
+        // choose an export option from the drop-down list
+        export_options: function(event) {
+            event.preventDefault();
+
+            var $target = $(event.target);
+
+            // Only show check mark on the selected item.
+            $(".export_options .glyphicon-ok").css('visibility', 'hidden');
+            $(".glyphicon-ok", $target).css('visibility', 'visible');
+
+            // Update text of main export_pdf button.
+            var txt = $target.attr('data-label');
+            $('.export_pdf').text("Export " + txt);
         },
 
         paper_setup: function(event) {
