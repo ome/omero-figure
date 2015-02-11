@@ -20,7 +20,9 @@ import json
 import unicodedata
 
 from datetime import datetime
+import os
 from os import path
+import zipfile
 
 from omero.model import ImageAnnotationLinkI, ImageI
 import omero.scripts as scripts
@@ -43,8 +45,28 @@ except ImportError:
 
 from omero.gateway import BlitzGateway
 from omero.rtypes import rstring, robject
-# conn = BlitzGateway('will', 'ome')
-# conn.connect()
+
+ORIGINAL_DIR = "originals"
+
+
+def compress(target, base):
+    """
+    Creates a ZIP recursively from a given base directory.
+
+    @param target:      Name of the zip file we want to write E.g.
+                        "folder.zip"
+    @param base:        Name of folder that we want to zip up E.g. "folder"
+    """
+    zip_file = zipfile.ZipFile(target, 'w')
+    try:
+        for root, dirs, files in os.walk(base):
+            archive_root = os.path.relpath(root, base)
+            for f in files:
+                fullpath = os.path.join(root, f)
+                archive_name = os.path.join(archive_root, f)
+                zip_file.write(fullpath, archive_name)
+    finally:
+        zip_file.close()
 
 
 def applyRdefs(image, channels):
@@ -348,7 +370,7 @@ def drawScalebar(c, panel, region_width, page):
         c.setFillColorRGB(red, green, blue)
         c.drawCentredString((lx + lx_end)/2, label_y, label)
 
-def getPanelImage(image, panel):
+def getPanelImage(image, panel, origName):
 
     z = panel['theZ']
     t = panel['theT']
@@ -360,6 +382,7 @@ def getPanelImage(image, panel):
             image.setProjectionRange(panel['z_start'], panel['z_end'])
 
     pilImg = image.renderImage(z, t, compression=1.0)
+    pilImg.save(origName)
 
     # Need to crop around centre before rotating...
     sizeX = image.getSizeX()
@@ -421,7 +444,7 @@ def getPanelImage(image, panel):
     return out
 
 
-def drawPanel(conn, c, panel, page, idx):
+def drawPanel(conn, c, panel, page, idx, folder_name):
 
     imageId = panel['imageId']
     channels = panel['channels']
@@ -441,13 +464,22 @@ def drawPanel(conn, c, panel, page, idx):
     image = conn.getObject("Image", imageId)
     applyRdefs(image, channels)
 
-    pilImg = getPanelImage(image, panel)
+    # create name to save image
+    originalName = image.getName()
+    imgName = os.path.basename(originalName)
+    imgName = "%s_%s.png" % (idx, imgName)
+
+    # get cropped image (saving original)
+    origName = os.path.join(folder_name, ORIGINAL_DIR, imgName)
+    print "Saving original to: ", origName
+    pilImg = getPanelImage(image, panel, origName)
     tile_width = pilImg.size[0]
 
-    tempName = str(idx) + ".jpg"
-    pilImg.save(tempName)
+    # in the folder to zip
+    imgName = os.path.join(folder_name, imgName)
+    pilImg.save(imgName)
 
-    c.drawImage(tempName, x, y, width, height)
+    c.drawImage(imgName, x, y, width, height)
 
     drawScalebar(c, panel, tile_width, page)
 
@@ -574,7 +606,7 @@ def panel_is_on_page(panel, page):
     return px < cx2 and cx < px2 and py < cy2 and cy < py2
 
 
-def add_panels_to_page(conn, c, panels_json, imageIds, page):
+def add_panels_to_page(conn, c, panels_json, imageIds, page, folder_name):
     """ Add panels that are within the bounds of this page """
 
     for i, panel in enumerate(panels_json):
@@ -586,7 +618,7 @@ def add_panels_to_page(conn, c, panels_json, imageIds, page):
         print "\n-------------------------------- "
         imageId = panel['imageId']
         print "Adding PANEL - Image ID:", imageId
-        image = drawPanel(conn, c, panel, page, i)
+        image = drawPanel(conn, c, panel, page, i, folder_name)
         if image.canAnnotate():
             imageIds.add(imageId)
         drawLabels(conn, c, panel, page)
@@ -618,12 +650,27 @@ def create_pdf(conn, scriptParams):
     scriptParams['Page_Width'] = pageWidth
     scriptParams['Page_Height'] = pageHeight
 
+
+    # somewhere to put PDF and images
+    folder_name = "figure"
+    curr_dir = os.getcwd()
+    zipDir = os.path.join(curr_dir, folder_name)
+    origDir = os.path.join(zipDir, ORIGINAL_DIR)
+    try:
+        os.mkdir(zipDir)
+        os.mkdir(origDir)
+    except:
+        pass
+
     pdfName = unicodedata.normalize('NFKD', figureName).encode('ascii','ignore')
+    zipName = "%s.zip" % pdfName
     if not pdfName.endswith('.pdf'):
         pdfName = "%s.pdf" % pdfName
 
     # in case we have path/to/pdfName.pdf, just use pdfName.pdf
     pdfName = path.basename(pdfName)
+    # placing in the output folder
+    pdfName = os.path.join(folder_name, pdfName)
 
     c = canvas.Canvas(pdfName, pagesize=(pageWidth, pageHeight))
 
@@ -649,7 +696,7 @@ def create_pdf(conn, scriptParams):
         px = col * (pageWidth + paper_spacing)
         py = row * (pageHeight + paper_spacing)
         page = {'x': px, 'y': py, 'width': pageWidth, 'height': pageHeight}
-        add_panels_to_page(conn, c, panels_json, imageIds, page)
+        add_panels_to_page(conn, c, panels_json, imageIds, page, folder_name)
 
         # complete page and save
         c.showPage()
@@ -663,16 +710,22 @@ def create_pdf(conn, scriptParams):
 
     c.save()
 
+    # Recursively zip everything up
+    compress(zipName, folder_name)
 
     # PDF will get created in this group
     if groupId is None:
         groupId = conn.getEventContext().groupId
     conn.SERVICE_OPTS.setOmeroGroup(groupId)
 
-    ns = "omero.web.figure.pdf"
+    # ns = "omero.web.figure.pdf"
+    # mimetype = "application/pdf"
+    ns = "omero.web.figure.zip"
+    mimetype = "application/zip"
+
     fileAnn = conn.createFileAnnfromLocalFile(
-        pdfName,
-        mimetype="application/pdf",
+        zipName,
+        mimetype=mimetype,
         ns=ns)
 
     links = []
