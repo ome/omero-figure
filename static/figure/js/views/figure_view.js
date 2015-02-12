@@ -125,8 +125,8 @@
             $(".glyphicon-ok", $target).css('visibility', 'visible');
 
             // Update text of main export_pdf button.
-            var txt = $target.attr('data-label');
-            $('.export_pdf').text("Export " + txt);
+            var txt = $target.attr('data-export-option');
+            $('.export_pdf').text("Export " + txt).attr('data-export-option', txt);
         },
 
         paper_setup: function(event) {
@@ -148,18 +148,27 @@
             // Status is indicated by showing / hiding 3 buttons
             var figureModel = this.model,
                 $create_figure_pdf = $(event.target),
+                export_opt = $create_figure_pdf.attr('data-export-option'),
                 $pdf_inprogress = $("#pdf_inprogress"),
-                $pdf_download = $("#pdf_download");
+                $pdf_download = $("#pdf_download"),
+                exportOption = "PDF";
             $create_figure_pdf.hide();
             $pdf_download.hide();
             $pdf_inprogress.show();
+
+            if (export_opt == "PDF & images") {
+                exportOption = "PDF_IMAGES";
+            } else {
+                exportOption = "PDF";
+            }
 
             // Get figure as json
             var figureJSON = this.model.figure_toJSON();
 
             var url = MAKE_WEBFIGURE_URL,
                 data = {
-                    figureJSON: JSON.stringify(figureJSON)
+                    figureJSON: JSON.stringify(figureJSON),
+                    exportOption: exportOption,
                 };
 
             // Start the Figure_To_Pdf.py script

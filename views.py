@@ -335,10 +335,12 @@ def make_web_figure(request, conn=None, **kwargs):
     sId = scriptService.getScriptID(SCRIPT_PATH)
 
     figureJSON = request.POST.get('figureJSON')
+    exportOption = request.POST.get('exportOption')     # E.g. "PDF", "PDF_IMAGES"
     webclient_uri = request.build_absolute_uri(reverse('webindex'))
 
     inputMap = {
         'Figure_JSON': wrap(figureJSON.encode('utf8')),
+        'Export_Option': wrap(str(exportOption)),
         'Webclient_URI': wrap(webclient_uri)}
 
     # If the figure has been saved, construct URL to it...

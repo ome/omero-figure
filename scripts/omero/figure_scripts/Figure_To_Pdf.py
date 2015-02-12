@@ -370,7 +370,7 @@ def drawScalebar(c, panel, region_width, page):
         c.setFillColorRGB(red, green, blue)
         c.drawCentredString((lx + lx_end)/2, label_y, label)
 
-def getPanelImage(image, panel, origName):
+def getPanelImage(image, panel, origName=None):
 
     z = panel['theZ']
     t = panel['theT']
@@ -382,7 +382,9 @@ def getPanelImage(image, panel, origName):
             image.setProjectionRange(panel['z_start'], panel['z_end'])
 
     pilImg = image.renderImage(z, t, compression=1.0)
-    pilImg.save(origName)
+
+    if origName is not None:
+        pilImg.save(origName)
 
     # Need to crop around centre before rotating...
     sizeX = image.getSizeX()
@@ -444,7 +446,7 @@ def getPanelImage(image, panel, origName):
     return out
 
 
-def drawPanel(conn, c, panel, page, idx, folder_name):
+def drawPanel(conn, c, panel, page, idx, folder_name=None):
 
     imageId = panel['imageId']
     channels = panel['channels']
@@ -470,13 +472,16 @@ def drawPanel(conn, c, panel, page, idx, folder_name):
     imgName = "%s_%s.png" % (idx, imgName)
 
     # get cropped image (saving original)
-    origName = os.path.join(folder_name, ORIGINAL_DIR, imgName)
-    print "Saving original to: ", origName
+    origName = None
+    if folder_name is not None:
+        origName = os.path.join(folder_name, ORIGINAL_DIR, imgName)
+        print "Saving original to: ", origName
     pilImg = getPanelImage(image, panel, origName)
     tile_width = pilImg.size[0]
 
     # in the folder to zip
-    imgName = os.path.join(folder_name, imgName)
+    if folder_name is not None:
+        imgName = os.path.join(folder_name, imgName)
     pilImg.save(imgName)
 
     c.drawImage(imgName, x, y, width, height)
@@ -631,6 +636,7 @@ def create_pdf(conn, scriptParams):
     conn.SERVICE_OPTS.setOmeroGroup(-1)
 
     figure_json_string = scriptParams['Figure_JSON']
+    export_option = scriptParams['Export_Option']
     # Since unicode can't be wrapped by rstring
     figure_json_string = figure_json_string.decode('utf8')
     figure_json = json.loads(figure_json_string)
@@ -651,16 +657,7 @@ def create_pdf(conn, scriptParams):
     scriptParams['Page_Height'] = pageHeight
 
 
-    # somewhere to put PDF and images
-    folder_name = "figure"
-    curr_dir = os.getcwd()
-    zipDir = os.path.join(curr_dir, folder_name)
-    origDir = os.path.join(zipDir, ORIGINAL_DIR)
-    try:
-        os.mkdir(zipDir)
-        os.mkdir(origDir)
-    except:
-        pass
+
 
     pdfName = unicodedata.normalize('NFKD', figureName).encode('ascii','ignore')
     zipName = "%s.zip" % pdfName
@@ -669,8 +666,22 @@ def create_pdf(conn, scriptParams):
 
     # in case we have path/to/pdfName.pdf, just use pdfName.pdf
     pdfName = path.basename(pdfName)
-    # placing in the output folder
-    pdfName = os.path.join(folder_name, pdfName)
+
+
+    # somewhere to put PDF and images
+    folder_name = None
+    if export_option == "PDF_IMAGES":
+        folder_name = "figure"
+        curr_dir = os.getcwd()
+        zipDir = os.path.join(curr_dir, folder_name)
+        origDir = os.path.join(zipDir, ORIGINAL_DIR)
+        # placing in the output folder
+        pdfName = os.path.join(folder_name, pdfName)
+        try:
+            os.mkdir(zipDir)
+            os.mkdir(origDir)
+        except:
+            pass
 
     c = canvas.Canvas(pdfName, pagesize=(pageWidth, pageHeight))
 
@@ -710,21 +721,27 @@ def create_pdf(conn, scriptParams):
 
     c.save()
 
-    # Recursively zip everything up
-    compress(zipName, folder_name)
-
     # PDF will get created in this group
     if groupId is None:
         groupId = conn.getEventContext().groupId
     conn.SERVICE_OPTS.setOmeroGroup(groupId)
 
-    # ns = "omero.web.figure.pdf"
-    # mimetype = "application/pdf"
-    ns = "omero.web.figure.zip"
-    mimetype = "application/zip"
+
+    outputFile = pdfName
+    ns = "omero.web.figure.pdf"
+    mimetype = "application/pdf"
+
+    if export_option == "PDF_IMAGES":
+        # Recursively zip everything up
+        compress(zipName, folder_name)
+
+        outputFile = zipName
+        ns = "omero.web.figure.zip"
+        mimetype = "application/zip"
+
 
     fileAnn = conn.createFileAnnfromLocalFile(
-        zipName,
+        outputFile,
         mimetype=mimetype,
         ns=ns)
 
@@ -752,12 +769,17 @@ def runScript():
     via the scripting service, passing the required parameters.
     """
 
+    exportOptions = [rstring('PDF'), rstring('PDF_IMAGES')]
+
     client = scripts.client(
         'Figure_To_Pdf.py',
         """Used by web.figure to generate pdf figures from json data""",
 
         scripts.String("Figure_JSON", optional=False,
                        description="All figure info as json stringified"),
+
+        scripts.String("Export_Option", values=exportOptions,
+                       default="PDF"),
 
         scripts.String("Webclient_URI", grouping="4",
                        description="webclient URL for adding links to images"),

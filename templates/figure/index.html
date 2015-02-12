@@ -484,6 +484,7 @@
                     <div class="btn-group" {% if scriptMissing %}title="PDF script not installed"{% endif %}>
                         <button id="create_figure_pdf" title="Generate PDF for download"
                             {% if scriptMissing %}disabled="disabled"{% endif %}
+                            data-export-option="PDF"
                             type="button" class="btn btn-success btn-sm export_pdf">
                             Export PDF
                         </button>
@@ -492,11 +493,12 @@
                             <span class="caret"></span>
                         </button>
                         <ul class="dropdown-menu export_options" role="menu">
-                            <li><a href="#" class="js-export-pdf-only" data-label="PDF">
+                            <!-- NB: data-export-option attr used to label export button & handled by js on click -->
+                            <li><a href="#" class="js-export-pdf-only" data-export-option="PDF">
                                 <span class="glyphicon glyphicon-ok" style="color:#333"></span>
                                 PDF only</a>
                             </li>
-                            <li><a href="#" class="js-export-pdf-images" data-label="PDF & images">
+                            <li><a href="#" class="js-export-pdf-images" data-export-option="PDF & images">
                                 <span class="glyphicon glyphicon-ok" style="color:#333; visibility:hidden"></span>
                                 PDF with images</a>
                             </li>
