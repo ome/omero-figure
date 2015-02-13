@@ -469,7 +469,7 @@ def drawPanel(conn, c, panel, page, idx, folder_name=None):
     # create name to save image
     originalName = image.getName()
     imgName = os.path.basename(originalName)
-    imgName = "%s_%s.png" % (idx, imgName)
+    imgName = "%s_%s.tiff" % (idx, imgName)
 
     # get cropped image (saving original)
     origName = None
