@@ -1106,16 +1106,32 @@
 
         pick_color: function(e) {
             var color = e.currentTarget.getAttribute('data-color'),
-                idx = $(e.currentTarget).parent().parent().attr('data-index');
-            if (this.model) {
-                this.model.save_channel(idx, 'color', color);
-            } else if (this.models) {
+                $colorbtn = $(e.currentTarget).parent().parent(),
+                oldcolor = $(e.currentTarget).attr('data-oldcolor'),
+                idx = $colorbtn.attr('data-index'),
+                self = this;
+            console.log($colorbtn, oldcolor, idx);
+
+            if (color == 'colorpicker') {
+                FigureColorPicker.show({
+                    'color': oldcolor,
+                    'success': function(){
+                        console.log('success', arguments);
+                        // self.set_color(idx, c);
+                    }
+                });
+            } else {
+                this.set_color(idx, color);
+            }
+            return false;
+        },
+
+        set_color: function(idx, color) {
+            if (this.models) {
                 this.models.forEach(function(m){
                     m.save_channel(idx, 'color', color);
                 });
             }
-            FigureColorPicker.show({'color': '0000ff'});
-            return false;
         },
 
         toggle_channel: function(e) {
