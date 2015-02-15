@@ -1114,6 +1114,7 @@
                     m.save_channel(idx, 'color', color);
                 });
             }
+            FigureColorPicker.show({'color': '0000ff'});
             return false;
         },
 

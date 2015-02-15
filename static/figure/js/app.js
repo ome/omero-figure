@@ -28,6 +28,8 @@ $(function(){
     //     figureModel.set("unsaved", true);
     // };
 
+    window.FigureColorPicker = new ColorPickerView();
+
     // Override 'Backbone.sync'...
     Backbone.ajaxSync = Backbone.sync;
 

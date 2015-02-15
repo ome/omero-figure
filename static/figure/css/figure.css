@@ -631,3 +631,21 @@
         cursor:  url("../images/crop20.png") 10 10, crosshair;
         z-index: 10;
     }
+
+
+    /*  color-picker  */
+
+    .colorpicker-hue {
+        height: 200px;
+        width: 30px;
+        background-size: 200px 200px;
+    }
+    .colorpicker-saturation {
+        width: 200px;
+        height: 200px;
+        background-size: 200px 200px;
+    }
+    .colorpicker-color, .colorpicker-color div {
+        height: 25px;
+    }
+
