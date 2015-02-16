@@ -635,6 +635,12 @@
 
     /*  color-picker  */
 
+    .colorpickerOption {
+        background-image: url("../3rdparty/bootstrap-colorpicker/img/bootstrap-colorpicker/hue.png");
+        background-size: 20px 50px;
+        background-position: 0 100%;
+    }
+
     .colorpicker-hue {
         height: 200px;
         width: 30px;
@@ -647,5 +653,16 @@
     }
     .colorpicker-color {
         display: none;
+    }
+
+    .oldNewColors {
+        width: 120px;
+        position: absolute;
+        top: 15px;
+        right: 15px;
+    }
+
+    .oldNewColors li {
+        height: 60px;
     }
 
