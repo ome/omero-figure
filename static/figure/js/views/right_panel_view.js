@@ -1110,14 +1110,14 @@
                 oldcolor = $(e.currentTarget).attr('data-oldcolor'),
                 idx = $colorbtn.attr('data-index'),
                 self = this;
-            console.log($colorbtn, oldcolor, idx);
 
             if (color == 'colorpicker') {
                 FigureColorPicker.show({
                     'color': oldcolor,
-                    'success': function(){
-                        console.log('success', arguments);
-                        // self.set_color(idx, c);
+                    'success': function(newColor){
+                        // remove # from E.g. #ff00ff
+                        newColor = newColor.replace("#", "");
+                        self.set_color(idx, newColor);
                     }
                 });
             } else {

@@ -645,7 +645,7 @@
         height: 200px;
         background-size: 200px 200px;
     }
-    .colorpicker-color, .colorpicker-color div {
-        height: 25px;
+    .colorpicker-color {
+        display: none;
     }
 
