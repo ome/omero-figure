@@ -93,8 +93,26 @@
             var $li = $span.parent().parent(),
                 $button = $li.parent().prev();
             $span = $span.clone();
-            $('span:first', $button).replaceWith($span);
-            $button.trigger('change');      // can listen for this if we want to 'submit' etc
+
+            if ($span.hasClass('colorpickerOption')) {
+                var oldcolor = $a.attr('data-oldcolor');
+                console.log('oldcolor', oldcolor);
+                FigureColorPicker.show({
+                    'color': oldcolor,
+                    'success': function(newColor){
+                        $span.css({'background-color': newColor, 'background-image': 'none'});
+                        // remove # from E.g. #ff00ff
+                        newColor = newColor.replace("#", "");
+                        $span.attr('data-color', newColor);
+                        $('span:first', $button).replaceWith($span);
+                        // can listen for this if we want to 'submit' etc
+                        $button.trigger('change');
+                    }
+                });
+            } else {
+                $('span:first', $button).replaceWith($span);
+                $button.trigger('change');      // can listen for this if we want to 'submit' etc
+            }
         },
 
         // submission of the New Label form
