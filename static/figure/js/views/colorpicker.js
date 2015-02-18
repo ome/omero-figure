@@ -23,6 +23,9 @@ var ColorPickerView = Backbone.View.extend({
 
     el: $("#colorpickerModal"),
 
+    // remember picked colors, for picking again
+    pickedColors: [],
+
     initialize:function () {
         
         var sliders = {
@@ -103,13 +106,31 @@ var ColorPickerView = Backbone.View.extend({
     
     events: {
         "submit .colorpickerForm": "handleColorpicker",
+        "click .pickedColors button": "pickRecentColor",
     },
 
+    // 'Recent colors' buttons have color as their title
+    pickRecentColor: function(event) {
+        var color = $(event.target).prop('title');
+        $('.demo-auto').colorpicker('setValue', color);
+    },
+
+    // submit of the form: call the callback and close dialog
     handleColorpicker: function(event) {
         event.preventDefault();
 
-
         var color = $(".colorpickerForm input[name='color']").val();
+
+        // very basic validation (in case user has edited color field manually)
+        if (color.length === 0) return;
+        if (color[0] != "#") {
+            color = "#" + color;
+        }
+        // E.g. must be #f00 or #ff0000
+        if (color.length != 7 && color.length != 4) return;
+
+        // remember for later
+        this.pickedColors.push(color);
 
         if (this.success) {
             this.success(color);
@@ -138,9 +159,27 @@ var ColorPickerView = Backbone.View.extend({
             this.success = options.success;
         }
 
+        this.render();
     },
 
     render:function () {
         
+        // this is a list of strings
+        var json = {'colors': _.uniq(this.pickedColors)};
+
+        var t = '' +
+            '<div class="btn-group">' +
+            '<% _.each(colors, function(c, i) { %>' +
+                '<button type="button" class="btn btn-default" ' +
+                    'title="<%= c %>"' +
+                    'style="background-color: <%= c %>"> </button>' +
+            '<% if ((i+1)%4 == 0){ %> </div><div class="btn-group"><% } %>' +
+            '<% }); %>' +
+            '</div>';
+
+        var compiled = _.template(t);
+        var html = compiled(json);
+
+        $("#pickedColors").html(html);
     }
 });

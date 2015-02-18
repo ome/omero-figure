@@ -673,3 +673,18 @@
         right: 175px;
     }
 
+    .pickedColors {
+        position: absolute;
+        right: 15px;
+        bottom: 15px;
+        width: 120px;
+    }
+
+    .pickedColors .btn-group {
+        margin-left: 0 !important;
+    }
+
+    .pickedColors .btn {
+        height: 30px;
+        width: 30px;
+    }
