@@ -421,17 +421,6 @@
                     ];
                 }
             }, {
-                re: /#?([a-fA-F0-9])([a-fA-F0-9])([a-fA-F0-9])/,
-                format: 'hex',
-                parse: function(execResult) {
-                    return [
-                        parseInt(execResult[1] + execResult[1], 16),
-                        parseInt(execResult[2] + execResult[2], 16),
-                        parseInt(execResult[3] + execResult[3], 16),
-                        1
-                    ];
-                }
-            }, {
                 re: /rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*?\)/,
                 format: 'rgb',
                 parse: function(execResult) {
@@ -506,6 +495,17 @@
                     var match = this.stringParsers[0].re.exec(hexval),
                         values = match && this.stringParsers[0].parse.apply(this, [match]);
                     return values;
+                }
+            }, {
+                re: /#?([a-fA-F0-9])([a-fA-F0-9])([a-fA-F0-9])/,
+                format: 'hex',
+                parse: function(execResult) {
+                    return [
+                        parseInt(execResult[1] + execResult[1], 16),
+                        parseInt(execResult[2] + execResult[2], 16),
+                        parseInt(execResult[3] + execResult[3], 16),
+                        1
+                    ];
                 }
             }],
             colorNameToHex: function(name) {
