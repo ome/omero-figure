@@ -46,7 +46,8 @@ var ColorPickerView = Backbone.View.extend({
             }
         };
 
-        var self = this;
+        var self = this,
+            editingRGB = false;     // flag to prevent update of r,g,b fields
 
         this.$submit_btn = $("#colorpickerModal .modal-footer button[type='submit']");
 
@@ -54,9 +55,48 @@ var ColorPickerView = Backbone.View.extend({
             'sliders': sliders,
             'color': '00ff00',
         }).on('changeColor', function(ev){
-            console.log(arguments);
+            // enable form submission & show color
             self.$submit_btn.prop('disabled', false);
             $('.oldNewColors li:first-child').css('background-color', ev.color.toHex());
+
+            // update red, green, blue inputs
+            if (!editingRGB) {
+                var rgb = ev.color.toRGB();
+                $(".rgb-group input[name='red']").val(rgb.r);
+                $(".rgb-group input[name='green']").val(rgb.g);
+                $(".rgb-group input[name='blue']").val(rgb.b);
+            }
+        });
+
+        $(".rgb-group input").bind("change keyup", function(){
+            var $this = $(this),
+                value = $.trim($this.val());
+            // check it's a number between 0 - 255
+            if (value == parseInt(value, 10)) {
+                value = parseInt(value, 10);
+                if (value < 0) {
+                    value = 0;
+                    $this.val(value);
+                }
+                else if (value > 255) {
+                    value = 255;
+                    $this.val(value);
+                }
+            } else {
+                value = 255
+                $this.val(value);
+            }
+
+            // update colorpicker
+            var r = $(".rgb-group input[name='red']").val(),
+                g = $(".rgb-group input[name='green']").val(),
+                b = $(".rgb-group input[name='blue']").val(),
+                rgb = "rgb(" + r + "," + g + "," + b + ")";
+
+            // flag prevents update of r, g, b fields while typing
+            editingRGB = true;
+            $('.demo-auto').colorpicker('setValue', rgb);
+            editingRGB = false;
         });
     },
 

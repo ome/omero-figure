@@ -96,7 +96,6 @@
 
             if ($span.hasClass('colorpickerOption')) {
                 var oldcolor = $a.attr('data-oldcolor');
-                console.log('oldcolor', oldcolor);
                 FigureColorPicker.show({
                     'color': oldcolor,
                     'success': function(newColor){

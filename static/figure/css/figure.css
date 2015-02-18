@@ -666,3 +666,10 @@
         height: 60px;
     }
 
+    .rgb-group {
+        position: absolute;
+        top: 40px;
+        width: 120px;
+        right: 175px;
+    }
+
