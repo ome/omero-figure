@@ -93,8 +93,25 @@
             var $li = $span.parent().parent(),
                 $button = $li.parent().prev();
             $span = $span.clone();
-            $('span:first', $button).replaceWith($span);
-            $button.trigger('change');      // can listen for this if we want to 'submit' etc
+
+            if ($span.hasClass('colorpickerOption')) {
+                var oldcolor = $a.attr('data-oldcolor');
+                FigureColorPicker.show({
+                    'color': oldcolor,
+                    'success': function(newColor){
+                        $span.css({'background-color': newColor, 'background-image': 'none'});
+                        // remove # from E.g. #ff00ff
+                        newColor = newColor.replace("#", "");
+                        $span.attr('data-color', newColor);
+                        $('span:first', $button).replaceWith($span);
+                        // can listen for this if we want to 'submit' etc
+                        $button.trigger('change');
+                    }
+                });
+            } else {
+                $('span:first', $button).replaceWith($span);
+                $button.trigger('change');      // can listen for this if we want to 'submit' etc
+            }
         },
 
         // submission of the New Label form
@@ -1106,15 +1123,32 @@
 
         pick_color: function(e) {
             var color = e.currentTarget.getAttribute('data-color'),
-                idx = $(e.currentTarget).parent().parent().attr('data-index');
-            if (this.model) {
-                this.model.save_channel(idx, 'color', color);
-            } else if (this.models) {
+                $colorbtn = $(e.currentTarget).parent().parent(),
+                oldcolor = $(e.currentTarget).attr('data-oldcolor'),
+                idx = $colorbtn.attr('data-index'),
+                self = this;
+
+            if (color == 'colorpicker') {
+                FigureColorPicker.show({
+                    'color': oldcolor,
+                    'success': function(newColor){
+                        // remove # from E.g. #ff00ff
+                        newColor = newColor.replace("#", "");
+                        self.set_color(idx, newColor);
+                    }
+                });
+            } else {
+                this.set_color(idx, color);
+            }
+            return false;
+        },
+
+        set_color: function(idx, color) {
+            if (this.models) {
                 this.models.forEach(function(m){
                     m.save_channel(idx, 'color', color);
                 });
             }
-            return false;
         },
 
         toggle_channel: function(e) {

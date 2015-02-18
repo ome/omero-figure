@@ -631,3 +631,60 @@
         cursor:  url("../images/crop20.png") 10 10, crosshair;
         z-index: 10;
     }
+
+
+    /*  color-picker  */
+
+    .colorpickerOption {
+        background-image: url("../3rdparty/bootstrap-colorpicker/img/bootstrap-colorpicker/hue.png");
+        background-size: 20px 50px;
+        background-position: 0 100%;
+    }
+
+    .colorpicker-hue {
+        height: 200px;
+        width: 30px;
+        background-size: 200px 200px;
+    }
+    .colorpicker-saturation {
+        width: 200px;
+        height: 200px;
+        background-size: 200px 200px;
+    }
+    .colorpicker-color {
+        display: none;
+    }
+
+    .oldNewColors {
+        width: 120px;
+        position: absolute;
+        top: 15px;
+        right: 15px;
+    }
+
+    .oldNewColors li {
+        height: 60px;
+    }
+
+    .rgb-group {
+        position: absolute;
+        top: 40px;
+        width: 120px;
+        right: 175px;
+    }
+
+    .pickedColors {
+        position: absolute;
+        right: 15px;
+        bottom: 15px;
+        width: 120px;
+    }
+
+    .pickedColors .btn-group {
+        margin-left: 0 !important;
+    }
+
+    .pickedColors .btn {
+        height: 30px;
+        width: 30px;
+    }

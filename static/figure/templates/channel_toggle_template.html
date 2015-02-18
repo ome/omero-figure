@@ -34,6 +34,10 @@ class="btn btn-default channel-btn <% if(c.active) { %>ch-btn-down<% } else if (
                 <li><a data-color="FF00FF" href="#">
                     <span style="background-color:#f0f">&nbsp &nbsp &nbsp</span>&nbsp Magenta
                 </a></li>
+                <li class="divider"></li>
+                <li><a data-color="colorpicker" data-oldcolor="<%= c.color %>" href="#">
+                    <span class="colorpickerOption">&nbsp &nbsp &nbsp</span>&nbsp More Colors...
+                </a></li>
             </ul>
         </div><br>
     <% }); %>
