@@ -850,7 +850,6 @@
                 //detect the slider and set the limits and callbacks
                 var zone = target.closest('div');
                 var sl = this.options.horizontal ? this.options.slidersHorz : this.options.sliders;
-                console.log('sl.hue', sl.hue);
                 if (!zone.is('.colorpicker')) {
                     if (zone.is('.colorpicker-saturation')) {
                         this.currentSlider = $.extend({}, sl.saturation);
@@ -866,7 +865,6 @@
                     this.currentSlider.guide = zone.find('i')[0].style;
                     this.currentSlider.left = e.pageX - offset.left;
                     this.currentSlider.top = e.pageY - offset.top;
-                    console.log('this.currentSlider.top', this.currentSlider.top);
                     this.mousePointer = {
                         left: e.pageX,
                         top: e.pageY
@@ -910,7 +908,6 @@
                 if (this.currentSlider.callTop) {
                     this.color[this.currentSlider.callTop].call(this.color, top / this.currentSlider.maxTop);
                 }
-                console.log(top, this.currentSlider.maxTop);
                 this.update(true);
 
                 this.element.trigger({
