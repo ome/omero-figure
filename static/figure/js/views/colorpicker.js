@@ -119,7 +119,8 @@ var ColorPickerView = Backbone.View.extend({
     handleColorpicker: function(event) {
         event.preventDefault();
 
-        var color = $(".colorpickerForm input[name='color']").val();
+        // var color = $(".colorpickerForm input[name='color']").val();
+        var color = $('.demo-auto').colorpicker('getValue');
 
         // very basic validation (in case user has edited color field manually)
         if (color.length === 0) return;
