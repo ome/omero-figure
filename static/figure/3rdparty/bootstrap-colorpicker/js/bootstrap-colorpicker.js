@@ -186,7 +186,8 @@
                 "white": "#ffffff",
                 "whitesmoke": "#f5f5f5",
                 "yellow": "#ffff00",
-                "yellowgreen": "#9acd32"
+                "yellowgreen": "#9acd32",
+                "transparent": "transparent"
             },
             _sanitizeNumber: function(val) {
                 if (typeof val === 'number') {
@@ -200,15 +201,36 @@
                 }
                 return 1;
             },
+            isTransparent: function(strVal) {
+                if (!strVal) {
+                    return false;
+                }
+                strVal = strVal.toLowerCase().trim();
+                return (strVal == 'transparent') || (strVal.match(/#?00000000/)) || (strVal.match(/(rgba|hsla)\(0,0,0,0?\.?0\)/));
+            },
+            rgbaIsTransparent: function(rgba) {
+                return ((rgba.r == 0) && (rgba.g == 0) && (rgba.b == 0) && (rgba.a == 0));
+            },
             //parse a string to HSB
             setColor: function(strVal) {
-                strVal = strVal.toLowerCase();
-                this.value = this.stringToHSB(strVal) || {
-                    h: 0,
-                    s: 0,
-                    b: 0,
-                    a: 1
-                };
+                strVal = strVal.toLowerCase().trim();
+                if (strVal) {
+                    if (this.isTransparent(strVal)) {
+                        this.value = {
+                            h: 0,
+                            s: 0,
+                            b: 0,
+                            a: 0
+                        }
+                    } else {
+                        this.value = this.stringToHSB(strVal) || {
+                            h: 0,
+                            s: 0,
+                            b: 0,
+                            a: 1
+                        }; // if parser fails, defaults to black
+                    }
+                }
             },
             stringToHSB: function(strVal) {
                 strVal = strVal.toLowerCase();
@@ -269,6 +291,9 @@
             },
             toHex: function(h, s, b, a) {
                 var rgb = this.toRGB(h, s, b, a);
+                if (this.rgbaIsTransparent(rgb)) {
+                    return 'transparent';
+                }
                 return '#' + ((1 << 24) | (parseInt(rgb.r) << 16) | (parseInt(rgb.g) << 8) | parseInt(rgb.b)).toString(16).substr(1);
             },
             toHSL: function(h, s, b, a) {
@@ -371,6 +396,9 @@
                     case 'rgb':
                         {
                             var rgb = this.toRGB();
+                            if (this.rgbaIsTransparent(rgb)) {
+                                return 'transparent';
+                            }
                             return 'rgb(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ')';
                         }
                         break;
@@ -410,17 +438,6 @@
             // from John Resig color plugin
             // https://github.com/jquery/jquery-color/
             stringParsers: [{
-                re: /#?([a-fA-F0-9]{2})([a-fA-F0-9]{2})([a-fA-F0-9]{2})/,
-                format: 'hex',
-                parse: function(execResult) {
-                    return [
-                        parseInt(execResult[1], 16),
-                        parseInt(execResult[2], 16),
-                        parseInt(execResult[3], 16),
-                        1
-                    ];
-                }
-            }, {
                 re: /rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*?\)/,
                 format: 'rgb',
                 parse: function(execResult) {
@@ -487,14 +504,15 @@
                     ];
                 }
             }, {
-                //predefined color name
-                re: /^([a-z]{3,})$/,
-                format: 'alias',
+                re: /#?([a-fA-F0-9]{2})([a-fA-F0-9]{2})([a-fA-F0-9]{2})/,
+                format: 'hex',
                 parse: function(execResult) {
-                    var hexval = this.colorNameToHex(execResult[0]) || '#000000';
-                    var match = this.stringParsers[0].re.exec(hexval),
-                        values = match && this.stringParsers[0].parse.apply(this, [match]);
-                    return values;
+                    return [
+                        parseInt(execResult[1], 16),
+                        parseInt(execResult[2], 16),
+                        parseInt(execResult[3], 16),
+                        1
+                    ];
                 }
             }, {
                 re: /#?([a-fA-F0-9])([a-fA-F0-9])([a-fA-F0-9])/,
@@ -506,6 +524,16 @@
                         parseInt(execResult[3] + execResult[3], 16),
                         1
                     ];
+                }
+            }, {
+                //predefined color name
+                re: /^([a-z]{3,})$/,
+                format: 'alias',
+                parse: function(execResult) {
+                    var hexval = this.colorNameToHex(execResult[0]) || '#000000';
+                    var match = this.stringParsers[0].re.exec(hexval),
+                        values = match && this.stringParsers[0].parse.apply(this, [match]);
+                    return values;
                 }
             }],
             colorNameToHex: function(name) {
@@ -607,6 +635,9 @@
             if (this.format === 'rgba' || this.format === 'hsla') {
                 this.picker.addClass('colorpicker-with-alpha');
             }
+            if (this.options.align === 'right') {
+                this.picker.addClass('colorpicker-right');
+            }
             this.picker.on('mousedown.colorpicker touchstart.colorpicker', $.proxy(this.mousedown, this));
             this.picker.appendTo(this.container ? this.container : $('body'));
 
@@ -654,8 +685,6 @@
             }, this));
         };
 
-        Colorpicker.version = '2.0.0-beta';
-
         Colorpicker.Color = Color;
 
         Colorpicker.prototype = {
@@ -679,9 +708,13 @@
                     return false;
                 }
                 var type = this.container && this.container[0] !== document.body ? 'position' : 'offset';
-                var offset = this.component ? this.component[type]() : this.element[type]();
+                var element = this.component || this.element;
+                var offset = element[type]();
+                if (this.options.align === 'right') {
+                    offset.left -= this.picker.outerWidth() - element.outerWidth()
+                }
                 this.picker.css({
-                    top: offset.top + (this.component ? this.component.outerHeight() : this.element.outerHeight()),
+                    top: offset.top + element.outerHeight(),
                     left: offset.left
                 });
             },
@@ -776,13 +809,14 @@
                 return val;
             },
             update: function(force) {
-                var val = this.updateComponent();
+                var val;
                 if ((this.getValue(false) !== false) || (force === true)) {
-                    // Update input/data only if the current value is not blank
+                    // Update input/data only if the current value is not empty
+                    val = this.updateComponent();
                     this.updateInput(val);
                     this.updateData(val);
+                    this.updatePicker(); // only update picker if value is not empty
                 }
-                this.updatePicker();
                 return val;
 
             },
@@ -821,6 +855,11 @@
             disable: function() {
                 if (this.hasInput()) {
                     this.input.prop('disabled', true);
+                    this.element.trigger({
+                        type: 'disable',
+                        color: this.color,
+                        value: this.getValue()
+                    });
                     return true;
                 }
                 return false;
@@ -828,6 +867,11 @@
             enable: function() {
                 if (this.hasInput()) {
                     this.input.prop('disabled', false);
+                    this.element.trigger({
+                        type: 'enable',
+                        color: this.color,
+                        value: this.getValue()
+                    });
                     return true;
                 }
                 return false;
@@ -958,9 +1002,10 @@
         $.colorpicker = Colorpicker;
 
         $.fn.colorpicker = function(option) {
-            var pickerArgs = arguments;
+            var pickerArgs = arguments,
+                rv;
 
-            return this.each(function() {
+            var $returnValue = this.each(function() {
                 var $this = $(this),
                     inst = $this.data('colorpicker'),
                     options = ((typeof option === 'object') ? option : {});
@@ -968,10 +1013,14 @@
                     $this.data('colorpicker', new Colorpicker(this, options));
                 } else {
                     if (typeof option === 'string') {
-                        inst[option].apply(inst, Array.prototype.slice.call(pickerArgs, 1));
+                        rv = inst[option].apply(inst, Array.prototype.slice.call(pickerArgs, 1));
                     }
                 }
             });
+            if (option === 'getValue') {
+                return rv;
+            }
+            return $returnValue;
         };
 
         $.fn.colorpicker.constructor = Colorpicker;
