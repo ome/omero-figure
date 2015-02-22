@@ -205,6 +205,9 @@ def drawLabels(conn, c, panel, page):
         red = int(color[0:2], 16)
         green = int(color[2:4], 16)
         blue = int(color[4:6], 16)
+        red = float(red)/255
+        green = float(green)/255
+        blue = float(blue)/255
         c.setFillColorRGB(red, green, blue)
         if align == 'left':
             c.drawString(lx, pageHeight - label_h - ly, label['text'])
@@ -315,6 +318,9 @@ def drawScalebar(c, panel, region_width, page):
     red = int(color[0:2], 16)
     green = int(color[2:4], 16)
     blue = int(color[4:6], 16)
+    red = float(red)/255
+    green = float(green)/255
+    blue = float(blue)/255
     c.setStrokeColorRGB(red, green, blue)
 
 
