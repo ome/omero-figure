@@ -8,7 +8,9 @@ module.exports = function (grunt) {
     , jshint: {
         all: [
             "Gruntfile.js"
-          , "static/figure/js/*.js"
+          , "static/figure/js/app.js"
+          , "static/figure/js/models/*.js"
+          , "static/figure/js/views/*.js"
         ]
       , options: {
           jshintrc: '.jshintrc'
@@ -59,6 +61,6 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-contrib-concat');
 
-  grunt.registerTask('test', ['jshint', 'jasmine'])
-  grunt.registerTask('default', ['test'])
+  grunt.registerTask('test', ['jasmine'])
+  grunt.registerTask('default', ['jshint'])
 };
