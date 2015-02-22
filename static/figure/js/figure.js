@@ -1,4 +1,4 @@
-
+    
     // Version of the json file we're saving.
     // This only needs to increment when we make breaking changes (not linked to release versions.)
     var VERSION = 1;
@@ -12,11 +12,14 @@
             // 'curr_zoom': 100,
             'canEdit': true,
             'unsaved': false,
-            'canvas_width': 10000,
+            'canvas_width': 13000,
             'canvas_height': 8000,
             // w & h from reportlab.
             'paper_width': 612,
             'paper_height': 792,
+            'page_count': 1,
+            'page_col_count': 1,    // pages laid out in grid
+            'paper_spacing': 50,    // between each page
             'orientation': 'vertical',
             'page_size': 'A4',       // options [A4, letter, mm, pixels]
             // see http://www.a4papersize.org/a4-paper-size-in-pixels.php
@@ -28,7 +31,7 @@
             this.panels = new PanelList();      //this.get("shapes"));
 
             // wrap selection notification in a 'debounce', so that many rapid
-            // selection changes only trigger a single re-rendering
+            // selection changes only trigger a single re-rendering 
             this.notifySelectionChange = _.debounce( this.notifySelectionChange, 10);
         },
 
@@ -54,12 +57,15 @@
                         'paper_width': data.paper_width,
                         'paper_height': data.paper_height,
                         'page_size': data.page_size || 'letter',
+                        'page_count': data.page_count,
+                        'paper_spacing': data.paper_spacing,
+                        'page_col_count': data.page_col_count,
+                        'orientation': data.orientation,
                     };
-                // optional values - ignore if missing
-                if (data.orientation) n.orientation = data.orientation;
-                // if (data.page_size) n.page_size = data.page_size; // E.g. 'A4'
-                if (data.height_mm) n.height_mm = data.height_mm;
-                if (data.width_mm) n.width_mm = data.width_mm;
+
+                // For missing attributes, we fill in with defaults
+                // so as to clear everything from previous figure.
+                n = $.extend({}, self.defaults, n);
 
                 self.set(n);
 
@@ -109,6 +115,9 @@
                 paper_width: this.get('paper_width'),
                 paper_height: this.get('paper_height'),
                 page_size: this.get('page_size'),
+                page_count: this.get('page_count'),
+                paper_spacing: this.get('paper_spacing'),
+                page_col_count: this.get('page_col_count'),
                 height_mm: this.get('height_mm'),
                 width_mm: this.get('width_mm'),
                 orientation: this.get('orientation'),
@@ -135,7 +144,8 @@
                 data.fileId = options.fileId;
             }
             if (options.figureName) {
-                data.figureName = options.figureName;
+                // Include figure name in JSON saved to file
+                figureJSON.figureName = options.figureName;
             }
             data.figureJSON = JSON.stringify(figureJSON);
 
@@ -158,13 +168,26 @@
         },
 
         clearFigure: function() {
-
             var figureModel = this;
             figureModel.unset('fileId');
             figureModel.delete_panels();
             figureModel.unset("figureName");
             figureModel.set(figureModel.defaults);
             figureModel.trigger('reset_undo_redo');
+        },
+
+        // Used to position the #figure within canvas and also to coordinate svg layout.
+        getFigureSize: function() {
+            var pc = this.get('page_count'),
+                cols = this.get('page_col_count'),
+                gap = this.get('paper_spacing'),
+                pw = this.get('paper_width'),
+                ph = this.get('paper_height'),
+                rows;
+            rows = Math.ceil(pc / cols);
+            var w = cols * pw + (cols - 1) * gap,
+                h = rows * ph + (rows - 1) * gap;
+            return {'w': w, 'h': h, 'cols': cols, 'rows': rows}
         },
 
         nudge_right: function() {
@@ -300,7 +323,63 @@
                     new_h = ref_height;
                     new_w = (ref_height/p.get('height')) * p.get('width');
                 }
-                p.save({'width':new_w, 'height':new_h});
+                p.set({'width':new_w, 'height':new_h});
+            });
+        },
+
+        // Resize panels so they all show same magnification
+        align_magnification: function() {
+            var sel = this.getSelected(),
+                ref = this.get_top_left_panel(sel),
+                ref_pixSize = ref.get('pixel_size_x'),
+                targetMag;
+            if (!ref_pixSize) {
+                alert('Top-left panel has no pixel size set');
+                return;
+            }
+
+            // This could return an AJAX call if we need to convert units.
+            // Whenever we use this below, wrap it with $.when().then()
+            var getPixSizeInMicrons = function(m) {
+                var unit = m.get("pixel_size_x_unit"),
+                    size = m.get("pixel_size_x");
+                if (unit === "MICROMETER") {
+                    return {'value':size};
+                }
+                if (!size) {
+                    return {'value': size}
+                }
+                // convert to MICROMETER
+                var url = BASE_WEBFIGURE_URL + "unit_conversion/" + size + "/" + unit + "/MICROMETER/";
+                return $.getJSON(url);
+            }
+
+            // First, get reference pixel size...
+            $.when( getPixSizeInMicrons(ref) ).then(function(data){
+                ref_pixSize = data.value;
+                // E.g. 10 microns / inch
+                targetMag = ref_pixSize * ref.getPanelDpi();
+
+                // Loop through all selected, updating size of each...
+                sel.forEach(function(p){
+
+                    // ignore the ref panel
+                    if (p.cid === ref.cid) return;
+
+                    $.when( getPixSizeInMicrons(p) ).then(function(data){
+
+                        var dpi = p.getPanelDpi(),
+                            pixSize = data.value;
+                        if (!pixSize) {
+                            return;
+                        }
+                        var panelMag = dpi * pixSize,
+                            scale = panelMag / targetMag,
+                            new_w = p.get('width') * scale,
+                            new_h = p.get('height') * scale;
+                        p.set({'width':new_w, 'height':new_h});
+                    });
+                });
             });
         },
 
@@ -422,7 +501,13 @@
             labels: [],
             deltaT: [],     // list of deltaTs (secs) for tIndexes of movie
             rotation: 0,
-            selected: false
+            selected: false,
+            pixel_size_x_symbol: '\xB5m',     // microns by default
+            pixel_size_x_unit: 'MICROMETER',
+
+            // model includes 'scalebar' object, e.g:
+            // scalebar: {length: 10, position: 'bottomleft', color: 'FFFFFF',
+            //                show: false, show_label: false; font_size: 10}
         },
 
         initialize: function() {
@@ -471,6 +556,8 @@
                 'datasetName': data.datasetName,
                 'pixel_size_x': data.pixel_size_x,
                 'pixel_size_y': data.pixel_size_y,
+                'pixel_size_x_symbol': data.pixel_size.symbolX,
+                'pixel_size_x_unit': data.pixel_size.unitX,
                 'deltaT': data.deltaT,
             };
 
@@ -587,7 +674,7 @@
         },
 
         create_labels_from_time: function(options) {
-
+            
             this.add_labels([{
                     'time': options.format,
                     'size': options.size,
@@ -597,7 +684,9 @@
         },
 
         get_label_key: function(label) {
-            return label.text + '_' + label.size + '_' + label.color + '_' + label.position;
+            var key = label.text + '_' + label.size + '_' + label.color + '_' + label.position;
+            key = _.escape(key);
+            return key;
         },
 
         // labels_map is {labelKey: {size:s, text:t, position:p, color:c}} or {labelKey: false} to delete
@@ -722,6 +811,34 @@
                 // both svg and DOM views listen for this...
                 this.trigger('drag_resize', [newX, newY, newW, newH] );
             }
+        },
+
+        // resize, zoom and pan to show the specified region.
+        // new panel will fit inside existing panel
+        cropToRoi: function(coords) {
+            var targetWH = coords.width/coords.height,
+                currentWH = this.get('width')/this.get('height'),
+                newW, newH,
+                targetCx = Math.round(coords.x + (coords.width/2)),
+                targetCy = Math.round(coords.y + (coords.height/2)),
+                // centre panel at centre of ROI
+                dx = (this.get('orig_width')/2) - targetCx,
+                dy = (this.get('orig_height')/2) - targetCy;
+            // make panel correct w/h ratio
+            if (targetWH < currentWH) {
+                // make it thinner
+                newH = this.get('height');
+                newW = targetWH * newH;
+            } else {
+                newW = this.get('width');
+                newH = newW / targetWH;
+            }
+            // zoom to correct percentage
+            var xPercent = this.get('orig_width') / coords.width,
+                yPercent = this.get('orig_height') / coords.height,
+                zoom = Math.min(xPercent, yPercent) * 100;
+
+            this.set({'width': newW, 'height': newH, 'dx': dx, 'dy': dy, 'zoom': zoom});
         },
 
         // Drag resizing - notify the PanelView without saving
@@ -971,7 +1088,7 @@ var UndoManager = Backbone.Model.extend({
     },
     initialize: function(opts) {
         this.figureModel = opts.figureModel;    // need for setting selection etc
-        this.figureModel.on("change:paper_width change:paper_height", this.handleChange, this);
+        this.figureModel.on("change:paper_width change:paper_height change:page_count", this.handleChange, this);
         this.listenTo(this.figureModel, 'reset_undo_redo', this.resetQueue);
         this.undoQueue = [];
         this.undoInProgress = false;
@@ -1167,9 +1284,9 @@ var UndoManager = Backbone.Model.extend({
 });
 
 var UndoView = Backbone.View.extend({
-
+    
     el: $("#edit_actions"),
-
+    
     events: {
       "click .undo": "undo",
       "click .redo": "redo"
@@ -1180,7 +1297,7 @@ var UndoView = Backbone.View.extend({
         'mod+z': 'undo',
         'mod+y': 'redo'
     },
-
+    
     initialize: function() {
       this.model.on('change', this.render, this);
       this.undoEl = $(".undo", this.$el);
@@ -1188,7 +1305,7 @@ var UndoView = Backbone.View.extend({
 
       this.render();
     },
-
+    
     render: function() {
         if (this.model.canUndo()) {
             this.undoEl.removeClass('disabled');
@@ -1202,7 +1319,7 @@ var UndoView = Backbone.View.extend({
         }
         return this;
     },
-
+    
     undo: function(event) {
         event.preventDefault();
         this.model.undo();
@@ -1212,6 +1329,193 @@ var UndoView = Backbone.View.extend({
         this.model.redo();
     }
 });
+
+//
+// Copyright (C) 2015 University of Dundee & Open Microscopy Environment.
+// All rights reserved.
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+
+
+// Should only ever have a singleton on this
+var ColorPickerView = Backbone.View.extend({
+
+    el: $("#colorpickerModal"),
+
+    // remember picked colors, for picking again
+    pickedColors: [],
+
+    initialize:function () {
+        
+        var sliders = {
+            saturation: {
+                maxLeft: 200,
+                maxTop: 200,
+                callLeft: 'setSaturation',
+                callTop: 'setBrightness'
+            },
+            hue: {
+                maxLeft: 0,
+                maxTop: 200,
+                callLeft: false,
+                callTop: 'setHue'
+            },
+            alpha: {
+                maxLeft: 0,
+                maxTop: 200,
+                callLeft: false,
+                callTop: 'setAlpha'
+            }
+        };
+
+        var self = this,
+            editingRGB = false;     // flag to prevent update of r,g,b fields
+
+        this.$submit_btn = $("#colorpickerModal .modal-footer button[type='submit']");
+
+        $('.demo-auto').colorpicker({
+            'sliders': sliders,
+            'color': '00ff00',
+        }).on('changeColor', function(ev){
+            // enable form submission & show color
+            self.$submit_btn.prop('disabled', false);
+            $('.oldNewColors li:first-child').css('background-color', ev.color.toHex());
+
+            // update red, green, blue inputs
+            if (!editingRGB) {
+                var rgb = ev.color.toRGB();
+                $(".rgb-group input[name='red']").val(rgb.r);
+                $(".rgb-group input[name='green']").val(rgb.g);
+                $(".rgb-group input[name='blue']").val(rgb.b);
+            }
+        });
+
+        $(".rgb-group input").bind("change keyup", function(){
+            var $this = $(this),
+                value = $.trim($this.val());
+            // check it's a number between 0 - 255
+            if (value == parseInt(value, 10)) {
+                value = parseInt(value, 10);
+                if (value < 0) {
+                    value = 0;
+                    $this.val(value);
+                }
+                else if (value > 255) {
+                    value = 255;
+                    $this.val(value);
+                }
+            } else {
+                value = 255
+                $this.val(value);
+            }
+
+            // update colorpicker
+            var r = $(".rgb-group input[name='red']").val(),
+                g = $(".rgb-group input[name='green']").val(),
+                b = $(".rgb-group input[name='blue']").val(),
+                rgb = "rgb(" + r + "," + g + "," + b + ")";
+
+            // flag prevents update of r, g, b fields while typing
+            editingRGB = true;
+            $('.demo-auto').colorpicker('setValue', rgb);
+            editingRGB = false;
+        });
+    },
+
+    
+    events: {
+        "submit .colorpickerForm": "handleColorpicker",
+        "click .pickedColors button": "pickRecentColor",
+    },
+
+    // 'Recent colors' buttons have color as their title
+    pickRecentColor: function(event) {
+        var color = $(event.target).prop('title');
+        $('.demo-auto').colorpicker('setValue', color);
+    },
+
+    // submit of the form: call the callback and close dialog
+    handleColorpicker: function(event) {
+        event.preventDefault();
+
+        // var color = $(".colorpickerForm input[name='color']").val();
+        var color = $('.demo-auto').colorpicker('getValue');
+
+        // very basic validation (in case user has edited color field manually)
+        if (color.length === 0) return;
+        if (color[0] != "#") {
+            color = "#" + color;
+        }
+        // E.g. must be #f00 or #ff0000
+        if (color.length != 7 && color.length != 4) return;
+
+        // remember for later
+        this.pickedColors.push(color);
+
+        if (this.success) {
+            this.success(color);
+        }
+
+        $("#colorpickerModal").modal('hide');
+        return false;
+    },
+
+    show: function(options) {
+
+        $("#colorpickerModal").modal('show');
+
+        if (options.color) {
+            $('.demo-auto').colorpicker('setValue', options.color);
+
+            // compare old and new colors - init with old color
+            $('.oldNewColors li').css('background-color', "#" + options.color);
+
+            // disable submit button until color is chosen
+            this.$submit_btn.prop('disabled', 'disabled');
+        }
+
+        // save callback to use on submit
+        if (options.success) {
+            this.success = options.success;
+        }
+
+        this.render();
+    },
+
+    render:function () {
+        
+        // this is a list of strings
+        var json = {'colors': _.uniq(this.pickedColors)};
+
+        var t = '' +
+            '<div class="btn-group">' +
+            '<% _.each(colors, function(c, i) { %>' +
+                '<button type="button" class="btn btn-default" ' +
+                    'title="<%= c %>"' +
+                    'style="background-color: <%= c %>"> </button>' +
+            '<% if ((i+1)%4 == 0){ %> </div><div class="btn-group"><% } %>' +
+            '<% }); %>' +
+            '</div>';
+
+        var compiled = _.template(t);
+        var html = compiled(json);
+
+        $("#pickedColors").html(html);
+    }
+});
+
 
     // -------------------------- Backbone VIEWS -----------------------------------------
 
@@ -1228,6 +1532,7 @@ var UndoView = Backbone.View.extend({
             new AddImagesModalView({model: this.model, figureView: this});
             new SetIdModalView({model: this.model});
             new PaperSetupModalView({model: this.model});
+            new RoiModalView({model: this.model});
 
             this.figureFiles = new FileList();
             new FileListView({model:this.figureFiles});
@@ -1236,7 +1541,7 @@ var UndoView = Backbone.View.extend({
             this.$main = $('main');
             this.$canvas = $("#canvas");
             this.$canvas_wrapper = $("#canvas_wrapper");
-            this.$paper = $("#paper");
+            this.$figure = $("#figure");
             this.$copyBtn = $(".copy");
             this.$pasteBtn = $(".paste");
             this.$saveBtn = $(".save_figure.btn");
@@ -1247,7 +1552,7 @@ var UndoView = Backbone.View.extend({
             var self = this;
 
             // Render on changes to the model
-            this.model.on('change:paper_width change:paper_height', this.render, this);
+            this.model.on('change:paper_width change:paper_height change:page_count', this.render, this);
 
             // If a panel is added...
             this.model.panels.on("add", this.addOne, this);
@@ -1295,6 +1600,7 @@ var UndoView = Backbone.View.extend({
 
         events: {
             "click .export_pdf": "export_pdf",
+            "click .export_options li": "export_options",
             "click .add_panel": "addPanel",
             "click .delete_panel": "deleteSelectedPanels",
             "click .copy": "copy_selected_panels",
@@ -1326,6 +1632,21 @@ var UndoView = Backbone.View.extend({
             'right' : 'nudge_right',
         },
 
+        // choose an export option from the drop-down list
+        export_options: function(event) {
+            event.preventDefault();
+
+            var $target = $(event.target);
+
+            // Only show check mark on the selected item.
+            $(".export_options .glyphicon-ok").css('visibility', 'hidden');
+            $(".glyphicon-ok", $target).css('visibility', 'visible');
+
+            // Update text of main export_pdf button.
+            var txt = $target.attr('data-export-option');
+            $('.export_pdf').text("Export " + txt).attr('data-export-option', txt);
+        },
+
         paper_setup: function(event) {
             event.preventDefault();
 
@@ -1345,18 +1666,27 @@ var UndoView = Backbone.View.extend({
             // Status is indicated by showing / hiding 3 buttons
             var figureModel = this.model,
                 $create_figure_pdf = $(event.target),
+                export_opt = $create_figure_pdf.attr('data-export-option'),
                 $pdf_inprogress = $("#pdf_inprogress"),
-                $pdf_download = $("#pdf_download");
+                $pdf_download = $("#pdf_download"),
+                exportOption = "PDF";
             $create_figure_pdf.hide();
             $pdf_download.hide();
             $pdf_inprogress.show();
+
+            if (export_opt == "PDF & images") {
+                exportOption = "PDF_IMAGES";
+            } else {
+                exportOption = "PDF";
+            }
 
             // Get figure as json
             var figureJSON = this.model.figure_toJSON();
 
             var url = MAKE_WEBFIGURE_URL,
                 data = {
-                    figureJSON: JSON.stringify(figureJSON)
+                    figureJSON: JSON.stringify(figureJSON),
+                    exportOption: exportOption,
                 };
 
             // Start the Figure_To_Pdf.py script
@@ -1702,9 +2032,8 @@ var UndoView = Backbone.View.extend({
 
         // Centre the viewport on the middle of the paper
         reCentre: function() {
-            var paper_w = this.model.get('paper_width'),
-                paper_h = this.model.get('paper_height');
-            this.setCentre( {'x':paper_w/2, 'y':paper_h/2} );
+            var size = this.model.getFigureSize();
+            this.setCentre( {'x':size.w/2, 'y':size.h/2} );
         },
 
         // Get the coordinates on the paper of the viewport center.
@@ -1729,16 +2058,18 @@ var UndoView = Backbone.View.extend({
                 cy = -offst_top + viewport_h/2,
                 zm_fraction = curr_zoom * 0.01;
 
-            var paper_left = (m.get('canvas_width') - m.get('paper_width'))/2,
-                paper_top = (m.get('canvas_height') - m.get('paper_height'))/2;
+            var size = this.model.getFigureSize();
+            var paper_left = (m.get('canvas_width') - size.w)/2,
+                paper_top = (m.get('canvas_height') - size.h)/2;
             return {'x':(cx/zm_fraction)-paper_left, 'y':(cy/zm_fraction)-paper_top};
         },
 
         // Scroll viewport to place a specified paper coordinate at the centre
         setCentre: function(cx_cy, speed) {
             var m = this.model,
-                paper_left = (m.get('canvas_width') - m.get('paper_width'))/2,
-                paper_top = (m.get('canvas_height') - m.get('paper_height'))/2;
+                size = this.model.getFigureSize(),
+                paper_left = (m.get('canvas_width') - size.w)/2,
+                paper_top = (m.get('canvas_height') - size.h)/2;
             var curr_zoom = m.get('curr_zoom'),
                 zm_fraction = curr_zoom * 0.01,
                 cx = (cx_cy.x+paper_left) * zm_fraction,
@@ -1757,19 +2088,17 @@ var UndoView = Backbone.View.extend({
         zoom_paper_to_fit: function(event) {
 
             var m = this.model,
-                pw = m.get('paper_width'),
-                ph = m.get('paper_height'),
+                size = this.model.getFigureSize(),
                 viewport_w = this.$main.width(),
                 viewport_h = this.$main.height();
 
-            var zoom_x = viewport_w/pw,
-                zoom_y = viewport_h/ph,
+            var zoom_x = viewport_w/(size.w + 100),
+                zoom_y = viewport_h/(size.h + 100),
                 zm = Math.min(zoom_x, zoom_y);
             zm = (zm * 100) >> 0;
 
-            // TODO: Need to update slider!
-            m.set('curr_zoom', zm-5) ;
-            $("#zoom_slider").slider({ value: zm-5 });
+            m.set('curr_zoom', zm) ;
+            $("#zoom_slider").slider({ value: zm });
 
             // seems we sometimes need to wait to workaround bugs
             var self = this;
@@ -1781,7 +2110,7 @@ var UndoView = Backbone.View.extend({
         // Add a panel to the view
         addOne: function(panel) {
             var view = new PanelView({model:panel});    // uiState:this.uiState
-            this.$paper.append(view.render().el);
+            this.$figure.append(view.render().el);
         },
 
         renderFigureName: function() {
@@ -1834,17 +2163,39 @@ var UndoView = Backbone.View.extend({
             var m = this.model,
                 zoom = m.get('curr_zoom') * 0.01;
 
-            var paper_w = m.get('paper_width'),
-                paper_h = m.get('paper_height'),
-                canvas_w = m.get('canvas_width'),
-                canvas_h = m.get('canvas_height'),
-                paper_left = (canvas_w - paper_w)/2,
-                paper_top = (canvas_h - paper_h)/2;
+            var page_w = m.get('paper_width'),
+                page_h = m.get('paper_height'),
+                size = this.model.getFigureSize(),
+                canvas_w = Math.max(m.get('canvas_width'), size.w),
+                canvas_h = Math.max(m.get('canvas_height'), size.h),
+                page_count = m.get('page_count'),
+                paper_spacing = m.get('paper_spacing'),
+                figure_left = (canvas_w - size.w)/2,
+                figure_top = (canvas_h - size.h)/2;
 
-            this.$paper.css({'width': paper_w, 'height': paper_h,
-                    'left': paper_left, 'top': paper_top});
-            $("#canvas").css({'width': this.model.get('canvas_width'),
-                    'height': this.model.get('canvas_height')});
+            var $pages = $(".paper"),
+                left, top, row, col;
+            if ($pages.length !== page_count) {
+                $pages.remove();
+                for (var p=0; p<page_count; p++) {
+                    row = Math.floor(p/size.cols);
+                    col = p % size.cols;
+                    top = row * (page_h + paper_spacing);
+                    left = col * (page_w + paper_spacing);
+                    $("<div class='paper'></div>")
+                        .css({'left': left, 'top': top})
+                        .prependTo(this.$figure);
+                }
+                $pages = $(".paper");
+            }
+
+            $pages.css({'width': page_w, 'height': page_h});
+
+            this.$figure.css({'width': size.w, 'height': size.h,
+                    'left': figure_left, 'top': figure_top});
+
+            $("#canvas").css({'width': canvas_w,
+                    'height': canvas_h});
 
             // always want to do this?
             this.zoom_paper_to_fit();
@@ -1869,6 +2220,7 @@ var UndoView = Backbone.View.extend({
             "click .awidth": "align_width",
             "click .aheight": "align_height",
             "click .asize": "align_size",
+            "click .amagnification": "align_magnification",
         },
 
         initialize: function() {
@@ -1899,6 +2251,11 @@ var UndoView = Backbone.View.extend({
         align_size: function(event) {
             event.preventDefault();
             this.model.align_size(true, true);
+        },
+
+        align_magnification: function(event) {
+            event.preventDefault();
+            this.model.align_magnification();
         },
 
         align_top: function(event) {
@@ -2187,7 +2544,7 @@ var FileListItemView = Backbone.View.extend({
 
         el: $("#paperSetupModal"),
 
-        template: JST["static/figure/templates/paper_setup_modal_template.html"],
+        template: JST["static/figure/templates/modal_dialogs/paper_setup_modal_template.html"],
 
         model:FigureModel,
 
@@ -2213,16 +2570,30 @@ var FileListItemView = Backbone.View.extend({
             // On form submit, need to work out paper width & height
             var $form = $('form', this.$el),
                 dpi = 72,
+                pageCount = $('.pageCountSelect', $form).val(),
                 size = $('.paperSizeSelect', $form).val(),
                 orientation = $form.find('input[name="pageOrientation"]:checked').val(),
                 custom_w = parseInt($("#paperWidth").val(), 10),
                 custom_h = parseInt($("#paperHeight").val(), 10),
                 units = $('.wh_units:first', $form).text();
 
+
             var w_mm, h_m, w_pixels, h_pixels;
             if (size == 'A4') {
                 w_mm = 210;
                 h_mm = 297;
+            } else if (size == 'A3') {
+                w_mm = 297;
+                h_mm = 420;
+            } else if (size == 'A2') {
+                w_mm = 420;
+                h_mm = 594;
+            } else if (size == 'A1') {
+                w_mm = 594;
+                h_mm = 841;
+            } else if (size == 'A0') {
+                w_mm = 841;
+                h_mm = 1189;
             } else if (size == 'letter') {
                 w_mm = 216;
                 h_mm = 280;
@@ -2247,6 +2618,11 @@ var FileListItemView = Backbone.View.extend({
                 tmp = w_pixels; w_pixels = h_pixels; h_pixels = tmp;
             }
 
+            var cols = pageCount;
+            if (pageCount > 3) {
+                cols = Math.ceil(pageCount/2);
+            }
+
             var rv = {
                 // 'dpi': dpi,
                 'page_size': size,
@@ -2255,6 +2631,8 @@ var FileListItemView = Backbone.View.extend({
                 'height_mm': h_mm,
                 'paper_width': w_pixels,
                 'paper_height': h_pixels,
+                'page_count': pageCount,
+                'page_col_count': cols,
             };
             return rv;
         },
@@ -2291,7 +2669,7 @@ var FileListItemView = Backbone.View.extend({
 
         el: $("#setIdModal"),
 
-        template: JST["static/figure/templates/preview_Id_change_template.html"],
+        template: JST["static/figure/templates/modal_dialogs/preview_Id_change_template.html"],
 
         model:FigureModel,
 
@@ -2359,6 +2737,8 @@ var FileListItemView = Backbone.View.extend({
                     'datasetName': data.meta.datasetName,
                     'pixel_size_x': data.pixel_size.x,
                     'pixel_size_y': data.pixel_size.y,
+                    'pixel_size_x_unit': data.pixel_size.unitX,
+                    'pixel_size_x_symbol': data.pixel_size.symbolX,
                     'deltaT': data.deltaT,
                 };
                 self.newImg = newImg;
@@ -2668,6 +3048,8 @@ var FileListItemView = Backbone.View.extend({
                         'datasetId': data.meta.datasetId,
                         'pixel_size_x': data.pixel_size.x,
                         'pixel_size_y': data.pixel_size.y,
+                        'pixel_size_x_symbol': data.pixel_size.symbolX,
+                        'pixel_size_x_unit': data.pixel_size.unitX,
                         'deltaT': data.deltaT,
                     };
                     if (baseUrl) {
@@ -2802,6 +3184,9 @@ var FileListItemView = Backbone.View.extend({
                 var ljson = $.extend(true, {}, l);
                 if (typeof ljson.text == 'undefined' && ljson.time) {
                     ljson.text = self.model.get_time_label_text(ljson.time);
+                } else {
+                    // Escape all labels so they are safe
+                    ljson.text = _.escape(ljson.text);
                 }
                 positions[l.position].push(ljson);
             });
@@ -2837,7 +3222,10 @@ var FileListItemView = Backbone.View.extend({
                 var sb_json = {};
                 sb_json.position = sb.position;
                 sb_json.color = sb.color;
-                sb_json.width = sb.pixels;  // TODO * scale
+                sb_json.length = sb.length;
+                sb_json.font_size = sb.font_size;
+                sb_json.show_label = sb.show_label;
+                sb_json.symbol = this.model.get('pixel_size_x_symbol');
 
                 var sb_html = this.scalebar_template(sb_json);
                 this.$el.append(sb_html);
@@ -2906,6 +3294,7 @@ var RectView = Backbone.View.extend({
         this.handle_wh = options.handle_wh || this.handle_wh;
         this.handles_toFront = options.handles_toFront || false;
         this.disable_handles = options.disable_handles || false;
+        this.fixed_ratio = options.fixed_ratio || false;
         // this.manager = options.manager;
 
         // Set up our 'view' attributes (for rendering without updating model)
@@ -2933,7 +3322,7 @@ var RectView = Backbone.View.extend({
                 // on DRAG...
 
                 // If drag on corner handle, retain aspect ratio. dx/dy = aspect
-                var keep_ratio = true;  // event.shiftKey - used to be dependent on shift
+                var keep_ratio = self.fixed_ratio || event.shiftKey;
                 if (keep_ratio && this.h_id.length === 2) {     // E.g. handle is corner 'ne' etc
                     if (this.h_id === 'se' || this.h_id === 'nw') {
                         if (Math.abs(dx/dy) > this.aspect) {
@@ -3137,7 +3526,7 @@ var RectView = Backbone.View.extend({
 
     selectShape: function(event) {
         // pass back to model to update all selection
-        this.model.handleClick(event);
+        this.model.trigger('clicked', [event]);
     },
 
     // Destroy: remove Raphael elements and event listeners
@@ -3174,6 +3563,14 @@ var RectView = Backbone.View.extend({
             if (selected.length > 0) {
                 this.vp = new ImageViewerView({models: selected}); // auto-renders on init
                 $("#viewportContainer").append(this.vp.el);
+            }
+            if (this.zmp) {
+                this.zmp.remove();
+                delete this.zmp;
+            }
+            if (selected.length > 0) {
+                this.zmp = new ZoomView({models: selected}); // auto-renders on init
+                $("#reset-zoom-view").append(this.zmp.el);
             }
 
             if (this.ipv) {
@@ -3235,8 +3632,25 @@ var RectView = Backbone.View.extend({
             var $li = $span.parent().parent(),
                 $button = $li.parent().prev();
             $span = $span.clone();
-            $('span:first', $button).replaceWith($span);
-            $button.trigger('change');      // can listen for this if we want to 'submit' etc
+
+            if ($span.hasClass('colorpickerOption')) {
+                var oldcolor = $a.attr('data-oldcolor');
+                FigureColorPicker.show({
+                    'color': oldcolor,
+                    'success': function(newColor){
+                        $span.css({'background-color': newColor, 'background-image': 'none'});
+                        // remove # from E.g. #ff00ff
+                        newColor = newColor.replace("#", "");
+                        $span.attr('data-color', newColor);
+                        $('span:first', $button).replaceWith($span);
+                        // can listen for this if we want to 'submit' etc
+                        $button.trigger('change');
+                    }
+                });
+            } else {
+                $('span:first', $button).replaceWith($span);
+                $button.trigger('change');      // can listen for this if we want to 'submit' etc
+            }
         },
 
         // submission of the New Label form
@@ -3405,6 +3819,8 @@ var RectView = Backbone.View.extend({
                 color = $('.label-color span:first', $form).attr('data-color'),
                 key = $form.attr('data-key');
 
+            // the 'key' will now be unescaped, so we need to escape it again to compare with model
+            key = _.escape(key);
             var new_label = {text:label_text, size:font_size, position:position, color:color};
 
             // if we're editing a 'time' label, preserve the 'time' attribute
@@ -3476,7 +3892,7 @@ var RectView = Backbone.View.extend({
             var self = this;
 
             this.models.forEach(function(m){
-                self.listenTo(m, 'change:scalebar change:pixel_size_x', self.render);
+                self.listenTo(m, 'change:scalebar change:pixel_size_x change:scalebar_label', self.render);
             });
 
             // this.$el = $("#scalebar_form");
@@ -3484,6 +3900,7 @@ var RectView = Backbone.View.extend({
 
         events: {
             "submit .scalebar_form": "update_scalebar",
+            "click .scalebar_label": "update_scalebar",
             "change .btn": "dropdown_btn_changed",
             "click .hide_scalebar": "hide_scalebar",
             "click .pixel_size_display": "edit_pixel_size",
@@ -3540,13 +3957,17 @@ var RectView = Backbone.View.extend({
 
             var length = $('.scalebar-length', $form).val(),
                 position = $('.label-position span:first', $form).attr('data-position'),
-                color = $('.label-color span:first', $form).attr('data-color');
+                color = $('.label-color span:first', $form).attr('data-color'),
+                show_label = $('.scalebar_label', $form).prop('checked'),
+                font_size = $('.scalebar_font_size span:first', $form).text().trim();
 
             this.models.forEach(function(m){
                 var sb = {show: true};
                 if (length != '-') sb.length = parseInt(length, 10);
                 if (position != '-') sb.position = position;
                 if (color != '-') sb.color = color;
+                sb.show_label = show_label;
+                if (font_size != '-') sb.font_size = font_size;
 
                 m.save_scalebar(sb);
             });
@@ -3555,7 +3976,7 @@ var RectView = Backbone.View.extend({
 
         render: function() {
 
-            var json = {show: false},
+            var json = {show: false, show_label: false},
                 hidden = false,
                 sb;
 
@@ -3563,12 +3984,16 @@ var RectView = Backbone.View.extend({
                 // start with json data from first Panel
                 if (!json.pixel_size_x) {
                     json.pixel_size_x = m.get('pixel_size_x');
+                    json.symbol = m.get('pixel_size_x_symbol');
                 } else {
                     pix_sze = m.get('pixel_size_x');
                     // account for floating point imprecision when comparing
                     if (json.pixel_size_x != '-' &&
                         json.pixel_size_x.toFixed(10) != pix_sze.toFixed(10)) {
                             json.pixel_size_x = '-';
+                    }
+                    if (json.symbol != m.get('pixel_size_x_symbol')) {
+                        json.symbol = '-';
                     }
                 }
                 sb = m.get('scalebar');
@@ -3579,12 +4004,16 @@ var RectView = Backbone.View.extend({
                         json.units = sb.units;
                         json.position = sb.position;
                         json.color = sb.color;
+                        json.show_label = sb.show_label;
+                        json.font_size = sb.font_size;
                     }
                     else {
                         if (json.length != sb.length) json.length = '-';
                         if (json.units != sb.units) json.units = '-';
                         if (json.position != sb.position) json.position = '-';
                         if (json.color != sb.color) json.color = '-';
+                        if (!sb.show_label) json.show_label = false;
+                        if (json.font_size != sb.font_size) json.font_size = '-';
                     }
                 }
                 // if any panels don't have scalebar - we allow to add
@@ -3598,6 +4027,8 @@ var RectView = Backbone.View.extend({
             json.units = json.units || 'um';
             json.position = json.position || 'bottomright';
             json.color = json.color || 'FFFFFF';
+            json.font_size = json.font_size || 10;
+            json.symbol = json.symbol || '-';
 
             var html = this.template(json);
             this.$el.html(html);
@@ -3977,7 +4408,7 @@ var RectView = Backbone.View.extend({
                 sizeT = this.models.getIfEqual('sizeT'),
                 deltaT = this.models.getDeltaTIfEqual(),
                 z_projection = this.models.allTrue('z_projection');
-
+            
             this.theT_avg = theT;
 
             if (wh <= 1) {
@@ -3988,7 +4419,7 @@ var RectView = Backbone.View.extend({
                 frame_h = this.full_size / wh;
             }
 
-            // Now get img src & positioning css for each panel,
+            // Now get img src & positioning css for each panel, 
             this.models.forEach(function(m){
                 var src = m.get_img_src(),
                     img_css = m.get_vp_img_css(m.get('zoom'), frame_w, frame_h, m.get('dx'), m.get('dy'));
@@ -4114,9 +4545,55 @@ var RectView = Backbone.View.extend({
 
             this.$vp_frame = $(".vp_frame", this.$el);  // cache for later
             this.$vp_img = $(".vp_img", this.$el);
-            this.$vp_zoom_value.text((zoom >> 0) + "%");
+            this.zoom_avg = zoom >> 0;
+            this.$vp_zoom_value.text(this.zoom_avg + "%");
+            $("#vp_zoom_slider").slider({value: this.zoom_avg});
 
             return this;
+        }
+    });
+
+
+    var ZoomView = Backbone.View.extend({
+
+        initialize: function(opts) {
+
+            this.models = opts.models;
+            this.render();
+        },
+
+        events: {
+            "click .reset-zoom-shape": "resetZoomShape",
+            "click .crop-btn": "show_crop_dialog",
+        },
+
+        show_crop_dialog: function(event) {
+            event.preventDefault();
+            // Simply show dialog - Everything else handled by that
+            $("#roiModal").modal('show');
+        },
+
+        resetZoomShape: function(event) {
+            event.preventDefault();
+            this.models.forEach(function(m){
+                m.cropToRoi({
+                    'x': 0,
+                    'y': 0,
+                    'width': m.get('orig_width'),
+                    'height': m.get('orig_height')
+                });
+            });
+        },
+
+        render: function() {
+
+            this.$el.html('<div class="btn-group">'+
+                '<button type="button" title="Crop panel" class="btn btn-default btn-sm crop-btn">' +
+                    '<span class="glyphicon"></span>' +
+                '</button>'+
+                '<button type="button" class="btn btn-default btn-sm reset-zoom-shape" title="Reset Zoom and Shape">'+
+                    '<span class="glyphicon glyphicon-resize-full"></span>'+
+                '</button></div>');
         }
     });
 
@@ -4185,15 +4662,32 @@ var RectView = Backbone.View.extend({
 
         pick_color: function(e) {
             var color = e.currentTarget.getAttribute('data-color'),
-                idx = $(e.currentTarget).parent().parent().attr('data-index');
-            if (this.model) {
-                this.model.save_channel(idx, 'color', color);
-            } else if (this.models) {
+                $colorbtn = $(e.currentTarget).parent().parent(),
+                oldcolor = $(e.currentTarget).attr('data-oldcolor'),
+                idx = $colorbtn.attr('data-index'),
+                self = this;
+
+            if (color == 'colorpicker') {
+                FigureColorPicker.show({
+                    'color': oldcolor,
+                    'success': function(newColor){
+                        // remove # from E.g. #ff00ff
+                        newColor = newColor.replace("#", "");
+                        self.set_color(idx, newColor);
+                    }
+                });
+            } else {
+                this.set_color(idx, color);
+            }
+            return false;
+        },
+
+        set_color: function(idx, color) {
+            if (this.models) {
                 this.models.forEach(function(m){
                     m.save_channel(idx, 'color', color);
                 });
             }
-            return false;
         },
 
         toggle_channel: function(e) {
@@ -4353,6 +4847,386 @@ var RectView = Backbone.View.extend({
     });
 
 
+
+var RoiModalView = Backbone.View.extend({
+
+        el: $("#roiModal"),
+
+        // template: JST["static/figure/templates/paper_setup_modal_template.html"],
+        template: JST["static/figure/templates/modal_dialogs/roi_modal_template.html"],
+        roiTemplate: JST["static/figure/templates/modal_dialogs/roi_modal_roi.html"],
+
+        model:FigureModel,
+
+        initialize: function() {
+
+            var self = this;
+            $("#roiModal").bind("show.bs.modal", function(){
+                self.m = self.model.getSelected().head().clone();
+                self.listenTo(self.m, 'change:theZ change:theT', self.render);
+                self.cropModel.set({'selected': false, 'width': 0, 'height': 0});    // hide crop roi
+                self.zoomToFit();   // includes render()
+                self.loadRois();
+            });
+
+            // keep track of currently selected ROI
+            this.currentROI = {'x':0, 'y': 0, 'width': 0, 'height': 0}
+
+            // used by model underlying Rect.
+            // NB: values in cropModel are scaled by zoom percent
+            this.cropModel = new Backbone.Model({
+                'x':0, 'y': 0, 'width': 0, 'height': 0,
+                'selected': false});
+            // since resizes & drags don't actually update cropModel automatically, we do it...
+            this.cropModel.bind('drag_resize_stop', function(args) {
+                this.set({'x': args[0], 'y': args[1], 'width': args[2], 'height': args[3]});
+            });
+            this.cropModel.bind('drag_xy_stop', function(args) {
+                this.set({'x': args[0] + this.get('x'), 'y': args[1] + this.get('y')});
+            });
+
+            // we also need to update the scaled ROI coords...
+            this.listenTo(this.cropModel, 'change:x change:y change:width change:height', function(m){
+                var scale = self.zoom / 100;
+                self.currentROI = {
+                    'x': m.get('x') / scale,
+                    'y': m.get('y') / scale,
+                    'width': m.get('width') / scale,
+                    'height': m.get('height') / scale
+                }
+                // No-longer correspond to saved ROI coords
+                self.currentRoiId = undefined;
+            });
+
+            // Now set up Raphael paper...
+            this.paper = Raphael("roi_paper", 500, 500);
+            this.rect = new RectView({'model':this.cropModel, 'paper': this.paper});
+            this.$roiImg = $('.roi_image', this.$el);
+        },
+
+        events: {
+            "click .roi_content": "roiPicked",
+            "mousedown svg": "mousedown",
+            "mousemove svg": "mousemove",
+            "mouseup svg": "mouseup",
+            "submit .roiModalForm": "handleRoiForm"
+        },
+
+        roiPicked: function(event) {
+
+            var $roi = $(event.target),
+                x = parseInt($roi.attr('data-x'), 10),
+                y = parseInt($roi.attr('data-y'), 10),
+                width = parseInt($roi.attr('data-width'), 10),
+                height = parseInt($roi.attr('data-height'), 10),
+                theT = parseInt($roi.attr('data-theT'), 10),
+                theZ = parseInt($roi.attr('data-theZ'), 10);
+
+            this.m.set({'theT': theT, 'theZ': theZ});
+
+            this.currentROI = {
+                'x':x, 'y':y, 'width':width, 'height':height
+            }
+
+            this.render();
+
+            this.cropModel.set({
+                'selected': true
+            });
+
+            // Save ROI ID
+            this.currentRoiId = $roi.attr('data-roiId');
+        },
+
+        handleRoiForm: function(event) {
+            event.preventDefault();
+            // var json = this.processForm();
+            var self = this,
+                r = this.currentROI,
+                theZ = this.m.get('theZ'),
+                theT = this.m.get('theT'),
+                sel = this.model.getSelected(),
+                sameT = sel.allEqual('theT');
+                // sameZT = sel.allEqual('theT') && sel.allEqual('theT');
+
+            var getShape = function getShape(z, t) {
+
+                var rv = {'x': r.x,
+                        'y': r.y,
+                        'width': r.width,
+                        'height': r.height,
+                        'theZ': z,
+                        'theT': t,
+                    }
+                return rv;
+            }
+
+            // IF we have an ROI selected (instead of hand-drawn shape)
+            // then try to use appropriate shape for that plane.
+            if (this.currentRoiId) {
+
+                getShape = function getShape(currZ, currT) {
+
+                    var tzShapeMap = self.cachedRois[self.currentRoiId],
+                        tkeys = _.keys(tzShapeMap).sort(),
+                        zkeys, z, t, s;
+
+                    if (tzShapeMap[currT]) {
+                        t = currT;
+                    } else {
+                        t = tkeys[parseInt(tkeys.length/2 ,10)]
+                    }
+                    zkeys = _.keys(tzShapeMap[t]).sort();
+                    if (tzShapeMap[t][currZ]) {
+                        z = currZ;
+                    } else {
+                        z = zkeys[parseInt(zkeys.length/2, 10)]
+                    }
+                    s = tzShapeMap[t][z]
+
+                    // if we have a range of T values, don't change T!
+                    if (!sameT) {
+                        t = currT;
+                    }
+
+                    return {'x': s.x,
+                            'y': s.y,
+                            'width': s.width,
+                            'height': s.height,
+                            'theZ': z,
+                            'theT': t,
+                        }
+                };
+            }
+
+            // Don't set Z/T if we already have different Z/T indecies.
+            sel.each(function(m){
+                var sh = getShape(m.get('theZ'), m.get('theT'));
+
+                m.cropToRoi({'x': sh.x, 'y': sh.y, 'width': sh.width, 'height': sh.height});
+                m.set({'theZ': parseInt(sh.theZ, 10),
+                       'theT': parseInt(sh.theT, 10)});
+            });
+            $("#roiModal").modal('hide');
+        },
+
+        mousedown: function(event) {
+            this.dragging = true;
+            var os = $(event.target).offset();
+            this.clientX_start = event.clientX;
+            this.clientY_start = event.clientY;
+            this.imageX_start = this.clientX_start - os.left;
+            this.imageY_start = this.clientY_start - os.top;
+            this.cropModel.set({'x': this.imageX_start, 'y': this.imageY_start, 'width': 0, 'height': 0, 'selected': true})
+            return false;
+        },
+
+        mouseup: function(event) {
+            if (this.dragging) {
+                this.dragging = false;
+                return false;
+            }
+        },
+
+        mousemove: function(event) {
+            if (this.dragging) {
+                var dx = event.clientX - this.clientX_start,
+                    dy = event.clientY - this.clientY_start;
+                if (event.shiftKey) {
+                    // make region square!
+                    if (Math.abs(dx) > Math.abs(dy)) {
+                        if (dy > 0) dy = Math.abs(dx);
+                        else dy = -1 * Math.abs(dx);
+                    } else {
+                        if (dx > 0) dx = Math.abs(dy);
+                        else dx = -1 * Math.abs(dy);
+                    }
+                }
+                var negX = Math.min(0, dx),
+                    negY = Math.min(0, dy);
+                this.cropModel.set({'x': this.imageX_start + negX,
+                    'y': this.imageY_start + negY,
+                    'width': Math.abs(dx), 'height': Math.abs(dy)});
+                return false;
+            }
+        },
+
+        loadRois: function() {
+            var self = this,
+                iid = self.m.get('imageId');
+            $.getJSON(ROIS_JSON_URL + iid, function(data){
+
+                // get a representative Rect from each ROI.
+                // Include a z and t index, trying to pick current z/t if ROI includes a shape there
+                var currT = self.m.get('theT'),
+                    currZ = self.m.get('theZ');
+                var rects = [],
+                    cachedRois = {},    // roiId: shapes (z/t dict)
+                    roi, shape, theT, theZ, z, t, rect, tkeys, zkeys,
+                    minT, maxT,
+                    shapes; // dict of all shapes by z & t index
+                for (var r=0; r<data.length; r++) {
+                    roi = data[r];
+                    shapes = {};
+                    minT = undefined;
+                    maxT = 0;
+                    for (var s=0; s<roi.shapes.length; s++) {
+                        shape = roi.shapes[s];
+                        if (shape.type !== "Rectangle") continue;
+                        // Handle null Z/T
+                        if (shape.theZ === undefined) {
+                            shape.theZ = currZ;
+                        }
+                        theZ = shape.theZ;
+                        if (shape.theT === undefined) {
+                            shape.theT = currT;
+                        }
+                        theT = shape.theT;
+                        // Keep track of min/max T for display
+                        if (minT === undefined) {minT = theT}
+                        else {minT = Math.min(minT, theT)}
+                        maxT = Math.max(maxT, theT);
+
+                        // Build our map of shapes[t][z]
+                        if (shapes[theT] === undefined) {
+                            shapes[theT] = {};
+                        }
+                        shapes[theT][theZ] = shape;
+                    }
+                    cachedRois[roi.id] = shapes;
+                    // get display shape for picking ROI
+                    // on current plane or pick median T/Z...
+                    tkeys = _.keys(shapes).sort();
+                    if (tkeys.length === 0) continue;   // no Rectangles
+                    if (shapes[currT]) {
+                        t = currT;
+                    } else {
+                        t = tkeys[(tkeys.length/2)>>0]
+                    }
+                    zkeys = _.keys(shapes[t]).sort();
+                    if (shapes[t][currZ]) {
+                        z = currZ;
+                    } else {
+                        z = zkeys[(zkeys.length/2)>>0]
+                    }
+                    shape = shapes[t][z]
+                    rects.push({'theZ': shape.theZ,
+                                'theT': shape.theT,
+                                'x': shape.x,
+                                'y': shape.y,
+                                'width': shape.width,
+                                'height': shape.height,
+                                'roiId': roi.id,
+                                'tStart': minT,
+                                'tEnd': maxT,
+                                'zStart': zkeys[0],
+                                'zEnd': zkeys[zkeys.length-1]});
+                }
+                // Show ROIS...
+                self.renderRois(rects);
+                self.cachedRois = cachedRois;
+            });
+        },
+
+        renderRois: function(rects) {
+
+            var orig_width = this.m.get('orig_width'),
+                orig_height = this.m.get('orig_height');
+
+            var html = "",
+                size = 50,
+                rect, src, zoom,
+                top, left, div_w, div_h, img_w, img_h;
+
+            // loop through ROIs, using our cloned model to generate src urls
+            // first, get the current Z and T of cloned model...
+            this.m.set('z_projection', false);      // in case z_projection is true
+            var origT = this.m.get('theT'),
+                origZ = this.m.get('theZ');
+            for (var r=0; r<rects.length; r++) {
+                rect = rects[r];
+                if (rect.theT > -1) this.m.set('theT', rect.theT, {'silent': true});
+                if (rect.theZ > -1) this.m.set('theZ', rect.theZ, {'silent': true});
+                src = this.m.get_img_src();
+                if (rect.width > rect.height) {
+                    div_w = size;
+                    div_h = (rect.height/rect.width) * div_w;
+                } else {
+                    div_h = size;
+                    div_w = (rect.width/rect.height) * div_h;
+                }
+                zoom = div_w/rect.width;
+                img_w = orig_width * zoom;
+                img_h = orig_height * zoom;
+                top = -(zoom * rect.y);
+                left = -(zoom * rect.x);
+
+                var json = {
+                    'src': src,
+                    'rect': rect,
+                    'w': div_w,
+                    'h': div_h,
+                    'top': top,
+                    'left': left,
+                    'img_w': img_w,
+                    'img_h': img_h,
+                    'theZ': rect.theZ + 1,
+                    'theT': rect.theT + 1,
+                    'zStart': (+rect.zStart) + 1,
+                    'zEnd': (+rect.zEnd) + 1,
+                    'tStart': (+rect.tStart) + 1,
+                    'tEnd': (+rect.tEnd) + 1,
+                    'roiId': rect.roiId,
+                }
+                html += this.roiTemplate(json);
+            }
+            $(".roiPicker tbody").html(html);
+
+            // reset Z/T as before
+            this.m.set({'theT': origT, 'theZ': origZ});
+        },
+
+        zoomToFit: function() {
+            var $roiViewer = $("#roiViewer"),
+                viewer_w = $roiViewer.width(),
+                viewer_h = $roiViewer.height(),
+                w = this.m.get('orig_width'),
+                h = this.m.get('orig_height');
+                scale = Math.min(viewer_w/w, viewer_h/h);
+            this.setZoom(scale * 100);
+        },
+
+        setZoom: function(percent) {
+            this.zoom = percent;
+            this.render();
+        },
+
+        render: function() {
+            var scale = this.zoom / 100,
+                roi = this.currentROI,
+                w = this.m.get('orig_width'),
+                h = this.m.get('orig_height');
+            var newW = w * scale,
+                newH = h * scale;
+            var src = this.m.get_img_src()
+
+            this.paper.setSize(newW, newH);
+            $("#roi_paper").css({'height': newH, 'width': newW});
+
+            this.$roiImg.css({'height': newH, 'width': newW})
+                    .attr('src', src);
+
+            var roiX = this.currentROI.x * scale,
+                roiY = this.currentROI.y * scale,
+                roiW = this.currentROI.width * scale,
+                roiH = this.currentROI.height * scale;
+            this.cropModel.set({
+                'x': roiX, 'y': roiY, 'width': roiW, 'height': roiH
+            });
+        }
+    });
+
+
     // -------------- Selection Overlay Views ----------------------
 
 
@@ -4367,8 +5241,9 @@ var RectView = Backbone.View.extend({
     // Used by a couple of different models below
     var getModelCoords = function(coords) {
         var zoom = this.figureModel.get('curr_zoom') * 0.01,
-            paper_top = (this.figureModel.get('canvas_height') - this.figureModel.get('paper_height'))/2,
-            paper_left = (this.figureModel.get('canvas_width') - this.figureModel.get('paper_width'))/2,
+            size = this.figureModel.getFigureSize(),
+            paper_top = (this.figureModel.get('canvas_height') - size.h)/2,
+            paper_left = (this.figureModel.get('canvas_width') - size.w)/2,
             x = (coords.x/zoom) - paper_left - 1,
             y = (coords.y/zoom) - paper_top - 1,
             w = coords.width/zoom,
@@ -4385,7 +5260,7 @@ var RectView = Backbone.View.extend({
             this.renderFromModel();
 
             // Refresh c
-            this.listenTo(this.figureModel, 'change:curr_zoom change:paper_width change:paper_height', this.renderFromModel);
+            this.listenTo(this.figureModel, 'change:curr_zoom change:paper_width change:paper_height change:page_count', this.renderFromModel);
             this.listenTo(this.panelModel, 'change:x change:y change:width change:height', this.renderFromModel);
             // when PanelModel is being dragged, but NOT by this ProxyRectModel...
             this.listenTo(this.panelModel, 'drag_resize', this.renderFromTrigger);
@@ -4397,13 +5272,19 @@ var RectView = Backbone.View.extend({
             this.listenTo(this, 'drag_resize', this.drag_resize);
             // listen to change to this model - update PanelModel
             this.listenTo(this, 'drag_resize_stop', this.drag_resize_stop);
+
+            // reduce coupling between this and rect by using triggers to handle click.
+            this.bind('clicked', function(args) {
+                this.handleClick(args[0]);
+            });
         },
 
         // return the SVG x, y, w, h (converting from figureModel)
         getSvgCoords: function(coords) {
             var zoom = this.figureModel.get('curr_zoom') * 0.01,
-                paper_top = (this.figureModel.get('canvas_height') - this.figureModel.get('paper_height'))/2,
-                paper_left = (this.figureModel.get('canvas_width') - this.figureModel.get('paper_width'))/2,
+                size = this.figureModel.getFigureSize(),
+                paper_top = (this.figureModel.get('canvas_height') - size.h)/2,
+                paper_left = (this.figureModel.get('canvas_width') - size.w)/2,
                 rect_x = (paper_left + 1 + coords.x) * zoom,
                 rect_y = (paper_top + 1 + coords.y) * zoom,
                 rect_w = coords.width * zoom,
@@ -4429,7 +5310,7 @@ var RectView = Backbone.View.extend({
             this.drag_xy(xy, true);
         },
 
-        // Called on trigger from the RectView on resize.
+        // Called on trigger from the RectView on resize. 
         // Need to convert from Svg coords to Model and notify the PanelModel without saving.
         drag_resize: function(xywh) {
             var coords = this.getModelCoords({'x':xywh[0], 'y':xywh[1], 'width':xywh[2], 'height':xywh[3]});
@@ -4736,16 +5617,16 @@ var RectView = Backbone.View.extend({
 
             var multiSelectRect = new MultiSelectRectModel({figureModel: this.model}),
                 rv = new RectView({'model':multiSelectRect, 'paper':this.raphael_paper,
-                        'handle_wh':7, 'handles_toFront': true});
+                        'handle_wh':7, 'handles_toFront': true, 'fixed_ratio': true});
             rv.selected_line_attrs = {'stroke-width': 1, 'stroke':'#4b80f9'};
         },
 
-        // A panel has been added - We add a corresponding Raphael Rect
+        // A panel has been added - We add a corresponding Raphael Rect 
         addOne: function(m) {
 
             var rectModel = new ProxyRectModel({panel: m, figure:this.model});
             new RectView({'model':rectModel, 'paper':this.raphael_paper,
-                    'handle_wh':5, 'disable_handles': true});
+                    'handle_wh':5, 'disable_handles': true, 'fixed_ratio': true});
         },
 
         // TODO
@@ -4928,6 +5809,8 @@ $(function(){
     // Backbone.unsaveSync = function(method, model, options, error) {
     //     figureModel.set("unsaved", true);
     // };
+
+    window.FigureColorPicker = new ColorPickerView();
 
     // Override 'Backbone.sync'...
     Backbone.ajaxSync = Backbone.sync;
