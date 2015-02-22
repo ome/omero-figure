@@ -35,6 +35,7 @@
     <meta name="viewport" content="width=device-width">
 
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="static/figure/css/bootstrap-colorpicker.min.css">
     <link rel="stylesheet" href="static/figure/css/figure.css">
 
     <script type="text/javascript" src="//code.jquery.com/jquery-1.7.2.min.js"></script>
@@ -45,7 +46,8 @@
 
     <script>
 
-    var RELEASE_VERSION = "v1.0.0-beta2";
+    var RELEASE_VERSION = "v1.1.0";
+
 
     var BASE_WEBFIGURE_URL = "/figure/",
         SAVE_WEBFIGURE_URL = "/figure/save_web_figure/",
@@ -54,7 +56,9 @@
         MAKE_WEBFIGURE_URL = "/figure/make_web_figure/",
         ACTIVITIES_JSON_URL = "/webclient/activities_json/",
         WEBGATEWAYINDEX = "/webgateway",
-        WEBINDEX_URL = "/webclient/";
+        WEBINDEX_URL = "/webclient/",
+        ROIS_JSON_URL,
+        USER_FULL_NAME = "Will Moore";
 
     $(document).ready(function() {
 
@@ -118,7 +122,7 @@
                         <a target="new" href="http://will-moore.github.io/figure/">OMERO.figure Home Page</a>
                     </p>
                     <p>
-                        &copy; 2013-{% now "Y" %} University of Dundee &amp; Open Microscopy Environment<br/>
+                        &copy; 2013-2015 University of Dundee &amp; Open Microscopy Environment<br/>
                         OMERO and OMERO.figure are distributed under the terms of the GNU GPL.<br/>
                         See: <a target="new" href="http://www.openmicroscopy.org">openmicroscopy.org</a>
                     </p>
@@ -166,6 +170,45 @@
             </div>
         </div>
     </div>
+    <!-- ROI Modal -->
+    <div class="modal" id="roiModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog" style="width: 900px">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title">Crop to Region</h4>
+                </div>
+                <form class="roiModalForm" role="form">
+                    <div class="modal-body" style="height: 500px; max-height: 500px">
+                        <div class="col-xs-4" style="height: 500px; overflow: auto">
+                            <h4>ROIs</h4>
+                            <table class="roiPicker table table-condensed">
+                                <thead><td></td><td>Z-index</td><td>T-index</td></thead>
+                                <tbody>
+                                <!-- ROIs loaded here... -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="col-xs-8">
+                            <div id="roiViewer">
+                                <!-- Show / add ROIs on image -->
+                                <div id="roi_paper" style="position: absolute; top: 0; left: 0; right: 10px; bottom:10px; overflow: hidden">
+                                    <!-- svg is added here by Raphael.js -->
+                                </div>
+                                <div id="roi_image" style="position: absolute">
+                                    <img class="roi_image" style="position: absolute; top: 0; left:0" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer" style="margin-top: 0">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">OK</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
     <!-- SetId Modal - behaviour handled by SetIdModalView -->
     <div class="modal" id="setIdModal" tabindex="-1" role="dialog" aria-labelledby="setIdLabel" aria-hidden="true">
         <div class="modal-dialog">
@@ -189,6 +232,58 @@
                     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                     <button type="submit" class="btn btn-primary doSetId" data-dismiss="modal" disabled="disabled">Update</button>
                 </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal" id="colorpickerModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title">Color Picker</h4>
+                </div>
+                <form class="colorpickerForm" role="form">
+                    <div class="modal-body">
+                        <div id="demo_cont" class="demo demo-auto inl-bl"
+                            data-container="#demo_cont" data-color="#ff0000" data-inline="true">
+                            <div style="position: absolute; left: 280px; top: 200px;">
+                                <input name="color" style="width: 100px" value="test" class="form-control" />
+                            </div>
+                        </div>
+                        <div class="rgb-group form-horizontal">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">Red</label>
+                                <div class="col-sm-8">
+                                    <input type="number" name="red" class="form-control" placeholder="255">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">Green</label>
+                                <div class="col-sm-8">
+                                    <input type="number" name="green" class="form-control" placeholder="255">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">Blue</label>
+                                <div class="col-sm-8">
+                                    <input type="number" name="blue" class="form-control" placeholder="255">
+                                </div>
+                            </div>
+                        </div>
+                        <ul class="list-group oldNewColors">
+                            <li class="list-group-item"></li>
+                            <li class="list-group-item" style="border-top-width: 0"></li>
+                        </ul>
+
+                        <div id="pickedColors" class="btn-toolbar pickedColors" role="toolbar">
+                            <!-- picked colors added here by render() -->
+                        </div>
+                    </div>
+                    <div class="modal-footer" style="margin-top: 0">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">OK</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -431,6 +526,9 @@
                             <li><a href="#" class="asize">
                                 <span class="glyphicon glyphicon-fullscreen"></span> Width &amp; Height</a>
                             </li>
+                            <li><a href="#" class="amagnification">
+                                <span class="glyphicon glyphicon-fullscreen"></span> Align Magnification</a>
+                            </li>
                         </ul>
                     </div>
 
@@ -444,10 +542,28 @@
                         <span class="glyphicon glyphicon-download-alt" style="font-size: 14px"></span>
                     </a>
 
-                    <div class="btn-group" {% if scriptMissing %}title="PDF script not installed"{% endif %}>
+                    <div class="btn-group" title="PDF script not installed">
                         <button id="create_figure_pdf" title="Generate PDF for download"
-                            {% if scriptMissing %}disabled="disabled"{% endif %}
-                            type="button" class="btn btn-success btn-sm export_pdf">Export PDF</button>
+                            disabled="disabled"
+                            data-export-option="PDF"
+                            type="button" class="btn btn-success btn-sm export_pdf">
+                            Export PDF
+                        </button>
+                        <button type="button" class="btn btn-success btn-sm dropdown-toggle" title="Export Options"
+                            data-toggle="dropdown">
+                            <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu export_options" role="menu">
+                            <!-- NB: data-export-option attr used to label export button & handled by js on click -->
+                            <li><a href="#" class="js-export-pdf-only" data-export-option="PDF">
+                                <span class="glyphicon glyphicon-ok" style="color:#333"></span>
+                                PDF only</a>
+                            </li>
+                            <li><a href="#" class="js-export-pdf-images" data-export-option="PDF & images">
+                                <span class="glyphicon glyphicon-ok" style="color:#333; visibility:hidden"></span>
+                                PDF with images</a>
+                            </li>
+                        </ul>
                     </div>
                 </form>
             </div><!--/.navbar-collapse -->
@@ -458,7 +574,10 @@
         <div id="canvas_wrapper" class="canvas_wrapper">
             <!-- <div id="canvas_overlay"></div> -->
             <article id="canvas">
-                <div id="paper"></div>
+                <div id="figure">
+                    <!-- All panels etc are appended to figure. -->
+                    <!-- We also dynamically add <div class="paper"> -->
+                </div>
             </article>
         </div>
     </main>
@@ -489,18 +608,18 @@
                     <div class="col-sm-2 no-padding" id="channelToggle"></div>
                     <div class="col-sm-10 no-padding" id="viewportContainer">
                         <div id="vp_z_slider" class="pull-left">
-                            <button type="button" class="btn btn-link btn-sm z-decrement">
+                            <button type="button" class="btn btn-link btn-sm z-decrement" title="Decrease Z-index">
                                 <span class="glyphicon glyphicon-chevron-down"></span>
                             </button>
-                            <button type="button" class="btn btn-link btn-sm z-increment">
+                            <button type="button" class="btn btn-link btn-sm z-increment" title="Increase Z-index">
                                 <span class="glyphicon glyphicon-chevron-up"></span>
                             </button>
                         </div>
                         <div id="vp_t_slider">
-                            <button type="button" class="btn btn-link btn-sm time-decrement">
+                            <button type="button" class="btn btn-link btn-sm time-decrement" title="Decrease T-index">
                                 <span class="glyphicon glyphicon-chevron-left"></span>
                             </button>
-                            <button type="button" class="btn btn-link btn-sm time-increment">
+                            <button type="button" class="btn btn-link btn-sm time-increment" title="Increase T-index">
                                 <span class="glyphicon glyphicon-chevron-right"></span>
                             </button>
                         </div>
@@ -509,11 +628,14 @@
                     <div id="channel_sliders"></div>
                     <div class='clearfix'></div>
                     <div class='tab-footer'>
-                        <div class="col-sm-2" style="padding:5px">Zoom:</div>
+                        <div class="col-sm-2" style="padding: 8px 5px 2px">Zoom:</div>
                         <div class="col-sm-6 no-padding">
                             <div id="vp_zoom_slider"></div>
                         </div>
-                        <div id="vp_zoom_value" class="col-sm-4" style="padding:5px"></div>
+                        <div id="vp_zoom_value" class="col-sm-4" style="padding: 8px 5px 2px"></div>
+                        <div id="reset-zoom-view">
+                            <!-- button added by ZoomView render() -->
+                        </div>
                         <div class='clearfix'></div>
                     </div>
                 </div>
@@ -550,14 +672,11 @@
     <script src="//cdnjs.cloudflare.com/ajax/libs/mousetrap/1.4.6/mousetrap.min.js"></script>
     <script src="static/figure/3rdparty/backbone.mousetrap/backbone.mousetrap.js"></script>
     <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+    <script src="static/figure/js/bootstrap-colorpicker.min.js"></script>
 
     <script type="text/javascript" src="static/figure/js/templates.js"></script>
     <script type="text/javascript" src="static/figure/js/figure.js"></script>
-    <script type="text/javascript" src="static/figure/js/undo.js"></script>
-    <script type="text/javascript" src="static/figure/js/raphael-rect.js"></script>
-    <script type="text/javascript" src="static/figure/js/util.js"></script>
-    <script type="text/javascript" src="static/figure/js/files.js"></script>
-    <script type="text/javascript" src="static/figure/js/app.js"></script>
+
 
 </body>
 
