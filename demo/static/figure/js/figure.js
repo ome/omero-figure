@@ -1,25 +1,491 @@
-
-//
-// Copyright (C) 2014 University of Dundee & Open Microscopy Environment.
-// All rights reserved.
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Affero General Public License as
-// published by the Free Software Foundation, either version 3 of the
-// License, or (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Affero General Public License for more details.
-//
-// You should have received a copy of the GNU Affero General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
-//
-
-    // ----------------------- Backbone MODEL --------------------------------------------
-
+    
+    // Version of the json file we're saving.
+    // This only needs to increment when we make breaking changes (not linked to release versions.)
     var VERSION = 1;
+
+
+    // ------------------------- Figure Model -----------------------------------
+    // Has a PanelList as well as other attributes of the Figure
+    var FigureModel = Backbone.Model.extend({
+
+        defaults: {
+            // 'curr_zoom': 100,
+            'canEdit': true,
+            'unsaved': false,
+            'canvas_width': 13000,
+            'canvas_height': 8000,
+            // w & h from reportlab.
+            'paper_width': 612,
+            'paper_height': 792,
+            'page_count': 1,
+            'page_col_count': 1,    // pages laid out in grid
+            'paper_spacing': 50,    // between each page
+            'orientation': 'vertical',
+            'page_size': 'A4',       // options [A4, letter, mm, pixels]
+            // see http://www.a4papersize.org/a4-paper-size-in-pixels.php
+            'width_mm': 210,    // A4 sizes, only used if user chooses page_size: 'mm'
+            'height_mm': 297,
+        },
+
+        initialize: function() {
+            this.panels = new PanelList();      //this.get("shapes"));
+
+            // wrap selection notification in a 'debounce', so that many rapid
+            // selection changes only trigger a single re-rendering 
+            this.notifySelectionChange = _.debounce( this.notifySelectionChange, 10);
+        },
+
+        syncOverride: function(method, model, options, error) {
+            this.set("unsaved", true);
+        },
+
+        load_from_OMERO: function(fileId, success) {
+
+            var load_url = BASE_WEBFIGURE_URL + "static/json/load_web_figure/" + fileId + ".json",
+                self = this;
+            console.log(load_url);
+
+
+            $.getJSON(load_url, function(data){
+
+                // bring older files up-to-date
+                data = self.version_transform(data);
+
+                var name = data.figureName || "UN-NAMED",
+                    n = {'fileId': fileId,
+                        'figureName': name,
+                        'canEdit': data.canEdit,
+                        'paper_width': data.paper_width,
+                        'paper_height': data.paper_height,
+                        'page_size': data.page_size || 'letter',
+                        'page_count': data.page_count,
+                        'paper_spacing': data.paper_spacing,
+                        'page_col_count': data.page_col_count,
+                        'orientation': data.orientation,
+                    };
+
+                // For missing attributes, we fill in with defaults
+                // so as to clear everything from previous figure.
+                n = $.extend({}, self.defaults, n);
+
+                self.set(n);
+
+                _.each(data.panels, function(p){
+                    p.selected = false;
+                    self.panels.create(p);
+                });
+
+                self.set('unsaved', false);
+                // wait for undo/redo to handle above, then...
+                setTimeout(function() {
+                    self.trigger("reset_undo_redo");
+                }, 50);
+            });
+        },
+
+        // take Figure_JSON from a previous version,
+        // and transform it to latest version
+        version_transform: function(json) {
+            var v = json.version || 0;
+
+            // In version 1, we have pixel_size_x and y.
+            // Earlier versions only have pixel_size.
+            if (v < 1) {
+                _.each(json.panels, function(p){
+                    var ps = p.pixel_size;
+                    p.pixel_size_x = ps;
+                    p.pixel_size_y = ps;
+                    delete p.pixel_size;
+                });
+            }
+
+            return json;
+        },
+
+        figure_toJSON: function() {
+            // Turn panels into json
+            var p_json = [],
+                self = this;
+            this.panels.each(function(m) {
+                p_json.push(m.toJSON());
+            });
+
+            var figureJSON = {
+                version: VERSION,
+                panels: p_json,
+                paper_width: this.get('paper_width'),
+                paper_height: this.get('paper_height'),
+                page_size: this.get('page_size'),
+                page_count: this.get('page_count'),
+                paper_spacing: this.get('paper_spacing'),
+                page_col_count: this.get('page_col_count'),
+                height_mm: this.get('height_mm'),
+                width_mm: this.get('width_mm'),
+                orientation: this.get('orientation'),
+            };
+            if (this.get('figureName')){
+                figureJSON.figureName = this.get('figureName')
+            }
+            if (this.get('fileId')){
+                figureJSON.fileId = this.get('fileId')
+            }
+            return figureJSON;
+        },
+
+        save_to_OMERO: function(options) {
+
+            var self = this,
+                figureJSON = this.figure_toJSON();
+
+            var url = window.SAVE_WEBFIGURE_URL,
+                // fileId = self.get('fileId'),
+                data = {};
+
+            if (options.fileId) {
+                data.fileId = options.fileId;
+            }
+            if (options.figureName) {
+                // Include figure name in JSON saved to file
+                figureJSON.figureName = options.figureName;
+            }
+            data.figureJSON = JSON.stringify(figureJSON);
+
+            // Save
+            $.post( url, data)
+                .done(function( data ) {
+                    var update = {
+                        'fileId': +data,
+                        'unsaved': false,
+                    };
+                    if (options.figureName) {
+                        update.figureName = options.figureName;
+                    }
+                    self.set(update);
+
+                    if (options.success) {
+                        options.success(data);
+                    }
+                });
+        },
+
+        clearFigure: function() {
+            var figureModel = this;
+            figureModel.unset('fileId');
+            figureModel.delete_panels();
+            figureModel.unset("figureName");
+            figureModel.set(figureModel.defaults);
+            figureModel.trigger('reset_undo_redo');
+        },
+
+        // Used to position the #figure within canvas and also to coordinate svg layout.
+        getFigureSize: function() {
+            var pc = this.get('page_count'),
+                cols = this.get('page_col_count'),
+                gap = this.get('paper_spacing'),
+                pw = this.get('paper_width'),
+                ph = this.get('paper_height'),
+                rows;
+            rows = Math.ceil(pc / cols);
+            var w = cols * pw + (cols - 1) * gap,
+                h = rows * ph + (rows - 1) * gap;
+            return {'w': w, 'h': h, 'cols': cols, 'rows': rows}
+        },
+
+        nudge_right: function() {
+            this.nudge('x', 10);
+        },
+
+        nudge_left: function() {
+            this.nudge('x', -10);
+        },
+
+        nudge_down: function() {
+            this.nudge('y', 10);
+        },
+
+        nudge_up: function() {
+            this.nudge('y', -10);
+        },
+
+        nudge: function(axis, delta) {
+            var selected = this.getSelected(),
+                pos;
+
+            selected.forEach(function(p){
+                pos = p.get(axis);
+                p.set(axis, pos + delta);
+            });
+        },
+
+        align_left: function() {
+            var selected = this.getSelected(),
+                x_vals = [];
+            selected.forEach(function(p){
+                x_vals.push(p.get('x'));
+            });
+            var min_x = Math.min.apply(window, x_vals);
+
+            selected.forEach(function(p){
+                p.set('x', min_x);
+            });
+        },
+
+        align_top: function() {
+            var selected = this.getSelected(),
+                y_vals = [];
+            selected.forEach(function(p){
+                y_vals.push(p.get('y'));
+            });
+            var min_y = Math.min.apply(window, y_vals);
+
+            selected.forEach(function(p){
+                p.set('y', min_y);
+            });
+        },
+
+        align_grid: function() {
+            var sel = this.getSelected(),
+                top_left = this.get_top_left_panel(sel),
+                top_x = top_left.get('x'),
+                top_y = top_left.get('y'),
+                grid = [],
+                row = [top_left],
+                next_panel = top_left;
+
+            // populate the grid, getting neighbouring panel each time
+            while (next_panel) {
+                c = next_panel.get_centre();
+                next_panel = this.get_panel_at(c.x + next_panel.get('width'), c.y, sel);
+
+                // if next_panel is not found, reached end of row. Try start new row...
+                if (typeof next_panel == 'undefined') {
+                    grid.push(row);
+                    // next_panel is below the first of the current row
+                    c = row[0].get_centre();
+                    next_panel = this.get_panel_at(c.x, c.y + row[0].get('height'), sel);
+                    row = [];
+                }
+                if (next_panel) {
+                    row.push(next_panel);
+                }
+            }
+
+            var spacer = top_left.get('width')/20,
+                new_x = top_x,
+                new_y = top_y,
+                max_h = 0;
+            for (var r=0; r<grid.length; r++) {
+                row = grid[r];
+                for (var c=0; c<row.length; c++) {
+                    panel = row[c];
+                    panel.save({'x':new_x, 'y':new_y});
+                    max_h = Math.max(max_h, panel.get('height'));
+                    new_x = new_x + spacer + panel.get('width');
+                }
+                new_y = new_y + spacer + max_h;
+                new_x = top_x;
+            }
+        },
+
+        get_panel_at: function(x, y, panels) {
+            return panels.find(function(p) {
+                return ((p.get('x') < x && (p.get('x')+p.get('width')) > x) &&
+                        (p.get('y') < y && (p.get('y')+p.get('height')) > y));
+            });
+        },
+
+        get_top_left_panel: function(panels) {
+            // top-left panel is one where x + y is least
+            return panels.reduce(function(top_left, p){
+                if ((p.get('x') + p.get('y')) < (top_left.get('x') + top_left.get('y'))) {
+                    return p;
+                } else {
+                    return top_left;
+                }
+            });
+        },
+
+        align_size: function(width, height) {
+            var sel = this.getSelected(),
+                ref = this.get_top_left_panel(sel),
+                ref_width = width ? ref.get('width') : false,
+                ref_height = height ? ref.get('height') : false,
+                new_w, new_h,
+                p;
+
+            sel.forEach(function(p){
+                if (ref_width && ref_height) {
+                    new_w = ref_width;
+                    new_h = ref_height;
+                } else if (ref_width) {
+                    new_w = ref_width;
+                    new_h = (ref_width/p.get('width')) * p.get('height');
+                } else if (ref_height) {
+                    new_h = ref_height;
+                    new_w = (ref_height/p.get('height')) * p.get('width');
+                }
+                p.set({'width':new_w, 'height':new_h});
+            });
+        },
+
+        // Resize panels so they all show same magnification
+        align_magnification: function() {
+            var sel = this.getSelected(),
+                ref = this.get_top_left_panel(sel),
+                ref_pixSize = ref.get('pixel_size_x'),
+                targetMag;
+            if (!ref_pixSize) {
+                alert('Top-left panel has no pixel size set');
+                return;
+            }
+
+            // This could return an AJAX call if we need to convert units.
+            // Whenever we use this below, wrap it with $.when().then()
+            var getPixSizeInMicrons = function(m) {
+                var unit = m.get("pixel_size_x_unit"),
+                    size = m.get("pixel_size_x");
+                if (unit === "MICROMETER") {
+                    return {'value':size};
+                }
+                if (!size) {
+                    return {'value': size}
+                }
+                // convert to MICROMETER
+                var url = BASE_WEBFIGURE_URL + "unit_conversion/" + size + "/" + unit + "/MICROMETER/";
+                return $.getJSON(url);
+            }
+
+            // First, get reference pixel size...
+            $.when( getPixSizeInMicrons(ref) ).then(function(data){
+                ref_pixSize = data.value;
+                // E.g. 10 microns / inch
+                targetMag = ref_pixSize * ref.getPanelDpi();
+
+                // Loop through all selected, updating size of each...
+                sel.forEach(function(p){
+
+                    // ignore the ref panel
+                    if (p.cid === ref.cid) return;
+
+                    $.when( getPixSizeInMicrons(p) ).then(function(data){
+
+                        var dpi = p.getPanelDpi(),
+                            pixSize = data.value;
+                        if (!pixSize) {
+                            return;
+                        }
+                        var panelMag = dpi * pixSize,
+                            scale = panelMag / targetMag,
+                            new_w = p.get('width') * scale,
+                            new_h = p.get('height') * scale;
+                        p.set({'width':new_w, 'height':new_h});
+                    });
+                });
+            });
+        },
+
+        // This can come from multi-select Rect OR any selected Panel
+        // Need to notify ALL panels and Multi-select Rect.
+        drag_xy: function(dx, dy, save) {
+            if (dx === 0 && dy === 0) return;
+
+            var minX = 10000,
+                minY = 10000,
+                xy;
+            // First we notidy all Panels
+            var selected = this.getSelected();
+            selected.forEach(function(m){
+                xy = m.drag_xy(dx, dy, save);
+                minX = Math.min(minX, xy.x);
+                minY = Math.min(minY, xy.y);
+            });
+            // Notify the Multi-select Rect of it's new X and Y
+            this.trigger('drag_xy', [minX, minY, save]);
+        },
+
+
+        // This comes from the Multi-Select Rect.
+        // Simply delegate to all the Panels
+        multiselectdrag: function(x1, y1, w1, h1, x2, y2, w2, h2, save) {
+            var selected = this.getSelected();
+            selected.forEach(function(m){
+                m.multiselectdrag(x1, y1, w1, h1, x2, y2, w2, h2, save);
+            });
+        },
+
+        // If already selected, do nothing (unless clearOthers is true)
+        setSelected: function(item, clearOthers) {
+            if ((!item.get('selected')) || clearOthers) {
+                this.clearSelected(false);
+                item.set('selected', true);
+                this.notifySelectionChange();
+            }
+        },
+
+        select_all:function() {
+            this.panels.each(function(p){
+                p.set('selected', true);
+            });
+            this.notifySelectionChange();
+        },
+
+        addSelected: function(item) {
+            item.set('selected', true);
+            this.notifySelectionChange();
+        },
+
+        clearSelected: function(trigger) {
+            this.panels.each(function(p){
+                p.set('selected', false);
+            });
+            if (trigger !== false) {
+                this.notifySelectionChange();
+            }
+        },
+
+        selectByRegion: function(coords) {
+            this.panels.each(function(p){
+                if (p.regionOverlaps(coords)) {
+                    p.set('selected', true);
+                }
+            });
+            this.notifySelectionChange();
+        },
+
+        getSelected: function() {
+            return this.panels.getSelected();
+        },
+
+        // Go through all selected and destroy them - trigger selection change
+        deleteSelected: function() {
+            var selected = this.getSelected();
+            var model;
+            while (model = selected.first()) {
+                model.destroy();
+            }
+            this.notifySelectionChange();
+        },
+
+        delete_panels: function() {
+            // make list that won't change as we destroy
+            var ps = [];
+            this.panels.each(function(p){
+                ps.push(p);
+            });
+            for (var i=ps.length-1; i>=0; i--) {
+                ps[i].destroy();
+            }
+            this.notifySelectionChange();
+        },
+
+        notifySelectionChange: function() {
+            this.trigger('change:selection');
+        }
+
+    });
+
+
+
     // ------------------------ Panel -----------------------------------------
     // Simple place-holder for each Panel. Will have E.g. imageId, rendering options etc
     // Attributes can be added as we need them.
@@ -36,7 +502,13 @@
             labels: [],
             deltaT: [],     // list of deltaTs (secs) for tIndexes of movie
             rotation: 0,
-            selected: false
+            selected: false,
+            pixel_size_x_symbol: '\xB5m',     // microns by default
+            pixel_size_x_unit: 'MICROMETER',
+
+            // model includes 'scalebar' object, e.g:
+            // scalebar: {length: 10, position: 'bottomleft', color: 'FFFFFF',
+            //                show: false, show_label: false; font_size: 10}
         },
 
         initialize: function() {
@@ -85,6 +557,8 @@
                 'datasetName': data.datasetName,
                 'pixel_size_x': data.pixel_size_x,
                 'pixel_size_y': data.pixel_size_y,
+                'pixel_size_x_symbol': data.pixel_size.symbolX,
+                'pixel_size_x_unit': data.pixel_size.unitX,
                 'deltaT': data.deltaT,
             };
 
@@ -170,6 +644,11 @@
             this.add_labels(newLabels);
         },
 
+        getDeltaT: function() {
+            var theT = this.get('theT');
+            return this.get('deltaT')[theT] || 0;
+        },
+
         get_time_label_text: function(format) {
             var pad = function(digit) {
                 var d = digit + "";
@@ -206,7 +685,9 @@
         },
 
         get_label_key: function(label) {
-            return label.text + '_' + label.size + '_' + label.color + '_' + label.position;
+            var key = label.text + '_' + label.size + '_' + label.color + '_' + label.position;
+            key = _.escape(key);
+            return key;
         },
 
         // labels_map is {labelKey: {size:s, text:t, position:p, color:c}} or {labelKey: false} to delete
@@ -280,7 +761,7 @@
             if (z_projection && !zp && sizeZ > 1) {
 
                 // use existing z_diff interval if set
-                if (z_start && z_end) {
+                if (z_start !== undefined && z_end !== undefined) {
                     z_diff = (z_end - z_start)/2;
                     z_diff = Math.round(z_diff);
                 }
@@ -293,9 +774,9 @@
                     'z_end': z_end
                 });
             // If turning z-projection off...
-            } else if (zp) {
+            } else if (!z_projection && zp) {
                 // reset theZ for average of z_start & z_end
-                if (z_start && z_end) {
+                if (z_start !== undefined && z_end !== undefined) {
                     theZ = Math.round((z_end + z_start)/ 2 );
                     this.set({'z_projection': false,
                         'theZ': theZ});
@@ -331,6 +812,34 @@
                 // both svg and DOM views listen for this...
                 this.trigger('drag_resize', [newX, newY, newW, newH] );
             }
+        },
+
+        // resize, zoom and pan to show the specified region.
+        // new panel will fit inside existing panel
+        cropToRoi: function(coords) {
+            var targetWH = coords.width/coords.height,
+                currentWH = this.get('width')/this.get('height'),
+                newW, newH,
+                targetCx = Math.round(coords.x + (coords.width/2)),
+                targetCy = Math.round(coords.y + (coords.height/2)),
+                // centre panel at centre of ROI
+                dx = (this.get('orig_width')/2) - targetCx,
+                dy = (this.get('orig_height')/2) - targetCy;
+            // make panel correct w/h ratio
+            if (targetWH < currentWH) {
+                // make it thinner
+                newH = this.get('height');
+                newW = targetWH * newH;
+            } else {
+                newW = this.get('width');
+                newH = newW / targetWH;
+            }
+            // zoom to correct percentage
+            var xPercent = this.get('orig_width') / coords.width,
+                yPercent = this.get('orig_height') / coords.height,
+                zoom = Math.min(xPercent, yPercent) * 100;
+
+            this.set({'width': newW, 'height': newH, 'dx': dx, 'dy': dy, 'zoom': zoom});
         },
 
         // Drag resizing - notify the PanelView without saving
@@ -489,421 +998,524 @@
         model: Panel,
 
         getSelected: function() {
-            return this.filter(function(panel){
+            var s = this.filter(function(panel){
                 return panel.get('selected');
             });
+            return new PanelList(s);
+        },
+
+        getAverage: function(attr) {
+            return this.getSum(attr) / this.length;
+        },
+
+        getAverageWH: function() {
+            var sumWH = this.inject(function(memo, m){
+                return memo + (m.get('width')/ m.get('height'));
+            }, 0);
+            return sumWH / this.length;
+        },
+
+        getSum: function(attr) {
+            return this.inject(function(memo, m){
+                return memo + (m.get(attr) || 0);
+            }, 0);
+        },
+
+        getMax: function(attr) {
+            return this.inject(function(memo, m){ return Math.max(memo, m.get(attr)); }, 0);
+        },
+
+        getMin: function(attr) {
+            return this.inject(function(memo, m){ return Math.min(memo, m.get(attr)); }, Infinity);
+        },
+
+        allTrue: function(attr) {
+            return this.inject(function(memo, m){
+                return (memo && m.get(attr));
+            }, true);
+        },
+
+        // check if all panels have the same value for named attribute
+        allEqual: function(attr) {
+            var vals = this.pluck(attr);
+            return _.max(vals) === _.min(vals);
+        },
+
+        // Return the value of named attribute IF it's the same for all panels, otherwise undefined
+        getIfEqual: function(attr) {
+            var vals = this.pluck(attr);
+            if (_.max(vals) === _.min(vals)) {
+                return _.max(vals);
+            }
+        },
+
+        getDeltaTIfEqual: function() {
+            var vals = this.map(function(m){ return m.getDeltaT() });
+            if (_.max(vals) === _.min(vals)) {
+                return _.max(vals);
+            }
         },
 
         // localStorage: new Backbone.LocalStorage("figureShop-backbone")
     });
 
+// --------------- UNDO MANAGER ----------------------
 
-    // ------------------------- Figure Model -----------------------------------
-    // Has a PanelList as well as other attributes of the Figure
-    var FigureModel = Backbone.Model.extend({
+//
+// Copyright (C) 2014 University of Dundee & Open Microscopy Environment.
+// All rights reserved.
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 
-        defaults: {
-            // 'curr_zoom': 100,
-            'canEdit': true,
-            'unsaved': false,
-            'canvas_width': 10000,
-            'canvas_height': 8000,
-            // w & h from reportlab.
-            'paper_width': 612,
-            'paper_height': 792,
-            'orientation': 'vertical',
-            'page_size': 'A4',       // options [A4, letter, mm, pixels]
-            // see http://www.a4papersize.org/a4-paper-size-in-pixels.php
-            'width_mm': 210,    // A4 sizes, only used if user chooses page_size: 'mm'
-            'height_mm': 297,
-        },
+/*global Backbone:true */
 
-        initialize: function() {
-            this.panels = new PanelList();      //this.get("shapes"));
+var UndoManager = Backbone.Model.extend({
+    defaults: function(){
+        return {
+            undo_pointer: -1
+        };
+    },
+    initialize: function(opts) {
+        this.figureModel = opts.figureModel;    // need for setting selection etc
+        this.figureModel.on("change:paper_width change:paper_height change:page_count", this.handleChange, this);
+        this.listenTo(this.figureModel, 'reset_undo_redo', this.resetQueue);
+        this.undoQueue = [];
+        this.undoInProgress = false;
+        //this.undo_pointer = -1;
+        // Might need to undo/redo multiple panels/objects
+        this.undo_functions = [];
+        this.redo_functions = [];
+    },
+    resetQueue: function() {
+        this.undoQueue = [];
+        this.set('undo_pointer', -1);
+        this.canUndo();
+    },
+    canUndo: function() {
+        return this.get('undo_pointer') >= 0;
+    },
+    undo: function() {
+        var pointer = this.get('undo_pointer');
+        if (pointer < 0) {
+            return;
+        }
+        this.undoQueue[pointer].undo();
+        this.set('undo_pointer',pointer-1); // trigger change
+    },
+    canRedo: function() {
+        return this.get('undo_pointer')+1 < this.undoQueue.length;
+    },
+    redo: function() {
+        var pointer = this.get('undo_pointer');
+        if (pointer+1 >= this.undoQueue.length) {
+            return;
+        }
+        this.undoQueue[pointer+1].redo();
+        this.set('undo_pointer', pointer+1); // trigger change event
+    },
+    postEdit: function(undo) {
+        var pointer = this.get('undo_pointer');
+        // remove any undo ahead of current position
+        if (this.undoQueue.length > pointer+1) {
+            this.undoQueue = this.undoQueue.slice(0, pointer+1);
+        }
+        this.undoQueue.push(undo);
+        this.set('undo_pointer', pointer+1); // trigger change event
+    },
 
-            // wrap selection notification in a 'debounce', so that many rapid
-            // selection changes only trigger a single re-rendering 
-            this.notifySelectionChange = _.debounce( this.notifySelectionChange, 10);
-        },
-
-        syncOverride: function(method, model, options, error) {
-            this.set("unsaved", true);
-        },
-
-        load_from_OMERO: function(fileId, success) {
-
-            var load_url = "static/json/load_web_figure/" + fileId + ".json",
-                self = this;
-
-
-            $.getJSON(load_url, function(data){
-
-                // bring older files up-to-date
-                data = self.version_transform(data);
-
-                var name = data.figureName || "UN-NAMED",
-                    n = {'fileId': fileId,
-                        'figureName': name,
-                        'canEdit': data.canEdit,
-                        'paper_width': data.paper_width,
-                        'paper_height': data.paper_height,
-                        'page_size': data.page_size || 'letter',
-                    };
-                // optional values - ignore if missing
-                if (data.orientation) n.orientation = data.orientation;
-                // if (data.page_size) n.page_size = data.page_size; // E.g. 'A4'
-                if (data.height_mm) n.height_mm = data.height_mm;
-                if (data.width_mm) n.width_mm = data.width_mm;
-
-                self.set(n);
-
-                _.each(data.panels, function(p){
-                    p.selected = false;
-                    self.panels.create(p);
-                });
-
-                self.set('unsaved', false);
-                // wait for undo/redo to handle above, then...
-                setTimeout(function() {
-                    self.trigger("reset_undo_redo");
-                }, 50);
-            });
-        },
-
-        // take Figure_JSON from a previous version,
-        // and transform it to latest version
-        version_transform: function(json) {
-            var v = json.version || 0;
-
-            // In version 1, we have pixel_size_x and y.
-            // Earlier versions only have pixel_size.
-            if (v < 1) {
-                _.each(json.panels, function(p){
-                    var ps = p.pixel_size;
-                    p.pixel_size_x = ps;
-                    p.pixel_size_y = ps;
-                    delete p.pixel_size;
-                });
+    // START here - Listen to 'add' events...
+    listenToCollection: function(collection) {
+        var self = this;
+        // Add listener to changes in current models
+        collection.each(function(m){
+            self.listenToModel(m);
+        });
+        collection.on('add', function(m) {
+            // start listening for change events on the model
+            self.listenToModel(m);
+            if (!self.undoInProgress){
+                // post an 'undo'
+                self.handleAdd(m, collection);
             }
-
-            return json;
-        },
-
-        figure_toJSON: function() {
-            // Turn panels into json
-            var p_json = [],
-                self = this;
-            this.panels.each(function(m) {
-                p_json.push(m.toJSON());
-            });
-
-            var figureJSON = {
-                version: VERSION,
-                panels: p_json,
-                paper_width: this.get('paper_width'),
-                paper_height: this.get('paper_height'),
-                page_size: this.get('page_size'),
-                height_mm: this.get('height_mm'),
-                width_mm: this.get('width_mm'),
-                orientation: this.get('orientation'),
-            };
-            if (this.get('figureName')){
-                figureJSON.figureName = this.get('figureName')
+        });
+        collection.on('remove', function(m) {
+            if (!self.undoInProgress){
+                // post an 'undo'
+                self.handleRemove(m, collection);
             }
-            if (this.get('fileId')){
-                figureJSON.fileId = this.get('fileId')
+        });
+    },
+
+    handleRemove: function(m, collection) {
+        var self = this;
+        self.postEdit( {
+            name: "Undo Remove",
+            undo: function() {
+                self.undoInProgress = true;
+                collection.add(m);
+                self.figureModel.notifySelectionChange();
+                self.undoInProgress = false;
+            },
+            redo: function() {
+                self.undoInProgress = true;
+                m.destroy();
+                self.figureModel.notifySelectionChange();
+                self.undoInProgress = false;
             }
-            return figureJSON;
-        },
+        });
+    },
 
-        save_to_OMERO: function(options) {
-
-            var self = this,
-                figureJSON = this.figure_toJSON();
-
-            var url = window.SAVE_WEBFIGURE_URL,
-                // fileId = self.get('fileId'),
-                data = {};
-
-            if (options.fileId) {
-                data.fileId = options.fileId;
+    handleAdd: function(m, collection) {
+        var self = this;
+        self.postEdit( {
+            name: "Undo Add",
+            undo: function() {
+                self.undoInProgress = true;
+                m.destroy();
+                self.figureModel.notifySelectionChange();
+                self.undoInProgress = false;
+            },
+            redo: function() {
+                self.undoInProgress = true;
+                collection.add(m);
+                self.figureModel.notifySelectionChange();
+                self.undoInProgress = false;
             }
-            if (options.figureName) {
-                data.figureName = options.figureName;
-            }
-            data.figureJSON = JSON.stringify(figureJSON);
+        });
+    },
 
-            // Save
-            $.post( url, data)
-                .done(function( data ) {
-                    var update = {
-                        'fileId': +data,
-                        'unsaved': false,
-                    };
-                    if (options.figureName) {
-                        update.figureName = options.figureName;
-                    }
-                    self.set(update);
+    listenToModel: function(model) {
+        model.on("change", this.handleChange, this);
+    },
 
-                    if (options.success) {
-                        options.success(data);
-                    }
-                });
-        },
+    // Here we do most of the work, buiding Undo/Redo Edits when something changes
+    handleChange: function(m) {
+        var self = this;
 
-        clearFigure: function() {
-
-            var figureModel = this;
-            figureModel.unset('fileId');
-            figureModel.delete_panels();
-            figureModel.unset("figureName");
-            figureModel.trigger('reset_undo_redo');
-        },
-
-        nudge_right: function() {
-            this.nudge('x', 10);
-        },
-
-        nudge_left: function() {
-            this.nudge('x', -10);
-        },
-
-        nudge_down: function() {
-            this.nudge('y', 10);
-        },
-
-        nudge_up: function() {
-            this.nudge('y', -10);
-        },
-
-        nudge: function(axis, delta) {
-            var selected = this.getSelected(),
-                pos;
-
-            for (var j=0; j<selected.length; j++) {
-                pos = selected[j].get(axis);
-                selected[j].set(axis, pos + delta);
-            }
-        },
-
-        align_left: function() {
-            var selected = this.getSelected(),
-                x_vals = [];
-            for (var i=0; i<selected.length; i++) {
-                x_vals.push(selected[i].get('x'));
-            }
-            var min_x = Math.min.apply(window, x_vals);
-
-            for (var j=0; j<selected.length; j++) {
-                selected[j].set('x', min_x);
-            }
-        },
-
-        align_top: function() {
-            var selected = this.getSelected(),
-                y_vals = [];
-            for (var i=0; i<selected.length; i++) {
-                y_vals.push(selected[i].get('y'));
-            }
-            var min_y = Math.min.apply(window, y_vals);
-
-            for (var j=0; j<selected.length; j++) {
-                selected[j].set('y', min_y);
-            }
-        },
-
-        align_grid: function() {
-            var sel = this.getSelected(),
-                top_left = this.get_top_left_panel(sel),
-                top_x = top_left.get('x'),
-                top_y = top_left.get('y'),
-                grid = [],
-                row = [top_left],
-                next_panel = top_left;
-
-            // populate the grid, getting neighbouring panel each time
-            while (next_panel) {
-                c = next_panel.get_centre();
-                next_panel = this.get_panel_at(c.x + next_panel.get('width'), c.y, sel);
-
-                // if next_panel is not found, reached end of row. Try start new row...
-                if (typeof next_panel == 'undefined') {
-                    grid.push(row);
-                    // next_panel is below the first of the current row
-                    c = row[0].get_centre();
-                    next_panel = this.get_panel_at(c.x, c.y + row[0].get('height'), sel);
-                    row = [];
-                }
-                if (next_panel) {
-                    row.push(next_panel);
-                }
-            }
-
-            var spacer = top_left.get('width')/20,
-                new_x = top_x,
-                new_y = top_y,
-                max_h = 0;
-            for (var r=0; r<grid.length; r++) {
-                row = grid[r];
-                for (var c=0; c<row.length; c++) {
-                    panel = row[c];
-                    panel.save({'x':new_x, 'y':new_y});
-                    max_h = Math.max(max_h, panel.get('height'));
-                    new_x = new_x + spacer + panel.get('width');
-                }
-                new_y = new_y + spacer + max_h;
-                new_x = top_x;
-            }
-        },
-
-        get_panel_at: function(x, y, panels) {
-            for(var i=0; i<panels.length; i++) {
-                p = panels[i];
-                if ((p.get('x') < x && (p.get('x')+p.get('width')) > x) &&
-                        (p.get('y') < y && (p.get('y')+p.get('height')) > y)) {
-                    return p;
-                }
-            }
-        },
-
-        get_top_left_panel: function(panels) {
-            // top-left panel is one where x + y is least
-            var p, top_left;
-            for(var i=0; i<panels.length; i++) {
-                p = panels[i];
-                if (i === 0) {
-                    top_left = p;
-                } else {
-                    if ((p.get('x') + p.get('y')) < (top_left.get('x') + top_left.get('y'))) {
-                        top_left = p;
-                    }
-                }
-            }
-            return top_left;
-        },
-
-        align_size: function(width, height) {
-            var sel = this.getSelected(),
-                ref = this.get_top_left_panel(sel),
-                ref_width = width ? ref.get('width') : false,
-                ref_height = height ? ref.get('height') : false,
-                new_w, new_h,
-                p;
-
-            for (var i=0; i<sel.length; i++) {
-                p = sel[i];
-                if (ref_width && ref_height) {
-                    new_w = ref_width;
-                    new_h = ref_height;
-                } else if (ref_width) {
-                    new_w = ref_width;
-                    new_h = (ref_width/p.get('width')) * p.get('height');
-                } else if (ref_height) {
-                    new_h = ref_height;
-                    new_w = (ref_height/p.get('height')) * p.get('width');
-                }
-                p.save({'width':new_w, 'height':new_h});
-            }
-        },
-
-        // This can come from multi-select Rect OR any selected Panel
-        // Need to notify ALL panels and Multi-select Rect.
-        drag_xy: function(dx, dy, save) {
-            if (dx === 0 && dy === 0) return;
-
-            var minX = 10000,
-                minY = 10000,
-                xy;
-            // First we notidy all Panels
-            var selected = this.getSelected();
-            for (var i=0; i<selected.length; i++) {
-                xy = selected[i].drag_xy(dx, dy, save);
-                minX = Math.min(minX, xy.x);
-                minY = Math.min(minY, xy.y);
-            }
-            // Notify the Multi-select Rect of it's new X and Y
-            this.trigger('drag_xy', [minX, minY, save]);
-        },
-
-
-        // This comes from the Multi-Select Rect.
-        // Simply delegate to all the Panels
-        multiselectdrag: function(x1, y1, w1, h1, x2, y2, w2, h2, save) {
-            var selected = this.getSelected();
-            for (var i=0; i<selected.length; i++) {
-                selected[i].multiselectdrag(x1, y1, w1, h1, x2, y2, w2, h2, save);
-            }
-        },
-
-        // If already selected, do nothing (unless clearOthers is true)
-        setSelected: function(item, clearOthers) {
-            if ((!item.get('selected')) || clearOthers) {
-                this.clearSelected(false);
-                item.set('selected', true);
-                this.notifySelectionChange();
-            }
-        },
-
-        select_all:function() {
-            this.panels.each(function(p){
-                p.set('selected', true);
-            });
-            this.notifySelectionChange();
-        },
-
-        addSelected: function(item) {
-            item.set('selected', true);
-            this.notifySelectionChange();
-        },
-
-        clearSelected: function(trigger) {
-            this.panels.each(function(p){
-                p.set('selected', false);
-            });
-            if (trigger !== false) {
-                this.notifySelectionChange();
-            }
-        },
-
-        selectByRegion: function(coords) {
-            this.panels.each(function(p){
-                if (p.regionOverlaps(coords)) {
-                    p.set('selected', true);
-                }
-            });
-            this.notifySelectionChange();
-        },
-
-        getSelected: function() {
-            return this.panels.getSelected();
-        },
-
-        // Go through all selected and destroy them - trigger selection change
-        deleteSelected: function() {
-            var selected = this.getSelected();
-            for (var i=0; i<selected.length; i++) {
-                selected[i].destroy();
-            }
-            this.notifySelectionChange();
-        },
-
-        delete_panels: function() {
-            // make list that won't change as we destroy
-            var ps = [];
-            this.panels.each(function(p){
-                ps.push(p);
-            });
-            for (var i=ps.length-1; i>=0; i--) {
-                ps[i].destroy();
-            }
-            this.notifySelectionChange();
-        },
-
-        notifySelectionChange: function() {
-            this.trigger('change:selection');
+        // Make sure we don't listen to changes coming from Undo/Redo
+        if (self.undoInProgress) {
+            return;     // Don't undo the undo!
         }
 
-    });
+        // Ignore changes to certain attributes
+        var ignore_attrs = ["selected", "id"];  // change in id when new Panel is saved
+
+        var undo_attrs = {},
+            redo_attrs = {},
+            a;
+        for (a in m.changed) {
+            if (ignore_attrs.indexOf(a) < 0) {
+                undo_attrs[a] = m.previous(a);
+                redo_attrs[a] = m.get(a);
+            }
+        }
+
+        // in case we only got 'ignorable' changes
+        if (_.size(redo_attrs) === 0) {
+            return;
+        }
+
+        // We add each change to undo_functions array, which may contain several
+        // changes that happen at "the same time" (E.g. multi-drag)
+        self.undo_functions.push(function(){
+            m.save(undo_attrs);
+        });
+        self.redo_functions.push(function(){
+            m.save(redo_attrs);
+        });
+
+        // this could maybe moved to FigureModel itself
+        var set_selected = function(selected) {
+            selected.forEach(function(m, i){
+                if (i === 0) {
+                    self.figureModel.setSelected(m, true);
+                } else {
+                    self.figureModel.addSelected(m);
+                }
+            });
+        }
+
+        // This is used to copy the undo/redo_functions lists
+        // into undo / redo operations to go into our Edit below
+        var createUndo = function(callList) {
+            var undos = [];
+            for (var u=0; u<callList.length; u++) {
+                undos.push(callList[u]);
+            }
+            // get the currently selected panels
+            var selected = self.figureModel.getSelected();
+            return function() {
+                self.undoInProgress = true;
+                for (var u=0; u<undos.length; u++) {
+                    undos[u]();
+                }
+                set_selected(selected);     // restore selection
+                self.undoInProgress = false;
+            }
+        }
+
+        // if we get multiple changes in rapid succession,
+        // clear any existing timeout and re-create.
+        if (typeof self.createEditTimeout != 'undefined') {
+            clearTimeout(self.createEditTimeout);
+        }
+        // Only the last change will call createEditTimeout
+        self.createEditTimeout = setTimeout(function() {
+            self.postEdit( {
+                name: "Undo...",
+                undo: createUndo(self.undo_functions),
+                redo: createUndo(self.redo_functions)
+            });
+            self.undo_functions = [];
+            self.redo_functions = [];
+        }, 10);
+    }
+});
+
+var UndoView = Backbone.View.extend({
+    
+    el: $("#edit_actions"),
+    
+    events: {
+      "click .undo": "undo",
+      "click .redo": "redo"
+    },
+
+    // NB: requires backbone.mousetrap
+    keyboardEvents: {
+        'mod+z': 'undo',
+        'mod+y': 'redo'
+    },
+    
+    initialize: function() {
+      this.model.on('change', this.render, this);
+      this.undoEl = $(".undo", this.$el);
+      this.redoEl = $(".redo", this.$el);
+
+      this.render();
+    },
+    
+    render: function() {
+        if (this.model.canUndo()) {
+            this.undoEl.removeClass('disabled');
+        } else {
+            this.undoEl.addClass('disabled');
+        }
+        if (this.model.canRedo()) {
+            this.redoEl.removeClass('disabled');
+        } else {
+            this.redoEl.addClass('disabled');
+        }
+        return this;
+    },
+    
+    undo: function(event) {
+        event.preventDefault();
+        this.model.undo();
+    },
+    redo: function(event) {
+        event.preventDefault();
+        this.model.redo();
+    }
+});
+
+//
+// Copyright (C) 2015 University of Dundee & Open Microscopy Environment.
+// All rights reserved.
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+
+
+// Should only ever have a singleton on this
+var ColorPickerView = Backbone.View.extend({
+
+    el: $("#colorpickerModal"),
+
+    // remember picked colors, for picking again
+    pickedColors: [],
+
+    initialize:function () {
+        
+        var sliders = {
+            saturation: {
+                maxLeft: 200,
+                maxTop: 200,
+                callLeft: 'setSaturation',
+                callTop: 'setBrightness'
+            },
+            hue: {
+                maxLeft: 0,
+                maxTop: 200,
+                callLeft: false,
+                callTop: 'setHue'
+            },
+            alpha: {
+                maxLeft: 0,
+                maxTop: 200,
+                callLeft: false,
+                callTop: 'setAlpha'
+            }
+        };
+
+        var self = this,
+            editingRGB = false;     // flag to prevent update of r,g,b fields
+
+        this.$submit_btn = $("#colorpickerModal .modal-footer button[type='submit']");
+
+        $('.demo-auto').colorpicker({
+            'sliders': sliders,
+            'color': '00ff00',
+        }).on('changeColor', function(ev){
+            // enable form submission & show color
+            self.$submit_btn.prop('disabled', false);
+            $('.oldNewColors li:first-child').css('background-color', ev.color.toHex());
+
+            // update red, green, blue inputs
+            if (!editingRGB) {
+                var rgb = ev.color.toRGB();
+                $(".rgb-group input[name='red']").val(rgb.r);
+                $(".rgb-group input[name='green']").val(rgb.g);
+                $(".rgb-group input[name='blue']").val(rgb.b);
+            }
+        });
+
+        $(".rgb-group input").bind("change keyup", function(){
+            var $this = $(this),
+                value = $.trim($this.val());
+            // check it's a number between 0 - 255
+            if (value == parseInt(value, 10)) {
+                value = parseInt(value, 10);
+                if (value < 0) {
+                    value = 0;
+                    $this.val(value);
+                }
+                else if (value > 255) {
+                    value = 255;
+                    $this.val(value);
+                }
+            } else {
+                value = 255
+                $this.val(value);
+            }
+
+            // update colorpicker
+            var r = $(".rgb-group input[name='red']").val(),
+                g = $(".rgb-group input[name='green']").val(),
+                b = $(".rgb-group input[name='blue']").val(),
+                rgb = "rgb(" + r + "," + g + "," + b + ")";
+
+            // flag prevents update of r, g, b fields while typing
+            editingRGB = true;
+            $('.demo-auto').colorpicker('setValue', rgb);
+            editingRGB = false;
+        });
+    },
+
+    
+    events: {
+        "submit .colorpickerForm": "handleColorpicker",
+        "click .pickedColors button": "pickRecentColor",
+    },
+
+    // 'Recent colors' buttons have color as their title
+    pickRecentColor: function(event) {
+        var color = $(event.target).prop('title');
+        $('.demo-auto').colorpicker('setValue', color);
+    },
+
+    // submit of the form: call the callback and close dialog
+    handleColorpicker: function(event) {
+        event.preventDefault();
+
+        // var color = $(".colorpickerForm input[name='color']").val();
+        var color = $('.demo-auto').colorpicker('getValue');
+
+        // very basic validation (in case user has edited color field manually)
+        if (color.length === 0) return;
+        if (color[0] != "#") {
+            color = "#" + color;
+        }
+        // E.g. must be #f00 or #ff0000
+        if (color.length != 7 && color.length != 4) return;
+
+        // remember for later
+        this.pickedColors.push(color);
+
+        if (this.success) {
+            this.success(color);
+        }
+
+        $("#colorpickerModal").modal('hide');
+        return false;
+    },
+
+    show: function(options) {
+
+        $("#colorpickerModal").modal('show');
+
+        if (options.color) {
+            $('.demo-auto').colorpicker('setValue', options.color);
+
+            // compare old and new colors - init with old color
+            $('.oldNewColors li').css('background-color', "#" + options.color);
+
+            // disable submit button until color is chosen
+            this.$submit_btn.prop('disabled', 'disabled');
+        }
+
+        // save callback to use on submit
+        if (options.success) {
+            this.success = options.success;
+        }
+
+        this.render();
+    },
+
+    render:function () {
+        
+        // this is a list of strings
+        var json = {'colors': _.uniq(this.pickedColors)};
+
+        var t = '' +
+            '<div class="btn-group">' +
+            '<% _.each(colors, function(c, i) { %>' +
+                '<button type="button" class="btn btn-default" ' +
+                    'title="<%= c %>"' +
+                    'style="background-color: <%= c %>"> </button>' +
+            '<% if ((i+1)%4 == 0){ %> </div><div class="btn-group"><% } %>' +
+            '<% }); %>' +
+            '</div>';
+
+        var compiled = _.template(t);
+        var html = compiled(json);
+
+        $("#pickedColors").html(html);
+    }
+});
 
 
     // -------------------------- Backbone VIEWS -----------------------------------------
@@ -921,6 +1533,7 @@
             new AddImagesModalView({model: this.model, figureView: this});
             new SetIdModalView({model: this.model});
             new PaperSetupModalView({model: this.model});
+            new RoiModalView({model: this.model});
 
             this.figureFiles = new FileList();
             new FileListView({model:this.figureFiles});
@@ -929,7 +1542,7 @@
             this.$main = $('main');
             this.$canvas = $("#canvas");
             this.$canvas_wrapper = $("#canvas_wrapper");
-            this.$paper = $("#paper");
+            this.$figure = $("#figure");
             this.$copyBtn = $(".copy");
             this.$pasteBtn = $(".paste");
             this.$saveBtn = $(".save_figure.btn");
@@ -940,7 +1553,7 @@
             var self = this;
 
             // Render on changes to the model
-            this.model.on('change:paper_width change:paper_height', this.render, this);
+            this.model.on('change:paper_width change:paper_height change:page_count', this.render, this);
 
             // If a panel is added...
             this.model.panels.on("add", this.addOne, this);
@@ -988,6 +1601,7 @@
 
         events: {
             "click .export_pdf": "export_pdf",
+            "click .export_options li": "export_options",
             "click .add_panel": "addPanel",
             "click .delete_panel": "deleteSelectedPanels",
             "click .copy": "copy_selected_panels",
@@ -1019,6 +1633,21 @@
             'right' : 'nudge_right',
         },
 
+        // choose an export option from the drop-down list
+        export_options: function(event) {
+            event.preventDefault();
+
+            var $target = $(event.target);
+
+            // Only show check mark on the selected item.
+            $(".export_options .glyphicon-ok").css('visibility', 'hidden');
+            $(".glyphicon-ok", $target).css('visibility', 'visible');
+
+            // Update text of main export_pdf button.
+            var txt = $target.attr('data-export-option');
+            $('.export_pdf').text("Export " + txt).attr('data-export-option', txt);
+        },
+
         paper_setup: function(event) {
             event.preventDefault();
 
@@ -1038,18 +1667,27 @@
             // Status is indicated by showing / hiding 3 buttons
             var figureModel = this.model,
                 $create_figure_pdf = $(event.target),
+                export_opt = $create_figure_pdf.attr('data-export-option'),
                 $pdf_inprogress = $("#pdf_inprogress"),
-                $pdf_download = $("#pdf_download");
+                $pdf_download = $("#pdf_download"),
+                exportOption = "PDF";
             $create_figure_pdf.hide();
             $pdf_download.hide();
             $pdf_inprogress.show();
+
+            if (export_opt == "PDF & images") {
+                exportOption = "PDF_IMAGES";
+            } else {
+                exportOption = "PDF";
+            }
 
             // Get figure as json
             var figureJSON = this.model.figure_toJSON();
 
             var url = MAKE_WEBFIGURE_URL,
                 data = {
-                    figureJSON: JSON.stringify(figureJSON)
+                    figureJSON: JSON.stringify(figureJSON),
+                    exportOption: exportOption,
                 };
 
             // Start the Figure_To_Pdf.py script
@@ -1291,7 +1929,7 @@
             event.preventDefault();
             var s = this.model.getSelected();
             this.clipboard_data = cd = [];
-            _.each(s, function(m) {
+            s.forEach(function(m) {
                 var copy = m.toJSON();
                 delete copy.id;
                 cd.push(copy);
@@ -1395,9 +2033,8 @@
 
         // Centre the viewport on the middle of the paper
         reCentre: function() {
-            var paper_w = this.model.get('paper_width'),
-                paper_h = this.model.get('paper_height');
-            this.setCentre( {'x':paper_w/2, 'y':paper_h/2} );
+            var size = this.model.getFigureSize();
+            this.setCentre( {'x':size.w/2, 'y':size.h/2} );
         },
 
         // Get the coordinates on the paper of the viewport center.
@@ -1422,16 +2059,18 @@
                 cy = -offst_top + viewport_h/2,
                 zm_fraction = curr_zoom * 0.01;
 
-            var paper_left = (m.get('canvas_width') - m.get('paper_width'))/2,
-                paper_top = (m.get('canvas_height') - m.get('paper_height'))/2;
+            var size = this.model.getFigureSize();
+            var paper_left = (m.get('canvas_width') - size.w)/2,
+                paper_top = (m.get('canvas_height') - size.h)/2;
             return {'x':(cx/zm_fraction)-paper_left, 'y':(cy/zm_fraction)-paper_top};
         },
 
         // Scroll viewport to place a specified paper coordinate at the centre
         setCentre: function(cx_cy, speed) {
             var m = this.model,
-                paper_left = (m.get('canvas_width') - m.get('paper_width'))/2,
-                paper_top = (m.get('canvas_height') - m.get('paper_height'))/2;
+                size = this.model.getFigureSize(),
+                paper_left = (m.get('canvas_width') - size.w)/2,
+                paper_top = (m.get('canvas_height') - size.h)/2;
             var curr_zoom = m.get('curr_zoom'),
                 zm_fraction = curr_zoom * 0.01,
                 cx = (cx_cy.x+paper_left) * zm_fraction,
@@ -1450,19 +2089,17 @@
         zoom_paper_to_fit: function(event) {
 
             var m = this.model,
-                pw = m.get('paper_width'),
-                ph = m.get('paper_height'),
+                size = this.model.getFigureSize(),
                 viewport_w = this.$main.width(),
                 viewport_h = this.$main.height();
 
-            var zoom_x = viewport_w/pw,
-                zoom_y = viewport_h/ph,
+            var zoom_x = viewport_w/(size.w + 100),
+                zoom_y = viewport_h/(size.h + 100),
                 zm = Math.min(zoom_x, zoom_y);
             zm = (zm * 100) >> 0;
 
-            // TODO: Need to update slider!
-            m.set('curr_zoom', zm-5) ;
-            $("#zoom_slider").slider({ value: zm-5 });
+            m.set('curr_zoom', zm) ;
+            $("#zoom_slider").slider({ value: zm });
 
             // seems we sometimes need to wait to workaround bugs
             var self = this;
@@ -1474,7 +2111,7 @@
         // Add a panel to the view
         addOne: function(panel) {
             var view = new PanelView({model:panel});    // uiState:this.uiState
-            this.$paper.append(view.render().el);
+            this.$figure.append(view.render().el);
         },
 
         renderFigureName: function() {
@@ -1527,17 +2164,39 @@
             var m = this.model,
                 zoom = m.get('curr_zoom') * 0.01;
 
-            var paper_w = m.get('paper_width'),
-                paper_h = m.get('paper_height'),
-                canvas_w = m.get('canvas_width'),
-                canvas_h = m.get('canvas_height'),
-                paper_left = (canvas_w - paper_w)/2,
-                paper_top = (canvas_h - paper_h)/2;
+            var page_w = m.get('paper_width'),
+                page_h = m.get('paper_height'),
+                size = this.model.getFigureSize(),
+                canvas_w = Math.max(m.get('canvas_width'), size.w),
+                canvas_h = Math.max(m.get('canvas_height'), size.h),
+                page_count = m.get('page_count'),
+                paper_spacing = m.get('paper_spacing'),
+                figure_left = (canvas_w - size.w)/2,
+                figure_top = (canvas_h - size.h)/2;
 
-            this.$paper.css({'width': paper_w, 'height': paper_h,
-                    'left': paper_left, 'top': paper_top});
-            $("#canvas").css({'width': this.model.get('canvas_width'),
-                    'height': this.model.get('canvas_height')});
+            var $pages = $(".paper"),
+                left, top, row, col;
+            if ($pages.length !== page_count) {
+                $pages.remove();
+                for (var p=0; p<page_count; p++) {
+                    row = Math.floor(p/size.cols);
+                    col = p % size.cols;
+                    top = row * (page_h + paper_spacing);
+                    left = col * (page_w + paper_spacing);
+                    $("<div class='paper'></div>")
+                        .css({'left': left, 'top': top})
+                        .prependTo(this.$figure);
+                }
+                $pages = $(".paper");
+            }
+
+            $pages.css({'width': page_w, 'height': page_h});
+
+            this.$figure.css({'width': size.w, 'height': size.h,
+                    'left': figure_left, 'top': figure_top});
+
+            $("#canvas").css({'width': canvas_w,
+                    'height': canvas_h});
 
             // always want to do this?
             this.zoom_paper_to_fit();
@@ -1547,11 +2206,346 @@
     });
 
 
+
+    var AlignmentToolbarView = Backbone.View.extend({
+
+        el: $("#alignment-toolbar"),
+
+        model:FigureModel,
+
+        events: {
+            "click .aleft": "align_left",
+            "click .agrid": "align_grid",
+            "click .atop": "align_top",
+
+            "click .awidth": "align_width",
+            "click .aheight": "align_height",
+            "click .asize": "align_size",
+            "click .amagnification": "align_magnification",
+        },
+
+        initialize: function() {
+            this.listenTo(this.model, 'change:selection', this.render);
+            this.$buttons = $("button", this.$el);
+        },
+
+        align_left: function(event) {
+            event.preventDefault();
+            this.model.align_left();
+        },
+
+        align_grid: function(event) {
+            event.preventDefault();
+            this.model.align_grid();
+        },
+
+        align_width: function(event) {
+            event.preventDefault();
+            this.model.align_size(true, false);
+        },
+
+        align_height: function(event) {
+            event.preventDefault();
+            this.model.align_size(false, true);
+        },
+
+        align_size: function(event) {
+            event.preventDefault();
+            this.model.align_size(true, true);
+        },
+
+        align_magnification: function(event) {
+            event.preventDefault();
+            this.model.align_magnification();
+        },
+
+        align_top: function(event) {
+            event.preventDefault();
+            this.model.align_top();
+        },
+
+        render: function() {
+            if (this.model.getSelected().length > 1) {
+                this.$buttons.removeAttr("disabled");
+            } else {
+                this.$buttons.attr("disabled", "disabled");
+            }
+        }
+    });
+
+
+//
+// Copyright (C) 2014 University of Dundee & Open Microscopy Environment.
+// All rights reserved.
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+
+var FigureFile = Backbone.Model.extend({
+
+    defaults: {
+        disabled: false,
+    },
+
+    initialize: function() {
+
+        var desc = this.get('description');
+        if (desc && desc.imageId) {
+            this.set('imageId', desc.imageId);
+        } else {
+            this.set('imageId', 0);
+        }
+        if (desc && desc.baseUrl) {
+            this.set('baseUrl', desc.baseUrl);
+        }
+    },
+
+    isVisible: function(filter) {
+        if (filter.owner) {
+            if (this.get('ownerFullName') !== filter.owner) {
+                return false;
+            }
+        }
+        if (filter.name) {
+            if (this.get('name').toLowerCase().indexOf(filter.name) < 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+});
+
+
+var FileList = Backbone.Collection.extend({
+
+    model: FigureFile,
+
+    comparator: 'creationDate',
+
+    initialize: function() {
+    },
+
+    disable: function(fileId) {
+        // enable all first
+        this.where({disabled: true}).forEach(function(f){
+            f.set('disabled', false);
+        });
+
+        var f = this.get(fileId);
+        if (f) {
+            f.set('disabled', true);
+        }
+    },
+
+    deleteFile: function(fileId, name) {
+        // may not have fetched files...
+        var f = this.get(fileId),   // might be undefined
+            msg = "Delete '" + name + "'?",
+            self = this;
+        if (confirm(msg)) {
+            $.post( DELETE_WEBFIGURE_URL, { fileId: fileId })
+                .done(function(){
+                    self.remove(f);
+                    app.navigate("", {trigger: true});
+                });
+        }
+    },
+
+    url: function() {
+        return LIST_WEBFIGURES_URL;
+    }
+});
+
+
+var FileListView = Backbone.View.extend({
+
+    el: $("#openFigureModal"),
+
+    initialize:function () {
+        this.$tbody = $('tbody', this.$el);
+        this.$fileFilter = $('#file-filter');
+        this.owner = USER_FULL_NAME;
+        var self = this;
+        // we automatically 'sort' on fetch, add etc.
+        this.model.bind("sync remove sort", this.render, this);
+        this.$fileFilter.val("");
+    },
+
+    events: {
+        "click .sort-created": "sort_created",
+        "click .sort-created-reverse": "sort_created_reverse",
+        "click .sort-name": "sort_name",
+        "click .sort-name-reverse": "sort_name_reverse",
+        "click .pick-owner": "pick_owner",
+        "keyup #file-filter": "filter_files",
+        "click .refresh-files": "refresh_files",
+    },
+
+    refresh_files: function(event) {
+        // will trigger sort & render()
+        this.model.fetch();
+    },
+
+    filter_files: function(event) {
+        // render() will pick the new filter text
+        this.render();
+    },
+
+    sort_created: function(event) {
+        this.render_sort_btn(event);
+        this.model.comparator = 'creationDate';
+        this.model.sort();
+    },
+
+    sort_created_reverse: function(event) {
+        this.render_sort_btn(event);
+        this.model.comparator = function(left, right) {
+            var l = left.get('creationDate'),
+                r = right.get('creationDate');
+            return l < r ? 1 : l > r ? -1 : 0;
+        };
+        this.model.sort();
+    },
+
+    sort_name: function(event) {
+        this.render_sort_btn(event);
+        this.model.comparator = 'name';
+        this.model.sort();
+    },
+
+    sort_name_reverse: function(event) {
+        this.render_sort_btn(event);
+        this.model.comparator = function(left, right) {
+            var l = left.get('name'),
+                r = right.get('name');
+            return l < r ? 1 : l > r ? -1 : 0;
+        };
+        this.model.sort();
+    },
+
+    render_sort_btn: function(event) {
+        $("th .btn-sm", this.$el).addClass('muted');
+        $(event.target).removeClass('muted');
+    },
+
+    pick_owner: function(event) {
+        event.preventDefault()
+        var owner = $(event.target).text();
+        if (owner != " -- Show All -- ") {
+            this.owner = owner;
+        } else {
+            delete this.owner;
+        }
+        this.render();
+    },
+
+    render:function () {
+        var self = this,
+            filter = {},
+            filterVal = this.$fileFilter.val();
+        if (this.owner && this.owner.length > 0) {
+            filter.owner = this.owner;
+        }
+        if (filterVal.length > 0) {
+            filter.name = filterVal.toLowerCase();
+        }
+        this.$tbody.empty();
+        if (this.model.models.length === 0) {
+            var msg = "<tr><td colspan='3'>" +
+                "You have no figures. Start by <a href='" + BASE_WEBFIGURE_URL + "new'>creating a new figure</a>" +
+                "</td></tr>";
+            self.$tbody.html(msg);
+        }
+        _.each(this.model.models, function (file) {
+            if (file.isVisible(filter)) {
+                var e = new FileListItemView({model:file}).render().el;
+                self.$tbody.prepend(e);
+            }
+        });
+        owners = this.model.pluck("ownerFullName");
+        owners = _.uniq(owners, false);
+        // Sort by last name
+        owners.sort(function compare(a, b) {
+            var aNames = a.split(" "),
+                aN = aNames[aNames.length - 1],
+                bNames = b.split(" "),
+                bN = bNames[bNames.length - 1];
+            return aN > bN;
+        });
+        var ownersHtml = "<li><a class='pick-owner' href='#'> -- Show All -- </a></li>";
+            ownersHtml += "<li class='divider'></li>";
+        _.each(owners, function(owner) {
+            ownersHtml += "<li><a class='pick-owner' href='#'>" + owner + "</a></li>";
+        });
+        $("#owner-menu").html(ownersHtml);
+        return this;
+    }
+});
+
+var FileListItemView = Backbone.View.extend({
+
+    tagName:"tr",
+
+    template: JST["static/figure/templates/files/figure_file_item.html"],
+
+    initialize:function () {
+        this.model.bind("change", this.render, this);
+        this.model.bind("destroy", this.close, this);
+    },
+
+    events: {
+        "click a": "hide_file_chooser"
+    },
+
+    hide_file_chooser: function() {
+        $("#openFigureModal").modal('hide');
+    },
+
+    formatDate: function(secs) {
+        // if secs is a number, create a Date...
+        if (secs * 1000) {
+            var d = new Date(secs * 1000),
+            s = d.toISOString();        // "2014-02-26T23:09:09.415Z"
+            s = s.replace("T", " ");
+            s = s.substr(0, 16);
+            return s;
+        }
+        // handle string
+        return secs;
+    },
+
+    render:function () {
+        var json = this.model.toJSON(),
+            baseUrl = json.baseUrl;
+        baseUrl = baseUrl || WEBGATEWAYINDEX.slice(0, -1);  // remove last /
+        json.thumbSrc = baseUrl + "/render_thumbnail/" + json.imageId + "/";
+        json.url = "#file/" + json.id;
+        json.formatDate = this.formatDate;
+        var h = this.template(json);
+        $(this.el).html(h);
+        return this;
+    }
+
+});
+
+// Events, show/hide and rendering for various Modal dialogs.
+
     var PaperSetupModalView = Backbone.View.extend({
 
         el: $("#paperSetupModal"),
 
-        template: JST["static/figure/templates/paper_setup_modal_template.html"],
+        template: JST["static/figure/templates/modal_dialogs/paper_setup_modal_template.html"],
 
         model:FigureModel,
 
@@ -1577,16 +2571,30 @@
             // On form submit, need to work out paper width & height
             var $form = $('form', this.$el),
                 dpi = 72,
+                pageCount = $('.pageCountSelect', $form).val(),
                 size = $('.paperSizeSelect', $form).val(),
                 orientation = $form.find('input[name="pageOrientation"]:checked').val(),
                 custom_w = parseInt($("#paperWidth").val(), 10),
                 custom_h = parseInt($("#paperHeight").val(), 10),
                 units = $('.wh_units:first', $form).text();
 
+
             var w_mm, h_m, w_pixels, h_pixels;
             if (size == 'A4') {
                 w_mm = 210;
                 h_mm = 297;
+            } else if (size == 'A3') {
+                w_mm = 297;
+                h_mm = 420;
+            } else if (size == 'A2') {
+                w_mm = 420;
+                h_mm = 594;
+            } else if (size == 'A1') {
+                w_mm = 594;
+                h_mm = 841;
+            } else if (size == 'A0') {
+                w_mm = 841;
+                h_mm = 1189;
             } else if (size == 'letter') {
                 w_mm = 216;
                 h_mm = 280;
@@ -1611,6 +2619,11 @@
                 tmp = w_pixels; w_pixels = h_pixels; h_pixels = tmp;
             }
 
+            var cols = pageCount;
+            if (pageCount > 3) {
+                cols = Math.ceil(pageCount/2);
+            }
+
             var rv = {
                 // 'dpi': dpi,
                 'page_size': size,
@@ -1619,6 +2632,8 @@
                 'height_mm': h_mm,
                 'paper_width': w_pixels,
                 'paper_height': h_pixels,
+                'page_count': pageCount,
+                'page_col_count': cols,
             };
             return rv;
         },
@@ -1655,7 +2670,7 @@
 
         el: $("#setIdModal"),
 
-        template: JST["static/figure/templates/preview_Id_change_template.html"],
+        template: JST["static/figure/templates/modal_dialogs/preview_Id_change_template.html"],
 
         model:FigureModel,
 
@@ -1723,6 +2738,8 @@
                     'datasetName': data.meta.datasetName,
                     'pixel_size_x': data.pixel_size.x,
                     'pixel_size_y': data.pixel_size.y,
+                    'pixel_size_x_unit': data.pixel_size.unitX,
+                    'pixel_size_x_symbol': data.pixel_size.symbolX,
                     'deltaT': data.deltaT,
                 };
                 self.newImg = newImg;
@@ -1740,7 +2757,7 @@
 
             if (!self.newImg)   return;
 
-            _.each(sel, function(p) {
+            sel.forEach(function(p) {
                 p.setId(self.newImg);
             });
 
@@ -1756,7 +2773,7 @@
                 self.selectedImage = null;
                 return; // shouldn't happen
             }
-            selImg = sel[0];
+            selImg = sel.head();
             json.selImg = selImg.toJSON();
             json.newImg = {};
             json.comp = {};
@@ -1771,6 +2788,9 @@
                 var rv = "<span class='glyphicon glyphicon-" + m + "'></span>";
                 return rv;
             };
+
+            // thumbnail
+            json.selThumbSrc = WEBGATEWAYINDEX + "render_thumbnail/" + json.selImg.imageId + "/";
 
             // minor attributes ('info' only)
             var attrs = ["sizeZ", "orig_width", "orig_height"],
@@ -1792,7 +2812,7 @@
                 if (json.selImg.sizeT != json.newImg.sizeT) {
                     // check if any existing images have theT > new.sizeT
                     var tooSmallT = false;
-                    _.each(sel, function(o){
+                    sel.forEach(function(o){
                         if (o.get('theT') > json.newImg.sizeT) tooSmallT = true;
                     });
                     if (tooSmallT) {
@@ -1826,6 +2846,9 @@
                         }
                     }
                 }
+
+                // thumbnail
+                json.newThumbSrc = WEBGATEWAYINDEX + "render_thumbnail/" + json.newImg.imageId + "/";
 
                 $(".doSetId", this.$el).removeAttr('disabled');
             } else {
@@ -2026,6 +3049,8 @@
                         'datasetId': data.meta.datasetId,
                         'pixel_size_x': data.pixel_size.x,
                         'pixel_size_y': data.pixel_size.y,
+                        'pixel_size_x_symbol': data.pixel_size.symbolX,
+                        'pixel_size_x_unit': data.pixel_size.unitX,
                         'deltaT': data.deltaT,
                     };
                     if (baseUrl) {
@@ -2054,68 +3079,6 @@
 
         }
     });
-
-
-    var AlignmentToolbarView = Backbone.View.extend({
-
-        el: $("#alignment-toolbar"),
-
-        model:FigureModel,
-
-        events: {
-            "click .aleft": "align_left",
-            "click .agrid": "align_grid",
-            "click .atop": "align_top",
-
-            "click .awidth": "align_width",
-            "click .aheight": "align_height",
-            "click .asize": "align_size",
-        },
-
-        initialize: function() {
-            this.listenTo(this.model, 'change:selection', this.render);
-            this.$buttons = $("button", this.$el);
-        },
-
-        align_left: function(event) {
-            event.preventDefault();
-            this.model.align_left();
-        },
-
-        align_grid: function(event) {
-            event.preventDefault();
-            this.model.align_grid();
-        },
-
-        align_width: function(event) {
-            event.preventDefault();
-            this.model.align_size(true, false);
-        },
-
-        align_height: function(event) {
-            event.preventDefault();
-            this.model.align_size(false, true);
-        },
-
-        align_size: function(event) {
-            event.preventDefault();
-            this.model.align_size(true, true);
-        },
-
-        align_top: function(event) {
-            event.preventDefault();
-            this.model.align_top();
-        },
-
-        render: function() {
-            if (this.model.getSelected().length > 1) {
-                this.$buttons.removeAttr("disabled");
-            } else {
-                this.$buttons.attr("disabled", "disabled");
-            }
-        }
-    });
-
 
 
     // -------------------------Panel View -----------------------------------
@@ -2222,6 +3185,9 @@
                 var ljson = $.extend(true, {}, l);
                 if (typeof ljson.text == 'undefined' && ljson.time) {
                     ljson.text = self.model.get_time_label_text(ljson.time);
+                } else {
+                    // Escape all labels so they are safe
+                    ljson.text = _.escape(ljson.text);
                 }
                 positions[l.position].push(ljson);
             });
@@ -2257,7 +3223,10 @@
                 var sb_json = {};
                 sb_json.position = sb.position;
                 sb_json.color = sb.color;
-                sb_json.width = sb.pixels;  // TODO * scale
+                sb_json.length = sb.length;
+                sb_json.font_size = sb.font_size;
+                sb_json.show_label = sb.show_label;
+                sb_json.symbol = this.model.get('pixel_size_x_symbol');
 
                 var sb_html = this.scalebar_template(sb_json);
                 this.$el.append(sb_html);
@@ -2288,6 +3257,288 @@
     });
 
 
+//
+// Copyright (C) 2014 University of Dundee & Open Microscopy Environment.
+// All rights reserved.
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+
+var RectView = Backbone.View.extend({
+
+    handle_wh: 6,
+    default_line_attrs: {'stroke-width':0, 'stroke': '#4b80f9', 'cursor': 'default', 'fill-opacity':0.01, 'fill': '#fff'},
+    selected_line_attrs: {'stroke':'#4b80f9', 'stroke-width':2 },
+    handle_attrs: {'stroke':'#4b80f9', 'fill':'#fff', 'cursor': 'default', 'fill-opacity':1.0},
+
+    // make a child on click
+    events: {
+        //'mousedown': 'selectShape'    // we need to handle this more manually (see below)
+    },
+    initialize: function(options) {
+        // Here we create the shape itself, the drawing handles and
+        // bind drag events to all of them to drag/resize the rect.
+
+        var self = this;
+        this.paper = options.paper;
+        this.handle_wh = options.handle_wh || this.handle_wh;
+        this.handles_toFront = options.handles_toFront || false;
+        this.disable_handles = options.disable_handles || false;
+        this.fixed_ratio = options.fixed_ratio || false;
+        // this.manager = options.manager;
+
+        // Set up our 'view' attributes (for rendering without updating model)
+        this.x = this.model.get("x");
+        this.y = this.model.get("y");
+        this.width = this.model.get("width");
+        this.height = this.model.get("height");
+
+        // ---- Create Handles -----
+        // map of centre-points for each handle
+        this.handleIds = {'nw': [this.x, this.y],
+            'n': [this.x+this.width/2,this.y],
+            'ne': [this.x+this.width,this.y],
+            'w': [this.x, this.y+this.height/2],
+            'e': [this.x+this.width, this.y+this.height/2],
+            'sw': [this.x, this.y+this.height],
+            's': [this.x+this.width/2, this.y+this.height],
+            'se': [this.x+this.width, this.y+this.height]
+        };
+        // draw handles
+        self.handles = this.paper.set();
+        var _handle_drag = function() {
+            return function (dx, dy, mouseX, mouseY, event) {
+                if (self.disable_handles) return false;
+                // on DRAG...
+
+                // If drag on corner handle, retain aspect ratio. dx/dy = aspect
+                var keep_ratio = self.fixed_ratio || event.shiftKey;
+                if (keep_ratio && this.h_id.length === 2) {     // E.g. handle is corner 'ne' etc
+                    if (this.h_id === 'se' || this.h_id === 'nw') {
+                        if (Math.abs(dx/dy) > this.aspect) {
+                            dy = dx/this.aspect;
+                        } else {
+                            dx = dy*this.aspect;
+                        }
+                    } else {
+                        if (Math.abs(dx/dy) > this.aspect) {
+                            dy = -dx/this.aspect;
+                        } else {
+                            dx = -dy*this.aspect;
+                        }
+                    }
+                }
+                // Use dx & dy to update the location of the handle and the corresponding point of the parent
+                var new_x = this.ox + dx;
+                var new_y = this.oy + dy;
+                var newRect = {
+                    x: this.rect.x,
+                    y: this.rect.y,
+                    width: this.rect.width,
+                    height: this.rect.height
+                };
+                if (this.h_id.indexOf('e') > -1) {    // if we're dragging an 'EAST' handle, update width
+                    newRect.width = new_x - self.x + self.handle_wh/2;
+                }
+                if (this.h_id.indexOf('s') > -1) {    // if we're dragging an 'SOUTH' handle, update height
+                    newRect.height = new_y - self.y + self.handle_wh/2;
+                }
+                if (this.h_id.indexOf('n') > -1) {    // if we're dragging an 'NORTH' handle, update y and height
+                    newRect.y = new_y + self.handle_wh/2;
+                    newRect.height = this.obottom - new_y;
+                }
+                if (this.h_id.indexOf('w') > -1) {    // if we're dragging an 'WEST' handle, update x and width
+                    newRect.x = new_x + self.handle_wh/2;
+                    newRect.width = this.oright - new_x;
+                }
+                // Don't allow zero sized rect.
+                if (newRect.width < 1 || newRect.height < 1) {
+                    return false;
+                }
+                this.rect.x = newRect.x;
+                this.rect.y = newRect.y;
+                this.rect.width = newRect.width;
+                this.rect.height = newRect.height;
+                this.rect.model.trigger("drag_resize", [this.rect.x, this.rect.y, this.rect.width, this.rect.height]);
+                this.rect.updateShape();
+                return false;
+            };
+        };
+        var _handle_drag_start = function() {
+            return function () {
+                if (self.disable_handles) return false;
+                // START drag: simply note the location we started
+                this.ox = this.attr("x");
+                this.oy = this.attr("y");
+                this.oright = self.width + this.ox;
+                this.obottom = self.height + this.oy;
+                this.aspect = self.model.get('width') / self.model.get('height');
+                return false;
+            };
+        };
+        var _handle_drag_end = function() {
+            return function() {
+                if (self.disable_handles) return false;
+                this.rect.model.trigger('drag_resize_stop', [this.rect.x, this.rect.y,
+                    this.rect.width, this.rect.height]);
+                return false;
+            };
+        };
+        var _stop_event_propagation = function(e) {
+            e.stopImmediatePropagation();
+        }
+        for (var key in this.handleIds) {
+            var hx = this.handleIds[key][0];
+            var hy = this.handleIds[key][1];
+            var handle = this.paper.rect(hx-self.handle_wh/2, hy-self.handle_wh/2, self.handle_wh, self.handle_wh).attr(self.handle_attrs);
+            handle.attr({'cursor': key + '-resize'});     // css, E.g. ne-resize
+            handle.h_id = key;
+            handle.rect = self;
+
+            handle.drag(
+                _handle_drag(),
+                _handle_drag_start(),
+                _handle_drag_end()
+            );
+            handle.mousedown(_stop_event_propagation);
+            self.handles.push(handle);
+        }
+        self.handles.hide();     // show on selection
+
+
+        // ----- Create the rect itself ----
+        this.element = this.paper.rect();
+        this.element.attr( self.default_line_attrs );
+        // set "element" to the raphael node (allows Backbone to handle events)
+        this.setElement(this.element.node);
+        this.delegateEvents(this.events);   // we need to rebind the events
+
+        // Handle drag
+        this.element.drag(
+            function(dx, dy) {
+                // DRAG, update location and redraw
+                // TODO - need some way to disable drag if we're not in select state
+                //if (manager.getState() !== ShapeManager.STATES.SELECT) {
+                //    return;
+                //}
+                self.x = dx+this.ox;
+                self.y = this.oy+dy;
+                self.dragging = true;
+                self.model.trigger("drag_xy", [dx, dy]);
+                self.updateShape();
+                return false;
+            },
+            function() {
+                // START drag: note the location of all points (copy list)
+                this.ox = this.attr('x');
+                this.oy = this.attr('y');
+                return false;
+            },
+            function() {
+                // STOP: save current position to model
+                self.model.trigger('drag_xy_stop', [self.x-this.ox, self.y-this.oy]);
+                self.dragging = false;
+                return false;
+            }
+        );
+
+        // If we're starting DRAG, don't let event propogate up to dragdiv etc.
+        // https://groups.google.com/forum/?fromgroups=#!topic/raphaeljs/s06GIUCUZLk
+        this.element.mousedown(function(e){
+             e.stopImmediatePropagation();
+             self.selectShape(e);
+        });
+
+        this.updateShape();  // sync position, selection etc.
+
+        // Finally, we need to render when model changes
+        this.model.on('change', this.render, this);
+        this.model.on('destroy', this.destroy, this);
+
+    },
+
+    // render updates our local attributes from the Model AND updates coordinates
+    render: function(event) {
+        if (this.dragging) return;
+        this.x = this.model.get("x");
+        this.y = this.model.get("y");
+        this.width = this.model.get("width");
+        this.height = this.model.get("height");
+        this.updateShape();
+    },
+
+    // used to update during drags etc. Also called by render()
+    updateShape: function() {
+        this.element.attr({'x':this.x, 'y':this.y, 'width':this.width, 'height':this.height});
+
+        // TODO Draw diagonals on init - then simply update here (show if selected)
+        // var path1 = "M" + this.x +","+ this.y +"l"+ this.width +","+ this.height,
+        //     path2 = "M" + (this.x+this.width) +","+ this.y +"l-"+ this.width +","+ this.height;
+        //     // rectangle plus 2 diagonal lines
+        //     this.paper.path(path1).attr('stroke', '#4b80f9');
+        //     this.paper.path(path2).attr('stroke', '#4b80f9');
+
+        // if (this.manager.selected_shape_id === this.model.get("id")) {
+        if (this.model.get('selected')) {
+            this.element.attr( this.selected_line_attrs );  //.toFront();
+            var self = this;
+            // If several Rects get selected at the same time, one with handles_toFront will
+            // end up with the handles at the top
+            if (this.handles_toFront) {
+                setTimeout(function(){
+                    self.handles.show().toFront();
+                },50);
+            } else {
+                this.handles.show().toFront();
+            }
+        } else {
+            this.element.attr( this.default_line_attrs );    // this should be the shapes OWN line / fill colour etc.
+            this.handles.hide();
+        }
+
+        this.handleIds = {'nw': [this.x, this.y],
+        'n': [this.x+this.width/2,this.y],
+        'ne': [this.x+this.width,this.y],
+        'w': [this.x, this.y+this.height/2],
+        'e': [this.x+this.width, this.y+this.height/2],
+        'sw': [this.x, this.y+this.height],
+        's': [this.x+this.width/2, this.y+this.height],
+        'se': [this.x+this.width, this.y+this.height]};
+        var hnd, h_id, hx, hy;
+        for (var h=0, l=this.handles.length; h<l; h++) {
+            hnd = this.handles[h];
+            h_id = hnd.h_id;
+            hx = this.handleIds[h_id][0];
+            hy = this.handleIds[h_id][1];
+            hnd.attr({'x':hx-this.handle_wh/2, 'y':hy-this.handle_wh/2});
+        }
+    },
+
+    selectShape: function(event) {
+        // pass back to model to update all selection
+        this.model.trigger('clicked', [event]);
+    },
+
+    // Destroy: remove Raphael elements and event listeners
+    destroy: function() {
+        this.element.remove();
+        this.handles.remove();
+        this.model.off('change', this.render, this);
+    }
+});
+
+
     // The 'Right Panel' is the floating Info, Preview etc display.
     // It listens to selection changes on the FigureModel and updates it's display
     // By creating new Sub-Views
@@ -2308,10 +3559,19 @@
 
             if (this.vp) {
                 this.vp.clear().remove();
+                delete this.vp;     // so we don't call clear() on it again.
             }
             if (selected.length > 0) {
                 this.vp = new ImageViewerView({models: selected}); // auto-renders on init
                 $("#viewportContainer").append(this.vp.el);
+            }
+            if (this.zmp) {
+                this.zmp.remove();
+                delete this.zmp;
+            }
+            if (selected.length > 0) {
+                this.zmp = new ZoomView({models: selected}); // auto-renders on init
+                $("#reset-zoom-view").append(this.zmp.el);
             }
 
             if (this.ipv) {
@@ -2373,8 +3633,25 @@
             var $li = $span.parent().parent(),
                 $button = $li.parent().prev();
             $span = $span.clone();
-            $('span:first', $button).replaceWith($span);
-            $button.trigger('change');      // can listen for this if we want to 'submit' etc
+
+            if ($span.hasClass('colorpickerOption')) {
+                var oldcolor = $a.attr('data-oldcolor');
+                FigureColorPicker.show({
+                    'color': oldcolor,
+                    'success': function(newColor){
+                        $span.css({'background-color': newColor, 'background-image': 'none'});
+                        // remove # from E.g. #ff00ff
+                        newColor = newColor.replace("#", "");
+                        $span.attr('data-color', newColor);
+                        $('span:first', $button).replaceWith($span);
+                        // can listen for this if we want to 'submit' etc
+                        $button.trigger('change');
+                    }
+                });
+            } else {
+                $('span:first', $button).replaceWith($span);
+                $button.trigger('change');      // can listen for this if we want to 'submit' etc
+            }
         },
 
         // submission of the New Label form
@@ -2393,7 +3670,7 @@
             var selected = this.model.getSelected();
 
             if (label_text == '[channels]') {
-                _.each(selected, function(m) {
+                selected.forEach(function(m) {
                     m.create_labels_from_channels({position:position, size:font_size});
                 });
                 return false;
@@ -2401,7 +3678,7 @@
 
             if (label_text.slice(0, 5) == '[time') {
                 var format = label_text.slice(6, -1);   // 'secs', 'hrs:mins' etc
-                _.each(selected, function(m) {
+                selected.forEach(function(m) {
                     m.create_labels_from_time({format: format,
                             position:position,
                             size:font_size,
@@ -2418,7 +3695,7 @@
                 color: color
             };
 
-            _.each(selected, function(m) {
+            selected.forEach(function(m) {
                 if (label_text === "[image-name]") {
                     var pathnames = m.get('name').split('/');
                     label.text = pathnames[pathnames.length-1];
@@ -2441,13 +3718,12 @@
                 $(".new-label-form", this.$el).show();
                 // if none of the selected panels have time data, disable 'add_time_label's
                 var have_time = false, dTs;
-                for (var i=0; i<selected.length; i++) {
-                    dTs = selected[i].get('deltaT');
+                selected.forEach(function(p){
+                    dTs = p.get('deltaT');
                     if (dTs && dTs.length > 0) {
                         have_time = true;
-                        break;
                     }
-                }
+                });
                 if (have_time) {
                     $(".add_time_label", this.$el).removeClass('disabled');
                 } else {
@@ -2503,7 +3779,7 @@
             this.models = opts.models;
             var self = this;
 
-            _.each(this.models, function(m){
+            this.models.forEach(function(m){
                 self.listenTo(m, 'change:labels change:theT', self.render);
             });
         },
@@ -2523,7 +3799,7 @@
 
             deleteMap[key] = false;
 
-            _.each(this.models, function(m, i){
+            this.models.forEach(function(m){
                 m.edit_labels(deleteMap);
             });
             return false;
@@ -2544,6 +3820,8 @@
                 color = $('.label-color span:first', $form).attr('data-color'),
                 key = $form.attr('data-key');
 
+            // the 'key' will now be unescaped, so we need to escape it again to compare with model
+            key = _.escape(key);
             var new_label = {text:label_text, size:font_size, position:position, color:color};
 
             // if we're editing a 'time' label, preserve the 'time' attribute
@@ -2555,7 +3833,7 @@
             var newlbls = {};
             newlbls[key] = new_label;
 
-            _.each(this.models, function(m, i){
+            this.models.forEach(function(m){
                 m.edit_labels(newlbls);
             });
             return false;
@@ -2566,7 +3844,7 @@
             var self = this,
                 positions = {'top':{}, 'bottom':{}, 'left':{}, 'leftvert':{}, 'right':{},
                     'topleft':{}, 'topright':{}, 'bottomleft':{}, 'bottomright':{}};
-            _.each(this.models, function(m, i){
+            this.models.forEach(function(m){
                 // group labels by position
                 _.each(m.get('labels'), function(l) {
                     // remove duplicates by mapping to unique key
@@ -2614,8 +3892,8 @@
             this.models = opts.models;
             var self = this;
 
-            _.each(this.models, function(m){
-                self.listenTo(m, 'change:scalebar change:pixel_size_x', self.render);
+            this.models.forEach(function(m){
+                self.listenTo(m, 'change:scalebar change:pixel_size_x change:scalebar_label', self.render);
             });
 
             // this.$el = $("#scalebar_form");
@@ -2623,6 +3901,7 @@
 
         events: {
             "submit .scalebar_form": "update_scalebar",
+            "click .scalebar_label": "update_scalebar",
             "change .btn": "dropdown_btn_changed",
             "click .hide_scalebar": "hide_scalebar",
             "click .pixel_size_display": "edit_pixel_size",
@@ -2656,7 +3935,7 @@
             if (val.length === 0) return;
             var pixel_size = parseFloat(val);
             if (isNaN(pixel_size)) return;
-            _.each(this.models, function(m, i){
+            this.models.forEach(function(m){
                 m.save('pixel_size_x', pixel_size);
             });
         },
@@ -2667,7 +3946,7 @@
         },
 
         hide_scalebar: function() {
-            _.each(this.models, function(m, i){
+            this.models.forEach(function(m){
                 m.hide_scalebar();
             });
         },
@@ -2679,13 +3958,17 @@
 
             var length = $('.scalebar-length', $form).val(),
                 position = $('.label-position span:first', $form).attr('data-position'),
-                color = $('.label-color span:first', $form).attr('data-color');
+                color = $('.label-color span:first', $form).attr('data-color'),
+                show_label = $('.scalebar_label', $form).prop('checked'),
+                font_size = $('.scalebar_font_size span:first', $form).text().trim();
 
-            _.each(this.models, function(m, i){
+            this.models.forEach(function(m){
                 var sb = {show: true};
                 if (length != '-') sb.length = parseInt(length, 10);
                 if (position != '-') sb.position = position;
                 if (color != '-') sb.color = color;
+                sb.show_label = show_label;
+                if (font_size != '-') sb.font_size = font_size;
 
                 m.save_scalebar(sb);
             });
@@ -2694,20 +3977,24 @@
 
         render: function() {
 
-            var json = {show: false},
+            var json = {show: false, show_label: false},
                 hidden = false,
                 sb;
 
-            _.each(this.models, function(m, i){
+            this.models.forEach(function(m){
                 // start with json data from first Panel
                 if (!json.pixel_size_x) {
                     json.pixel_size_x = m.get('pixel_size_x');
+                    json.symbol = m.get('pixel_size_x_symbol');
                 } else {
                     pix_sze = m.get('pixel_size_x');
                     // account for floating point imprecision when comparing
                     if (json.pixel_size_x != '-' &&
                         json.pixel_size_x.toFixed(10) != pix_sze.toFixed(10)) {
                             json.pixel_size_x = '-';
+                    }
+                    if (json.symbol != m.get('pixel_size_x_symbol')) {
+                        json.symbol = '-';
                     }
                 }
                 sb = m.get('scalebar');
@@ -2718,12 +4005,16 @@
                         json.units = sb.units;
                         json.position = sb.position;
                         json.color = sb.color;
+                        json.show_label = sb.show_label;
+                        json.font_size = sb.font_size;
                     }
                     else {
                         if (json.length != sb.length) json.length = '-';
                         if (json.units != sb.units) json.units = '-';
                         if (json.position != sb.position) json.position = '-';
                         if (json.color != sb.color) json.color = '-';
+                        if (!sb.show_label) json.show_label = false;
+                        if (json.font_size != sb.font_size) json.font_size = '-';
                     }
                 }
                 // if any panels don't have scalebar - we allow to add
@@ -2737,6 +4028,8 @@
             json.units = json.units || 'um';
             json.position = json.position || 'bottomright';
             json.color = json.color || 'FFFFFF';
+            json.font_size = json.font_size || 10;
+            json.symbol = json.symbol || '-';
 
             var html = this.template(json);
             this.$el.html(html);
@@ -2758,11 +4051,11 @@
             this.models = opts.models;
             if (opts.models.length > 1) {
                 var self = this;
-                _.each(this.models, function(m){
+                this.models.forEach(function(m){
                     self.listenTo(m, 'change:x change:y change:width change:height change:imageId change:zoom', self.render);
                 });
             } else if (opts.models.length == 1) {
-                this.model = opts.models[0];
+                this.model = opts.models.head();
                 this.listenTo(this.model, 'change:x change:y change:width change:height change:zoom', this.render);
                 this.listenTo(this.model, 'drag_resize', this.drag_resize);
             }
@@ -2794,9 +4087,13 @@
         render: function() {
             var json,
                 title = this.models.length + " Panels Selected...",
+                remoteUrl,
                 imageIds = [];
-            _.each(this.models, function(m, i){
+            this.models.forEach(function(m) {
                 imageIds.push(m.get('imageId'));
+                if (m.get('baseUrl')) {
+                    remoteUrl = m.get('baseUrl') + "/img_detail/" + m.get('imageId') + "/";
+                }
                 // start with json data from first Panel
                 if (!json) {
                     json = m.toJSON();
@@ -2835,11 +4132,19 @@
                 }
             });
 
-            json.imageIds = _.uniq(imageIds);
-            json.webclientBaseUrl = WEBINDEX_URL;
+            // Link IF we have a single remote image, E.g. http://jcb-dataviewer.rupress.org/jcb/img_detail/625679/
+            json.imageLink = false;
+            if (remoteUrl) {
+                if (imageIds.length == 1) {
+                    json.imageLink = remoteUrl;
+                }
+            // OR all the images are local
+            } else {
+                json.imageLink = WEBINDEX_URL + "?show=image-" + imageIds.join('|image-');
+            }
 
             // all setId if we have a single Id
-            json.setImageId = json.imageIds.length == 1;
+            json.setImageId = _.uniq(imageIds).length == 1;
 
             if (json) {
                 var html = this.template(json),
@@ -2870,7 +4175,7 @@
         },
 
         z_increment: function(event) {
-            _.each(this.model.getSelected(), function(m){
+            this.model.getSelected().forEach(function(m){
                 var newZ = {};
                 if (m.get('z_projection')) {
                     newZ.z_start = m.get('z_start') + 1;
@@ -2883,7 +4188,7 @@
             return false;
         },
         z_decrement: function(event) {
-            _.each(this.model.getSelected(), function(m){
+            this.model.getSelected().forEach(function(m){
                 var newZ = {};
                 if (m.get('z_projection')) {
                     newZ.z_start = m.get('z_start') - 1;
@@ -2896,13 +4201,13 @@
             return false;
         },
         time_increment: function(event) {
-            _.each(this.model.getSelected(), function(m){
+            this.model.getSelected().forEach(function(m){
                 m.set({'theT': m.get('theT') + 1}, {'validate': true});
             });
             return false;
         },
         time_decrement: function(event) {
-            _.each(this.model.getSelected(), function(m){
+            this.model.getSelected().forEach(function(m){
                 m.set({'theT': m.get('theT') - 1}, {'validate': true});
             });
             return false;
@@ -2927,7 +4232,7 @@
             var self = this,
                 zoom_sum = 0;
 
-            _.each(this.models, function(m){
+            this.models.forEach(function(m){
                 self.listenTo(m,
                     'change:width change:height change:channels change:zoom change:theZ change:theT change:rotation change:z_projection change:z_start change:z_end',
                     self.render);
@@ -2951,7 +4256,7 @@
                         to_save.dx = 0;
                         to_save.dy = 0;
                     }
-                    _.each(self.models, function(m){
+                    self.models.forEach(function(m){
                         m.save(to_save);
                     });
                 }
@@ -2971,7 +4276,7 @@
             this.dragging = true;
             this.dragstart_x = event.clientX;
             this.dragstart_y = event.clientY;
-            this.r = this.models[0].get('rotation');
+            this.r = this.models.head().get('rotation');
             return false;
         },
 
@@ -3030,30 +4335,34 @@
             return this;
         },
 
+        // This forces All panels in viewport to have SAME css
+        // while zooming / dragging.
+        // TODO: Update each panel separately.
         update_img_css: function(zoom, dx, dy, save) {
 
             dx = dx / (zoom/100);
             dy = dy / (zoom/100);
 
+            var avg_dx = this.models.getAverage('dx'),
+                avg_dy = this.models.getAverage('dy');
+
             if (this.$vp_img) {
                 var frame_w = this.$vp_frame.width() + 2,
                     frame_h = this.$vp_frame.height() + 2,
-                    zm_w = this.models[0].get('orig_width') / frame_w,
-                    zm_h = this.models[0].get('orig_height') / frame_h,
+                    zm_w = this.models.head().get('orig_width') / frame_w,
+                    zm_h = this.models.head().get('orig_height') / frame_h,
                     scale = Math.min(zm_w, zm_h);
                 dx = dx * scale;
                 dy = dy * scale;
-                dx += this.dx;
-                dy += this.dy;
-                this.$vp_img.css( this.models[0].get_vp_img_css(zoom, frame_w, frame_h, dx, dy) );
+                dx += avg_dx;
+                dy += avg_dy;
+                this.$vp_img.css( this.models.head().get_vp_img_css(zoom, frame_w, frame_h, dx, dy) );
                 this.$vp_zoom_value.text(zoom + "%");
 
                 if (save) {
                     if (typeof dx === "undefined") dx = 0;  // rare crazy-dragging case!
                     if (typeof dy === "undefined") dy = 0;
-                    this.dx = dx;
-                    this.dy = dy;
-                    _.each(this.models, function(m){
+                    this.models.forEach(function(m){
                         m.save({'dx': dx,
                                 'dy': dy});
                     });
@@ -3084,73 +4393,24 @@
         render: function() {
 
             // only show viewport if original w / h ratio is same for all models
-            var model = this.models[0],
+            var model = this.models.head(),
                 self = this;
-            var orig_wh,
-                sum_wh = 0,
-                sum_zoom = 0,
-                sum_theZ = 0,
-                max_theZ = 0,
-                sum_theT = 0,
-                min_sizeT = this.models[0].get('sizeT'),
-                max_theT = 0,
-                sum_deltaT = 0,
-                max_deltaT = 0,
-                sum_dx = 0,
-                sum_dy = 0,
-                imgs_css = [],
-                same_wh = true,
-                // sizeZ = model.get('sizeZ');
-                sizeZ = this.models[0].get('sizeZ'),
-                sizeT = this.models[0].get('sizeT'),
-                z_start_sum = 0,
-                z_end_sum = 0,
-                z_projection = true;
-
-
-            // first, work out frame w & h - use average w/h ratio of all selected panels
-            _.each(this.models, function(m){
-                var wh = m.get('orig_width') / m.get('orig_height');
-                if (!orig_wh) {
-                    orig_wh = wh;
-                } else if (orig_wh != wh) {
-                    same_wh = false;
-                }
-                sum_wh += (m.get('width')/ m.get('height'));
-                sum_zoom += m.get('zoom');
-                sum_theZ += m.get('theZ');
-                var theT = m.get('theT'),
-                    dT = m.get('deltaT')[theT] || 0;
-                sum_theT += theT;
-                sum_deltaT += dT;
-                max_theZ = Math.max(max_theZ, m.get('theZ'));
-                max_theT = Math.max(max_theT, theT);
-                max_deltaT = Math.max(max_deltaT, dT);
-                min_sizeT = Math.min(min_sizeT, m.get('sizeT'))
-                if (sizeZ != m.get('sizeZ')) {
-                    sizeZ = undefined;
-                }
-                if (sizeT != m.get('sizeT')) {
-                    sizeT = undefined;
-                }
-                z_start_sum += m.get('z_start') || 0;
-                z_end_sum += m.get('z_end') || 0;
-                if (!m.get('z_projection')) {
-                    z_projection = false;
-                }
-            });
-
-            theZ_avg = sum_theZ/ this.models.length;
-            this.theT_avg = sum_theT/ this.models.length;
+            var imgs_css = [];
 
             // get average viewport frame w/h & zoom
-            var wh = sum_wh/this.models.length,
-                zoom = sum_zoom/this.models.length,
-                theZ = sum_theZ/this.models.length,
-                z_start = Math.round(z_start_sum/this.models.length),
-                z_end = Math.round(z_end_sum/this.models.length),
-                theT = sum_theT/this.models.length;
-                deltaT = sum_deltaT/this.models.length;
+            var wh = this.models.getAverageWH(),
+                zoom = this.models.getAverage('zoom'),
+                theZ = this.models.getAverage('theZ'),
+                z_start = Math.round(this.models.getAverage('z_start')),
+                z_end = Math.round(this.models.getAverage('z_end')),
+                theT = this.models.getAverage('theT'),
+                // deltaT = sum_deltaT/this.models.length,
+                sizeZ = this.models.getIfEqual('sizeZ'),
+                sizeT = this.models.getIfEqual('sizeT'),
+                deltaT = this.models.getDeltaTIfEqual(),
+                z_projection = this.models.allTrue('z_projection');
+            
+            this.theT_avg = theT;
 
             if (wh <= 1) {
                 frame_h = this.full_size;
@@ -3161,18 +4421,12 @@
             }
 
             // Now get img src & positioning css for each panel, 
-            _.each(this.models, function(m){
-                sum_dx += m.get('dx');
-                sum_dy += m.get('dy');
+            this.models.forEach(function(m){
                 var src = m.get_img_src(),
                     img_css = m.get_vp_img_css(m.get('zoom'), frame_w, frame_h, m.get('dx'), m.get('dy'));
                 img_css.src = src;
                 imgs_css.push(img_css);
             });
-
-            // save these average offsets in hand for dragging (apply to all panels)
-            this.dx = sum_dx/this.models.length;
-            this.dy = sum_dy/this.models.length;
 
             // update sliders
             var Z_disabled = false,
@@ -3182,8 +4436,11 @@
                 Z_max = 1;
             }
 
-            // in case it's already been initialised:
-            $("#vp_z_slider").slider("destroy");
+            // Destroy any existing slider...
+            try {
+                // ...but will throw if not already a slider
+                $("#vp_z_slider").slider("destroy");
+            } catch (e) {}
 
             if (z_projection) {
                 $("#vp_z_slider").slider({
@@ -3197,7 +4454,7 @@
                         $("#vp_z_value").text(ui.values[0] + "-" + ui.values[1] + "/" + sizeZ);
                     },
                     stop: function( event, ui ) {
-                        _.each(self.models, function(m){
+                        self.models.forEach(function(m){
                             m.save({
                                 'z_start': ui.values[0] - 1,
                                 'z_end': ui.values[1] -1
@@ -3211,12 +4468,12 @@
                     max: sizeZ,
                     disabled: Z_disabled,
                     min: 1,             // model is 0-based, UI is 1-based
-                    value: theZ_avg + 1,
+                    value: theZ + 1,
                     slide: function(event, ui) {
                         $("#vp_z_value").text(ui.value + "/" + sizeZ);
                     },
                     stop: function( event, ui ) {
-                        _.each(self.models, function(m){
+                        self.models.forEach(function(m){
                             m.save('theZ', ui.value - 1);
                         });
                     }
@@ -3227,24 +4484,26 @@
             // Slider T_max is the minimum of sizeT values
             // Slider value is average of theT values (but smaller than T_max)
             var T_disabled = false,
-                T_max = min_sizeT;
-            if (T_max === 1) {
+                T_slider_max = self.models.getMin('sizeT');
+            if (T_slider_max === 1) {
                 T_disabled = true;
             }
-            self.theT_avg = Math.min(self.theT_avg, T_max);
+            self.theT_avg = Math.min(self.theT_avg, T_slider_max);
             // in case it's already been initialised:
-            $("#vp_t_slider").slider("destroy");
+            try {
+                $("#vp_t_slider").slider("destroy");
+            } catch (e) {}
 
             $("#vp_t_slider").slider({
-                max: T_max,
+                max: T_slider_max,
                 disabled: T_disabled,
                 min: 1,             // model is 0-based, UI is 1-based
                 value: self.theT_avg + 1,
                 slide: function(event, ui) {
                     var theT = ui.value;
                     $("#vp_t_value").text(theT + "/" + (sizeT || '-'));
-                    var dt = self.models[0].get('deltaT')[theT-1];
-                    _.each(self.models, function(m){
+                    var dt = self.models.head().get('deltaT')[theT-1];
+                    self.models.forEach(function(m){
                         if (m.get('deltaT')[theT-1] != dt) {
                             dt = undefined;
                         }
@@ -3252,7 +4511,7 @@
                     $("#vp_deltaT").text(self.formatTime(dt));
                 },
                 stop: function( event, ui ) {
-                    _.each(self.models, function(m){
+                    self.models.forEach(function(m){
                         m.save('theT', ui.value - 1);
                     });
                 }
@@ -3271,13 +4530,13 @@
             json.deltaT = deltaT;
             if (z_projection) {
                 json.theZ = (z_start + 1) + "-" + (z_end + 1);
-            } else if (max_theZ != theZ) {
+            } else if (!this.models.allEqual('theZ')) {
                 json.theZ = "-";
             }
-            if (max_theT != theT) {
+            if (!this.models.allEqual('theT')) {
                 json.theT = "-";
             }
-            if (max_deltaT != deltaT || sizeT == 1) {
+            if (!deltaT || sizeT == 1) {
                 json.deltaT = "";
             } else {
                 json.deltaT = this.formatTime(deltaT);
@@ -3287,9 +4546,55 @@
 
             this.$vp_frame = $(".vp_frame", this.$el);  // cache for later
             this.$vp_img = $(".vp_img", this.$el);
-            this.$vp_zoom_value.text((zoom >> 0) + "%");
+            this.zoom_avg = zoom >> 0;
+            this.$vp_zoom_value.text(this.zoom_avg + "%");
+            $("#vp_zoom_slider").slider({value: this.zoom_avg});
 
             return this;
+        }
+    });
+
+
+    var ZoomView = Backbone.View.extend({
+
+        initialize: function(opts) {
+
+            this.models = opts.models;
+            this.render();
+        },
+
+        events: {
+            "click .reset-zoom-shape": "resetZoomShape",
+            "click .crop-btn": "show_crop_dialog",
+        },
+
+        show_crop_dialog: function(event) {
+            event.preventDefault();
+            // Simply show dialog - Everything else handled by that
+            $("#roiModal").modal('show');
+        },
+
+        resetZoomShape: function(event) {
+            event.preventDefault();
+            this.models.forEach(function(m){
+                m.cropToRoi({
+                    'x': 0,
+                    'y': 0,
+                    'width': m.get('orig_width'),
+                    'height': m.get('orig_height')
+                });
+            });
+        },
+
+        render: function() {
+
+            this.$el.html('<div class="btn-group">'+
+                '<button type="button" title="Crop panel" class="btn btn-default btn-sm crop-btn">' +
+                    '<span class="glyphicon"></span>' +
+                '</button>'+
+                '<button type="button" class="btn btn-default btn-sm reset-zoom-shape" title="Reset Zoom and Shape">'+
+                    '<span class="glyphicon glyphicon-resize-full"></span>'+
+                '</button></div>');
         }
     });
 
@@ -3302,7 +4607,7 @@
             // This View may apply to a single PanelModel or a list
             this.models = opts.models;
             var self = this;
-            _.each(this.models, function(m){
+            this.models.forEach(function(m){
                 self.listenTo(m, 'change:channels change:z_projection', self.render);
             });
         },
@@ -3317,7 +4622,7 @@
         z_projection:function(e) {
             // 'flat' means that some panels have z_projection on, some off
             var flat = $(e.currentTarget).hasClass('ch-btn-flat');
-            _.each(this.models, function(m){
+            this.models.forEach(function(m){
                 var p;
                 if (flat) {
                     p = true;
@@ -3346,7 +4651,7 @@
                     },
                     stop: function( event, ui ) {
                         self.rotation = ui.value;
-                        _.each(self.models, function(m){
+                        self.models.forEach(function(m){
                             m.save('rotation', ui.value);
                         });
                     }
@@ -3358,15 +4663,32 @@
 
         pick_color: function(e) {
             var color = e.currentTarget.getAttribute('data-color'),
-                idx = $(e.currentTarget).parent().parent().attr('data-index');
-            if (this.model) {
-                this.model.save_channel(idx, 'color', color);
-            } else if (this.models) {
-                _.each(this.models, function(m){
+                $colorbtn = $(e.currentTarget).parent().parent(),
+                oldcolor = $(e.currentTarget).attr('data-oldcolor'),
+                idx = $colorbtn.attr('data-index'),
+                self = this;
+
+            if (color == 'colorpicker') {
+                FigureColorPicker.show({
+                    'color': oldcolor,
+                    'success': function(newColor){
+                        // remove # from E.g. #ff00ff
+                        newColor = newColor.replace("#", "");
+                        self.set_color(idx, newColor);
+                    }
+                });
+            } else {
+                this.set_color(idx, color);
+            }
+            return false;
+        },
+
+        set_color: function(idx, color) {
+            if (this.models) {
+                this.models.forEach(function(m){
                     m.save_channel(idx, 'color', color);
                 });
             }
-            return false;
         },
 
         toggle_channel: function(e) {
@@ -3377,7 +4699,7 @@
             } else if (this.models) {
                 // 'flat' means that some panels have this channel on, some off
                 var flat = $(e.currentTarget).hasClass('ch-btn-flat');
-                _.each(this.models, function(m){
+                this.models.forEach(function(m){
                     if(flat) {
                         m.toggle_channel(idx, true);
                     } else {
@@ -3390,7 +4712,9 @@
 
         clear: function() {
             $(".ch_slider").slider("destroy");
-            this.$el.find('.rotation-slider').slider("destroy");
+            try {
+                this.$el.find('.rotation-slider').slider("destroy");
+            } catch (e) {}
             $("#channel_sliders").empty();
             return this;
         },
@@ -3411,7 +4735,7 @@
                 json = [];
                 var compatible = true;
 
-                _.each(this.models, function(m, i){
+                this.models.forEach(function(m){
                     var chs = m.get('channels');
                     rotation = m.get('rotation');
                     max_rotation = Math.max(max_rotation, rotation);
@@ -3472,7 +4796,7 @@
                 this.rotation = avg_rotation;
 
                 // if all panels have sizeZ == 1, don't allow z_projection
-                z_projection_disabled = true; // Not supported on JCB etc. (sum_sizeZ === this.models.length);
+                z_projection_disabled = (sum_sizeZ === this.models.length);
 
                 if (!compatible) {
                     json = [];
@@ -3511,7 +4835,7 @@
                                 $div.children('.ch_end').text(ui.values[1]);
                             },
                             stop: function(event, ui) {
-                                _.each(self.models, function(m) {
+                                self.models.forEach(function(m) {
                                     m.save_channel_window(idx, {'start': ui.values[0], 'end': ui.values[1]});
                                 });
                             }
@@ -3522,6 +4846,387 @@
             return this;
         }
     });
+
+
+
+var RoiModalView = Backbone.View.extend({
+
+        el: $("#roiModal"),
+
+        // template: JST["static/figure/templates/paper_setup_modal_template.html"],
+        template: JST["static/figure/templates/modal_dialogs/roi_modal_template.html"],
+        roiTemplate: JST["static/figure/templates/modal_dialogs/roi_modal_roi.html"],
+
+        model:FigureModel,
+
+        initialize: function() {
+
+            var self = this;
+            $("#roiModal").bind("show.bs.modal", function(){
+                self.m = self.model.getSelected().head().clone();
+                self.listenTo(self.m, 'change:theZ change:theT', self.render);
+                self.cropModel.set({'selected': false, 'width': 0, 'height': 0});    // hide crop roi
+                self.zoomToFit();   // includes render()
+                self.loadRois();
+            });
+
+            // keep track of currently selected ROI
+            this.currentROI = {'x':0, 'y': 0, 'width': 0, 'height': 0}
+
+            // used by model underlying Rect.
+            // NB: values in cropModel are scaled by zoom percent
+            this.cropModel = new Backbone.Model({
+                'x':0, 'y': 0, 'width': 0, 'height': 0,
+                'selected': false});
+            // since resizes & drags don't actually update cropModel automatically, we do it...
+            this.cropModel.bind('drag_resize_stop', function(args) {
+                this.set({'x': args[0], 'y': args[1], 'width': args[2], 'height': args[3]});
+            });
+            this.cropModel.bind('drag_xy_stop', function(args) {
+                this.set({'x': args[0] + this.get('x'), 'y': args[1] + this.get('y')});
+            });
+
+            // we also need to update the scaled ROI coords...
+            this.listenTo(this.cropModel, 'change:x change:y change:width change:height', function(m){
+                var scale = self.zoom / 100;
+                self.currentROI = {
+                    'x': m.get('x') / scale,
+                    'y': m.get('y') / scale,
+                    'width': m.get('width') / scale,
+                    'height': m.get('height') / scale
+                }
+                // No-longer correspond to saved ROI coords
+                self.currentRoiId = undefined;
+            });
+
+            // Now set up Raphael paper...
+            this.paper = Raphael("roi_paper", 500, 500);
+            this.rect = new RectView({'model':this.cropModel, 'paper': this.paper});
+            this.$roiImg = $('.roi_image', this.$el);
+        },
+
+        events: {
+            "click .roi_content": "roiPicked",
+            "mousedown svg": "mousedown",
+            "mousemove svg": "mousemove",
+            "mouseup svg": "mouseup",
+            "submit .roiModalForm": "handleRoiForm"
+        },
+
+        roiPicked: function(event) {
+
+            var $roi = $(event.target),
+                x = parseInt($roi.attr('data-x'), 10),
+                y = parseInt($roi.attr('data-y'), 10),
+                width = parseInt($roi.attr('data-width'), 10),
+                height = parseInt($roi.attr('data-height'), 10),
+                theT = parseInt($roi.attr('data-theT'), 10),
+                theZ = parseInt($roi.attr('data-theZ'), 10);
+
+            this.m.set({'theT': theT, 'theZ': theZ});
+
+            this.currentROI = {
+                'x':x, 'y':y, 'width':width, 'height':height
+            }
+
+            this.render();
+
+            this.cropModel.set({
+                'selected': true
+            });
+
+            // Save ROI ID
+            this.currentRoiId = $roi.attr('data-roiId');
+        },
+
+        handleRoiForm: function(event) {
+            event.preventDefault();
+            // var json = this.processForm();
+            var self = this,
+                r = this.currentROI,
+                theZ = this.m.get('theZ'),
+                theT = this.m.get('theT'),
+                sel = this.model.getSelected(),
+                sameT = sel.allEqual('theT');
+                // sameZT = sel.allEqual('theT') && sel.allEqual('theT');
+
+            var getShape = function getShape(z, t) {
+
+                var rv = {'x': r.x,
+                        'y': r.y,
+                        'width': r.width,
+                        'height': r.height,
+                        'theZ': z,
+                        'theT': t,
+                    }
+                return rv;
+            }
+
+            // IF we have an ROI selected (instead of hand-drawn shape)
+            // then try to use appropriate shape for that plane.
+            if (this.currentRoiId) {
+
+                getShape = function getShape(currZ, currT) {
+
+                    var tzShapeMap = self.cachedRois[self.currentRoiId],
+                        tkeys = _.keys(tzShapeMap).sort(),
+                        zkeys, z, t, s;
+
+                    if (tzShapeMap[currT]) {
+                        t = currT;
+                    } else {
+                        t = tkeys[parseInt(tkeys.length/2 ,10)]
+                    }
+                    zkeys = _.keys(tzShapeMap[t]).sort();
+                    if (tzShapeMap[t][currZ]) {
+                        z = currZ;
+                    } else {
+                        z = zkeys[parseInt(zkeys.length/2, 10)]
+                    }
+                    s = tzShapeMap[t][z]
+
+                    // if we have a range of T values, don't change T!
+                    if (!sameT) {
+                        t = currT;
+                    }
+
+                    return {'x': s.x,
+                            'y': s.y,
+                            'width': s.width,
+                            'height': s.height,
+                            'theZ': z,
+                            'theT': t,
+                        }
+                };
+            }
+
+            // Don't set Z/T if we already have different Z/T indecies.
+            sel.each(function(m){
+                var sh = getShape(m.get('theZ'), m.get('theT'));
+
+                m.cropToRoi({'x': sh.x, 'y': sh.y, 'width': sh.width, 'height': sh.height});
+                m.set({'theZ': parseInt(sh.theZ, 10),
+                       'theT': parseInt(sh.theT, 10)});
+            });
+            $("#roiModal").modal('hide');
+        },
+
+        mousedown: function(event) {
+            this.dragging = true;
+            var os = $(event.target).offset();
+            this.clientX_start = event.clientX;
+            this.clientY_start = event.clientY;
+            this.imageX_start = this.clientX_start - os.left;
+            this.imageY_start = this.clientY_start - os.top;
+            this.cropModel.set({'x': this.imageX_start, 'y': this.imageY_start, 'width': 0, 'height': 0, 'selected': true})
+            return false;
+        },
+
+        mouseup: function(event) {
+            if (this.dragging) {
+                this.dragging = false;
+                return false;
+            }
+        },
+
+        mousemove: function(event) {
+            if (this.dragging) {
+                var dx = event.clientX - this.clientX_start,
+                    dy = event.clientY - this.clientY_start;
+                if (event.shiftKey) {
+                    // make region square!
+                    if (Math.abs(dx) > Math.abs(dy)) {
+                        if (dy > 0) dy = Math.abs(dx);
+                        else dy = -1 * Math.abs(dx);
+                    } else {
+                        if (dx > 0) dx = Math.abs(dy);
+                        else dx = -1 * Math.abs(dy);
+                    }
+                }
+                var negX = Math.min(0, dx),
+                    negY = Math.min(0, dy);
+                this.cropModel.set({'x': this.imageX_start + negX,
+                    'y': this.imageY_start + negY,
+                    'width': Math.abs(dx), 'height': Math.abs(dy)});
+                return false;
+            }
+        },
+
+        loadRois: function() {
+            var self = this,
+                iid = self.m.get('imageId');
+            $.getJSON(ROIS_JSON_URL + iid, function(data){
+
+                // get a representative Rect from each ROI.
+                // Include a z and t index, trying to pick current z/t if ROI includes a shape there
+                var currT = self.m.get('theT'),
+                    currZ = self.m.get('theZ');
+                var rects = [],
+                    cachedRois = {},    // roiId: shapes (z/t dict)
+                    roi, shape, theT, theZ, z, t, rect, tkeys, zkeys,
+                    minT, maxT,
+                    shapes; // dict of all shapes by z & t index
+                for (var r=0; r<data.length; r++) {
+                    roi = data[r];
+                    shapes = {};
+                    minT = undefined;
+                    maxT = 0;
+                    for (var s=0; s<roi.shapes.length; s++) {
+                        shape = roi.shapes[s];
+                        if (shape.type !== "Rectangle") continue;
+                        // Handle null Z/T
+                        if (shape.theZ === undefined) {
+                            shape.theZ = currZ;
+                        }
+                        theZ = shape.theZ;
+                        if (shape.theT === undefined) {
+                            shape.theT = currT;
+                        }
+                        theT = shape.theT;
+                        // Keep track of min/max T for display
+                        if (minT === undefined) {minT = theT}
+                        else {minT = Math.min(minT, theT)}
+                        maxT = Math.max(maxT, theT);
+
+                        // Build our map of shapes[t][z]
+                        if (shapes[theT] === undefined) {
+                            shapes[theT] = {};
+                        }
+                        shapes[theT][theZ] = shape;
+                    }
+                    cachedRois[roi.id] = shapes;
+                    // get display shape for picking ROI
+                    // on current plane or pick median T/Z...
+                    tkeys = _.keys(shapes).sort();
+                    if (tkeys.length === 0) continue;   // no Rectangles
+                    if (shapes[currT]) {
+                        t = currT;
+                    } else {
+                        t = tkeys[(tkeys.length/2)>>0]
+                    }
+                    zkeys = _.keys(shapes[t]).sort();
+                    if (shapes[t][currZ]) {
+                        z = currZ;
+                    } else {
+                        z = zkeys[(zkeys.length/2)>>0]
+                    }
+                    shape = shapes[t][z]
+                    rects.push({'theZ': shape.theZ,
+                                'theT': shape.theT,
+                                'x': shape.x,
+                                'y': shape.y,
+                                'width': shape.width,
+                                'height': shape.height,
+                                'roiId': roi.id,
+                                'tStart': minT,
+                                'tEnd': maxT,
+                                'zStart': zkeys[0],
+                                'zEnd': zkeys[zkeys.length-1]});
+                }
+                // Show ROIS...
+                self.renderRois(rects);
+                self.cachedRois = cachedRois;
+            });
+        },
+
+        renderRois: function(rects) {
+
+            var orig_width = this.m.get('orig_width'),
+                orig_height = this.m.get('orig_height');
+
+            var html = "",
+                size = 50,
+                rect, src, zoom,
+                top, left, div_w, div_h, img_w, img_h;
+
+            // loop through ROIs, using our cloned model to generate src urls
+            // first, get the current Z and T of cloned model...
+            this.m.set('z_projection', false);      // in case z_projection is true
+            var origT = this.m.get('theT'),
+                origZ = this.m.get('theZ');
+            for (var r=0; r<rects.length; r++) {
+                rect = rects[r];
+                if (rect.theT > -1) this.m.set('theT', rect.theT, {'silent': true});
+                if (rect.theZ > -1) this.m.set('theZ', rect.theZ, {'silent': true});
+                src = this.m.get_img_src();
+                if (rect.width > rect.height) {
+                    div_w = size;
+                    div_h = (rect.height/rect.width) * div_w;
+                } else {
+                    div_h = size;
+                    div_w = (rect.width/rect.height) * div_h;
+                }
+                zoom = div_w/rect.width;
+                img_w = orig_width * zoom;
+                img_h = orig_height * zoom;
+                top = -(zoom * rect.y);
+                left = -(zoom * rect.x);
+
+                var json = {
+                    'src': src,
+                    'rect': rect,
+                    'w': div_w,
+                    'h': div_h,
+                    'top': top,
+                    'left': left,
+                    'img_w': img_w,
+                    'img_h': img_h,
+                    'theZ': rect.theZ + 1,
+                    'theT': rect.theT + 1,
+                    'zStart': (+rect.zStart) + 1,
+                    'zEnd': (+rect.zEnd) + 1,
+                    'tStart': (+rect.tStart) + 1,
+                    'tEnd': (+rect.tEnd) + 1,
+                    'roiId': rect.roiId,
+                }
+                html += this.roiTemplate(json);
+            }
+            $(".roiPicker tbody").html(html);
+
+            // reset Z/T as before
+            this.m.set({'theT': origT, 'theZ': origZ});
+        },
+
+        zoomToFit: function() {
+            var $roiViewer = $("#roiViewer"),
+                viewer_w = $roiViewer.width(),
+                viewer_h = $roiViewer.height(),
+                w = this.m.get('orig_width'),
+                h = this.m.get('orig_height');
+                scale = Math.min(viewer_w/w, viewer_h/h);
+            this.setZoom(scale * 100);
+        },
+
+        setZoom: function(percent) {
+            this.zoom = percent;
+            this.render();
+        },
+
+        render: function() {
+            var scale = this.zoom / 100,
+                roi = this.currentROI,
+                w = this.m.get('orig_width'),
+                h = this.m.get('orig_height');
+            var newW = w * scale,
+                newH = h * scale;
+            var src = this.m.get_img_src()
+
+            this.paper.setSize(newW, newH);
+            $("#roi_paper").css({'height': newH, 'width': newW});
+
+            this.$roiImg.css({'height': newH, 'width': newW})
+                    .attr('src', src);
+
+            var roiX = this.currentROI.x * scale,
+                roiY = this.currentROI.y * scale,
+                roiW = this.currentROI.width * scale,
+                roiH = this.currentROI.height * scale;
+            this.cropModel.set({
+                'x': roiX, 'y': roiY, 'width': roiW, 'height': roiH
+            });
+        }
+    });
+
 
     // -------------- Selection Overlay Views ----------------------
 
@@ -3537,8 +5242,9 @@
     // Used by a couple of different models below
     var getModelCoords = function(coords) {
         var zoom = this.figureModel.get('curr_zoom') * 0.01,
-            paper_top = (this.figureModel.get('canvas_height') - this.figureModel.get('paper_height'))/2,
-            paper_left = (this.figureModel.get('canvas_width') - this.figureModel.get('paper_width'))/2,
+            size = this.figureModel.getFigureSize(),
+            paper_top = (this.figureModel.get('canvas_height') - size.h)/2,
+            paper_left = (this.figureModel.get('canvas_width') - size.w)/2,
             x = (coords.x/zoom) - paper_left - 1,
             y = (coords.y/zoom) - paper_top - 1,
             w = coords.width/zoom,
@@ -3555,7 +5261,7 @@
             this.renderFromModel();
 
             // Refresh c
-            this.listenTo(this.figureModel, 'change:curr_zoom change:paper_width change:paper_height', this.renderFromModel);
+            this.listenTo(this.figureModel, 'change:curr_zoom change:paper_width change:paper_height change:page_count', this.renderFromModel);
             this.listenTo(this.panelModel, 'change:x change:y change:width change:height', this.renderFromModel);
             // when PanelModel is being dragged, but NOT by this ProxyRectModel...
             this.listenTo(this.panelModel, 'drag_resize', this.renderFromTrigger);
@@ -3567,13 +5273,19 @@
             this.listenTo(this, 'drag_resize', this.drag_resize);
             // listen to change to this model - update PanelModel
             this.listenTo(this, 'drag_resize_stop', this.drag_resize_stop);
+
+            // reduce coupling between this and rect by using triggers to handle click.
+            this.bind('clicked', function(args) {
+                this.handleClick(args[0]);
+            });
         },
 
         // return the SVG x, y, w, h (converting from figureModel)
         getSvgCoords: function(coords) {
             var zoom = this.figureModel.get('curr_zoom') * 0.01,
-                paper_top = (this.figureModel.get('canvas_height') - this.figureModel.get('paper_height'))/2,
-                paper_left = (this.figureModel.get('canvas_width') - this.figureModel.get('paper_width'))/2,
+                size = this.figureModel.getFigureSize(),
+                paper_top = (this.figureModel.get('canvas_height') - size.h)/2,
+                paper_left = (this.figureModel.get('canvas_width') - size.w)/2,
                 rect_x = (paper_left + 1 + coords.x) * zoom,
                 rect_y = (paper_top + 1 + coords.y) * zoom,
                 rect_w = coords.width * zoom,
@@ -3693,9 +5405,6 @@
         // Need to re-draw on selection AND zoom changes
         updateSelection: function() {
 
-            var min_x = 100000, max_x = -10000,
-                min_y = 100000, max_y = -10000;
-
             var selected = this.figureModel.getSelected();
             if (selected.length < 1){
 
@@ -3709,17 +5418,22 @@
                 return;
             }
 
-            for (var i=0; i<selected.length; i++) {
-                var panel = selected[i],
-                    x = panel.get('x'),
+            var max_x = 0,
+                max_y = 0;
+
+            selected.forEach(function(panel){
+                var x = panel.get('x'),
                     y = panel.get('y'),
                     w = panel.get('width'),
                     h = panel.get('height');
-                min_x = Math.min(min_x, x);
                 max_x = Math.max(max_x, x+w);
-                min_y = Math.min(min_y, y);
                 max_y = Math.max(max_y, y+h);
-            }
+            });
+
+            min_x = selected.getMin('x');
+            min_y = selected.getMin('y');
+
+
 
             this.set( this.getSvgCoords({
                 'x': min_x,
@@ -3904,7 +5618,7 @@
 
             var multiSelectRect = new MultiSelectRectModel({figureModel: this.model}),
                 rv = new RectView({'model':multiSelectRect, 'paper':this.raphael_paper,
-                        'handle_wh':7, 'handles_toFront': true});
+                        'handle_wh':7, 'handles_toFront': true, 'fixed_ratio': true});
             rv.selected_line_attrs = {'stroke-width': 1, 'stroke':'#4b80f9'};
         },
 
@@ -3913,7 +5627,7 @@
 
             var rectModel = new ProxyRectModel({panel: m, figure:this.model});
             new RectView({'model':rectModel, 'paper':this.raphael_paper,
-                    'handle_wh':5, 'disable_handles': true});
+                    'handle_wh':5, 'disable_handles': true, 'fixed_ratio': true});
         },
 
         // TODO
@@ -3945,3 +5659,280 @@
         }
     });
 
+
+//
+// Copyright (C) 2014 University of Dundee & Open Microscopy Environment.
+// All rights reserved.
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+
+// http://www.sitepoint.com/javascript-json-serialization/
+JSON.stringify = JSON.stringify || function (obj) {
+    var t = typeof (obj);
+    if (t != "object" || obj === null) {
+        // simple data type
+        if (t == "string") obj = '"'+obj+'"';
+        return String(obj);
+    }
+    else {
+        // recurse array or object
+        var n, v, json = [], arr = (obj && obj.constructor == Array);
+        for (n in obj) {
+            v = obj[n]; t = typeof(v);
+            if (t == "string") v = '"'+v+'"';
+            else if (t == "object" && v !== null) v = JSON.stringify(v);
+            json.push((arr ? "" : '"' + n + '":') + String(v));
+        }
+        return (arr ? "[" : "{") + String(json) + (arr ? "]" : "}");
+    }
+};
+
+
+var figureConfirmDialog = function(title, message, buttons, callback) {
+    var $confirmModal = $("#confirmModal"),
+        $title = $(".modal-title", $confirmModal),
+        $body = $(".modal-body", $confirmModal),
+        $footer = $(".modal-footer", $confirmModal),
+        $btn = $(".btn:first", $footer);
+
+    // Update modal with params
+    $title.html(title);
+    $body.html('<p>' + message + '<p>');
+    $footer.empty();
+    _.each(buttons, function(txt){
+        $btn.clone().text(txt).appendTo($footer);
+    });
+    $(".btn", $footer).removeClass('btn-primary')
+        .addClass('btn-default')
+        .last()
+        .removeClass('btn-default')
+        .addClass('btn-primary');
+
+    // show modal
+    $confirmModal.modal('show');
+
+    // default handler for 'cancel' or 'close'
+    $confirmModal.one('hide.bs.modal', function() {
+        // remove the other 'one' handler below
+        $("#confirmModal .modal-footer .btn").off('click');
+        if (callback) {
+            callback();
+        }
+    });
+
+    // handle 'Save' btn click.
+    $("#confirmModal .modal-footer .btn").one('click', function(event) {
+        // remove the default 'one' handler above
+        $confirmModal.off('hide.bs.modal');
+        var btnText = $(event.target).text();
+        if (callback) {
+            callback(btnText);
+        }
+    });
+};
+
+
+$(function(){
+
+
+    $(".draggable-dialog").draggable();
+
+    $('#previewInfoTabs a').click(function (e) {
+        e.preventDefault();
+        $(this).tab('show');
+    });
+
+
+    // Header button tooltips
+    $('.btn-sm').tooltip({container: 'body', placement:'bottom', toggle:"tooltip"});
+    // Footer button tooltips
+    $('.btn-xs').tooltip({container: 'body', placement:'top', toggle:"tooltip"});
+
+
+    // If we're on Windows, update tool-tips for keyboard short cuts:
+    if (navigator.platform.toUpperCase().indexOf('WIN') > -1) {
+        $('.btn-sm').each(function(){
+            var $this = $(this),
+                tooltip = $this.attr('data-original-title');
+            if ($this.attr('data-original-title')) {
+                $this.attr('data-original-title', tooltip.replace("⌘", "Ctrl+"));
+            }
+        });
+        // refresh tooltips
+        $('.btn-sm, .navbar-header').tooltip({container: 'body', placement:'bottom', toggle:"tooltip"});
+
+        // Also update text in dropdown menus
+        $("ul.dropdown-menu li a").each(function(){
+            var $this = $(this);
+                $this.text($this.text().replace("⌘", "Ctrl+"));
+        });
+    }
+
+});
+
+//
+// Copyright (C) 2014 University of Dundee & Open Microscopy Environment.
+// All rights reserved.
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+
+$(function(){
+
+    var figureModel = new FigureModel();
+
+    // var figureFiles = new FileList();
+    // figureFiles.fetch();
+
+    // Backbone.unsaveSync = function(method, model, options, error) {
+    //     figureModel.set("unsaved", true);
+    // };
+
+    window.FigureColorPicker = new ColorPickerView();
+
+    // Override 'Backbone.sync'...
+    Backbone.ajaxSync = Backbone.sync;
+
+    Backbone.getSyncMethod = function(model) {
+        if(model.syncOverride || (model.collection && model.collection.syncOverride))
+        {
+            return function(method, model, options, error) {
+                figureModel.set("unsaved", true);
+            };
+        }
+        return Backbone.ajaxSync;
+    };
+
+    // Override 'Backbone.sync' to default to localSync,
+    // the original 'Backbone.sync' is still available in 'Backbone.ajaxSync'
+    Backbone.sync = function(method, model, options, error) {
+        return Backbone.getSyncMethod(model).apply(this, [method, model, options, error]);
+    };
+
+
+    var view = new FigureView( {model: figureModel});   // uiState: uiState
+    var svgView = new SvgView( {model: figureModel});
+    new RightPanelView({model: figureModel});
+
+
+    // Undo Model and View
+    var undoManager = new UndoManager({'figureModel':figureModel}),
+    undoView = new UndoView({model:undoManager});
+    // Finally, start listening for changes to panels
+    undoManager.listenToCollection(figureModel.panels);
+
+
+    var FigureRouter = Backbone.Router.extend({
+
+        routes: {
+            "": "index",
+            "new(/)": "newFigure",
+            "file/:id(/)": "loadFigure",
+        },
+
+        checkSaveAndClear: function(callback) {
+
+            var doClear = function() {
+                figureModel.clearFigure();
+                if (callback) {
+                    callback();
+                }
+            };
+            if (false) { // Don't save DEMO // (figureModel.get("unsaved")) {
+
+                var saveBtnTxt = "Save",
+                    canEdit = figureModel.get('canEdit');
+                if (!canEdit) saveBtnTxt = "Save a Copy";
+                // show the confirm dialog...
+                figureConfirmDialog("Save Changes to Figure?",
+                    "Your changes will be lost if you don't save them",
+                    ["Don't Save", saveBtnTxt],
+                    function(btnTxt){
+                        if (btnTxt === saveBtnTxt) {
+                             var options = {};
+                            // Save current figure or New figure...
+                            var fileId = figureModel.get('fileId');
+                            if (fileId && canEdit) {
+                                options.fileId = fileId;
+                            } else {
+                                var figureName = prompt("Enter Figure Name", "unsaved");
+                                options.figureName = figureName || "unsaved";
+                            }
+                            options.success = doClear;
+                            figureModel.save_to_OMERO(options);
+                        } else if (btnTxt === "Don't Save") {
+                            figureModel.set("unsaved", false);
+                            doClear();
+                        } else {
+                            doClear();
+                        }
+                    });
+            } else {
+                doClear();
+            }
+        },
+
+        index: function() {
+            $(".modal").modal('hide'); // hide any existing dialogs
+            var cb = function() {
+                $('#welcomeModal').modal();
+            };
+            this.checkSaveAndClear(cb);
+        },
+
+        newFigure: function() {
+            $(".modal").modal('hide'); // hide any existing dialogs
+            var cb = function() {
+                $('#addImagesModal').modal();
+            };
+            this.checkSaveAndClear(cb);
+         },
+
+        loadFigure: function(id) {
+            $(".modal").modal('hide'); // hide any existing dialogs
+            var fileId = parseInt(id, 10);
+            var cb = function() {
+                figureModel.load_from_OMERO(fileId);
+            };
+            this.checkSaveAndClear(cb);
+        }
+    });
+
+    app = new FigureRouter();
+    Backbone.history.start();
+
+    // We want 'a' links (E.g. to open_figure) to use app.navigate
+    $(document).on('click', 'a', function (ev) {
+        var href = $(this).attr('href');
+        // check that links are 'internal' to this app
+        if (href.substring(0, 8) === '/figure/') {
+            ev.preventDefault();
+            href = href.replace('/figure', "");
+            app.navigate(href, {trigger: true});
+        }
+    });
+
+});

@@ -7,7 +7,7 @@ function print() { __p += __j.call(arguments, '') }
 with (obj) {
 __p += '\n\n    ';
  _.each(channels, function(c, i) { ;
-__p += '\n        <div class="btn-group" style="padding:2px">\n            <button type="button"\nclass="btn btn-default channel-btn ';
+__p += '\n        <div class="btn-group" style="padding:2px">\n            <button type="button"\n            title="Turn channel on/off"\nclass="btn btn-default channel-btn ';
  if(c.active) { ;
 __p += 'ch-btn-down';
  } else if (typeof c.active == 'boolean') { ;
@@ -19,13 +19,15 @@ __p += '"\n                    data-index="' +
 ((__t = ( i )) == null ? '' : __t) +
 '"\n                    style="background-color:#' +
 ((__t = ( c.color )) == null ? '' : __t) +
-'">\n                &nbsp\n            </button>\n            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">\n                <span class="caret"></span>\n            </button>\n            <ul class="dropdown-menu colorpicker" data-index="' +
+'">\n                &nbsp\n            </button>\n            <button type="button" class="btn btn-default dropdown-toggle"\n                    data-toggle="dropdown" title="Pick channel color">\n                <span class="caret"></span>\n            </button>\n            <ul class="dropdown-menu colorpicker" data-index="' +
 ((__t = ( i )) == null ? '' : __t) +
-'">\n                <li class="dropdown-header">Channel Color</li>\n                <li class="divider"></li>\n                <li><a data-color="0000FF" href="#">\n                    <span style="background-color:#00f">&nbsp &nbsp &nbsp</span>&nbsp Blue\n                </a></li>\n                <li><a data-color="00FF00" href="#">\n                    <span style="background-color:#0f0">&nbsp &nbsp &nbsp</span>&nbsp Green\n                </a></li>\n                <li><a data-color="FF0000" href="#">\n                    <span style="background-color:#f00">&nbsp &nbsp &nbsp</span>&nbsp Red\n                </a></li>\n                <li><a data-color="FFFF00" href="#">\n                    <span style="background-color:#ff0">&nbsp &nbsp &nbsp</span>&nbsp Yellow\n                </a></li>\n                <li><a data-color="FFFFFF" href="#">\n                    <span style="background-color:#fff">&nbsp &nbsp &nbsp</span>&nbsp White\n                </a></li>\n                <li><a data-color="FF00FF" href="#">\n                    <span style="background-color:#f0f">&nbsp &nbsp &nbsp</span>&nbsp Magenta\n                </a></li>\n            </ul>\n        </div><br>\n    ';
+'">\n                <li class="dropdown-header">Channel Color</li>\n                <li class="divider"></li>\n                <li><a data-color="0000FF" href="#">\n                    <span style="background-color:#00f">&nbsp &nbsp &nbsp</span>&nbsp Blue\n                </a></li>\n                <li><a data-color="00FF00" href="#">\n                    <span style="background-color:#0f0">&nbsp &nbsp &nbsp</span>&nbsp Green\n                </a></li>\n                <li><a data-color="FF0000" href="#">\n                    <span style="background-color:#f00">&nbsp &nbsp &nbsp</span>&nbsp Red\n                </a></li>\n                <li><a data-color="FFFF00" href="#">\n                    <span style="background-color:#ff0">&nbsp &nbsp &nbsp</span>&nbsp Yellow\n                </a></li>\n                <li><a data-color="FFFFFF" href="#">\n                    <span style="background-color:#fff">&nbsp &nbsp &nbsp</span>&nbsp White\n                </a></li>\n                <li><a data-color="FF00FF" href="#">\n                    <span style="background-color:#f0f">&nbsp &nbsp &nbsp</span>&nbsp Magenta\n                </a></li>\n                <li class="divider"></li>\n                <li><a data-color="colorpicker" data-oldcolor="' +
+((__t = ( c.color )) == null ? '' : __t) +
+'" href="#">\n                    <span class="colorpickerOption">&nbsp &nbsp &nbsp</span>&nbsp More Colors...\n                </a></li>\n            </ul>\n        </div><br>\n    ';
  }); ;
 __p += '\n\n    <div class="btn-group rotation-controls" style="padding:2px">\n        <button type="button" class="btn btn-default btn-sm show-rotation" title="Rotate image">\n            <span class="glyphicon glyphicon-repeat"></span>\n            <span class="rotation_value">' +
 ((__t = ( rotation )) == null ? '' : __t) +
-'</span> &deg;\n        </button>\n\n        <div class="rotation-slider"></div>\n    </div>\n\n\n    <div class="btn-group" style="padding:2px" title="Maximum intensity Z-projection">\n        <button type="button" class="btn btn-default btn-sm z-projection\n                ';
+'</span> &deg;\n        </button>\n\n        <div class="rotation-slider"></div>\n    </div>\n\n\n    <div class="btn-group" style="padding:2px" title="Maximum intensity Z-projection (choose range with 2 handles on Z-slider)">\n        <button type="button" class="btn btn-default btn-sm z-projection\n                ';
  if(z_projection) { ;
 __p += 'zp-btn-down';
  } else if (typeof z_projection == 'boolean') { ;
@@ -37,7 +39,7 @@ __p += '"\n                ';
  if (z_projection_disabled) { ;
 __p += 'disabled="disabled"';
  } ;
-__p += '\n                style="display:none"\n                >\n            <span class="glyphicon"></span>\n        </button>\n    </div>\n';
+__p += '\n                >\n            <span class="glyphicon"></span>\n        </button>\n    </div>\n';
 
 }
 return __p
@@ -58,13 +60,15 @@ obj || (obj = {});
 var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
 function print() { __p += __j.call(arguments, '') }
 with (obj) {
-__p += '\n    <p>' +
-((__t = ( name )) == null ? '' : __t) +
-'</p>\n    <div class="clearfix"></div>\n\n    <table class="table">\n        <tbody>\n            <tr><td>Image\n                <a class="pull-right" target="new"\n                    href="' +
-((__t = ( webclientBaseUrl )) == null ? '' : __t) +
-'?show=image-';
- print(imageIds.join('|image-')) ;
-__p += '">\n                    <span class="glyphicon glyphicon-share"></span> Show in Webclient\n                </a>\n            </td></tr>\n            <tr><td>\n                <div class="col-sm-6"><small><strong>Image ID</strong>:</small></div>\n                <div class="col-sm-6">\n                    <small>' +
+__p += '\n    <p>';
+ print(_.escape(name)) ;
+__p += '</p>\n    <div class="clearfix"></div>\n\n    <table class="table">\n        <tbody>\n            <tr><td>Image\n                ';
+ if (imageLink) { ;
+__p += '\n                <a class="pull-right" target="new"\n                    href="' +
+((__t = ( imageLink )) == null ? '' : __t) +
+'">\n                    <span class="glyphicon glyphicon-share"></span> Show in Webclient\n                </a>\n                ';
+ } ;
+__p += '\n            </td></tr>\n            <tr><td>\n                <div class="col-sm-6"><small><strong>Image ID</strong>:</small></div>\n                <div class="col-sm-6">\n                    <small>' +
 ((__t = ( imageId )) == null ? '' : __t) +
 '</small>\n                    <button type="button"\n                            style="position:absolute; top:0px; right:0px"\n                            ';
  if(!setImageId) { ;
@@ -80,7 +84,7 @@ __p += '\n                            class="btn btn-small btn-success setId">\n
 ((__t = ( sizeT )) == null ? '' : __t) +
 '</small></div>\n                <div class="clearfix"></div>\n                <div class="col-sm-6"><small><strong>Channels</strong>:</small></div>\n                <div class="col-sm-6"><small>\n                    ';
  _.each(channel_labels, function(c, i) {
-                        print(c); print((i < channels.length-1) ? ", " : "");
+                        print(_.escape(c)); print((i < channels.length-1) ? ", " : "");
                     }); ;
 __p += '\n                </small></div>\n            </td></tr>\n        </tbody>\n    </table>\n';
 
@@ -93,9 +97,9 @@ obj || (obj = {});
 var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
 function print() { __p += __j.call(arguments, '') }
 with (obj) {
-__p += '\n    <div class="input-group pull-left">\n        <input type="text" class="label-text form-control input-sm" \n                placeholder="Label" value="' +
-((__t = ( l.text )) == null ? '' : __t) +
-'" style="max-height:29px"/>\n        ';
+__p += '\n    <div class="input-group pull-left">\n        <input type="text" class="label-text form-control input-sm" \n                placeholder="Label" value="';
+ print(_.escape(l.text)) ;
+__p += '" style="max-height:29px"/>\n        ';
  if (!edit){ ;
 __p += '\n            <div class="input-group-btn">\n                <button type="button" class="btn btn-default btn-sm dropdown-toggle"\n                        data-toggle="dropdown" title="Label from data...">\n                    <span class="caret"></span>\n                </button>\n                <ul class="dropdown-menu pull-right">\n                    <li role="presentation" class="dropdown-header">Create Label(s) From:</li>\n                    <li role="presentation" class="divider"></li>\n                    <li><a href="#" data-label="[image-name]">Image Name</a></li>\n                    <li><a href="#" data-label="[dataset-name]">Dataset Name</a></li>\n                    <li><a href="#" data-label="[channels]">Channels</a></li>\n                    <li class="add_time_label">\n                        <a href="#" data-label="[time-secs]">Time (secs)</a>\n                    </li>\n                    <li class="add_time_label">\n                        <a href="#" data-label="[time-mins]">Time (mins)</a>\n                    </li>\n                    <li class="add_time_label">\n                        <a href="#" data-label="[time-hrs:mins:secs]">Time (hrs:mins:secs)</a>\n                    </li>\n                    <li class="add_time_label">\n                        <a href="#" data-label="[time-hrs:mins]">Time (hrs:mins)</a>\n                    </li>\n                </ul>\n            </div>\n        ';
  } ;
@@ -115,7 +119,9 @@ __p += '"></span>\n            <span class="caret"></span>\n        </button>\n 
 ((__t = ( l.color )) == null ? '' : __t) +
 '" style="background-color:#' +
 ((__t = ( l.color )) == null ? '' : __t) +
-'">&nbsp &nbsp &nbsp</span>\n            <span class="caret"></span>\n        </button>\n        <ul class="dropdown-menu colorpicker" role="menu">\n            <li><a href="#">\n                <span data-color="000000" style="background-color:#000">&nbsp &nbsp &nbsp</span>&nbsp Black\n            </a></li>\n            <li><a href="#">\n                <span data-color="0000FF" style="background-color:#00f">&nbsp &nbsp &nbsp</span>&nbsp Blue\n            </a></li>\n            <li><a href="#">\n                <span data-color="00FF00" style="background-color:#0f0">&nbsp &nbsp &nbsp</span>&nbsp Green\n            </a></li>\n            <li><a href="#">\n                <span data-color="FF0000" style="background-color:#f00">&nbsp &nbsp &nbsp</span>&nbsp Red\n            </a></li>\n            <li><a href="#">\n                <span data-color="FFFF00" style="background-color:#ff0">&nbsp &nbsp &nbsp</span>&nbsp Yellow\n            </a></li>\n            <li><a href="#">\n                <span data-color="FFFFFF" style="background-color:#fff">&nbsp &nbsp &nbsp</span>&nbsp White\n            </a></li>\n            <li><a href="#">\n                <span data-color="FF00FF" style="background-color:#f0f">&nbsp &nbsp &nbsp</span>&nbsp Magenta\n            </a></li>\n        </ul>\n    </div>\n\n    ';
+'">&nbsp &nbsp &nbsp</span>\n            <span class="caret"></span>\n        </button>\n        <ul class="dropdown-menu colorpicker" role="menu">\n            <li><a href="#">\n                <span data-color="000000" style="background-color:#000">&nbsp &nbsp &nbsp</span>&nbsp Black\n            </a></li>\n            <li><a href="#">\n                <span data-color="0000FF" style="background-color:#00f">&nbsp &nbsp &nbsp</span>&nbsp Blue\n            </a></li>\n            <li><a href="#">\n                <span data-color="00FF00" style="background-color:#0f0">&nbsp &nbsp &nbsp</span>&nbsp Green\n            </a></li>\n            <li><a href="#">\n                <span data-color="FF0000" style="background-color:#f00">&nbsp &nbsp &nbsp</span>&nbsp Red\n            </a></li>\n            <li><a href="#">\n                <span data-color="FFFF00" style="background-color:#ff0">&nbsp &nbsp &nbsp</span>&nbsp Yellow\n            </a></li>\n            <li><a href="#">\n                <span data-color="FFFFFF" style="background-color:#fff">&nbsp &nbsp &nbsp</span>&nbsp White\n            </a></li>\n            <li><a href="#">\n                <span data-color="FF00FF" style="background-color:#f0f">&nbsp &nbsp &nbsp</span>&nbsp Magenta\n            </a></li>\n            <li class="divider"></li>\n            <li><a data-color="colorpicker" data-oldcolor="' +
+((__t = ( l.color )) == null ? '' : __t) +
+'" href="#">\n                <span class="colorpickerOption">&nbsp &nbsp &nbsp</span>&nbsp More Colors...\n            </a></li>\n        </ul>\n    </div>\n\n    ';
  if (edit){ ;
 __p += '\n        <button type="button" title="Delete Label" class="close delete-label" aria-hidden="true">&times;</button>\n    ';
  } else { ;
@@ -146,120 +152,14 @@ __p += '\n        </div>\n';
 return __p
 };
 
-this["JST"]["static/figure/templates/paper_setup_modal_template.html"] = function(obj) {
-obj || (obj = {});
-var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
-function print() { __p += __j.call(arguments, '') }
-with (obj) {
-__p += '\n    <div class="col-sm-6">\n        <label>Size</label>\n        <div class="form-horizontal">\n            <div class="form-group col-sm-12">\n                <select class="paperSizeSelect form-control">\n                    <option value="A4" ';
- if (page_size == 'A4') { print('selected') } ;
-__p += ' >\n                        A4 (210 x 297 mm)\n                    </option>\n                    <option value="letter" ';
- if (page_size == 'letter') { print('selected') } ;
-__p += ' >\n                        Letter (216 x 280 mm)\n                    </option>\n                    <option value="mm" ';
- if (page_size == 'mm') { print('selected') } ;
-__p += ' >\n                        Custom (mm)\n                    </option>\n                </select>\n            </div>\n            <!-- <label for="inputPassword" class="col-sm-2 control-label">Password</label> -->\n        </div>\n    </div>\n    <div class="col-sm-6">\n        <label>Orientation</label>\n        <div class="form-horizontal">\n            <div class="form-group col-sm-6">\n                <input type="radio" name="pageOrientation" value="vertical" \n                    ';
- if (orientation == 'vertical') { print('checked') } ;
-__p += ' >\n                <label class="control-label text-muted">Vertical</label>\n            </div>\n            <div class="form-group col-sm-6">\n                <input type="radio" name="pageOrientation" value="horizontal"\n                    ';
- if (orientation == 'horizontal') { print('checked') } ;
-__p += ' >\n                <label class="control-label text-muted">Horizontal</label>\n            </div>\n        </div>\n    </div>\n    <div class="clearfix"></div>\n    \n    <div class="col-sm-3';
- if (wh_disabled) { print(' wh_disabled')} ;
-__p += '">\n        <label>Width</label>\n        <div class="form-horizontal">\n            <div class="form-group col-sm-10">\n                <input id=\'paperWidth\' type="number" \n                    ';
- if (wh_disabled) { print('disabled')} ;
-__p += '\n                    class="form-control" value="' +
-((__t = ( width_mm )) == null ? '' : __t) +
-'">\n            </div>\n            <label class="col-sm-4 control-label text-muted wh_units" style="text-align:left">\n                mm\n            </label>\n        </div>\n    </div>\n    <div class="col-sm-3';
- if (wh_disabled) { print(' wh_disabled')} ;
-__p += '">\n        <label>Height</label>\n        <div class="form-horizontal">\n            <div class="form-group col-sm-10">\n                <input id=\'paperHeight\' type="number"\n                    ';
- if (wh_disabled) { print('disabled')} ;
-__p += '\n                    class="form-control" value="' +
-((__t = ( height_mm )) == null ? '' : __t) +
-'">\n            </div>\n            <label class="col-sm-4 control-label text-muted wh_units" style="text-align:left">\n                mm\n            </label>\n        </div>\n    </div>\n';
-
-}
-return __p
-};
-
-this["JST"]["static/figure/templates/preview_Id_change_template.html"] = function(obj) {
-obj || (obj = {});
-var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
-function print() { __p += __j.call(arguments, '') }
-with (obj) {
-__p += '\n    <table class="table" style="margin-bottom:0">\n        <tbody>\n            <tr><td>\n                <div class="col-sm-3">Compare:</div>\n                <div class="col-sm-3">\n                    <img class="small-thumb" title="' +
-((__t = ( selImg.name )) == null ? '' : __t) +
-'"\n                        src="/webclient/render_thumbnail/' +
-((__t = ( selImg.imageId )) == null ? '' : __t) +
-'/" />\n                </div>\n                <div class="col-sm-3">\n                    ';
- if(newImg.imageId) { ;
-__p += '\n                        <img class="small-thumb" title="' +
-((__t = ( newImg.name )) == null ? '' : __t) +
-'"\n                            src="/webclient/render_thumbnail/' +
-((__t = ( newImg.imageId )) == null ? '' : __t) +
-'/" />\n                    ';
- } else { ;
-__p += '\n                        <div style="width:40px; height:40px; background-color:#ddd"></div>\n                    ';
- } ;
-__p += '\n                </div>\n                <div class="col-sm-3">Matching</div>\n            </td></tr>\n            <tr><td>\n                <div class="col-sm-3"><small><strong>Dimensions (XY)</strong>:</small></div>\n                <div class="col-sm-3"><small>' +
-((__t = ( selImg.orig_width )) == null ? '' : __t) +
-' x ' +
-((__t = ( selImg.orig_height )) == null ? '' : __t) +
-'</small></div>\n                <div class="col-sm-3"><small>\n                    ' +
-((__t = ( newImg.orig_width || "-" )) == null ? '' : __t) +
-' x ' +
-((__t = ( newImg.orig_height || "-"  )) == null ? '' : __t) +
-'\n                </small></div>\n                <div class="col-sm-3">\n                    ' +
-((__t = ( ok(comp.orig_width, comp.orig_height) )) == null ? '' : __t) +
-'\n                </div>\n\n                <div class="col-sm-3"><small><strong>Z-sections</strong>:</small></div>\n                <div class="col-sm-3"><small>' +
-((__t = ( selImg.sizeZ )) == null ? '' : __t) +
-'</small></div>\n                <div class="col-sm-3"><small>' +
-((__t = ( newImg.sizeZ || "-" )) == null ? '' : __t) +
-'</small></div>\n                <div class="col-sm-3">' +
-((__t = ( ok(comp.sizeZ) )) == null ? '' : __t) +
-'</div>\n\n                <div class="col-sm-3"><small><strong>Time-points</strong>:</small></div>\n                <div class="col-sm-3"><small>' +
-((__t = ( selImg.sizeT )) == null ? '' : __t) +
-'</small></div>\n                <div class="col-sm-3"><small>' +
-((__t = ( newImg.sizeT || "-" )) == null ? '' : __t) +
-'</small></div>\n                <div class="col-sm-3"><small>' +
-((__t = ( ok(comp.sizeT) )) == null ? '' : __t) +
-'</small></div>\n\n                <div class="col-sm-3"><small><strong>Channels</strong>:</small></div>\n                <div class="col-sm-3"><small>\n                    ';
- _.each(selImg.channels, function(ch, i) { ;
-__p += '\n                        ' +
-((__t = ( ch.label )) == null ? '' : __t);
- if(i < selImg.channels.length-1){print(',')} ;
-__p += '\n                    ';
- }); ;
-__p += '\n                </small></div>\n                <div class="col-sm-3"><small>\n                    ';
- if(newImg.channels){ _.each(newImg.channels, function(ch, i) { ;
-__p += '\n                        ' +
-((__t = ( ch.label )) == null ? '' : __t);
- if(i < newImg.channels.length-1){print(',')} ;
-__p += '\n                    ';
- }) } else { print("-") } ;
-__p += '\n                </small></div>\n                <div class="col-sm-3"><small>' +
-((__t = ( comp.channels || "-" )) == null ? '' : __t) +
-'</small></div>\n\n            </td></tr>\n        </tbody>\n    </table>\n    ';
- _.each(messages, function(m) { ;
-__p += '\n        <div class="alert alert-' +
-((__t = ( m.status )) == null ? '' : __t) +
-'">' +
-((__t = ( m.text )) == null ? '' : __t) +
-'</div>\n    ';
- }); ;
-__p += '\n    ';
- if (newImg.imageId && messages.length == 0) {
-        print("<div class='alert alert-success'>Perfect Match!</div>")
-    } ;
-__p += '\n';
-
-}
-return __p
-};
-
 this["JST"]["static/figure/templates/scalebar_form_template.html"] = function(obj) {
 obj || (obj = {});
 var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
 function print() { __p += __j.call(arguments, '') }
 with (obj) {
-__p += '\n    <div class="pixel_size_form" style="position:relative">\n        <div class="pixel_size_div">\n            Pixel Size:\n            <input class="input-sm form-control pixel_size_input" placeholder="Pixel Size (&#181;)"\n                    style="width:100px; display:none" value="' +
+__p += '\n    <div class="pixel_size_form" style="position:relative">\n        <div class="pixel_size_div">\n            Pixel Size:\n            <input class="input-sm form-control pixel_size_input" placeholder="Pixel Size (' +
+((__t = ( symbol )) == null ? '' : __t) +
+')"\n                    style="width:100px; display:none" value="' +
 ((__t = ( pixel_size_x )) == null ? '' : __t) +
 '">\n            <span class="pixel_size_display">\n                ';
  if (pixel_size_x == 0)
@@ -270,7 +170,9 @@ __p += '\n    <div class="pixel_size_form" style="position:relative">\n        <
                     {print(pixel_size_x + " &#181;m")} ;
 __p += '\n            </span>\n        </div>\n\n    </div>\n\n    <form class="scalebar_form form-inline">\n\n    <div class="input-group pull-left">\n        <input type="text" class="scalebar-length form-control input-sm" \n                placeholder="Length" value="' +
 ((__t = ( length )) == null ? '' : __t) +
-'" />\n    </div>\n\n    <div class="form-group"><div class="checkbox checkbox-inline">\n        <label>&#181;m</label>\n        </div>\n    </div>\n\n    <div class="btn-group">\n        <button type="button" class="label-position btn btn-default btn-sm dropdown-toggle" \n                title="Position" data-toggle="dropdown">\n            <span data-position="' +
+'" />\n    </div>\n\n    <div class="form-group"><div class="checkbox checkbox-inline">\n        <label>' +
+((__t = ( symbol )) == null ? '' : __t) +
+'</label>\n        </div>\n    </div>\n\n    <div class="btn-group">\n        <button type="button" class="label-position btn btn-default btn-sm dropdown-toggle" \n                title="Position" data-toggle="dropdown">\n            <span data-position="' +
 ((__t = ( position )) == null ? '' : __t) +
 '" class="labelicon-' +
 ((__t = ( position )) == null ? '' : __t) +
@@ -280,7 +182,17 @@ __p += '"></span>\n            <span class="caret"></span>\n        </button>\n 
 ((__t = ( color )) == null ? '' : __t) +
 '" style="background-color:#' +
 ((__t = ( color )) == null ? '' : __t) +
-'">&nbsp &nbsp &nbsp</span>\n            <span class="caret"></span>\n        </button>\n        <ul class="dropdown-menu colorpicker" role="menu">\n            <li><a href="#">\n                <span data-color="000000" style="background-color:#000">&nbsp &nbsp &nbsp</span>&nbsp Black\n            </a></li>\n            <li><a href="#">\n                <span data-color="0000FF" style="background-color:#00f">&nbsp &nbsp &nbsp</span>&nbsp Blue\n            </a></li>\n            <li><a href="#">\n                <span data-color="00FF00" style="background-color:#0f0">&nbsp &nbsp &nbsp</span>&nbsp Green\n            </a></li>\n            <li><a href="#">\n                <span data-color="FF0000" style="background-color:#f00">&nbsp &nbsp &nbsp</span>&nbsp Red\n            </a></li>\n            <li><a href="#">\n                <span data-color="FFFF00" style="background-color:#ff0">&nbsp &nbsp &nbsp</span>&nbsp Yellow\n            </a></li>\n            <li><a href="#">\n                <span data-color="FFFFFF" style="background-color:#fff">&nbsp &nbsp &nbsp</span>&nbsp White\n            </a></li>\n            <li><a href="#">\n                <span data-color="FF00FF" style="background-color:#f0f">&nbsp &nbsp &nbsp</span>&nbsp Magenta\n            </a></li>\n        </ul>\n    </div>\n\n    ';
+'">&nbsp &nbsp &nbsp</span>\n            <span class="caret"></span>\n        </button>\n        <ul class="dropdown-menu colorpicker" role="menu">\n            <li><a href="#">\n                <span data-color="000000" style="background-color:#000">&nbsp &nbsp &nbsp</span>&nbsp Black\n            </a></li>\n            <li><a href="#">\n                <span data-color="0000FF" style="background-color:#00f">&nbsp &nbsp &nbsp</span>&nbsp Blue\n            </a></li>\n            <li><a href="#">\n                <span data-color="00FF00" style="background-color:#0f0">&nbsp &nbsp &nbsp</span>&nbsp Green\n            </a></li>\n            <li><a href="#">\n                <span data-color="FF0000" style="background-color:#f00">&nbsp &nbsp &nbsp</span>&nbsp Red\n            </a></li>\n            <li><a href="#">\n                <span data-color="FFFF00" style="background-color:#ff0">&nbsp &nbsp &nbsp</span>&nbsp Yellow\n            </a></li>\n            <li><a href="#">\n                <span data-color="FFFFFF" style="background-color:#fff">&nbsp &nbsp &nbsp</span>&nbsp White\n            </a></li>\n            <li><a href="#">\n                <span data-color="FF00FF" style="background-color:#f0f">&nbsp &nbsp &nbsp</span>&nbsp Magenta\n            </a></li>\n        </ul>\n    </div>\n\n    <div class="checkbox">\n        <label>\n            <input type="checkbox" class="scalebar_label" ';
+ if (show_label) print("checked") ;
+__p += ' > Label\n        </label>\n    </div>\n\n    <div class="btn-group">\n        <button type="button" class="scalebar_font_size btn btn-default btn-sm dropdown-toggle" title="Label Size"\n            data-toggle="dropdown" style="width:33px; ';
+ if (!show_label) print("display:none") ;
+__p += '">\n            <span>' +
+((__t = ( font_size )) == null ? '' : __t) +
+'</span>\n            <span class="caret"></span>\n        </button>\n        <ul class="dropdown-menu" role="menu">\n        ';
+ _.each([6,8,10,12,14,18,21,24,36,48],function(p){
+            print ("<li><a href='#'><span>"+p+"</span></a></li>")
+        }); ;
+__p += '\n        </ul>\n    </div>\n\n    ';
  if (show){ ;
 __p += '\n        <button type="submit" class="show_scalebar btn btn-sm btn-success pull-right">Show</button>\n    ';
  } else { ;
@@ -294,15 +206,26 @@ return __p
 
 this["JST"]["static/figure/templates/scalebar_panel_template.html"] = function(obj) {
 obj || (obj = {});
-var __t, __p = '', __e = _.escape;
+var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
+function print() { __p += __j.call(arguments, '') }
 with (obj) {
 __p += '\n    <div class="scalebar label_' +
 ((__t = ( position )) == null ? '' : __t) +
-'" style="height: 2px; width: ' +
-((__t = ( width )) == null ? '' : __t) +
-'px; position: absolute; margin:5%; background-color: #' +
+'" style="background-color: #' +
 ((__t = ( color )) == null ? '' : __t) +
-'"></div>\n';
+'">\n        ';
+ if (show_label) { ;
+__p += '\n            <div class=\'scalebar-label\' style=\'color: #' +
+((__t = ( color )) == null ? '' : __t) +
+'; font-size: ' +
+((__t = ( font_size )) == null ? '' : __t) +
+'px\'>\n                ' +
+((__t = ( length )) == null ? '' : __t) +
+' ' +
+((__t = ( symbol )) == null ? '' : __t) +
+'\n            </div>\n        ';
+ } ;
+__p += '\n    </div>\n';
 
 }
 return __p
@@ -473,6 +396,173 @@ __p += '\n                <div style=\'color:#' +
 '</div>\n            ';
  }); ;
 __p += '\n        </div>\n    </div>\n';
+
+}
+return __p
+};
+
+this["JST"]["static/figure/templates/modal_dialogs/paper_setup_modal_template.html"] = function(obj) {
+obj || (obj = {});
+var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
+function print() { __p += __j.call(arguments, '') }
+with (obj) {
+__p += '\n    <div class="col-sm-12">\n\n        <div class="form-horizontal">\n            <div class="form-group col-sm-6">\n                <label>Number of Pages</label>\n                <select class="pageCountSelect form-control">\n                    ';
+ _.each([1,2,3,4,5,6,7,8,9,10],function(p){
+                        print ("<option value='"+p+"'" + ((p == page_count) ? " selected " : "") + " >"+p+"</option>")
+                    }); ;
+__p += '\n                </select>\n            </div>\n            <div class="form-group col-sm-6"></div>\n            <div class="clearfix"></div>\n        </div>\n\n    </div>\n\n\n    <div class="col-sm-6">\n        <label>Size</label>\n        <div class="form-horizontal">\n            <div class="form-group col-sm-12">\n                <select class="paperSizeSelect form-control">\n                    <option value="A4" ';
+ if (page_size == 'A4') { print('selected') } ;
+__p += ' >\n                        A4 (210 x 297 mm)\n                    </option>\n                    <option value="A3" ';
+ if (page_size == 'A3') { print('selected') } ;
+__p += ' >\n                        A3 (297 x 420 mm)\n                    </option>\n                    <option value="A2" ';
+ if (page_size == 'A2') { print('selected') } ;
+__p += ' >\n                        A2 (420 x 594 mm)\n                    </option>\n                    <option value="A1" ';
+ if (page_size == 'A1') { print('selected') } ;
+__p += ' >\n                        A1 (594 x 841 mm)\n                    </option>\n                    <option value="A0" ';
+ if (page_size == 'A0') { print('selected') } ;
+__p += ' >\n                        A0 (841 x 1189 mm)\n                    </option>\n                    <option value="letter" ';
+ if (page_size == 'letter') { print('selected') } ;
+__p += ' >\n                        Letter (216 x 280 mm)\n                    </option>\n                    <option value="mm" ';
+ if (page_size == 'mm') { print('selected') } ;
+__p += ' >\n                        Custom (mm)\n                    </option>\n                </select>\n            </div>\n            <!-- <label for="inputPassword" class="col-sm-2 control-label">Password</label> -->\n        </div>\n    </div>\n    <div class="col-sm-6">\n        <label>Orientation</label>\n        <div class="form-horizontal">\n            <div class="form-group col-sm-6">\n                <input type="radio" name="pageOrientation" value="vertical"\n                    ';
+ if (orientation == 'vertical') { print('checked') } ;
+__p += ' >\n                <label class="control-label text-muted">Vertical</label>\n            </div>\n            <div class="form-group col-sm-6">\n                <input type="radio" name="pageOrientation" value="horizontal"\n                    ';
+ if (orientation == 'horizontal') { print('checked') } ;
+__p += ' >\n                <label class="control-label text-muted">Horizontal</label>\n            </div>\n        </div>\n    </div>\n    <div class="clearfix"></div>\n\n    <div class="col-sm-3';
+ if (wh_disabled) { print(' wh_disabled')} ;
+__p += '">\n        <label>Width</label>\n        <div class="form-horizontal">\n            <div class="form-group col-sm-10">\n                <input id=\'paperWidth\' type="number"\n                    ';
+ if (wh_disabled) { print('disabled')} ;
+__p += '\n                    class="form-control" value="' +
+((__t = ( width_mm )) == null ? '' : __t) +
+'">\n            </div>\n            <label class="col-sm-4 control-label text-muted wh_units" style="text-align:left">\n                mm\n            </label>\n        </div>\n    </div>\n    <div class="col-sm-3';
+ if (wh_disabled) { print(' wh_disabled')} ;
+__p += '">\n        <label>Height</label>\n        <div class="form-horizontal">\n            <div class="form-group col-sm-10">\n                <input id=\'paperHeight\' type="number"\n                    ';
+ if (wh_disabled) { print('disabled')} ;
+__p += '\n                    class="form-control" value="' +
+((__t = ( height_mm )) == null ? '' : __t) +
+'">\n            </div>\n            <label class="col-sm-4 control-label text-muted wh_units" style="text-align:left">\n                mm\n            </label>\n        </div>\n    </div>\n';
+
+}
+return __p
+};
+
+this["JST"]["static/figure/templates/modal_dialogs/preview_Id_change_template.html"] = function(obj) {
+obj || (obj = {});
+var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
+function print() { __p += __j.call(arguments, '') }
+with (obj) {
+__p += '\n    <table class="table" style="margin-bottom:0">\n        <tbody>\n            <tr><td>\n                <div class="col-sm-3">Compare:</div>\n                <div class="col-sm-3">\n                    <img class="small-thumb" title="' +
+((__t = ( selImg.name )) == null ? '' : __t) +
+'"\n                        src="' +
+((__t = ( selThumbSrc )) == null ? '' : __t) +
+'" />\n                </div>\n                <div class="col-sm-3">\n                    ';
+ if(newImg.imageId) { ;
+__p += '\n                        <img class="small-thumb" title="' +
+((__t = ( newImg.name )) == null ? '' : __t) +
+'"\n                            src="' +
+((__t = ( newThumbSrc )) == null ? '' : __t) +
+'" />\n                    ';
+ } else { ;
+__p += '\n                        <div style="width:40px; height:40px; background-color:#ddd"></div>\n                    ';
+ } ;
+__p += '\n                </div>\n                <div class="col-sm-3">Matching</div>\n            </td></tr>\n            <tr><td>\n                <div class="col-sm-3"><small><strong>Dimensions (XY)</strong>:</small></div>\n                <div class="col-sm-3"><small>' +
+((__t = ( selImg.orig_width )) == null ? '' : __t) +
+' x ' +
+((__t = ( selImg.orig_height )) == null ? '' : __t) +
+'</small></div>\n                <div class="col-sm-3"><small>\n                    ' +
+((__t = ( newImg.orig_width || "-" )) == null ? '' : __t) +
+' x ' +
+((__t = ( newImg.orig_height || "-"  )) == null ? '' : __t) +
+'\n                </small></div>\n                <div class="col-sm-3">\n                    ' +
+((__t = ( ok(comp.orig_width, comp.orig_height) )) == null ? '' : __t) +
+'\n                </div>\n\n                <div class="col-sm-3"><small><strong>Z-sections</strong>:</small></div>\n                <div class="col-sm-3"><small>' +
+((__t = ( selImg.sizeZ )) == null ? '' : __t) +
+'</small></div>\n                <div class="col-sm-3"><small>' +
+((__t = ( newImg.sizeZ || "-" )) == null ? '' : __t) +
+'</small></div>\n                <div class="col-sm-3">' +
+((__t = ( ok(comp.sizeZ) )) == null ? '' : __t) +
+'</div>\n\n                <div class="col-sm-3"><small><strong>Time-points</strong>:</small></div>\n                <div class="col-sm-3"><small>' +
+((__t = ( selImg.sizeT )) == null ? '' : __t) +
+'</small></div>\n                <div class="col-sm-3"><small>' +
+((__t = ( newImg.sizeT || "-" )) == null ? '' : __t) +
+'</small></div>\n                <div class="col-sm-3"><small>' +
+((__t = ( ok(comp.sizeT) )) == null ? '' : __t) +
+'</small></div>\n\n                <div class="col-sm-3"><small><strong>Channels</strong>:</small></div>\n                <div class="col-sm-3"><small>\n                    ';
+ _.each(selImg.channels, function(ch, i) { ;
+__p += '\n                        ' +
+((__t = ( ch.label )) == null ? '' : __t);
+ if(i < selImg.channels.length-1){print(',')} ;
+__p += '\n                    ';
+ }); ;
+__p += '\n                </small></div>\n                <div class="col-sm-3"><small>\n                    ';
+ if(newImg.channels){ _.each(newImg.channels, function(ch, i) { ;
+__p += '\n                        ' +
+((__t = ( ch.label )) == null ? '' : __t);
+ if(i < newImg.channels.length-1){print(',')} ;
+__p += '\n                    ';
+ }) } else { print("-") } ;
+__p += '\n                </small></div>\n                <div class="col-sm-3"><small>' +
+((__t = ( comp.channels || "-" )) == null ? '' : __t) +
+'</small></div>\n\n            </td></tr>\n        </tbody>\n    </table>\n    ';
+ _.each(messages, function(m) { ;
+__p += '\n        <div class="alert alert-' +
+((__t = ( m.status )) == null ? '' : __t) +
+'">' +
+((__t = ( m.text )) == null ? '' : __t) +
+'</div>\n    ';
+ }); ;
+__p += '\n    ';
+ if (newImg.imageId && messages.length == 0) {
+        print("<div class='alert alert-success'>Perfect Match!</div>")
+    } ;
+__p += '\n';
+
+}
+return __p
+};
+
+this["JST"]["static/figure/templates/modal_dialogs/roi_modal_roi.html"] = function(obj) {
+obj || (obj = {});
+var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
+function print() { __p += __j.call(arguments, '') }
+with (obj) {
+__p += '\n<tr class="roiPickMe">\n    <td>\n        <div class="roi_wrapper" style="position: relative; overflow: hidden; margin: 5px; height: ' +
+((__t = ( h )) == null ? '' : __t) +
+'px; width: ' +
+((__t = ( w )) == null ? '' : __t) +
+'px">\n            <img class="roi_content"\n                data-roiId="' +
+((__t = ( roiId )) == null ? '' : __t) +
+'"\n                data-x="' +
+((__t = ( rect.x )) == null ? '' : __t) +
+'" data-y="' +
+((__t = ( rect.y )) == null ? '' : __t) +
+'" \n                data-width="' +
+((__t = ( rect.width )) == null ? '' : __t) +
+'" data-height="' +
+((__t = ( rect.height )) == null ? '' : __t) +
+'"\n                data-theT="' +
+((__t = ( rect.theT )) == null ? '' : __t) +
+'" data-theZ="' +
+((__t = ( rect.theZ )) == null ? '' : __t) +
+'"\n                style="position: absolute; top: ' +
+((__t = ( top )) == null ? '' : __t) +
+'px; left: ' +
+((__t = ( left )) == null ? '' : __t) +
+'px; width: ' +
+((__t = ( img_w )) == null ? '' : __t) +
+'px; height: ' +
+((__t = ( img_h )) == null ? '' : __t) +
+'px" src="' +
+((__t = ( src )) == null ? '' : __t) +
+'" />\n        </div>\n    </td>\n    <td>\n        ' +
+((__t = ( zStart )) == null ? '' : __t) +
+'\n        ';
+ if (zStart !== zEnd) print(" - " + zEnd); ;
+__p += '\n    </td>\n    <td>\n        ' +
+((__t = ( tStart )) == null ? '' : __t) +
+'\n        ';
+ if (tStart !== tEnd) print(" - " + tEnd); ;
+__p += '\n    </td>\n</tr>\n';
 
 }
 return __p
