@@ -1,8 +1,28 @@
 
+#
+# Copyright (c) 2014-2015 University of Dundee.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
 
 import json
+import unicodedata
 
 from datetime import datetime
+import os
+from os import path
+import zipfile
 
 from omero.model import ImageAnnotationLinkI, ImageI
 import omero.scripts as scripts
@@ -17,8 +37,7 @@ try:
     from reportlab.pdfgen import canvas
     from reportlab.lib.styles import getSampleStyleSheet
     from reportlab.lib.units import inch
-    from reportlab.platypus import Paragraph, Frame
-    # from reportlab.lib.pagesizes import letter, A4
+    from reportlab.platypus import Paragraph
     reportlabInstalled = True
 except ImportError:
     reportlabInstalled = False
@@ -26,8 +45,28 @@ except ImportError:
 
 from omero.gateway import BlitzGateway
 from omero.rtypes import rstring, robject
-# conn = BlitzGateway('will', 'ome')
-# conn.connect()
+
+ORIGINAL_DIR = "originals"
+
+
+def compress(target, base):
+    """
+    Creates a ZIP recursively from a given base directory.
+
+    @param target:      Name of the zip file we want to write E.g.
+                        "folder.zip"
+    @param base:        Name of folder that we want to zip up E.g. "folder"
+    """
+    zip_file = zipfile.ZipFile(target, 'w')
+    try:
+        for root, dirs, files in os.walk(base):
+            archive_root = os.path.relpath(root, base)
+            for f in files:
+                fullpath = os.path.join(root, f)
+                archive_name = os.path.join(archive_root, f)
+                zip_file.write(fullpath, archive_name)
+    finally:
+        zip_file.close()
 
 
 def applyRdefs(image, channels):
@@ -35,6 +74,9 @@ def applyRdefs(image, channels):
     cIdxs = []
     windows = []
     colors = []
+
+    # OMERO.figure doesn't support greyscale rendering
+    image.setColorRenderingModel()
 
     for i, c in enumerate(channels):
         if c['active']:
@@ -99,10 +141,10 @@ def get_time_label_text(deltaT, format):
     if format == "secs":
         text = "%s secs" % deltaT
     elif format == "mins":
-        text = "%s mins" % round(deltaT / 60)
+        text = "%s mins" % int(round(float(deltaT) / 60))
     elif format == "hrs:mins":
         h = (deltaT / 3600)
-        m = round((float(deltaT) % 3600) / 60)
+        m = int(round((float(deltaT) % 3600) / 60))
         text = "%s:%02d" % (h, m)
     elif format == "hrs:mins:secs":
         h = (deltaT / 3600)
@@ -112,13 +154,18 @@ def get_time_label_text(deltaT, format):
     return text
 
 
-def drawLabels(conn, c, panel, pageHeight):
+def drawLabels(conn, c, panel, page):
 
     labels = panel['labels']
     x = panel['x']
     y = panel['y']
     width = panel['width']
     height = panel['height']
+
+    # Handle page offsets
+    pageHeight = page['height']
+    x = x - page['x']
+    y = y - page['y']
 
     spacer = 5
 
@@ -158,6 +205,9 @@ def drawLabels(conn, c, panel, pageHeight):
         red = int(color[0:2], 16)
         green = int(color[2:4], 16)
         blue = int(color[4:6], 16)
+        red = float(red)/255
+        green = float(green)/255
+        blue = float(blue)/255
         c.setFillColorRGB(red, green, blue)
         if align == 'left':
             c.drawString(lx, pageHeight - label_h - ly, label['text'])
@@ -239,12 +289,18 @@ def drawLabels(conn, c, panel, pageHeight):
                 drawLab(c, l, lx, ly, align='vertical')
 
 
-def drawScalebar(c, panel, region_width, pageHeight):
+def drawScalebar(c, panel, region_width, page):
 
     x = panel['x']
     y = panel['y']
     width = panel['width']
     height = panel['height']
+
+    # Handle page offsets
+    pageHeight = page['height']
+    x = x - page['x']
+    y = y - page['y']
+
     if not ('scalebar' in panel and 'show' in panel['scalebar']
             and panel['scalebar']['show']):
         return
@@ -262,51 +318,79 @@ def drawScalebar(c, panel, region_width, pageHeight):
     red = int(color[0:2], 16)
     green = int(color[2:4], 16)
     blue = int(color[4:6], 16)
+    red = float(red)/255
+    green = float(green)/255
+    blue = float(blue)/255
     c.setStrokeColorRGB(red, green, blue)
 
-    def draw_sb(sb_x, sb_y, align='left'):
 
-        print "Adding Scalebar of %s microns." % sb['length'],
-        print "Pixel size is %s microns" % panel['pixel_size_x']
-        pixels_length = sb['length'] / panel['pixel_size_x']
-        scale_to_canvas = panel['width'] / float(region_width)
-        canvas_length = pixels_length * scale_to_canvas
-        print 'Scalebar length (panel pixels):', pixels_length
-        print 'Scale by %s to page ' \
-              'coordinate length: %s' % (scale_to_canvas, canvas_length)
-        sb_y = pageHeight - sb_y
-        if align == 'left':
-            c.line(sb_x, sb_y, sb_x + canvas_length, sb_y)
-        else:
-            c.line(sb_x, sb_y, sb_x - canvas_length, sb_y)
-
-    position = sb['position']
-    print 'position', position
+    position = 'position' in sb and sb['position'] or 'bottomright'
+    print 'scalebar.position', position
+    align='left'
 
     if position == 'topleft':
         lx = x + spacer
         ly = y + spacer
-        draw_sb(lx, ly)
     elif position == 'topright':
         lx = x + width - spacer
         ly = y + spacer
-        draw_sb(lx, ly, align="right")
+        align = "right"
     elif position == 'bottomleft':
         lx = x + spacer
         ly = y + height - spacer
-        draw_sb(lx, ly)
     elif position == 'bottomright':
         lx = x + width - spacer
         ly = y + height - spacer
-        draw_sb(lx, ly, align="right")
+        align = "right"
 
 
-def getPanelImage(image, panel):
+    print "Adding Scalebar of %s microns." % sb['length'],
+    print "Pixel size is %s microns" % panel['pixel_size_x']
+    pixels_length = sb['length'] / panel['pixel_size_x']
+    scale_to_canvas = panel['width'] / float(region_width)
+    canvas_length = pixels_length * scale_to_canvas
+    print 'Scalebar length (panel pixels):', pixels_length
+    print 'Scale by %s to page ' \
+          'coordinate length: %s' % (scale_to_canvas, canvas_length)
+    ly = pageHeight - ly
+    if align == 'left':
+        lx_end = lx + canvas_length
+    else:
+        lx_end = lx - canvas_length
+    c.line(lx, ly, lx_end, ly)
+
+    if 'show_label' in sb and sb['show_label']:
+        symbol = u"\u00B5m"
+        if 'pixel_size_x_symbol' in panel:
+            symbol = panel['pixel_size_x_symbol']
+        label = "%s %s" % (sb['length'], symbol)
+        font_size = 10
+        try:
+            font_size = int(sb['font_size'])
+        except:
+            pass
+        c.setFont("Helvetica", font_size)
+        label_y = ly - font_size
+        if 'bottom' in position:
+            label_y = ly + 5
+        c.setFillColorRGB(red, green, blue)
+        c.drawCentredString((lx + lx_end)/2, label_y, label)
+
+def getPanelImage(image, panel, origName=None):
 
     z = panel['theZ']
     t = panel['theT']
 
+    if 'z_projection' in panel and panel['z_projection']:
+        if 'z_start' in panel and 'z_end' in panel:
+            print "Z_projection:", panel['z_start'], panel['z_end']
+            image.setProjection('intmax')
+            image.setProjectionRange(panel['z_start'], panel['z_end'])
+
     pilImg = image.renderImage(z, t, compression=1.0)
+
+    if origName is not None:
+        pilImg.save(origName)
 
     # Need to crop around centre before rotating...
     sizeX = image.getSizeX()
@@ -334,6 +418,11 @@ def getPanelImage(image, panel):
         crop_top = int(dy * -2)
     else:
         crop_bottom = crop_bottom - int(dy * 2)
+
+    # convert to RGBA so we can control background after crop/rotate...
+    # See http://stackoverflow.com/questions/5252170/
+    mde = pilImg.mode
+    pilImg = pilImg.convert('RGBA')
     pilImg = pilImg.crop((crop_left, crop_top, crop_right, crop_bottom))
 
     # Optional rotation
@@ -354,10 +443,16 @@ def getPanelImage(image, panel):
 
     pilImg = pilImg.crop((crop_left, crop_top, crop_right, crop_bottom))
 
-    return pilImg
+    # ...paste image with transparent blank areas onto white background
+    fff = Image.new('RGBA', pilImg.size, (255, 255, 255, 255))
+    out = Image.composite(pilImg, fff, pilImg)
+    # and convert back to original mode
+    out.convert(mde)
+
+    return out
 
 
-def drawPanel(conn, c, panel, pageHeight, idx):
+def drawPanel(conn, c, panel, page, idx, folder_name=None):
 
     imageId = panel['imageId']
     channels = panel['channels']
@@ -366,21 +461,38 @@ def drawPanel(conn, c, panel, pageHeight, idx):
     width = panel['width']
     height = panel['height']
 
+    # Handle page offsets
+    pageHeight = page['height']
+    x = x - page['x']
+    y = y - page['y']
+
     # Since coordinate system is 'bottom-up', convert from 'top-down'
     y = pageHeight - height - y
 
     image = conn.getObject("Image", imageId)
     applyRdefs(image, channels)
 
-    pilImg = getPanelImage(image, panel)
+    # create name to save image
+    originalName = image.getName()
+    imgName = os.path.basename(originalName)
+    imgName = "%s_%s.tiff" % (idx, imgName)
+
+    # get cropped image (saving original)
+    origName = None
+    if folder_name is not None:
+        origName = os.path.join(folder_name, ORIGINAL_DIR, imgName)
+        print "Saving original to: ", origName
+    pilImg = getPanelImage(image, panel, origName)
     tile_width = pilImg.size[0]
 
-    tempName = str(idx) + ".jpg"
-    pilImg.save(tempName)
+    # in the folder to zip
+    if folder_name is not None:
+        imgName = os.path.join(folder_name, imgName)
+    pilImg.save(imgName)
 
-    c.drawImage(tempName, x, y, width, height)
+    c.drawImage(imgName, x, y, width, height)
 
-    drawScalebar(c, panel, tile_width, pageHeight)
+    drawScalebar(c, panel, tile_width, page)
 
     return image
 
@@ -397,13 +509,15 @@ def getThumbnail(conn, imageId):
     return tempName
 
 
-def addInfoPage(conn, scriptParams, c, panels_json):
+def addInfoPage(conn, scriptParams, c, panels_json, figureName):
 
     base_url = None
     if 'Webclient_URI' in scriptParams:
         base_url = scriptParams['Webclient_URI']
     pageWidth = scriptParams['Page_Width']
     pageHeight = scriptParams['Page_Height']
+    availHeight = pageHeight-2*inch
+    print 'availHeight', availHeight
 
     # Need to sort panels from top (left) -> bottom of Figure
     panels_json.sort(key=lambda x: int(x['y']) + x['y'] * 0.01)
@@ -412,51 +526,114 @@ def addInfoPage(conn, scriptParams, c, panels_json):
     styles = getSampleStyleSheet()
     styleN = styles['Normal']
     styleH = styles['Heading1']
-    story = []
+    styleH2 = styles['Heading2']
+
+
     scalebars = []
-
-    story.append(Paragraph("Figure Images", styleH))
-
-    fontSize = 10
-    spaceBefore = 15
-    spaceAfter = 15
     thumbSize = 25
+    spacer = 10
+    aW = pageWidth - (inch * 2)
+    maxH = pageHeight - inch
+    imgw = imgh = thumbSize
 
-    def addPara(lines, style=styleN):
-        text = "<br />".join(lines)
-        attrs = "spaceBefore='%s' spaceAfter='%s' " \
-            "fontSize='%s'" % (spaceBefore, spaceAfter, fontSize)
-        para = "<para %s>%s</para>" % (attrs, text)
-        story.append(Paragraph(para, style))
+    # Start adding at the top, update pageY as we add paragraphs
+    pageY = maxH
+
+    def addParaWithThumb(text, pageY, style=styleN, thumbSrc=None):
+        """ Adds paragraph text to point on page """
+
+        para=Paragraph(text, style)
+        w,h = para.wrap(aW, pageY) # find required space
+        if thumbSrc is not None:
+            parah = max(h, imgh)
+        else:
+            parah = h
+        # If there's not enough space, start a new page
+        if parah > (pageY - inch):
+            print "new page"
+            c.save()
+            pageY = maxH    # reset to top of new page
+        indent = inch
+        if thumbSrc is not None:
+            c.drawImage(thumbSrc, inch, pageY - imgh, imgw, imgh)
+            indent = indent + imgw + spacer
+        para.drawOn(c, indent, pageY - h)
+        return pageY - parah - spacer # reduce the available height
+
+
+    pageY = addParaWithThumb(figureName, pageY, style=styleH)
+
+    if "Figure_URI" in scriptParams:
+        fileUrl = scriptParams["Figure_URI"]
+        print "Figure URL", fileUrl
+        figureLink = "Link to Figure: <a href='%s' color='blue'>%s</a>" % (fileUrl, fileUrl)
+        pageY = addParaWithThumb(figureLink, pageY)
+
+    pageY = addParaWithThumb("Figure contains the following images:", pageY, style=styleH2)
+
 
     # Go through sorted panels, adding paragraph for each unique image
     for p in panels_json:
         iid = p['imageId']
         # list unique scalebar lengths
-        if 'scalebar' in p and p['scalebar']['length'] not in scalebars:
-            scalebars.append(p['scalebar']['length'])
+        if 'scalebar' in p:
+            sb_length = p['scalebar']['length']
+            symbol = u"\u00B5m"
+            if 'pixel_size_x_symbol' in p:
+                symbol = p['pixel_size_x_symbol']
+            scalebars.append("%s %s" % (sb_length, symbol))
         if iid in imgIds:
             continue    # ignore images we've already handled
         imgIds.add(iid)
         thumbSrc = getThumbnail(conn, iid)
-        thumb = "<img src='%s' width='%s' height='%s' " \
-                "valign='middle' />" % (thumbSrc, thumbSize, thumbSize)
-        line = [thumb]
-        line.append(p['name'])
+        # thumb = "<img src='%s' width='%s' height='%s' " \
+        #         "valign='middle' />" % (thumbSrc, thumbSize, thumbSize)
+        lines = []
+        lines.append(p['name'])
         img_url = "%s?show=image-%s" % (base_url, iid)
-        line.append("<a href='%s' color='blue'>%s</a>" % (img_url, img_url))
-        addPara([" ".join(line)])
+        lines.append("<a href='%s' color='blue'>%s</a>" % (img_url, img_url))
+        # addPara([" ".join(line)])
+        line = " ".join(lines)
+        pageY = addParaWithThumb(line, pageY, thumbSrc=thumbSrc)
 
     if len(scalebars) > 0:
-        story.append(Paragraph("Scalebars", styleH))
-        sbs = [str(s) for s in scalebars]
-        addPara(["Scalebars: %s microns" % " microns, ".join(sbs)])
+        scalebars = list(set(scalebars))
+        pageY = addParaWithThumb("Scalebars", pageY, style=styleH2)
+        pageY = addParaWithThumb("Scalebars: %s" % ", ".join(scalebars), pageY)
 
-    f = Frame(inch, inch, pageWidth-2*inch, pageHeight-2*inch)
-    f.addFromList(story, c)
-    c.save()
 
-    #c.showPage()
+def panel_is_on_page(panel, page):
+    """ Return true if panel overlaps with this page """
+
+    px = panel['x']
+    px2 = px + panel['width']
+    py = panel['y']
+    py2 = py + panel['height']
+    cx = page['x']
+    cx2 = cx + page['width']
+    cy = page['y']
+    cy2 = cy + page['height']
+    #overlap needs overlap on x-axis...
+    return px < cx2 and cx < px2 and py < cy2 and cy < py2
+
+
+def add_panels_to_page(conn, c, panels_json, imageIds, page, folder_name):
+    """ Add panels that are within the bounds of this page """
+
+    for i, panel in enumerate(panels_json):
+
+        if not panel_is_on_page(panel, page):
+            print 'Panel', panel['imageId'], 'not on page...'
+            continue
+
+        print "\n-------------------------------- "
+        imageId = panel['imageId']
+        print "Adding PANEL - Image ID:", imageId
+        image = drawPanel(conn, c, panel, page, i, folder_name)
+        if image.canAnnotate():
+            imageIds.add(imageId)
+        drawLabels(conn, c, panel, page)
+        print ""
 
 
 def create_pdf(conn, scriptParams):
@@ -465,12 +642,18 @@ def create_pdf(conn, scriptParams):
     conn.SERVICE_OPTS.setOmeroGroup(-1)
 
     figure_json_string = scriptParams['Figure_JSON']
+    export_option = scriptParams['Export_Option']
+    # Since unicode can't be wrapped by rstring
+    figure_json_string = figure_json_string.decode('utf8')
     figure_json = json.loads(figure_json_string)
 
     n = datetime.now()
     # time-stamp name by default: Figure_2013-10-29_22-43-53.pdf
     figureName = "Figure_%s-%s-%s_%s-%s-%s." \
         "pdf" % (n.year, n.month, n.day, n.hour, n.minute, n.second)
+    if 'figureName' in figure_json:
+        figureName = figure_json['figureName']
+
 
     # get Figure width & height...
     pageWidth = figure_json['paper_width']
@@ -479,47 +662,94 @@ def create_pdf(conn, scriptParams):
     scriptParams['Page_Width'] = pageWidth
     scriptParams['Page_Height'] = pageHeight
 
-    if 'Figure_Name' in scriptParams:
-        figureName = scriptParams['Figure_Name']
-    if not figureName.endswith('.pdf'):
-        figureName = "%s.pdf" % figureName
 
-    c = canvas.Canvas(figureName, pagesize=(pageWidth, pageHeight))
+
+
+    pdfName = unicodedata.normalize('NFKD', figureName).encode('ascii','ignore')
+    zipName = "%s.zip" % pdfName
+    if not pdfName.endswith('.pdf'):
+        pdfName = "%s.pdf" % pdfName
+
+    # in case we have path/to/pdfName.pdf, just use pdfName.pdf
+    pdfName = path.basename(pdfName)
+
+
+    # somewhere to put PDF and images
+    folder_name = None
+    if export_option == "PDF_IMAGES":
+        folder_name = "figure"
+        curr_dir = os.getcwd()
+        zipDir = os.path.join(curr_dir, folder_name)
+        origDir = os.path.join(zipDir, ORIGINAL_DIR)
+        # placing in the output folder
+        pdfName = os.path.join(folder_name, pdfName)
+        try:
+            os.mkdir(zipDir)
+            os.mkdir(origDir)
+        except:
+            pass
+
+    c = canvas.Canvas(pdfName, pagesize=(pageWidth, pageHeight))
 
     panels_json = figure_json['panels']
     imageIds = set()
 
     groupId = None
-    for i, panel in enumerate(panels_json):
+    # We get our group from the first image
+    id1 = panels_json[0]['imageId']
+    conn.getObject("Image", id1).getDetails().group.id.val
 
-        print "\n---------------- "
-        imageId = panel['imageId']
-        print "IMAGE", i, imageId
-        imageIds.add(imageId)
-        image = drawPanel(conn, c, panel, pageHeight, i)
-        drawLabels(conn, c, panel, pageHeight)
-        # We get our group from the first image
-        if groupId is None:
-            groupId = image.getDetails().group.id.val
+    # test to see if we've got multiple pages
+    page_count = 'page_count' in figure_json and figure_json['page_count'] or 1
+    page_count = int(page_count)
+    paper_spacing = 'paper_spacing' in figure_json and figure_json['paper_spacing'] or 50
+    page_col_count = 'page_col_count' in figure_json and figure_json['page_col_count'] or 1
 
-    # PDF will get created in this group
-    if groupId is not None:
-        conn.SERVICE_OPTS.setOmeroGroup(groupId)
+    # For each page, add panels...
+    col = 0
+    row = 0
+    for p in range(page_count):
+        print "\n------------------------- PAGE ", p + 1, "--------------------------"
+        px = col * (pageWidth + paper_spacing)
+        py = row * (pageHeight + paper_spacing)
+        page = {'x': px, 'y': py, 'width': pageWidth, 'height': pageHeight}
+        add_panels_to_page(conn, c, panels_json, imageIds, page, folder_name)
 
-    # complete page and save
-    c.showPage()
+        # complete page and save
+        c.showPage()
+        col = col + 1
+        if col >= page_col_count:
+            col = 0
+            row = row + 1
 
-    if True:
-        addInfoPage(conn, scriptParams, c, panels_json)
+    # Add thumbnails and links page
+    addInfoPage(conn, scriptParams, c, panels_json, figureName)
 
     c.save()
 
+    # PDF will get created in this group
+    if groupId is None:
+        groupId = conn.getEventContext().groupId
+    conn.SERVICE_OPTS.setOmeroGroup(groupId)
+
+
+    outputFile = pdfName
     ns = "omero.web.figure.pdf"
+    mimetype = "application/pdf"
+
+    if export_option == "PDF_IMAGES":
+        # Recursively zip everything up
+        compress(zipName, folder_name)
+
+        outputFile = zipName
+        ns = "omero.web.figure.zip"
+        mimetype = "application/zip"
+
+
     fileAnn = conn.createFileAnnfromLocalFile(
-        figureName,
-        mimetype="application/pdf",
-        ns=ns,
-        desc=figure_json_string)
+        outputFile,
+        mimetype=mimetype,
+        ns=ns)
 
     links = []
     for iid in list(imageIds):
@@ -528,10 +758,13 @@ def create_pdf(conn, scriptParams):
         link.parent = ImageI(iid, False)
         link.child = fileAnn._obj
         links.append(link)
-    print len(links)
     if len(links) > 0:
-        links = conn.getUpdateService().saveAndReturnArray(
-            links, conn.SERVICE_OPTS)
+        # Don't want to fail at this point due to strange permissions combo
+        try:
+            links = conn.getUpdateService().saveAndReturnArray(
+                links, conn.SERVICE_OPTS)
+        except:
+            print "Failed to attach figure: %s to images %s" % (fileAnn, imageIds)
 
     return fileAnn
 
@@ -542,6 +775,8 @@ def runScript():
     via the scripting service, passing the required parameters.
     """
 
+    exportOptions = [rstring('PDF'), rstring('PDF_IMAGES')]
+
     client = scripts.client(
         'Figure_To_Pdf.py',
         """Used by web.figure to generate pdf figures from json data""",
@@ -549,15 +784,19 @@ def runScript():
         scripts.String("Figure_JSON", optional=False,
                        description="All figure info as json stringified"),
 
+        scripts.String("Export_Option", values=exportOptions,
+                       default="PDF"),
+
         scripts.String("Webclient_URI", grouping="4",
                        description="webclient URL for adding links to images"),
 
         scripts.String("Figure_Name", grouping="4",
-                       description="Name of the Pdf Figure")
+                       description="Name of the Pdf Figure"),
+
+        scripts.String("Figure_URI", description="URL to the Figure")
     )
 
     try:
-        session = client.getSession()
         scriptParams = {}
 
         conn = BlitzGateway(client_obj=client)

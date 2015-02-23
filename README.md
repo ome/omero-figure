@@ -11,33 +11,35 @@ Requirements
 
 * OMERO 4.4.x or OMERO 5.x
 
-Development Installation
-========================
+Installation
+============
 
-Clone the repository in to your OMERO.web installation.
-NB: From OMERO 4.4.10 or later, this can be anywhere on your PYTHONPATH:
-
-    cd components/tools/OmeroWeb/omeroweb/
-    git clone git://github.com/will-moore/figure.git
-    path/to/bin/omero config set omero.web.apps '["figure"]'
-
-Now start up (or restart) OMERO.web as normal in your development environment.
-
-Production Installation
-=======================
-
-See instructions at http://will-moore.github.io/figure/
+Please see instructions at http://will-moore.github.io/figure/
 
 
-Pdf-generation script
-=====================
+Development
+===========
 
-In order to export figures as pdf documents, you also need to upload the Figure_To_Pdf.py script.
-This script requires the reportlab python libraray: http://www.reportlab.com/software/opensource/
+We use Grunt for various tools.
+See http://will-moore.github.io/figure/2014/05/01/testing-with-jshint-jasmine-grunt.html
+for an introduction.
 
-    # important to upload from this directory to ensure relative path is correct
-    cd figure/scripts
-    path/to/bin/omero script upload omero/figure_scripts/Figure_To_Pdf.py --official
+Install:
 
-    pip install reportlab    # or easy_install reportlab
+    $ npm install grunt
+    $ sudo npm install -g grunt-cli
+    $ npm install grunt
+    $ npm install grunt-contrib-jshint
+    $ npm install grunt-contrib-jasmine
+    $ npm install grunt-contrib-jst
+    $ npm install grunt-contrib-watch
+
+
+To compile jst templates:
+
+	$ grunt jst
+
+And to have this run whenever templates are edited:
+
+	$ grunt watch
 

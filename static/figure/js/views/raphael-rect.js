@@ -1,4 +1,22 @@
 
+//
+// Copyright (C) 2014 University of Dundee & Open Microscopy Environment.
+// All rights reserved.
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+
 var RectView = Backbone.View.extend({
 
     handle_wh: 6,
@@ -19,6 +37,7 @@ var RectView = Backbone.View.extend({
         this.handle_wh = options.handle_wh || this.handle_wh;
         this.handles_toFront = options.handles_toFront || false;
         this.disable_handles = options.disable_handles || false;
+        this.fixed_ratio = options.fixed_ratio || false;
         // this.manager = options.manager;
 
         // Set up our 'view' attributes (for rendering without updating model)
@@ -46,7 +65,7 @@ var RectView = Backbone.View.extend({
                 // on DRAG...
 
                 // If drag on corner handle, retain aspect ratio. dx/dy = aspect
-                var keep_ratio = true;  // event.shiftKey - used to be dependent on shift
+                var keep_ratio = self.fixed_ratio || event.shiftKey;
                 if (keep_ratio && this.h_id.length === 2) {     // E.g. handle is corner 'ne' etc
                     if (this.h_id === 'se' || this.h_id === 'nw') {
                         if (Math.abs(dx/dy) > this.aspect) {
@@ -118,6 +137,9 @@ var RectView = Backbone.View.extend({
                 return false;
             };
         };
+        var _stop_event_propagation = function(e) {
+            e.stopImmediatePropagation();
+        }
         for (var key in this.handleIds) {
             var hx = this.handleIds[key][0];
             var hy = this.handleIds[key][1];
@@ -131,9 +153,7 @@ var RectView = Backbone.View.extend({
                 _handle_drag_start(),
                 _handle_drag_end()
             );
-            handle.mousedown(function(e){
-                e.stopImmediatePropagation();
-            });
+            handle.mousedown(_stop_event_propagation);
             self.handles.push(handle);
         }
         self.handles.hide();     // show on selection
@@ -249,7 +269,7 @@ var RectView = Backbone.View.extend({
 
     selectShape: function(event) {
         // pass back to model to update all selection
-        this.model.handleClick(event);
+        this.model.trigger('clicked', [event]);
     },
 
     // Destroy: remove Raphael elements and event listeners

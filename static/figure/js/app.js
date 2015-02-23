@@ -1,4 +1,22 @@
 
+//
+// Copyright (C) 2014 University of Dundee & Open Microscopy Environment.
+// All rights reserved.
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+
 $(function(){
 
     var figureModel = new FigureModel();
@@ -9,6 +27,8 @@ $(function(){
     // Backbone.unsaveSync = function(method, model, options, error) {
     //     figureModel.set("unsaved", true);
     // };
+
+    window.FigureColorPicker = new ColorPickerView();
 
     // Override 'Backbone.sync'...
     Backbone.ajaxSync = Backbone.sync;
@@ -58,7 +78,7 @@ $(function(){
                     callback();
                 }
             };
-            if (figureModel.get("unsaved")) {
+            if (false) { // Don't save DEMO // (figureModel.get("unsaved")) {
 
                 var saveBtnTxt = "Save",
                     canEdit = figureModel.get('canEdit');
@@ -101,6 +121,7 @@ $(function(){
         },
 
         newFigure: function() {
+            $(".modal").modal('hide'); // hide any existing dialogs
             var cb = function() {
                 $('#addImagesModal').modal();
             };
@@ -118,7 +139,7 @@ $(function(){
     });
 
     app = new FigureRouter();
-    Backbone.history.start({pushState: true, root:'/figure/'});
+    Backbone.history.start();
 
     // We want 'a' links (E.g. to open_figure) to use app.navigate
     $(document).on('click', 'a', function (ev) {
