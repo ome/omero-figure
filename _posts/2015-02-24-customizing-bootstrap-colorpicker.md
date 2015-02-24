@@ -10,9 +10,15 @@ I quickly found [bootstrap colorpicker](http://mjolnic.com/bootstrap-colorpicker
 everything I needed. The only problem was that the color-picker itself was smaller than I wanted, at
 only 100 pixels wide. 
 
-<div class="well">
-  <div id="demo_cont" class="demo inl-bl" data-container="#demo_cont" data-color="#f41070" data-inline="true"></div>
-  <div class="demo-bigger inl-bl" data-container="true" data-color="#6f01d1" data-inline="true"></div>
+
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h3 class="panel-title">Before and After Customizing</h3>
+  </div>
+  <div class="panel-body">
+    <div id="demo_cont" class="demo inl-bl" data-container="#demo_cont" data-color="#f41070" data-inline="true"></div>
+    <div class="demo-bigger inl-bl" data-container="true" data-color="#6f01d1" data-inline="true"></div>
+  </div>
 </div>
 
 The docs didn't provide any clues on how to increase the size of the colorpicker, so I started to play with
