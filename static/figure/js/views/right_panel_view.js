@@ -703,7 +703,8 @@
             this.zoom_avg = parseInt(zoom_sum/ this.models.length, 10);
 
             $("#vp_zoom_slider").slider({
-                max: 800,
+                // zoom may be > 1000 if set by 'crop'
+                max: Math.max(self.zoom_avg, 1000),
                 min: 100,
                 value: self.zoom_avg,
                 slide: function(event, ui) {
@@ -1008,7 +1009,9 @@
             this.$vp_img = $(".vp_img", this.$el);
             this.zoom_avg = zoom >> 0;
             this.$vp_zoom_value.text(this.zoom_avg + "%");
-            $("#vp_zoom_slider").slider({value: this.zoom_avg});
+            // zoom may be > 1000 if set by 'crop'
+            $("#vp_zoom_slider").slider({'value': this.zoom_avg,
+                                         'max': Math.max(this.zoom_avg, 1000)});
 
             return this;
         }
