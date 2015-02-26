@@ -4771,12 +4771,12 @@ var RectView = Backbone.View.extend({
                                     w = c.window;
                                 // if we haven't got a label yet, compare 'start' from 1st 2 panels
                                 if (typeof wdw.start_label === 'undefined') {
-                                    wdw.start_label = (w.start === wdw.start) ? w.start : '-';
+                                    wdw.start_label = (w.start === wdw.start) ? parseInt(w.start,10) : '-';
                                 } else if (wdw.start_label != w.start) {
                                     wdw.start_label = "-";      // otherwise revert to '-' unless all same
                                 }
                                 if (typeof wdw.end_label === 'undefined') {
-                                    wdw.end_label = (w.end === wdw.end) ? w.end : '-';
+                                    wdw.end_label = (w.end === wdw.end) ? parseInt(w.end,10) : '-';
                                 } else if (wdw.end_label != w.end) {
                                     wdw.end_label = "-";      // revert to '-' unless all same
                                 }
