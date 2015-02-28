@@ -183,6 +183,8 @@
                 if (!jobId) {
                     if (data.error) {
                         alert(data.error);
+                    } else {
+                        alert("Error exporting figure");
                     }
                     $create_figure_pdf.show();
                     $pdf_inprogress.hide();
