@@ -179,6 +179,16 @@
                 // {"status": "in progress", "jobId": "ProcessCallback/64be7a9e-2abb-4a48-9c5e-6d0938e1a3e2 -t:tcp -h 192.168.1.64 -p 64592"}
                 var jobId = data.jobId;
 
+                // E.g. Handle 'No Processor Available';
+                if (!jobId) {
+                    if (data.error) {
+                        alert(data.error);
+                    }
+                    $create_figure_pdf.show();
+                    $pdf_inprogress.hide();
+                    return;
+                }
+
                 // Now we keep polling for script completion, every second...
 
                 var i = setInterval(function (){
@@ -186,8 +196,6 @@
                     $.getJSON(ACTIVITIES_JSON_URL, function(act_data) {
 
                             var pdf_job = act_data[jobId];
-
-                            console.log(pdf_job);
 
                             // We're waiting for this flag...
                             if (pdf_job.status == "finished") {
