@@ -529,9 +529,16 @@
                         Creating PDF...
                     </button>
 
-                    <a id="pdf_download" href="/webclient/annotation/1058/" target="new" style="padding: 4px 10px; display:none"
-                            class="btn btn-primary btn-sm" title="Download PDF">
+                    <a id="pdf_download" href="/webclient/annotation/1058/" target="download_pdf"
+                            style="padding: 4px 10px; display: none;"
+                            class="btn btn-primary btn-sm script-result" title="Download PDF">
                         <span class="glyphicon glyphicon-download-alt" style="font-size: 14px"></span>
+                    </a>
+
+                    <a id="script_error" href="/webclient/annotation/1058/" target="script_error"
+                            style="padding: 4px 10px; display: none;"
+                            class="btn btn-danger btn-sm script-result" title="Show Error">
+                        <span class="glyphicon glyphicon-warning-sign" style="font-size: 14px"></span>
                     </a>
 
                     <div class="btn-group" {% if scriptMissing %}title="PDF script not installed"{% endif %}>

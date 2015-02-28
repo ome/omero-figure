@@ -151,9 +151,11 @@
                 export_opt = $create_figure_pdf.attr('data-export-option'),
                 $pdf_inprogress = $("#pdf_inprogress"),
                 $pdf_download = $("#pdf_download"),
+                $script_error = $("#script_error"),
                 exportOption = "PDF";
             $create_figure_pdf.hide();
             $pdf_download.hide();
+            $script_error.hide();
             $pdf_inprogress.show();
 
             if (export_opt == "PDF & images") {
@@ -185,16 +187,27 @@
 
                             var pdf_job = act_data[jobId];
 
+                            console.log(pdf_job);
+
                             // We're waiting for this flag...
                             if (pdf_job.status == "finished") {
                                 clearInterval(i);
 
-                                // Update UI
                                 $create_figure_pdf.show();
                                 $pdf_inprogress.hide();
-                                var fa_id = pdf_job.results.File_Annotation.id,
-                                    fa_download = WEBINDEX_URL + "annotation/" + fa_id + "/";
-                                $pdf_download.attr('href', fa_download).show();
+
+                                // If there's an error, show button
+                                if (pdf_job.stderr) {
+                                    var stderr_url = WEBINDEX_URL + "get_original_file/" + pdf_job.stderr + "/";
+                                    $script_error.attr('href', stderr_url).show();
+                                }
+
+                                // Show result
+                                if (pdf_job.results.File_Annotation) {
+                                    var fa_id = pdf_job.results.File_Annotation.id,
+                                        fa_download = WEBINDEX_URL + "annotation/" + fa_id + "/";
+                                    $pdf_download.attr('href', fa_download).show();
+                                }
                             }
 
                             if (act_data.inprogress === 0) {
