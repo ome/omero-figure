@@ -92,11 +92,9 @@ class FigureExport(object):
 
 
         # get Figure width & height...
-        pageWidth = self.figure_json['paper_width']
-        pageHeight = self.figure_json['paper_height']
-        # add to scriptParams for convenience
-        scriptParams['Page_Width'] = pageWidth
-        scriptParams['Page_Height'] = pageHeight
+        self.pageWidth = self.figure_json['paper_width']
+        self.pageHeight = self.figure_json['paper_height']
+
 
         pdfName = unicodedata.normalize('NFKD', self.figureName).encode('ascii','ignore')
         zipName = "%s.zip" % pdfName
@@ -123,7 +121,7 @@ class FigureExport(object):
             except:
                 pass
 
-        c = canvas.Canvas(pdfName, pagesize=(pageWidth, pageHeight))
+        c = canvas.Canvas(pdfName, pagesize=(self.pageWidth, self.pageHeight))
         panels_json = self.figure_json['panels']
         imageIds = set()
 
@@ -144,9 +142,9 @@ class FigureExport(object):
         row = 0
         for p in range(page_count):
             print "\n------------------------- PAGE ", p + 1, "--------------------------"
-            px = col * (pageWidth + paper_spacing)
-            py = row * (pageHeight + paper_spacing)
-            page = {'x': px, 'y': py, 'width': pageWidth, 'height': pageHeight}
+            px = col * (self.pageWidth + paper_spacing)
+            py = row * (self.pageHeight + paper_spacing)
+            page = {'x': px, 'y': py}
 
             # if export_option == "TIFF":
             #     add_panels_to_tiff(conn, tiffFigure, panels_json, imageIds, page, folder_name)
@@ -160,15 +158,15 @@ class FigureExport(object):
                 col = 0
                 row = row + 1
 
-            # Add thumbnails and links page
-            self.addInfoPage(scriptParams, c, panels_json)
+        # Add thumbnails and links page
+        self.addInfoPage(scriptParams, c, panels_json)
 
-            c.save()
+        c.save()
 
-            # PDF will get created in this group
-            if groupId is None:
-                groupId = conn.getEventContext().groupId
-            conn.SERVICE_OPTS.setOmeroGroup(groupId)
+        # PDF will get created in this group
+        if groupId is None:
+            groupId = conn.getEventContext().groupId
+        conn.SERVICE_OPTS.setOmeroGroup(groupId)
 
 
         outputFile = pdfName
@@ -291,7 +289,7 @@ class FigureExport(object):
         height = panel['height']
 
         # Handle page offsets
-        pageHeight = page['height']
+        pageHeight = self.pageHeight
         x = x - page['x']
         y = y - page['y']
 
@@ -426,7 +424,7 @@ class FigureExport(object):
         height = panel['height']
 
         # Handle page offsets
-        pageHeight = page['height']
+        pageHeight = self.pageHeight
         x = x - page['x']
         y = y - page['y']
 
@@ -593,7 +591,7 @@ class FigureExport(object):
         height = panel['height']
 
         # Handle page offsets
-        pageHeight = page['height']
+        pageHeight = self.pageHeight
         x = x - page['x']
         y = y - page['y']
 
@@ -647,8 +645,8 @@ class FigureExport(object):
         base_url = None
         if 'Webclient_URI' in scriptParams:
             base_url = scriptParams['Webclient_URI']
-        pageWidth = scriptParams['Page_Width']
-        pageHeight = scriptParams['Page_Height']
+        pageWidth = self.pageWidth
+        pageHeight = self.pageHeight
         availHeight = pageHeight-2*inch
         print 'availHeight', availHeight
 
@@ -743,9 +741,9 @@ class FigureExport(object):
         py = panel['y']
         py2 = py + panel['height']
         cx = page['x']
-        cx2 = cx + page['width']
+        cx2 = cx + self.pageWidth
         cy = page['y']
-        cy2 = cy + page['height']
+        cy2 = cy + self.pageHeight
         #overlap needs overlap on x-axis...
         return px < cx2 and cx < px2 and py < cy2 and cy < py2
 
