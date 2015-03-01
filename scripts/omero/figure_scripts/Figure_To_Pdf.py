@@ -96,6 +96,8 @@ class FigureExport(object):
         self.pageHeight = self.figure_json['paper_height']
 
 
+    def createFigure(self):
+
         pdfName = unicodedata.normalize('NFKD', self.figureName).encode('ascii','ignore')
         zipName = "%s.zip" % pdfName
         if not pdfName.endswith('.pdf'):
@@ -104,7 +106,7 @@ class FigureExport(object):
         # in case we have path/to/pdfName.pdf, just use pdfName.pdf
         pdfName = path.basename(pdfName)
 
-        export_option = scriptParams['Export_Option']
+        export_option = self.scriptParams['Export_Option']
 
         # somewhere to put PDF and images
         folder_name = None
@@ -128,7 +130,7 @@ class FigureExport(object):
         groupId = None
         # We get our group from the first image
         id1 = panels_json[0]['imageId']
-        conn.getObject("Image", id1).getDetails().group.id.val
+        self.conn.getObject("Image", id1).getDetails().group.id.val
 
         # test to see if we've got multiple pages
         page_count = 'page_count' in self.figure_json and self.figure_json['page_count'] or 1
@@ -159,14 +161,14 @@ class FigureExport(object):
                 row = row + 1
 
         # Add thumbnails and links page
-        self.addInfoPage(scriptParams, c, panels_json)
+        self.addInfoPage(self.scriptParams, c, panels_json)
 
         c.save()
 
         # PDF will get created in this group
         if groupId is None:
-            groupId = conn.getEventContext().groupId
-        conn.SERVICE_OPTS.setOmeroGroup(groupId)
+            groupId = self.conn.getEventContext().groupId
+        self.conn.SERVICE_OPTS.setOmeroGroup(groupId)
 
 
         outputFile = pdfName
@@ -182,7 +184,7 @@ class FigureExport(object):
             mimetype = "application/zip"
 
 
-        fileAnn = conn.createFileAnnfromLocalFile(
+        fileAnn = self.conn.createFileAnnfromLocalFile(
             outputFile,
             mimetype=mimetype,
             ns=ns)
@@ -197,12 +199,12 @@ class FigureExport(object):
         if len(links) > 0:
             # Don't want to fail at this point due to strange permissions combo
             try:
-                links = conn.getUpdateService().saveAndReturnArray(
-                    links, conn.SERVICE_OPTS)
+                links = self.conn.getUpdateService().saveAndReturnArray(
+                    links, self.conn.SERVICE_OPTS)
             except:
                 print "Failed to attach figure: %s to images %s" % (fileAnn, imageIds)
 
-        self.fileAnn = fileAnn
+        return fileAnn
 
 
     def applyRdefs(self, image, channels):
@@ -790,7 +792,7 @@ def export_figure(conn, scriptParams):
 
     figExport = FigureExport(conn, scriptParams)
 
-    return figExport.fileAnn
+    return figExport.createFigure()
 
 
 def runScript():
