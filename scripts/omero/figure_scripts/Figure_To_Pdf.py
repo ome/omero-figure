@@ -82,24 +82,23 @@ class FigureExport(object):
         figure_json_string = scriptParams['Figure_JSON']
         # Since unicode can't be wrapped by rstring
         figure_json_string = figure_json_string.decode('utf8')
-        figure_json = json.loads(figure_json_string)
+        self.figure_json = json.loads(figure_json_string)
 
         n = datetime.now()
         # time-stamp name by default: Figure_2013-10-29_22-43-53.pdf
-        figureName = "Figure_%s-%s-%s_%s-%s-%s." \
-            "pdf" % (n.year, n.month, n.day, n.hour, n.minute, n.second)
-        if 'figureName' in figure_json:
-            figureName = figure_json['figureName']
+        self.figureName = "Figure_%s-%s-%s_%s-%s-%s" % (n.year, n.month, n.day, n.hour, n.minute, n.second)
+        if 'figureName' in self.figure_json:
+            self.figureName = self.figure_json['figureName']
 
 
         # get Figure width & height...
-        pageWidth = figure_json['paper_width']
-        pageHeight = figure_json['paper_height']
+        pageWidth = self.figure_json['paper_width']
+        pageHeight = self.figure_json['paper_height']
         # add to scriptParams for convenience
         scriptParams['Page_Width'] = pageWidth
         scriptParams['Page_Height'] = pageHeight
 
-        pdfName = unicodedata.normalize('NFKD', figureName).encode('ascii','ignore')
+        pdfName = unicodedata.normalize('NFKD', self.figureName).encode('ascii','ignore')
         zipName = "%s.zip" % pdfName
         if not pdfName.endswith('.pdf'):
             pdfName = "%s.pdf" % pdfName
@@ -125,7 +124,7 @@ class FigureExport(object):
                 pass
 
         c = canvas.Canvas(pdfName, pagesize=(pageWidth, pageHeight))
-        panels_json = figure_json['panels']
+        panels_json = self.figure_json['panels']
         imageIds = set()
 
         groupId = None
@@ -134,10 +133,10 @@ class FigureExport(object):
         conn.getObject("Image", id1).getDetails().group.id.val
 
         # test to see if we've got multiple pages
-        page_count = 'page_count' in figure_json and figure_json['page_count'] or 1
+        page_count = 'page_count' in self.figure_json and self.figure_json['page_count'] or 1
         page_count = int(page_count)
-        paper_spacing = 'paper_spacing' in figure_json and figure_json['paper_spacing'] or 50
-        page_col_count = 'page_col_count' in figure_json and figure_json['page_col_count'] or 1
+        paper_spacing = 'paper_spacing' in self.figure_json and self.figure_json['paper_spacing'] or 50
+        page_col_count = 'page_col_count' in self.figure_json and self.figure_json['page_col_count'] or 1
 
 
         # For each page, add panels...
@@ -162,7 +161,7 @@ class FigureExport(object):
                 row = row + 1
 
             # Add thumbnails and links page
-            self.addInfoPage(scriptParams, c, panels_json, figureName)
+            self.addInfoPage(scriptParams, c, panels_json)
 
             c.save()
 
@@ -642,8 +641,9 @@ class FigureExport(object):
         return tempName
 
 
-    def addInfoPage(self, scriptParams, c, panels_json, figureName):
+    def addInfoPage(self, scriptParams, c, panels_json):
 
+        figureName = self.figureName
         base_url = None
         if 'Webclient_URI' in scriptParams:
             base_url = scriptParams['Webclient_URI']
