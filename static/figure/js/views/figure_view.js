@@ -151,9 +151,11 @@
                 export_opt = $create_figure_pdf.attr('data-export-option'),
                 $pdf_inprogress = $("#pdf_inprogress"),
                 $pdf_download = $("#pdf_download"),
+                $script_error = $("#script_error"),
                 exportOption = "PDF";
             $create_figure_pdf.hide();
             $pdf_download.hide();
+            $script_error.hide();
             $pdf_inprogress.show();
 
             if (export_opt == "PDF & images") {
@@ -177,6 +179,18 @@
                 // {"status": "in progress", "jobId": "ProcessCallback/64be7a9e-2abb-4a48-9c5e-6d0938e1a3e2 -t:tcp -h 192.168.1.64 -p 64592"}
                 var jobId = data.jobId;
 
+                // E.g. Handle 'No Processor Available';
+                if (!jobId) {
+                    if (data.error) {
+                        alert(data.error);
+                    } else {
+                        alert("Error exporting figure");
+                    }
+                    $create_figure_pdf.show();
+                    $pdf_inprogress.hide();
+                    return;
+                }
+
                 // Now we keep polling for script completion, every second...
 
                 var i = setInterval(function (){
@@ -189,12 +203,21 @@
                             if (pdf_job.status == "finished") {
                                 clearInterval(i);
 
-                                // Update UI
                                 $create_figure_pdf.show();
                                 $pdf_inprogress.hide();
-                                var fa_id = pdf_job.results.File_Annotation.id,
-                                    fa_download = WEBINDEX_URL + "annotation/" + fa_id + "/";
-                                $pdf_download.attr('href', fa_download).show();
+
+                                // If there's an error, show button
+                                if (pdf_job.stderr) {
+                                    var stderr_url = WEBINDEX_URL + "get_original_file/" + pdf_job.stderr + "/";
+                                    $script_error.attr('href', stderr_url).show();
+                                }
+
+                                // Show result
+                                if (pdf_job.results.File_Annotation) {
+                                    var fa_id = pdf_job.results.File_Annotation.id,
+                                        fa_download = WEBINDEX_URL + "annotation/" + fa_id + "/";
+                                    $pdf_download.attr('href', fa_download).show();
+                                }
                             }
 
                             if (act_data.inprogress === 0) {
