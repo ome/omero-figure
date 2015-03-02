@@ -90,7 +90,6 @@ class FigureExport(object):
         if 'figureName' in self.figure_json:
             self.figureName = self.figure_json['figureName']
 
-
         # get Figure width & height...
         self.pageWidth = self.figure_json['paper_width']
         self.pageHeight = self.figure_json['paper_height']
@@ -123,7 +122,7 @@ class FigureExport(object):
             except:
                 pass
 
-        c = canvas.Canvas(pdfName, pagesize=(self.pageWidth, self.pageHeight))
+        self.figureCanvas = canvas.Canvas(pdfName, pagesize=(self.pageWidth, self.pageHeight))
         panels_json = self.figure_json['panels']
         imageIds = set()
 
@@ -151,19 +150,19 @@ class FigureExport(object):
             # if export_option == "TIFF":
             #     add_panels_to_tiff(conn, tiffFigure, panels_json, imageIds, page, folder_name)
             # elif export_option == "PDF":
-            self.add_panels_to_page(c, panels_json, imageIds, page, folder_name)
+            self.add_panels_to_page(panels_json, imageIds, page, folder_name)
 
             # complete page and save
-            c.showPage()
+            self.figureCanvas.showPage()
             col = col + 1
             if col >= page_col_count:
                 col = 0
                 row = row + 1
 
         # Add thumbnails and links page
-        self.addInfoPage(self.scriptParams, c, panels_json)
+        self.addInfoPage(panels_json)
 
-        c.save()
+        self.figureCanvas.save()
 
         # PDF will get created in this group
         if groupId is None:
@@ -282,8 +281,9 @@ class FigureExport(object):
         return text
 
 
-    def drawLabels(self, c, panel, page):
+    def drawLabels(self, panel, page):
 
+        c = self.figureCanvas
         labels = panel['labels']
         x = panel['x']
         y = panel['y']
@@ -418,8 +418,9 @@ class FigureExport(object):
                     drawLab(c, l, lx, ly, align='vertical')
 
 
-    def drawScalebar(self, c, panel, region_width, page):
+    def drawScalebar(self, panel, region_width, page):
 
+        c = self.figureCanvas
         x = panel['x']
         y = panel['y']
         width = panel['width']
@@ -582,8 +583,9 @@ class FigureExport(object):
         return out
 
 
-    def drawPanel(self, c, panel, page, idx, folder_name=None):
+    def drawPanel(self, panel, page, idx, folder_name=None):
 
+        c = self.figureCanvas
         conn = self.conn
         imageId = panel['imageId']
         channels = panel['channels']
@@ -623,7 +625,7 @@ class FigureExport(object):
 
         c.drawImage(imgName, x, y, width, height)
 
-        self.drawScalebar(c, panel, tile_width, page)
+        self.drawScalebar(panel, tile_width, page)
 
         return image
 
@@ -641,8 +643,10 @@ class FigureExport(object):
         return tempName
 
 
-    def addInfoPage(self, scriptParams, c, panels_json):
+    def addInfoPage(self, panels_json):
 
+        c = self.figureCanvas
+        scriptParams = self.scriptParams
         figureName = self.figureName
         base_url = None
         if 'Webclient_URI' in scriptParams:
@@ -750,7 +754,7 @@ class FigureExport(object):
         return px < cx2 and cx < px2 and py < cy2 and cy < py2
 
 
-    def add_panels_to_page(self, c, panels_json, imageIds, page, folder_name):
+    def add_panels_to_page(self, panels_json, imageIds, page, folder_name):
         """ Add panels that are within the bounds of this page """
 
         for i, panel in enumerate(panels_json):
@@ -762,10 +766,10 @@ class FigureExport(object):
             print "\n-------------------------------- "
             imageId = panel['imageId']
             print "Adding PANEL - Image ID:", imageId
-            image = self.drawPanel(c, panel, page, i, folder_name)
+            image = self.drawPanel(panel, page, i, folder_name)
             if image.canAnnotate():
                 imageIds.add(imageId)
-            self.drawLabels(c, panel, page)
+            self.drawLabels(panel, page)
             print ""
 
 
