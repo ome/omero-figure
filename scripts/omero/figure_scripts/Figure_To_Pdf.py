@@ -108,14 +108,14 @@ class FigureExport(object):
         export_option = self.scriptParams['Export_Option']
 
         # somewhere to put PDF and images
-        folder_name = None
+        self.folder_name = None
         if export_option == "PDF_IMAGES":
-            folder_name = "figure"
+            self.folder_name = "figure"
             curr_dir = os.getcwd()
-            zipDir = os.path.join(curr_dir, folder_name)
+            zipDir = os.path.join(curr_dir, self.folder_name)
             origDir = os.path.join(zipDir, ORIGINAL_DIR)
             # placing in the output folder
-            pdfName = os.path.join(folder_name, pdfName)
+            pdfName = os.path.join(self.folder_name, pdfName)
             try:
                 os.mkdir(zipDir)
                 os.mkdir(origDir)
@@ -148,9 +148,9 @@ class FigureExport(object):
             page = {'x': px, 'y': py}
 
             # if export_option == "TIFF":
-            #     add_panels_to_tiff(conn, tiffFigure, panels_json, imageIds, page, folder_name)
+            #     add_panels_to_tiff(conn, tiffFigure, panels_json, imageIds, page)
             # elif export_option == "PDF":
-            self.add_panels_to_page(panels_json, imageIds, page, folder_name)
+            self.add_panels_to_page(panels_json, imageIds, page)
 
             # complete page and save
             self.figureCanvas.showPage()
@@ -176,7 +176,7 @@ class FigureExport(object):
 
         if export_option == "PDF_IMAGES":
             # Recursively zip everything up
-            compress(zipName, folder_name)
+            compress(zipName, self.folder_name)
 
             outputFile = zipName
             ns = "omero.web.figure.zip"
@@ -583,7 +583,7 @@ class FigureExport(object):
         return out
 
 
-    def drawPanel(self, panel, page, idx, folder_name=None):
+    def drawPanel(self, panel, page, idx):
 
         c = self.figureCanvas
         conn = self.conn
@@ -612,15 +612,15 @@ class FigureExport(object):
 
         # get cropped image (saving original)
         origName = None
-        if folder_name is not None:
-            origName = os.path.join(folder_name, ORIGINAL_DIR, imgName)
+        if self.folder_name is not None:
+            origName = os.path.join(self.folder_name, ORIGINAL_DIR, imgName)
             print "Saving original to: ", origName
         pilImg = self.getPanelImage(image, panel, origName)
         tile_width = pilImg.size[0]
 
         # in the folder to zip
-        if folder_name is not None:
-            imgName = os.path.join(folder_name, imgName)
+        if self.folder_name is not None:
+            imgName = os.path.join(self.folder_name, imgName)
         pilImg.save(imgName)
 
         c.drawImage(imgName, x, y, width, height)
@@ -754,7 +754,7 @@ class FigureExport(object):
         return px < cx2 and cx < px2 and py < cy2 and cy < py2
 
 
-    def add_panels_to_page(self, panels_json, imageIds, page, folder_name):
+    def add_panels_to_page(self, panels_json, imageIds, page):
         """ Add panels that are within the bounds of this page """
 
         for i, panel in enumerate(panels_json):
@@ -766,7 +766,7 @@ class FigureExport(object):
             print "\n-------------------------------- "
             imageId = panel['imageId']
             print "Adding PANEL - Image ID:", imageId
-            image = self.drawPanel(panel, page, i, folder_name)
+            image = self.drawPanel(panel, page, i)
             if image.canAnnotate():
                 imageIds.add(imageId)
             self.drawLabels(panel, page)
