@@ -94,16 +94,21 @@ class FigureExport(object):
         self.pageWidth = self.figure_json['paper_width']
         self.pageHeight = self.figure_json['paper_height']
 
+    def getFileExtension(self):
+        return "pdf"
 
-    def createFigure(self):
+    def buildFigure(self):
 
         pdfName = unicodedata.normalize('NFKD', self.figureName).encode('ascii','ignore')
         zipName = "%s.zip" % pdfName
-        if not pdfName.endswith('.pdf'):
-            pdfName = "%s.pdf" % pdfName
+
+        fext = self.getFileExtension()
+
+        if not pdfName.endswith('.%s' % fext):
+            pdfName = "%s.%s" % (pdfName, fext)
 
         # in case we have path/to/pdfName.pdf, just use pdfName.pdf
-        pdfName = path.basename(pdfName)
+        self.figureFileName = path.basename(pdfName)
 
         export_option = self.scriptParams['Export_Option']
 
@@ -115,14 +120,16 @@ class FigureExport(object):
             zipDir = os.path.join(curr_dir, self.folder_name)
             origDir = os.path.join(zipDir, ORIGINAL_DIR)
             # placing in the output folder
-            pdfName = os.path.join(self.folder_name, pdfName)
+            self.figureFileName = os.path.join(self.folder_name, self.figureFileName)
             try:
                 os.mkdir(zipDir)
                 os.mkdir(origDir)
             except:
                 pass
 
-        self.figureCanvas = canvas.Canvas(pdfName, pagesize=(self.pageWidth, self.pageHeight))
+        # Create the figure file
+        self.createFigure()
+
         panels_json = self.figure_json['panels']
         imageIds = set()
 
@@ -153,7 +160,8 @@ class FigureExport(object):
             self.add_panels_to_page(panels_json, imageIds, page)
 
             # complete page and save
-            self.figureCanvas.showPage()
+            self.savePage()
+
             col = col + 1
             if col >= page_col_count:
                 col = 0
@@ -162,7 +170,8 @@ class FigureExport(object):
         # Add thumbnails and links page
         self.addInfoPage(panels_json)
 
-        self.figureCanvas.save()
+        # Saves the completed  figure file
+        self.saveFigure()
 
         # PDF will get created in this group
         if groupId is None:
@@ -170,7 +179,7 @@ class FigureExport(object):
         self.conn.SERVICE_OPTS.setOmeroGroup(groupId)
 
 
-        outputFile = pdfName
+        outputFile = self.figureFileName
         ns = "omero.web.figure.pdf"
         mimetype = "application/pdf"
 
@@ -204,6 +213,21 @@ class FigureExport(object):
                 print "Failed to attach figure: %s to images %s" % (fileAnn, imageIds)
 
         return fileAnn
+
+
+    def createFigure(self):
+
+        self.figureCanvas = canvas.Canvas(self.figureFileName,
+                pagesize=(self.pageWidth, self.pageHeight))
+
+
+    def savePage(self):
+
+        self.figureCanvas.showPage()
+
+    def saveFigure(self):
+
+        self.figureCanvas.save()
 
 
     def applyRdefs(self, image, channels):
@@ -580,12 +604,11 @@ class FigureExport(object):
         # and convert back to original mode
         out.convert(mde)
 
-        return out
-
+        # return out
+        return pilImg
 
     def drawPanel(self, panel, page, idx):
 
-        c = self.figureCanvas
         conn = self.conn
         imageId = panel['imageId']
         channels = panel['channels']
@@ -623,11 +646,16 @@ class FigureExport(object):
             imgName = os.path.join(self.folder_name, imgName)
         pilImg.save(imgName)
 
-        c.drawImage(imgName, x, y, width, height)
+        self.pasteImage(pilImg, imgName, x, y, width, height)
 
         self.drawScalebar(panel, tile_width, page)
 
         return image
+
+
+    def pasteImage(self, pilImg, imgName, x, y, width, height):
+
+        self.figureCanvas.drawImage(imgName, x, y, width, height)
 
 
     def getThumbnail(self, imageId):
@@ -773,30 +801,78 @@ class FigureExport(object):
             print ""
 
 
+class TiffExport(FigureExport):
+
+    def getFileExtension(self):
+        return "tiff"
+
+    def createFigure(self):
+
+        # Need to calculate DPI and size
+        # Assume 300 PDI for now. Sizes are for 72 dpi
+        tiffWidth = (self.pageWidth * 300)/72
+        tiffHeight = (self.pageHeight * 300)/72
+        print "TIFF: width, height", tiffWidth, tiffHeight
+        self.tiffFigure = Image.new("RGBA", (tiffWidth, tiffHeight), (255, 255, 255))
+
+
+    def pasteImage(self, pilImg, imgName, x, y, width, height):
+
+        x = int(round(x))
+        y = int(round(y))
+        width = int(round(width))
+        height = int(round(height))
+        # pilImg.resize((width, height), Image.BILINEAR)
+
+        print "pilImg", pilImg.size, pilImg.mode
+        # i = Image.open(imgName)
+        # print "i", i.size, i.mode
+        print "self.tiffFigure", self.tiffFigure.size, self.tiffFigure.mode
+
+        width, height = pilImg.size
+        # x = 0
+        # y = 0
+        print "x, y, width, height", x, y, width, height
+
+        box = (x, y, x + width, y + height)
+        print "box", box
+        self.tiffFigure.paste(pilImg, box)
+
+
+    def drawScalebar(self, panel, region_width, page):
+
+        print "drawScalebar FIX ME!"
+
+
+    def drawLabels(self, panel, page):
+
+        print "drawLabels FIX ME!"
+
+
+    def savePage(self):
+
+        self.tiffFigure.save(self.figureFileName)
+
+
+    def saveFigure(self):
+
+        #self.figureCanvas.save()
+        print "saveFigure TODO????"
+
+    def addInfoPage(self, panels_json):
+
+        print "TODO addInfoPage"
+
+
 def export_figure(conn, scriptParams):
 
     # make sure we can find all images
     conn.SERVICE_OPTS.setOmeroGroup(-1)
 
-    # export_option = scriptParams['Export_Option']
-    # export_option = "TIFF"
+    # figExport = FigureExport(conn, scriptParams)
+    figExport = TiffExport(conn, scriptParams)
 
-
-
-    # If TIFF
-    # if export_option == "TIFF":
-    #     # Need to calculate DPI and size
-    #     # Assume 300 PDI for now. Sizes are for 72 dpi
-    #     tiffWidth = (pageWidth * 300)/72
-    #     tiffHeight = (pageHeight * 300)/72
-    #     print "TIFF: width, height", tiffWidth, tiffHeight
-    #     tiffFigure = Image.new("RGB", (tiffWidth, tiffHeight), (255, 255, 255))
-
-    
-
-    figExport = FigureExport(conn, scriptParams)
-
-    return figExport.createFigure()
+    return figExport.buildFigure()
 
 
 def runScript():
