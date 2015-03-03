@@ -618,12 +618,9 @@ class FigureExport(object):
         height = panel['height']
 
         # Handle page offsets
-        pageHeight = self.pageHeight
+        # pageHeight = self.pageHeight
         x = x - page['x']
         y = y - page['y']
-
-        # Since coordinate system is 'bottom-up', convert from 'top-down'
-        y = pageHeight - height - y
 
         image = conn.getObject("Image", imageId)
         self.applyRdefs(image, channels)
@@ -655,6 +652,8 @@ class FigureExport(object):
 
     def pasteImage(self, pilImg, imgName, x, y, width, height):
 
+        # Since coordinate system is 'bottom-up', convert from 'top-down'
+        y = self.pageHeight - height - y
         self.figureCanvas.drawImage(imgName, x, y, width, height)
 
 
@@ -806,23 +805,36 @@ class TiffExport(FigureExport):
     def getFileExtension(self):
         return "tiff"
 
+    def scaleCoords(self, coord):
+
+        # return (coord * 300)/72
+        return coord
+
     def createFigure(self):
 
         # Need to calculate DPI and size
         # Assume 300 PDI for now. Sizes are for 72 dpi
-        tiffWidth = (self.pageWidth * 300)/72
-        tiffHeight = (self.pageHeight * 300)/72
+        tiffWidth = self.scaleCoords(self.pageWidth)
+        tiffHeight = self.scaleCoords(self.pageHeight)
         print "TIFF: width, height", tiffWidth, tiffHeight
         self.tiffFigure = Image.new("RGBA", (tiffWidth, tiffHeight), (255, 255, 255))
 
 
     def pasteImage(self, pilImg, imgName, x, y, width, height):
 
+        print "pasteImage: x, y, width, height", x, y, width, height
+        x = self.scaleCoords(x)
+        y = self.scaleCoords(y)
+        width = self.scaleCoords(width)
+        height = self.scaleCoords(height)
+        print "scaleCoords: x, y, width, height", x, y, width, height
+
         x = int(round(x))
         y = int(round(y))
         width = int(round(width))
         height = int(round(height))
-        # pilImg.resize((width, height), Image.BILINEAR)
+        print "resize to: x, y, width, height", x, y, width, height
+        pilImg = pilImg.resize((width, height), Image.BILINEAR)
 
         print "pilImg", pilImg.size, pilImg.mode
         # i = Image.open(imgName)
