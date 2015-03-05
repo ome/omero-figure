@@ -74,10 +74,11 @@ class FigureExport(object):
     Super class for exporting various figures, such as PDF or TIFF etc.
     """
 
-    def __init__(self, conn, scriptParams):
+    def __init__(self, conn, scriptParams, exportImages=False):
 
         self.conn = conn
         self.scriptParams = scriptParams
+        self.exportImages = exportImages
 
         figure_json_string = scriptParams['Figure_JSON']
         # Since unicode can't be wrapped by rstring
@@ -147,21 +148,12 @@ class FigureExport(object):
         page_col_count = 'page_col_count' in self.figure_json and self.figure_json['page_col_count'] or 1
 
 
-        # pdfName = unicodedata.normalize('NFKD', self.figureName).encode('ascii','ignore')
-        # zipName = "%s.zip" % pdfName
-
-        # # get figure file name
-        # self.figureFileName = self.getFigureFileName()
-
-        # # in case we have path/to/name.pdf, just use name.pdf
-        # self.figureFileName = path.basename(self.figureFileName)
-
+        # Create a zip if we have multiple TIFF pages or we're exporting Images
         export_option = self.scriptParams['Export_Option']
-
         createZip = False
-        if export_option == "PDF_IMAGES":
+        if self.exportImages:
             createZip = True
-        if (page_count > 1) and (export_option == "TIFF"):
+        if (page_count > 1) and (export_option.startswith("TIFF")):
             createZip = True
 
         # somewhere to put PDF and images
@@ -170,14 +162,10 @@ class FigureExport(object):
             self.zip_folder_name = "figure"
             curr_dir = os.getcwd()
             zipDir = os.path.join(curr_dir, self.zip_folder_name)
-            origDir = os.path.join(zipDir, ORIGINAL_DIR)
-            # placing in the output folder
-            # self.figureFileName = os.path.join(self.zip_folder_name, self.figureFileName)
-            try:
-                os.mkdir(zipDir)
+            os.mkdir(zipDir)
+            if self.exportImages:
+                origDir = os.path.join(zipDir, ORIGINAL_DIR)
                 os.mkdir(origDir)
-            except:
-                pass
 
         # Create the figure file(s)
         self.createFigure()
@@ -681,7 +669,7 @@ class FigureExport(object):
 
         # get cropped image (saving original)
         origName = None
-        if self.zip_folder_name is not None:
+        if self.exportImages:
             origName = os.path.join(self.zip_folder_name, ORIGINAL_DIR, imgName)
             print "Saving original to: ", origName
         pilImg = self.getPanelImage(image, panel, origName)
@@ -690,7 +678,6 @@ class FigureExport(object):
         # in the folder to zip
         if self.zip_folder_name is not None:
             imgName = os.path.join(self.zip_folder_name, imgName)
-        pilImg.save(imgName)
 
         self.pasteImage(pilImg, imgName, x, y, width, height)
 
@@ -701,6 +688,8 @@ class FigureExport(object):
 
     def pasteImage(self, pilImg, imgName, x, y, width, height):
 
+        # Save Image to file, then bring into PDF
+        pilImg.save(imgName)
         # Since coordinate system is 'bottom-up', convert from 'top-down'
         y = self.pageHeight - height - y
         self.figureCanvas.drawImage(imgName, x, y, width, height)
@@ -852,9 +841,9 @@ class FigureExport(object):
 class TiffExport(FigureExport):
 
 
-    def __init__(self, conn, scriptParams):
+    def __init__(self, conn, scriptParams, exportImages=None):
 
-        super(TiffExport, self).__init__(conn, scriptParams)
+        super(TiffExport, self).__init__(conn, scriptParams, exportImages)
 
         self.figureFileIndex = 0
 
@@ -862,9 +851,8 @@ class TiffExport(FigureExport):
         return "tiff"
 
     def scaleCoords(self, coord):
-
-        # return (coord * 300)/72
-        return coord
+        # By default, convert from 72 dpi to 300 dpi
+        return (coord * 300)/72
 
     def createFigure(self):
 
@@ -878,6 +866,9 @@ class TiffExport(FigureExport):
 
     def pasteImage(self, pilImg, imgName, x, y, width, height):
 
+        if self.exportImages:
+            pilImg.save(imgName)
+
         print "pasteImage: x, y, width, height", x, y, width, height
         x = self.scaleCoords(x)
         y = self.scaleCoords(y)
@@ -889,21 +880,12 @@ class TiffExport(FigureExport):
         y = int(round(y))
         width = int(round(width))
         height = int(round(height))
+
         print "resize to: x, y, width, height", x, y, width, height
         pilImg = pilImg.resize((width, height), Image.BILINEAR)
-
-        print "pilImg", pilImg.size, pilImg.mode
-        # i = Image.open(imgName)
-        # print "i", i.size, i.mode
-        print "self.tiffFigure", self.tiffFigure.size, self.tiffFigure.mode
-
         width, height = pilImg.size
-        # x = 0
-        # y = 0
-        print "x, y, width, height", x, y, width, height
 
         box = (x, y, x + width, y + height)
-        print "box", box
         self.tiffFigure.paste(pilImg, box)
 
 
@@ -942,17 +924,17 @@ def export_figure(conn, scriptParams):
     # make sure we can find all images
     conn.SERVICE_OPTS.setOmeroGroup(-1)
 
-
-    # TEMP!
-    # scriptParams['Export_Option'] = 'TIFF'
-
-
     exportOption = scriptParams['Export_Option']
+    print 'exportOption', exportOption
 
-    if exportOption in ('PDF', 'PDF_IMAGES'):
+    if exportOption == 'PDF':
         figExport = FigureExport(conn, scriptParams)
+    elif exportOption == 'PDF_IMAGES':
+        figExport = FigureExport(conn, scriptParams, exportImages=True)
     elif exportOption == 'TIFF':
         figExport = TiffExport(conn, scriptParams)
+    elif exportOption == 'TIFF_IMAGES':
+        figExport = TiffExport(conn, scriptParams, exportImages=True)
 
     return figExport.buildFigure()
 
@@ -963,7 +945,8 @@ def runScript():
     via the scripting service, passing the required parameters.
     """
 
-    exportOptions = [rstring('PDF'), rstring('PDF_IMAGES'), rstring('TIFF')]
+    exportOptions = [rstring('PDF'), rstring('PDF_IMAGES'),
+                     rstring('TIFF'), rstring('TIFF_IMAGES')]
 
     client = scripts.client(
         'Figure_To_Pdf.py',

@@ -158,11 +158,12 @@
             $script_error.hide();
             $pdf_inprogress.show();
 
-            if (export_opt == "PDF & images") {
-                exportOption = "PDF_IMAGES";
-            } else {
-                exportOption = "PDF";
-            }
+            // Map from HTML to script options
+            opts = {"PDF": "PDF",
+                "PDF & images": "PDF_IMAGES",
+                "TIFF": "TIFF",
+                "TIFF & images": "TIFF_IMAGES"};
+            exportOption = opts[export_opt];
 
             // Get figure as json
             var figureJSON = this.model.figure_toJSON();
