@@ -94,40 +94,92 @@ class FigureExport(object):
         self.pageWidth = self.figure_json['paper_width']
         self.pageHeight = self.figure_json['paper_height']
 
-    def getFileExtension(self):
+
+    def getFigureFileExt(self):
         return "pdf"
+
+
+    def getZipName(self):
+
+        # file names can't include unicode characters
+        name = unicodedata.normalize('NFKD', self.figureName).encode('ascii','ignore')
+        # in case we have path/to/name.pdf, just use name.pdf
+        name = path.basename(name)
+        return "%s.zip" % name
+
+
+    def getFigureFileName(self):
+
+        fext = self.getFigureFileExt()
+
+        # file names can't include unicode characters
+        name = unicodedata.normalize('NFKD', self.figureName).encode('ascii','ignore')
+        # in case we have path/to/name.pdf, just use name.pdf
+        name = path.basename(name)
+
+        # if ends with E.g. .pdf, remove extension
+        if name.endswith("." + fext):
+            name = name[0: -len("." + fext)]
+
+        # Name with extension and folder
+        fullName = "%s.%s" % (name, fext)
+        if self.zip_folder_name is not None:
+            fullName = os.path.join(self.zip_folder_name, fullName)
+
+        index = 0
+        while(os.path.exists(fullName)):
+            index += 1
+            fullName = "%s(%02d).%s" % (name, index, fext)
+            if self.zip_folder_name is not None:
+                fullName = os.path.join(self.zip_folder_name, fullName)
+
+        print "getFigureFileName()", fullName
+        self.figureFileName = fullName
+        return fullName
+
 
     def buildFigure(self):
 
-        pdfName = unicodedata.normalize('NFKD', self.figureName).encode('ascii','ignore')
-        zipName = "%s.zip" % pdfName
+        # test to see if we've got multiple pages
+        page_count = 'page_count' in self.figure_json and self.figure_json['page_count'] or 1
+        page_count = int(page_count)
+        paper_spacing = 'paper_spacing' in self.figure_json and self.figure_json['paper_spacing'] or 50
+        page_col_count = 'page_col_count' in self.figure_json and self.figure_json['page_col_count'] or 1
 
-        fext = self.getFileExtension()
 
-        if not pdfName.endswith('.%s' % fext):
-            pdfName = "%s.%s" % (pdfName, fext)
+        # pdfName = unicodedata.normalize('NFKD', self.figureName).encode('ascii','ignore')
+        # zipName = "%s.zip" % pdfName
 
-        # in case we have path/to/pdfName.pdf, just use pdfName.pdf
-        self.figureFileName = path.basename(pdfName)
+        # # get figure file name
+        # self.figureFileName = self.getFigureFileName()
+
+        # # in case we have path/to/name.pdf, just use name.pdf
+        # self.figureFileName = path.basename(self.figureFileName)
 
         export_option = self.scriptParams['Export_Option']
 
-        # somewhere to put PDF and images
-        self.folder_name = None
+        createZip = False
         if export_option == "PDF_IMAGES":
-            self.folder_name = "figure"
+            createZip = True
+        if (page_count > 1) and (export_option == "TIFF"):
+            createZip = True
+
+        # somewhere to put PDF and images
+        self.zip_folder_name = None
+        if createZip:
+            self.zip_folder_name = "figure"
             curr_dir = os.getcwd()
-            zipDir = os.path.join(curr_dir, self.folder_name)
+            zipDir = os.path.join(curr_dir, self.zip_folder_name)
             origDir = os.path.join(zipDir, ORIGINAL_DIR)
             # placing in the output folder
-            self.figureFileName = os.path.join(self.folder_name, self.figureFileName)
+            # self.figureFileName = os.path.join(self.zip_folder_name, self.figureFileName)
             try:
                 os.mkdir(zipDir)
                 os.mkdir(origDir)
             except:
                 pass
 
-        # Create the figure file
+        # Create the figure file(s)
         self.createFigure()
 
         panels_json = self.figure_json['panels']
@@ -137,12 +189,6 @@ class FigureExport(object):
         # We get our group from the first image
         id1 = panels_json[0]['imageId']
         self.conn.getObject("Image", id1).getDetails().group.id.val
-
-        # test to see if we've got multiple pages
-        page_count = 'page_count' in self.figure_json and self.figure_json['page_count'] or 1
-        page_count = int(page_count)
-        paper_spacing = 'paper_spacing' in self.figure_json and self.figure_json['paper_spacing'] or 50
-        page_col_count = 'page_col_count' in self.figure_json and self.figure_json['page_col_count'] or 1
 
 
         # For each page, add panels...
@@ -180,12 +226,15 @@ class FigureExport(object):
 
 
         outputFile = self.figureFileName
+
+        # TODO - fix ns & mimetype for TIFFs
         ns = "omero.web.figure.pdf"
         mimetype = "application/pdf"
 
-        if export_option == "PDF_IMAGES":
+        if self.zip_folder_name is not None:
+            zipName = self.getZipName()
             # Recursively zip everything up
-            compress(zipName, self.folder_name)
+            compress(zipName, self.zip_folder_name)
 
             outputFile = zipName
             ns = "omero.web.figure.zip"
@@ -217,8 +266,8 @@ class FigureExport(object):
 
     def createFigure(self):
 
-        self.figureCanvas = canvas.Canvas(self.figureFileName,
-                pagesize=(self.pageWidth, self.pageHeight))
+        name = self.getFigureFileName()
+        self.figureCanvas = canvas.Canvas(name, pagesize=(self.pageWidth, self.pageHeight))
 
 
     def savePage(self):
@@ -632,15 +681,15 @@ class FigureExport(object):
 
         # get cropped image (saving original)
         origName = None
-        if self.folder_name is not None:
-            origName = os.path.join(self.folder_name, ORIGINAL_DIR, imgName)
+        if self.zip_folder_name is not None:
+            origName = os.path.join(self.zip_folder_name, ORIGINAL_DIR, imgName)
             print "Saving original to: ", origName
         pilImg = self.getPanelImage(image, panel, origName)
         tile_width = pilImg.size[0]
 
         # in the folder to zip
-        if self.folder_name is not None:
-            imgName = os.path.join(self.folder_name, imgName)
+        if self.zip_folder_name is not None:
+            imgName = os.path.join(self.zip_folder_name, imgName)
         pilImg.save(imgName)
 
         self.pasteImage(pilImg, imgName, x, y, width, height)
@@ -802,7 +851,14 @@ class FigureExport(object):
 
 class TiffExport(FigureExport):
 
-    def getFileExtension(self):
+
+    def __init__(self, conn, scriptParams):
+
+        super(TiffExport, self).__init__(conn, scriptParams)
+
+        self.figureFileIndex = 0
+
+    def getFigureFileExt(self):
         return "tiff"
 
     def scaleCoords(self, coord):
@@ -863,7 +919,12 @@ class TiffExport(FigureExport):
 
     def savePage(self):
 
+        self.figureFileName = self.getFigureFileName()
+
         self.tiffFigure.save(self.figureFileName)
+
+        # Create a new blank tiffFigure for subsequent pages
+        self.createFigure()
 
 
     def saveFigure(self):
@@ -881,8 +942,17 @@ def export_figure(conn, scriptParams):
     # make sure we can find all images
     conn.SERVICE_OPTS.setOmeroGroup(-1)
 
-    # figExport = FigureExport(conn, scriptParams)
-    figExport = TiffExport(conn, scriptParams)
+
+    # TEMP!
+    # scriptParams['Export_Option'] = 'TIFF'
+
+
+    exportOption = scriptParams['Export_Option']
+
+    if exportOption in ('PDF', 'PDF_IMAGES'):
+        figExport = FigureExport(conn, scriptParams)
+    elif exportOption == 'TIFF':
+        figExport = TiffExport(conn, scriptParams)
 
     return figExport.buildFigure()
 
@@ -893,7 +963,7 @@ def runScript():
     via the scripting service, passing the required parameters.
     """
 
-    exportOptions = [rstring('PDF'), rstring('PDF_IMAGES')]
+    exportOptions = [rstring('PDF'), rstring('PDF_IMAGES'), rstring('TIFF')]
 
     client = scripts.client(
         'Figure_To_Pdf.py',
