@@ -504,15 +504,15 @@ class FigureExport(object):
 
         spacer = 0.05 * max(height, width)
 
-        c.setLineWidth(2)
+        # c.setLineWidth(2)
         color = sb['color']
         red = int(color[0:2], 16)
         green = int(color[2:4], 16)
         blue = int(color[4:6], 16)
-        red = float(red)/255
-        green = float(green)/255
-        blue = float(blue)/255
-        c.setStrokeColorRGB(red, green, blue)
+        # red = float(red)/255
+        # green = float(green)/255
+        # blue = float(blue)/255
+        # c.setStrokeColorRGB(red, green, blue)
 
 
         position = 'position' in sb and sb['position'] or 'bottomright'
@@ -543,13 +543,15 @@ class FigureExport(object):
         print 'Scalebar length (panel pixels):', pixels_length
         print 'Scale by %s to page ' \
               'coordinate length: %s' % (scale_to_canvas, canvas_length)
-        ly = pageHeight - ly
+        # ly = pageHeight - ly
         if align == 'left':
             lx_end = lx + canvas_length
         else:
             lx_end = lx - canvas_length
-        c.line(lx, ly, lx_end, ly)
+        # c.line(lx, ly, lx_end, ly)
+        self.drawLine(lx, ly, lx_end, ly, 2, (red, green, blue))
 
+        ly = pageHeight - ly
         if 'show_label' in sb and sb['show_label']:
             symbol = u"\u00B5m"
             if 'pixel_size_x_symbol' in panel:
@@ -566,6 +568,21 @@ class FigureExport(object):
                 label_y = ly + 5
             c.setFillColorRGB(red, green, blue)
             c.drawCentredString((lx + lx_end)/2, label_y, label)
+
+    def drawLine(self, x, y, x2, y2, width, rgb):
+
+        red, green, blue = rgb
+        red = float(red)/255
+        green = float(green)/255
+        blue = float(blue)/255
+
+        y = self.pageHeight - y
+        y2 = self.pageHeight - y2
+        c = self.figureCanvas
+        c.setLineWidth(width)
+        c.setStrokeColorRGB(red, green, blue)
+        c.line(x, y, x2, y2,)
+
 
 
     def getPanelImage(self, image, panel, origName=None):
