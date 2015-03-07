@@ -29,9 +29,9 @@ import omero.scripts as scripts
 
 from cStringIO import StringIO
 try:
-    from PIL import Image  # see ticket:2597
+    from PIL import Image, ImageDraw  # see ticket:2597
 except ImportError:
-    import Image
+    import Image, ImageDraw
 
 try:
     from reportlab.pdfgen import canvas
@@ -481,14 +481,13 @@ class FigureExport(object):
 
     def drawScalebar(self, panel, region_width, page):
 
-        c = self.figureCanvas
+        # c = self.figureCanvas
         x = panel['x']
         y = panel['y']
         width = panel['width']
         height = panel['height']
 
         # Handle page offsets
-        pageHeight = self.pageHeight
         x = x - page['x']
         y = y - page['y']
 
@@ -551,23 +550,25 @@ class FigureExport(object):
         # c.line(lx, ly, lx_end, ly)
         self.drawLine(lx, ly, lx_end, ly, 2, (red, green, blue))
 
-        ly = pageHeight - ly
-        if 'show_label' in sb and sb['show_label']:
-            symbol = u"\u00B5m"
-            if 'pixel_size_x_symbol' in panel:
-                symbol = panel['pixel_size_x_symbol']
-            label = "%s %s" % (sb['length'], symbol)
-            font_size = 10
-            try:
-                font_size = int(sb['font_size'])
-            except:
-                pass
-            c.setFont("Helvetica", font_size)
-            label_y = ly - font_size
-            if 'bottom' in position:
-                label_y = ly + 5
-            c.setFillColorRGB(red, green, blue)
-            c.drawCentredString((lx + lx_end)/2, label_y, label)
+        # pageHeight = self.pageHeight
+        # ly = pageHeight - ly
+        # if 'show_label' in sb and sb['show_label']:
+        #     c = self.figureCanvas
+        #     symbol = u"\u00B5m"
+        #     if 'pixel_size_x_symbol' in panel:
+        #         symbol = panel['pixel_size_x_symbol']
+        #     label = "%s %s" % (sb['length'], symbol)
+        #     font_size = 10
+        #     try:
+        #         font_size = int(sb['font_size'])
+        #     except:
+        #         pass
+        #     c.setFont("Helvetica", font_size)
+        #     label_y = ly - font_size
+        #     if 'bottom' in position:
+        #         label_y = ly + 5
+        #     c.setFillColorRGB(red, green, blue)
+        #     c.drawCentredString((lx + lx_end)/2, label_y, label)
 
     def drawLine(self, x, y, x2, y2, width, rgb):
 
@@ -906,9 +907,22 @@ class TiffExport(FigureExport):
         self.tiffFigure.paste(pilImg, box)
 
 
-    def drawScalebar(self, panel, region_width, page):
+    def drawLine(self, x, y, x2, y2, width, rgb):
 
-        print "drawScalebar FIX ME!"
+        draw = ImageDraw.Draw(self.tiffFigure)
+
+        x = self.scaleCoords(x)
+        y = self.scaleCoords(y)
+        x2 = self.scaleCoords(x2)
+        y2 = self.scaleCoords(y2)
+        width = self.scaleCoords(width)
+
+        print "drawLine - TIFF...", x, y, x2, y2
+
+        for l in range(width):
+            draw.line([(x, y), (x2, y2)], fill=rgb)
+            y += 1
+            y2 += 1
 
 
     def drawLabels(self, panel, page):
