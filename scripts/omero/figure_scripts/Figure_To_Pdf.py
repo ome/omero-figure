@@ -29,7 +29,7 @@ import omero.scripts as scripts
 
 from cStringIO import StringIO
 try:
-    from PIL import Image, ImageDraw  # see ticket:2597
+    from PIL import Image, ImageDraw, ImageFont
 except ImportError:
     import Image, ImageDraw
 
@@ -481,7 +481,6 @@ class FigureExport(object):
 
     def drawScalebar(self, panel, region_width, page):
 
-        # c = self.figureCanvas
         x = panel['x']
         y = panel['y']
         width = panel['width']
@@ -503,16 +502,10 @@ class FigureExport(object):
 
         spacer = 0.05 * max(height, width)
 
-        # c.setLineWidth(2)
         color = sb['color']
         red = int(color[0:2], 16)
         green = int(color[2:4], 16)
         blue = int(color[4:6], 16)
-        # red = float(red)/255
-        # green = float(green)/255
-        # blue = float(blue)/255
-        # c.setStrokeColorRGB(red, green, blue)
-
 
         position = 'position' in sb and sb['position'] or 'bottomright'
         print 'scalebar.position', position
@@ -542,16 +535,15 @@ class FigureExport(object):
         print 'Scalebar length (panel pixels):', pixels_length
         print 'Scale by %s to page ' \
               'coordinate length: %s' % (scale_to_canvas, canvas_length)
-        # ly = pageHeight - ly
+
         if align == 'left':
             lx_end = lx + canvas_length
         else:
             lx_end = lx - canvas_length
-        # c.line(lx, ly, lx_end, ly)
+
         self.drawLine(lx, ly, lx_end, ly, 2, (red, green, blue))
 
-        # pageHeight = self.pageHeight
-        # ly = pageHeight - ly
+
         if 'show_label' in sb and sb['show_label']:
             # c = self.figureCanvas
             symbol = u"\u00B5m"
@@ -563,17 +555,17 @@ class FigureExport(object):
                 font_size = int(sb['font_size'])
             except:
                 pass
-            label_y = ly + font_size
-            if 'bottom' in position:
-                label_y = ly - 5
 
-            self.drawText(label, (lx + lx_end)/2, label_y, font_size, (red, green, blue), align="center")
-            # c.setFillColorRGB(red, green, blue)
-            # c.drawCentredString((lx + lx_end)/2, label_y, label)
+            # For 'bottom' scalebar, put label above
+            if 'bottom' in position:
+                ly = ly - font_size - 5
+
+            self.drawText(label, (lx + lx_end)/2, ly, font_size, (red, green, blue), align="center")
 
 
     def drawText(self, text, x, y, fontsize, rgb, align="center"):
 
+        y = y + fontsize
         y = self.pageHeight - y
         c = self.figureCanvas
 
@@ -676,8 +668,7 @@ class FigureExport(object):
         # and convert back to original mode
         out.convert(mde)
 
-        # return out
-        return pilImg
+        return out
 
     def drawPanel(self, panel, page, idx):
 
@@ -880,7 +871,16 @@ class TiffExport(FigureExport):
 
         super(TiffExport, self).__init__(conn, scriptParams, exportImages)
 
-        self.figureFileIndex = 0
+        from omero.gateway import THISPATH
+        self.GATEWAYPATH = THISPATH
+        self.fontPath = os.path.join(THISPATH, "pilfonts", "FreeSans.ttf")
+
+    def getFont(self, fontsize):
+        try:
+            font = ImageFont.truetype(self.fontPath, fontsize)
+        except:
+            font = ImageFont.load('%s/pilfonts/B%0.2d.pil' % (self.GATEWAYPATH, 24))
+        return font
 
     def getFigureFileExt(self):
         return "tiff"
@@ -940,6 +940,20 @@ class TiffExport(FigureExport):
             draw.line([(x, y), (x2, y2)], fill=rgb)
             y += 1
             y2 += 1
+
+    def drawText(self, text, x, y, fontsize, rgb, align="center"):
+
+        x = self.scaleCoords(x)
+        y = self.scaleCoords(y)
+        fontsize = self.scaleCoords(fontsize)
+
+        textdraw = ImageDraw.Draw(self.tiffFigure)
+        font = self.getFont(fontsize)
+        txt_w, txt_h = font.getsize(text)
+
+        # center
+        x = x - (txt_w/ 2)
+        textdraw.text((x, y), text, font=font, fill=rgb)
 
 
     def drawLabels(self, panel, page):
