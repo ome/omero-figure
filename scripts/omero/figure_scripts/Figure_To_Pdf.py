@@ -552,23 +552,40 @@ class FigureExport(object):
 
         # pageHeight = self.pageHeight
         # ly = pageHeight - ly
-        # if 'show_label' in sb and sb['show_label']:
-        #     c = self.figureCanvas
-        #     symbol = u"\u00B5m"
-        #     if 'pixel_size_x_symbol' in panel:
-        #         symbol = panel['pixel_size_x_symbol']
-        #     label = "%s %s" % (sb['length'], symbol)
-        #     font_size = 10
-        #     try:
-        #         font_size = int(sb['font_size'])
-        #     except:
-        #         pass
-        #     c.setFont("Helvetica", font_size)
-        #     label_y = ly - font_size
-        #     if 'bottom' in position:
-        #         label_y = ly + 5
-        #     c.setFillColorRGB(red, green, blue)
-        #     c.drawCentredString((lx + lx_end)/2, label_y, label)
+        if 'show_label' in sb and sb['show_label']:
+            # c = self.figureCanvas
+            symbol = u"\u00B5m"
+            if 'pixel_size_x_symbol' in panel:
+                symbol = panel['pixel_size_x_symbol']
+            label = "%s %s" % (sb['length'], symbol)
+            font_size = 10
+            try:
+                font_size = int(sb['font_size'])
+            except:
+                pass
+            label_y = ly + font_size
+            if 'bottom' in position:
+                label_y = ly - 5
+
+            self.drawText(label, (lx + lx_end)/2, label_y, font_size, (red, green, blue), align="center")
+            # c.setFillColorRGB(red, green, blue)
+            # c.drawCentredString((lx + lx_end)/2, label_y, label)
+
+
+    def drawText(self, text, x, y, fontsize, rgb, align="center"):
+
+        y = self.pageHeight - y
+        c = self.figureCanvas
+
+        red, green, blue = rgb
+        red = float(red)/255
+        green = float(green)/255
+        blue = float(blue)/255
+        c.setFont("Helvetica", fontsize)
+        c.setFillColorRGB(red, green, blue)
+        if (align == "center"):
+            c.drawCentredString(x, y, text)
+
 
     def drawLine(self, x, y, x2, y2, width, rgb):
 
