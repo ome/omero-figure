@@ -344,7 +344,6 @@ class FigureExport(object):
 
     def drawLabels(self, panel, page):
 
-        c = self.figureCanvas
         labels = panel['labels']
         x = panel['x']
         y = panel['y']
@@ -352,7 +351,6 @@ class FigureExport(object):
         height = panel['height']
 
         # Handle page offsets
-        pageHeight = self.pageHeight
         x = x - page['x']
         y = y - page['y']
 
@@ -388,29 +386,17 @@ class FigureExport(object):
                 positions[pos].append(l)
 
 
-        def drawLab(c, label, lx, ly, align='left'):
+        def drawLab(label, lx, ly, align='left'):
             label_h = label['size']
-            c.setFont("Helvetica", label_h)
             color = label['color']
             red = int(color[0:2], 16)
             green = int(color[2:4], 16)
             blue = int(color[4:6], 16)
-            red = float(red)/255
-            green = float(green)/255
-            blue = float(blue)/255
-            c.setFillColorRGB(red, green, blue)
-            if align == 'left':
-                c.drawString(lx, pageHeight - label_h - ly, label['text'])
-            elif align == 'right':
-                c.drawRightString(lx, pageHeight - label_h - ly, label['text'])
-            elif align == 'center':
-                c.drawCentredString(lx, pageHeight - label_h - ly, label['text'])
-            elif align == 'vertical':
-                c.rotate(90)
-                c.drawCentredString(pageHeight - ly, -(lx + label_h),
-                                    label['text'])
-                c.rotate(-90)
+            fontsize = label['size']
+            rgb = (red, green, blue)
+            text = label['text']
 
+            self.drawText(text, lx, ly, fontsize, rgb, align=align)
             return label_h
 
         # Render each position:
@@ -419,13 +405,13 @@ class FigureExport(object):
                 lx = x + spacer
                 ly = y + spacer
                 for l in labels:
-                    label_h = drawLab(c, l, lx, ly)
+                    label_h = drawLab(l, lx, ly)
                     ly += label_h + spacer
             elif key == 'topright':
                 lx = x + width - spacer
                 ly = y + spacer
                 for l in labels:
-                    label_h = drawLab(c, l, lx, ly, align='right')
+                    label_h = drawLab(l, lx, ly, align='right')
                     ly += label_h + spacer
             elif key == 'bottomleft':
                 lx = x + spacer
@@ -433,26 +419,26 @@ class FigureExport(object):
                 labels.reverse()  # last item goes bottom
                 for l in labels:
                     ly = ly - l['size'] - spacer
-                    drawLab(c, l, lx, ly)
+                    drawLab(l, lx, ly)
             elif key == 'bottomright':
                 lx = x + width - spacer
                 ly = y + height
                 labels.reverse()  # last item goes bottom
                 for l in labels:
                     ly = ly - l['size'] - spacer
-                    drawLab(c, l, lx, ly, align='right')
+                    drawLab(l, lx, ly, align='right')
             elif key == 'top':
                 lx = x + (width/2)
                 ly = y
                 labels.reverse()
                 for l in labels:
                     ly = ly - l['size'] - spacer
-                    drawLab(c, l, lx, ly, align='center')
+                    drawLab(l, lx, ly, align='center')
             elif key == 'bottom':
                 lx = x + (width/2)
                 ly = y + height + spacer
                 for l in labels:
-                    label_h = drawLab(c, l, lx, ly, align='center')
+                    label_h = drawLab(l, lx, ly, align='center')
                     ly += label_h + spacer
             elif key == 'left':
                 lx = x - spacer
@@ -460,7 +446,7 @@ class FigureExport(object):
                 total_h = sum(sizes) + spacer * (len(labels)-1)
                 ly = y + (height-total_h)/2
                 for l in labels:
-                    label_h = drawLab(c, l, lx, ly, align='right')
+                    label_h = drawLab(l, lx, ly, align='right')
                     ly += label_h + spacer
             elif key == 'right':
                 lx = x + width + spacer
@@ -468,7 +454,7 @@ class FigureExport(object):
                 total_h = sum(sizes) + spacer * (len(labels)-1)
                 ly = y + (height-total_h)/2
                 for l in labels:
-                    label_h = drawLab(c, l, lx, ly)
+                    label_h = drawLab(l, lx, ly)
                     ly += label_h + spacer
             elif key == 'leftvert':
                 lx = x - spacer
@@ -476,7 +462,7 @@ class FigureExport(object):
                 labels.reverse()
                 for l in labels:
                     lx = lx - l['size'] - spacer
-                    drawLab(c, l, lx, ly, align='vertical')
+                    drawLab(l, lx, ly, align='vertical')
 
 
     def drawScalebar(self, panel, region_width, page):
@@ -558,15 +544,17 @@ class FigureExport(object):
 
             # For 'bottom' scalebar, put label above
             if 'bottom' in position:
-                ly = ly - font_size - 5
+                ly = ly - font_size
+            else:
+                ly = ly + 5
 
             self.drawText(label, (lx + lx_end)/2, ly, font_size, (red, green, blue), align="center")
 
 
     def drawText(self, text, x, y, fontsize, rgb, align="center"):
 
-        y = y + fontsize
-        y = self.pageHeight - y
+        ly = y + fontsize
+        ly = self.pageHeight - ly + 5
         c = self.figureCanvas
 
         red, green, blue = rgb
@@ -576,7 +564,15 @@ class FigureExport(object):
         c.setFont("Helvetica", fontsize)
         c.setFillColorRGB(red, green, blue)
         if (align == "center"):
-            c.drawCentredString(x, y, text)
+            c.drawCentredString(x, ly, text)
+        elif (align == "right"):
+            c.drawRightString(x, ly, text)
+        elif (align == "left"):
+            c.drawString(x, ly, text)
+        elif align == 'vertical':
+            c.rotate(90)
+            c.drawCentredString(self.pageHeight - y, -(x + fontsize), text)
+            c.rotate(-90)
 
 
     def drawLine(self, x, y, x2, y2, width, rgb):
