@@ -940,6 +940,7 @@ class TiffExport(FigureExport):
     def drawText(self, text, x, y, fontsize, rgb, align="center"):
 
         x = self.scaleCoords(x)
+        y = y - 5       # seems to help, but would be nice to fix this!
         y = self.scaleCoords(y)
         fontsize = self.scaleCoords(fontsize)
 
@@ -947,14 +948,15 @@ class TiffExport(FigureExport):
         font = self.getFont(fontsize)
         txt_w, txt_h = font.getsize(text)
 
-        # center
-        x = x - (txt_w/ 2)
-        textdraw.text((x, y), text, font=font, fill=rgb)
-
-
-    def drawLabels(self, panel, page):
-
-        print "drawLabels FIX ME!"
+        if align == "vertical":
+            pass
+            # TODO - vertical labels!
+        else:
+            if align == "center":
+                x = x - (txt_w/ 2)
+            elif align == "right":
+                x = x - txt_w
+            textdraw.text((x, y), text, font=font, fill=rgb)
 
 
     def savePage(self):
