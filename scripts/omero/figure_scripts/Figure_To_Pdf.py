@@ -978,6 +978,13 @@ class TiffExport(FigureExport):
 
         print "TODO addInfoPage"
 
+        # text file with extension and folder
+        fullName = "info_page.txt"
+        if self.zip_folder_name is not None:
+            fullName = os.path.join(self.zip_folder_name, fullName)
+
+        self.infoPage = file(fullName, 'w')
+
 
 def export_figure(conn, scriptParams):
 
