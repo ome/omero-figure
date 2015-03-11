@@ -730,15 +730,41 @@ class FigureExport(object):
         return tempName
 
 
-    def addInfoPage(self, panels_json):
+    def addParaWithThumb(self, text, pageY, style, thumbSrc=None):
+        """ Adds paragraph text to point on page """
 
         c = self.figureCanvas
+        aW = self.pageWidth - (inch * 2)
+        maxH = self.pageHeight - inch
+        spacer = 10
+        imgw = imgh = 25
+        para=Paragraph(text, style)
+        w,h = para.wrap(aW, pageY) # find required space
+        if thumbSrc is not None:
+            parah = max(h, imgh)
+        else:
+            parah = h
+        # If there's not enough space, start a new page
+        if parah > (pageY - inch):
+            print "new page"
+            c.save()
+            pageY = maxH    # reset to top of new page
+        indent = inch
+        if thumbSrc is not None:
+            c.drawImage(thumbSrc, inch, pageY - imgh, imgw, imgh)
+            indent = indent + imgw + spacer
+        para.drawOn(c, indent, pageY - h)
+        return pageY - parah - spacer # reduce the available height
+
+
+    def addInfoPage(self, panels_json):
+
+        # c = self.figureCanvas
         scriptParams = self.scriptParams
         figureName = self.figureName
         base_url = None
         if 'Webclient_URI' in scriptParams:
             base_url = scriptParams['Webclient_URI']
-        pageWidth = self.pageWidth
         pageHeight = self.pageHeight
         availHeight = pageHeight-2*inch
         print 'availHeight', availHeight
@@ -754,46 +780,20 @@ class FigureExport(object):
 
 
         scalebars = []
-        thumbSize = 25
-        spacer = 10
-        aW = pageWidth - (inch * 2)
         maxH = pageHeight - inch
-        imgw = imgh = thumbSize
 
         # Start adding at the top, update pageY as we add paragraphs
         pageY = maxH
 
-        def addParaWithThumb(text, pageY, style=styleN, thumbSrc=None):
-            """ Adds paragraph text to point on page """
-
-            para=Paragraph(text, style)
-            w,h = para.wrap(aW, pageY) # find required space
-            if thumbSrc is not None:
-                parah = max(h, imgh)
-            else:
-                parah = h
-            # If there's not enough space, start a new page
-            if parah > (pageY - inch):
-                print "new page"
-                c.save()
-                pageY = maxH    # reset to top of new page
-            indent = inch
-            if thumbSrc is not None:
-                c.drawImage(thumbSrc, inch, pageY - imgh, imgw, imgh)
-                indent = indent + imgw + spacer
-            para.drawOn(c, indent, pageY - h)
-            return pageY - parah - spacer # reduce the available height
-
-
-        pageY = addParaWithThumb(figureName, pageY, style=styleH)
+        pageY = self.addParaWithThumb(figureName, pageY, style=styleH)
 
         if "Figure_URI" in scriptParams:
             fileUrl = scriptParams["Figure_URI"]
             print "Figure URL", fileUrl
             figureLink = "Link to Figure: <a href='%s' color='blue'>%s</a>" % (fileUrl, fileUrl)
-            pageY = addParaWithThumb(figureLink, pageY)
+            pageY = self.addParaWithThumb(figureLink, pageY, style=styleN)
 
-        pageY = addParaWithThumb("Figure contains the following images:", pageY, style=styleH2)
+        pageY = self.addParaWithThumb("Figure contains the following images:", pageY, style=styleH2)
 
 
         # Go through sorted panels, adding paragraph for each unique image
@@ -818,12 +818,13 @@ class FigureExport(object):
             lines.append("<a href='%s' color='blue'>%s</a>" % (img_url, img_url))
             # addPara([" ".join(line)])
             line = " ".join(lines)
-            pageY = addParaWithThumb(line, pageY, thumbSrc=thumbSrc)
+            pageY = self.addParaWithThumb(line, pageY, style=styleN, thumbSrc=thumbSrc)
 
         if len(scalebars) > 0:
             scalebars = list(set(scalebars))
-            pageY = addParaWithThumb("Scalebars", pageY, style=styleH2)
-            pageY = addParaWithThumb("Scalebars: %s" % ", ".join(scalebars), pageY)
+            pageY = self.addParaWithThumb("Scalebars", pageY, style=styleH2)
+            pageY = self.addParaWithThumb("Scalebars: %s" % ", ".join(scalebars),
+                    pageY, style=styleN)
 
 
     def panel_is_on_page(self, panel, page):
@@ -983,7 +984,18 @@ class TiffExport(FigureExport):
         if self.zip_folder_name is not None:
             fullName = os.path.join(self.zip_folder_name, fullName)
 
-        self.infoPage = file(fullName, 'w')
+
+        # lines = []
+
+        # lines.append(self.figureName)
+        # lines.append()
+
+        # self.infoPage = open(fullName, 'w')
+
+        # try:
+        #     self.infoPage.write(self.figureName)
+        # finally:
+        #     self.infoPage.close()
 
 
 def export_figure(conn, scriptParams):
