@@ -759,7 +759,6 @@ class FigureExport(object):
 
     def addInfoPage(self, panels_json):
 
-        # c = self.figureCanvas
         scriptParams = self.scriptParams
         figureName = self.figureName
         base_url = None
@@ -970,32 +969,22 @@ class TiffExport(FigureExport):
         self.createFigure()
 
 
-    def saveFigure(self):
-
-        #self.figureCanvas.save()
-        print "saveFigure TODO????"
 
     def addInfoPage(self, panels_json):
+        """
+        Since we need a PDF for the info page, we create one first,
+        then call superclass addInfoPage
+        """
 
-        print "TODO addInfoPage"
-
-        # text file with extension and folder
-        fullName = "info_page.txt"
+        fullName = "info_page.pdf"
         if self.zip_folder_name is not None:
             fullName = os.path.join(self.zip_folder_name, fullName)
+        self.figureCanvas = canvas.Canvas(fullName, pagesize=(self.pageWidth, self.pageHeight))
 
+        # Superclass method will call addParaWithThumb(),
+        # to add lines to self.infoLines
+        super(TiffExport, self).addInfoPage(panels_json)
 
-        # lines = []
-
-        # lines.append(self.figureName)
-        # lines.append()
-
-        # self.infoPage = open(fullName, 'w')
-
-        # try:
-        #     self.infoPage.write(self.figureName)
-        # finally:
-        #     self.infoPage.close()
 
 
 def export_figure(conn, scriptParams):
