@@ -95,11 +95,6 @@ class FigureExport(object):
         self.pageWidth = self.figure_json['paper_width']
         self.pageHeight = self.figure_json['paper_height']
 
-
-    def getFigureFileExt(self):
-        return "pdf"
-
-
     def getZipName(self):
 
         # file names can't include unicode characters
@@ -108,14 +103,21 @@ class FigureExport(object):
         name = path.basename(name)
         return "%s.zip" % name
 
-
     def getFigureFileName(self):
+        """
+        For PDF export we will only create a single figure file, but
+        for TIFF export we may have several pages, so we need unique names
+        for each to avoid overwriting.
+        This method supports both, simply using different extension
+        (pdf/tiff) for each.
+        """
 
+        # Extension is pdf or tiff
         fext = self.getFigureFileExt()
 
         # file names can't include unicode characters
         name = unicodedata.normalize('NFKD', self.figureName).encode('ascii','ignore')
-        # in case we have path/to/name.pdf, just use name.pdf
+        # in case we have path/to/name, just use name
         name = path.basename(name)
 
         # if ends with E.g. .pdf, remove extension
@@ -134,19 +136,28 @@ class FigureExport(object):
             if self.zip_folder_name is not None:
                 fullName = os.path.join(self.zip_folder_name, fullName)
 
-        print "getFigureFileName()", fullName
+        # Handy to know what the last created file is:
         self.figureFileName = fullName
+
+        print "getFigureFileName()", fullName
         return fullName
 
-
     def buildFigure(self):
+        """
+        The main building of the figure happens here, independently of format.
+        We set up directories as needed, call createFigure() to create
+        the PDF or TIFF then iterate through figure pages, adding panels
+        for each page.
+        Then we add an info page and create a zip of everything if needed.
+        Finally the created file or zip is uploaded to OMERO and attached
+        as a file annotation to all the images in the figure. 
+        """
 
         # test to see if we've got multiple pages
         page_count = 'page_count' in self.figure_json and self.figure_json['page_count'] or 1
         page_count = int(page_count)
         paper_spacing = 'paper_spacing' in self.figure_json and self.figure_json['paper_spacing'] or 50
         page_col_count = 'page_col_count' in self.figure_json and self.figure_json['page_col_count'] or 1
-
 
         # Create a zip if we have multiple TIFF pages or we're exporting Images
         export_option = self.scriptParams['Export_Option']
@@ -177,7 +188,6 @@ class FigureExport(object):
         # We get our group from the first image
         id1 = panels_json[0]['imageId']
         self.conn.getObject("Image", id1).getDetails().group.id.val
-
 
         # For each page, add panels...
         col = 0
@@ -212,7 +222,6 @@ class FigureExport(object):
             groupId = self.conn.getEventContext().groupId
         self.conn.SERVICE_OPTS.setOmeroGroup(groupId)
 
-
         outputFile = self.figureFileName
 
         # TODO - fix ns & mimetype for TIFFs
@@ -227,7 +236,6 @@ class FigureExport(object):
             outputFile = zipName
             ns = "omero.web.figure.zip"
             mimetype = "application/zip"
-
 
         fileAnn = self.conn.createFileAnnfromLocalFile(
             outputFile,
@@ -251,24 +259,8 @@ class FigureExport(object):
 
         return fileAnn
 
-
-    def createFigure(self):
-
-        name = self.getFigureFileName()
-        self.figureCanvas = canvas.Canvas(name, pagesize=(self.pageWidth, self.pageHeight))
-
-
-    def savePage(self):
-
-        self.figureCanvas.showPage()
-
-    def saveFigure(self):
-
-        self.figureCanvas.save()
-
-
     def applyRdefs(self, image, channels):
-
+        """ Apply the channel levels and colors to the image """
         cIdxs = []
         windows = []
         colors = []
@@ -285,9 +277,12 @@ class FigureExport(object):
         print "setActiveChannels", cIdxs, windows, colors
         image.setActiveChannels(cIdxs, windows, colors)
 
-
     def get_panel_size(self, panel):
-
+        """
+        Gets the width and height in points/pixels for a panel in the
+        figure. This is at the 'original' figure / PDF coordinates
+        (E.g. before scaling for TIFF export)
+        """
         zoom = float(panel['zoom'])
         frame_w = panel['width']
         frame_h = panel['height']
@@ -320,12 +315,10 @@ class FigureExport(object):
                 tile_w = tile_h * wh
 
         print 'tile_w', tile_w, 'tile_h', tile_h
-
         return {'width': tile_w, 'height': tile_h}
 
-
     def get_time_label_text(self, deltaT, format):
-
+        """ Gets the text for 'live' time-stamp labels """
         if format == "secs":
             text = "%s secs" % deltaT
         elif format == "mins":
@@ -341,9 +334,12 @@ class FigureExport(object):
             text = "%s:%02d:%02d" % (h, m, s)
         return text
 
-
     def drawLabels(self, panel, page):
-
+        """
+        Add the panel labels to the page.
+        Here we calculate the position of labels but delegate
+        to self.drawText() to actually place the labels on PDF/TIFF
+        """ 
         labels = panel['labels']
         x = panel['x']
         y = panel['y']
@@ -466,7 +462,12 @@ class FigureExport(object):
 
 
     def drawScalebar(self, panel, region_width, page):
-
+        """
+        Add the scalebar to the page.
+        Here we calculate the position of scalebar but delegate
+        to self.drawLine() and self.drawText() to actually place
+        the scalebar and label on PDF/TIFF
+        """ 
         x = panel['x']
         y = panel['y']
         width = panel['width']
@@ -550,49 +551,12 @@ class FigureExport(object):
 
             self.drawText(label, (lx + lx_end)/2, ly, font_size, (red, green, blue), align="center")
 
-
-    def drawText(self, text, x, y, fontsize, rgb, align="center"):
-
-        ly = y + fontsize
-        ly = self.pageHeight - ly + 5
-        c = self.figureCanvas
-
-        red, green, blue = rgb
-        red = float(red)/255
-        green = float(green)/255
-        blue = float(blue)/255
-        c.setFont("Helvetica", fontsize)
-        c.setFillColorRGB(red, green, blue)
-        if (align == "center"):
-            c.drawCentredString(x, ly, text)
-        elif (align == "right"):
-            c.drawRightString(x, ly, text)
-        elif (align == "left"):
-            c.drawString(x, ly, text)
-        elif align == 'vertical':
-            c.rotate(90)
-            c.drawCentredString(self.pageHeight - y, -(x + fontsize), text)
-            c.rotate(-90)
-
-
-    def drawLine(self, x, y, x2, y2, width, rgb):
-
-        red, green, blue = rgb
-        red = float(red)/255
-        green = float(green)/255
-        blue = float(blue)/255
-
-        y = self.pageHeight - y
-        y2 = self.pageHeight - y2
-        c = self.figureCanvas
-        c.setLineWidth(width)
-        c.setStrokeColorRGB(red, green, blue)
-        c.line(x, y, x2, y2,)
-
-
-
     def getPanelImage(self, image, panel, origName=None):
-
+        """
+        Gets the rendered image from OMERO, then crops & rotates as needed.
+        Optionally saving original and cropped images as TIFFs.
+        Returns image as PIL image.
+        """
         z = panel['theZ']
         t = panel['theT']
 
@@ -667,8 +631,10 @@ class FigureExport(object):
         return out
 
     def drawPanel(self, panel, page, idx):
-
-        conn = self.conn
+        """
+        Gets the image from OMERO, processes (and saves) it then
+        calls self.pasteImage() to add it to PDF or TIFF figure.
+        """
         imageId = panel['imageId']
         channels = panel['channels']
         x = panel['x']
@@ -681,7 +647,7 @@ class FigureExport(object):
         x = x - page['x']
         y = y - page['y']
 
-        image = conn.getObject("Image", imageId)
+        image = self.conn.getObject("Image", imageId)
         self.applyRdefs(image, channels)
 
         # create name to save image
@@ -707,16 +673,6 @@ class FigureExport(object):
 
         return image
 
-
-    def pasteImage(self, pilImg, imgName, x, y, width, height):
-
-        # Save Image to file, then bring into PDF
-        pilImg.save(imgName)
-        # Since coordinate system is 'bottom-up', convert from 'top-down'
-        y = self.pageHeight - height - y
-        self.figureCanvas.drawImage(imgName, x, y, width, height)
-
-
     def getThumbnail(self, imageId):
         """ Saves thumb as local jpg and returns name """
 
@@ -729,9 +685,8 @@ class FigureExport(object):
         pilImg.save(tempName)
         return tempName
 
-
     def addParaWithThumb(self, text, pageY, style, thumbSrc=None):
-        """ Adds paragraph text to point on page """
+        """ Adds paragraph text to point on PDF info page """
 
         c = self.figureCanvas
         aW = self.pageWidth - (inch * 2)
@@ -756,9 +711,8 @@ class FigureExport(object):
         para.drawOn(c, indent, pageY - h)
         return pageY - parah - spacer # reduce the available height
 
-
     def addInfoPage(self, panels_json):
-
+        """ Generates a PDF info page with figure title, links to images etc """
         scriptParams = self.scriptParams
         figureName = self.figureName
         base_url = None
@@ -777,13 +731,11 @@ class FigureExport(object):
         styleH = styles['Heading1']
         styleH2 = styles['Heading2']
 
-
         scalebars = []
         maxH = pageHeight - inch
 
         # Start adding at the top, update pageY as we add paragraphs
         pageY = maxH
-
         pageY = self.addParaWithThumb(figureName, pageY, style=styleH)
 
         if "Figure_URI" in scriptParams:
@@ -793,7 +745,6 @@ class FigureExport(object):
             pageY = self.addParaWithThumb(figureLink, pageY, style=styleN)
 
         pageY = self.addParaWithThumb("Figure contains the following images:", pageY, style=styleH2)
-
 
         # Go through sorted panels, adding paragraph for each unique image
         for p in panels_json:
@@ -828,7 +779,6 @@ class FigureExport(object):
 
     def panel_is_on_page(self, panel, page):
         """ Return true if panel overlaps with this page """
-
         px = panel['x']
         px2 = px + panel['width']
         py = panel['y']
@@ -843,7 +793,6 @@ class FigureExport(object):
 
     def add_panels_to_page(self, panels_json, imageIds, page):
         """ Add panels that are within the bounds of this page """
-
         for i, panel in enumerate(panels_json):
 
             if not self.panel_is_on_page(panel, page):
@@ -860,8 +809,77 @@ class FigureExport(object):
             print ""
 
 
-class TiffExport(FigureExport):
+    def getFigureFileExt(self):
+        return "pdf"
 
+    def createFigure(self):
+        """
+        Creates a PDF figure. This is overwritten by ExportTiff subclass.
+        """
+        name = self.getFigureFileName()
+        self.figureCanvas = canvas.Canvas(name, pagesize=(self.pageWidth, self.pageHeight))
+
+    def savePage(self):
+        """ Called on completion of each page. Saves page of PDF """
+        self.figureCanvas.showPage()
+
+    def saveFigure(self):
+        """ Completes PDF figure (or info-page PDF for TIFF export) """
+        self.figureCanvas.save()
+
+    def drawText(self, text, x, y, fontsize, rgb, align="center"):
+        """ Adds text to PDF. Overwritten for TIFF below """
+        ly = y + fontsize
+        ly = self.pageHeight - ly + 5
+        c = self.figureCanvas
+
+        red, green, blue = rgb
+        red = float(red)/255
+        green = float(green)/255
+        blue = float(blue)/255
+        c.setFont("Helvetica", fontsize)
+        c.setFillColorRGB(red, green, blue)
+        if (align == "center"):
+            c.drawCentredString(x, ly, text)
+        elif (align == "right"):
+            c.drawRightString(x, ly, text)
+        elif (align == "left"):
+            c.drawString(x, ly, text)
+        elif align == 'vertical':
+            c.rotate(90)
+            c.drawCentredString(self.pageHeight - y, -(x + fontsize), text)
+            c.rotate(-90)
+
+    def drawLine(self, x, y, x2, y2, width, rgb):
+        """ Adds line to PDF. Overwritten for TIFF below """
+        red, green, blue = rgb
+        red = float(red)/255
+        green = float(green)/255
+        blue = float(blue)/255
+
+        y = self.pageHeight - y
+        y2 = self.pageHeight - y2
+        c = self.figureCanvas
+        c.setLineWidth(width)
+        c.setStrokeColorRGB(red, green, blue)
+        c.line(x, y, x2, y2,)
+
+    def pasteImage(self, pilImg, imgName, x, y, width, height):
+        """ Adds the PIL image to the PDF figure. Overwritten for TIFFs """
+        # Save Image to file, then bring into PDF
+        pilImg.save(imgName)
+        # Since coordinate system is 'bottom-up', convert from 'top-down'
+        y = self.pageHeight - height - y
+        self.figureCanvas.drawImage(imgName, x, y, width, height)
+
+
+
+class TiffExport(FigureExport):
+    """
+    Subclass to handle export of Figure as TIFFs, 1 per page.
+    We only need to overwrite methods that actually put content on
+    the TIFF instead of PDF.
+    """
 
     def __init__(self, conn, scriptParams, exportImages=None):
 
@@ -872,23 +890,28 @@ class TiffExport(FigureExport):
         self.fontPath = os.path.join(THISPATH, "pilfonts", "FreeSans.ttf")
 
     def getFont(self, fontsize):
+        """ Try to load font from known location in OMERO """
         try:
             font = ImageFont.truetype(self.fontPath, fontsize)
         except:
             font = ImageFont.load('%s/pilfonts/B%0.2d.pil' % (self.GATEWAYPATH, 24))
         return font
 
+    def scaleCoords(self, coord):
+        """
+        Origianl figure coordinates assume 72 dpi figure, but we want to
+        export at 300 dpi, so everything needs scaling accordingly
+        """
+        return (coord * 300)/72
+
     def getFigureFileExt(self):
         return "tiff"
 
-    def scaleCoords(self, coord):
-        # By default, convert from 72 dpi to 300 dpi
-        return (coord * 300)/72
-
     def createFigure(self):
-
-        # Need to calculate DPI and size
-        # Assume 300 PDI for now. Sizes are for 72 dpi
+        """
+        Creates a new PIL image ready to receive panels, labels etc.
+        This is created for each page in the figure.
+        """
         tiffWidth = self.scaleCoords(self.pageWidth)
         tiffHeight = self.scaleCoords(self.pageHeight)
         print "TIFF: width, height", tiffWidth, tiffHeight
@@ -896,7 +919,7 @@ class TiffExport(FigureExport):
 
 
     def pasteImage(self, pilImg, imgName, x, y, width, height):
-
+        """ Add the PIL image to the current figure page """
         if self.exportImages:
             pilImg.save(imgName)
 
@@ -921,7 +944,7 @@ class TiffExport(FigureExport):
 
 
     def drawLine(self, x, y, x2, y2, width, rgb):
-
+        """ Draw line on the current figure page """
         draw = ImageDraw.Draw(self.tiffFigure)
 
         x = self.scaleCoords(x)
@@ -938,7 +961,7 @@ class TiffExport(FigureExport):
             y2 += 1
 
     def drawText(self, text, x, y, fontsize, rgb, align="center"):
-
+        """ Add text to the current figure page """
         x = self.scaleCoords(x)
         y = y - 5       # seems to help, but would be nice to fix this!
         y = self.scaleCoords(y)
@@ -958,9 +981,11 @@ class TiffExport(FigureExport):
                 x = x - txt_w
             textdraw.text((x, y), text, font=font, fill=rgb)
 
-
     def savePage(self):
-
+        """
+        Save the current PIL image page as a TIFF and start a new
+        PIL image for the next page
+        """
         self.figureFileName = self.getFigureFileName()
 
         self.tiffFigure.save(self.figureFileName)
@@ -968,14 +993,11 @@ class TiffExport(FigureExport):
         # Create a new blank tiffFigure for subsequent pages
         self.createFigure()
 
-
-
     def addInfoPage(self, panels_json):
         """
         Since we need a PDF for the info page, we create one first,
         then call superclass addInfoPage
         """
-
         fullName = "info_page.pdf"
         if self.zip_folder_name is not None:
             fullName = os.path.join(self.zip_folder_name, fullName)
