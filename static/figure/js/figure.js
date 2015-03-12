@@ -1676,6 +1676,8 @@ var ColorPickerView = Backbone.View.extend({
 
             if (export_opt == "PDF & images") {
                 exportOption = "PDF_IMAGES";
+            } else if (export_opt == "TIFF") {
+                exportOption = "TIFF";
             } else {
                 exportOption = "PDF";
             }

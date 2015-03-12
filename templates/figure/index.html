@@ -525,24 +525,24 @@
                     </div>
 
                     <button id="pdf_inprogress" style="display:none" class="btn btn-primary btn-sm"
-                            title="PDF generation in progress..." onClick="return false;">
-                        Creating PDF...
+                            title="Figure generation in progress..." onClick="return false;">
+                        Exporting Figure...
                     </button>
 
-                    <a id="pdf_download" href="/webclient/annotation/1058/" target="download_pdf"
+                    <a id="pdf_download" href="#" target="download_pdf"
                             style="padding: 4px 10px; display: none;"
-                            class="btn btn-primary btn-sm script-result" title="Download PDF">
+                            class="btn btn-primary btn-sm script-result" title="Download Figure">
                         <span class="glyphicon glyphicon-download-alt" style="font-size: 14px"></span>
                     </a>
 
-                    <a id="script_error" href="/webclient/annotation/1058/" target="script_error"
+                    <a id="script_error" href="#" target="script_error"
                             style="padding: 4px 10px; display: none;"
                             class="btn btn-danger btn-sm script-result" title="Show Error">
                         <span class="glyphicon glyphicon-warning-sign" style="font-size: 14px"></span>
                     </a>
 
                     <div class="btn-group" {% if scriptMissing %}title="PDF script not installed"{% endif %}>
-                        <button id="create_figure_pdf" title="Generate PDF for download"
+                        <button id="create_figure_pdf" title="Generate figure for download"
                             {% if scriptMissing %}disabled="disabled"{% endif %}
                             data-export-option="PDF"
                             type="button" class="btn btn-success btn-sm export_pdf">
@@ -554,13 +554,25 @@
                         </button>
                         <ul class="dropdown-menu export_options" role="menu">
                             <!-- NB: data-export-option attr used to label export button & handled by js on click -->
-                            <li><a href="#" class="js-export-pdf-only" data-export-option="PDF">
+                            <li><a href="#" data-export-option="PDF"
+                                    title="Export figure as PDF">
                                 <span class="glyphicon glyphicon-ok" style="color:#333"></span>
-                                PDF only</a>
+                                PDF</a>
                             </li>
-                            <li><a href="#" class="js-export-pdf-images" data-export-option="PDF & images">
+                            <li><a href="#" data-export-option="PDF & images"
+                                    title="Export as PDF, in zip with panel images">
                                 <span class="glyphicon glyphicon-ok" style="color:#333; visibility:hidden"></span>
                                 PDF with images</a>
+                            </li>
+                            <li><a href="#" data-export-option="TIFF"
+                                    title="Export figure as a TIFF image per page">
+                                <span class="glyphicon glyphicon-ok" style="color:#333; visibility:hidden"></span>
+                                TIFF (300 dpi)</a>
+                            </li>
+                            <li><a href="#" data-export-option="TIFF & images"
+                                    title="Export as TIFF, in zip with panel images">
+                                <span class="glyphicon glyphicon-ok" style="color:#333; visibility:hidden"></span>
+                                TIFF with images</a>
                             </li>
                         </ul>
                     </div>
