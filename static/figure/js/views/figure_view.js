@@ -127,6 +127,9 @@
             // Update text of main export_pdf button.
             var txt = $target.attr('data-export-option');
             $('.export_pdf').text("Export " + txt).attr('data-export-option', txt);
+
+            // Hide download button
+            $("#pdf_download").hide();
         },
 
         paper_setup: function(event) {
