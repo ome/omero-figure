@@ -126,13 +126,15 @@ class FigureExport(object):
 
         # Name with extension and folder
         fullName = "%s.%s" % (name, fext)
+        index = 1
+        if fext == "tiff" and self.page_count > 1:
+            fullName = "%s_page_%02d.%s" % (name, index, fext)
         if self.zip_folder_name is not None:
             fullName = os.path.join(self.zip_folder_name, fullName)
 
-        index = 0
         while(os.path.exists(fullName)):
             index += 1
-            fullName = "%s(%02d).%s" % (name, index, fext)
+            fullName = "%s_page_%02d.%s" % (name, index, fext)
             if self.zip_folder_name is not None:
                 fullName = os.path.join(self.zip_folder_name, fullName)
 
@@ -155,7 +157,7 @@ class FigureExport(object):
 
         # test to see if we've got multiple pages
         page_count = 'page_count' in self.figure_json and self.figure_json['page_count'] or 1
-        page_count = int(page_count)
+        self.page_count = int(page_count)
         paper_spacing = 'paper_spacing' in self.figure_json and self.figure_json['paper_spacing'] or 50
         page_col_count = 'page_col_count' in self.figure_json and self.figure_json['page_col_count'] or 1
 
@@ -164,7 +166,7 @@ class FigureExport(object):
         createZip = False
         if self.exportImages:
             createZip = True
-        if (page_count > 1) and (export_option.startswith("TIFF")):
+        if (self.page_count > 1) and (export_option.startswith("TIFF")):
             createZip = True
 
         # somewhere to put PDF and images
@@ -192,7 +194,7 @@ class FigureExport(object):
         # For each page, add panels...
         col = 0
         row = 0
-        for p in range(page_count):
+        for p in range(self.page_count):
             print "\n------------------------- PAGE ", p + 1, "--------------------------"
             px = col * (self.pageWidth + paper_spacing)
             py = row * (self.pageHeight + paper_spacing)
