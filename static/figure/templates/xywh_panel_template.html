@@ -1,46 +1,18 @@
 
+
+
     <table id="xywh_table" class="table">
         <tbody>
             <tr><td>
                 Panel
-                <!-- <form class="form-inline"> -->
-                <form class="scalebar_form form-inline">
 
-                        <div class="form-group pull-left"><div class="checkbox checkbox-inline">
-        <label><%= dpi %> DPI</label>
-        </div>
-    </div>
-
-    <div class="input-group pull-left" style="width:65px">
-        <!-- <div class="checkbox checkbox-inline">
-            <label><%= dpi %> DPI</label>
-        </div> -->
-        <input type="text" class="scalebar-length form-control input-sm" 
-                placeholder="Length" value="300" />
-    </div>
-
-    <div class="checkbox">
-        <label>
-            <input type="checkbox" class="interpolate_dpi" <% if (true) print("checked") %> > Interpolate
-        </label>
-    </div>
-                    <!-- <div class="input-group" style="width: 75px">
-                        <input type="number" class="form-control input-sm"
-                            placeholder="DPI" value="300" />
-                    </div> -->
-                    <!-- <div class="form-group">
-                        <label><%= dpi %> DPI</label>
-                        <div class="input-group" style="width: 75px">
-                            <input type="number" class="form-control input-sm"
-                                placeholder="DPI" value="300" />
-                        </div>
-                        <button title="Set miniumum DPI for PDF export"
-                            type="button" class="btn btn-success btn-sm set_dpi">
-                            Set DPI
-                        </button>
-                    </div> -->
-                    <button title="Set miniumum DPI for PDF export" 
-                        class="btn btn-sm btn-success pull-right set_dpi">Set DPI</button>
+                <form class="form-inline pull-right">
+                    <div class="checkbox">
+                        <label>
+                            <%= dpi %> dpi
+                        </label>
+                    </div>
+                    <button class="btn btn-sm btn-success set_dpi">Set dpi</button>
                 </form>
                 
             </td></tr>
