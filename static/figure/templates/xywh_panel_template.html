@@ -3,13 +3,46 @@
         <tbody>
             <tr><td>
                 Panel
-                <div class="pull-right">
-                    <%= dpi %> DPI
-                    <button id="set_dpi" title="Set miniumum dpi for PDF export"
-                        type="button" class="btn btn-success btn-sm export_pdf">
-                        Set DPI
-                    </button>
-                </div>
+                <!-- <form class="form-inline"> -->
+                <form class="scalebar_form form-inline">
+
+                        <div class="form-group pull-left"><div class="checkbox checkbox-inline">
+        <label><%= dpi %> DPI</label>
+        </div>
+    </div>
+
+    <div class="input-group pull-left" style="width:65px">
+        <!-- <div class="checkbox checkbox-inline">
+            <label><%= dpi %> DPI</label>
+        </div> -->
+        <input type="text" class="scalebar-length form-control input-sm" 
+                placeholder="Length" value="300" />
+    </div>
+
+    <div class="checkbox">
+        <label>
+            <input type="checkbox" class="interpolate_dpi" <% if (true) print("checked") %> > Interpolate
+        </label>
+    </div>
+                    <!-- <div class="input-group" style="width: 75px">
+                        <input type="number" class="form-control input-sm"
+                            placeholder="DPI" value="300" />
+                    </div> -->
+                    <!-- <div class="form-group">
+                        <label><%= dpi %> DPI</label>
+                        <div class="input-group" style="width: 75px">
+                            <input type="number" class="form-control input-sm"
+                                placeholder="DPI" value="300" />
+                        </div>
+                        <button title="Set miniumum DPI for PDF export"
+                            type="button" class="btn btn-success btn-sm set_dpi">
+                            Set DPI
+                        </button>
+                    </div> -->
+                    <button title="Set miniumum DPI for PDF export" 
+                        class="btn btn-sm btn-success pull-right set_dpi">Set DPI</button>
+                </form>
+                
             </td></tr>
             <tr><td>
                 <div class="col-sm-3" style="text-align: right"><small><strong>X</strong>:</small></div>

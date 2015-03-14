@@ -285,9 +285,15 @@ obj || (obj = {});
 var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
 function print() { __p += __j.call(arguments, '') }
 with (obj) {
-__p += '\n    <table id="xywh_table" class="table">\n        <tbody>\n            <tr><td>\n                Panel\n                <div class="pull-right">\n                    ' +
+__p += '\n    <table id="xywh_table" class="table">\n        <tbody>\n            <tr><td>\n                Panel\n                <!-- <form class="form-inline"> -->\n                <form class="scalebar_form form-inline">\n\n                        <div class="form-group pull-left"><div class="checkbox checkbox-inline">\n        <label>' +
 ((__t = ( dpi )) == null ? '' : __t) +
-' DPI\n                    <button id="set_dpi" title="Set miniumum dpi for PDF export"\n                        type="button" class="btn btn-success btn-sm export_pdf">\n                        Set DPI\n                    </button>\n                </div>\n            </td></tr>\n            <tr><td>\n                <div class="col-sm-3" style="text-align: right"><small><strong>X</strong>:</small></div>\n                <div class="col-sm-3"><small>';
+' DPI</label>\n        </div>\n    </div>\n\n    <div class="input-group pull-left" style="width:65px">\n        <!-- <div class="checkbox checkbox-inline">\n            <label>' +
+((__t = ( dpi )) == null ? '' : __t) +
+' DPI</label>\n        </div> -->\n        <input type="text" class="scalebar-length form-control input-sm" \n                placeholder="Length" value="300" />\n    </div>\n\n    <div class="checkbox">\n        <label>\n            <input type="checkbox" class="interpolate_dpi" ';
+ if (true) print("checked") ;
+__p += ' > Interpolate\n        </label>\n    </div>\n                    <!-- <div class="input-group" style="width: 75px">\n                        <input type="number" class="form-control input-sm"\n                            placeholder="DPI" value="300" />\n                    </div> -->\n                    <!-- <div class="form-group">\n                        <label>' +
+((__t = ( dpi )) == null ? '' : __t) +
+' DPI</label>\n                        <div class="input-group" style="width: 75px">\n                            <input type="number" class="form-control input-sm"\n                                placeholder="DPI" value="300" />\n                        </div>\n                        <button title="Set miniumum DPI for PDF export"\n                            type="button" class="btn btn-success btn-sm set_dpi">\n                            Set DPI\n                        </button>\n                    </div> -->\n                    <button title="Set miniumum DPI for PDF export" \n                        class="btn btn-sm btn-success pull-right set_dpi">Set DPI</button>\n                </form>\n                \n            </td></tr>\n            <tr><td>\n                <div class="col-sm-3" style="text-align: right"><small><strong>X</strong>:</small></div>\n                <div class="col-sm-3"><small>';
  print(x) ;
 __p += '</small></div>\n\n                <div class="col-sm-3" style="text-align: right"><small><strong>Width</strong>:</small></div>\n                <div class="col-sm-3"><small>';
  print(width) ;

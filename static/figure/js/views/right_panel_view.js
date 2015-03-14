@@ -523,6 +523,13 @@
 
         events: {
             "click .setId": "setImageId",
+            "click .set_dpi": "set_dpi",
+        },
+
+        set_dpi: function(event) {
+            event.preventDefault();
+
+            console.log('set_dpi');
         },
 
         setImageId: function(event) {
