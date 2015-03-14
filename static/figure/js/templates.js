@@ -285,9 +285,9 @@ obj || (obj = {});
 var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
 function print() { __p += __j.call(arguments, '') }
 with (obj) {
-__p += '\n    <table id="xywh_table" class="table">\n        <tbody>\n            <tr><td>\n                Panel\n                <div class="pull-right">' +
+__p += '\n    <table id="xywh_table" class="table">\n        <tbody>\n            <tr><td>\n                Panel\n                <div class="pull-right">\n                    ' +
 ((__t = ( dpi )) == null ? '' : __t) +
-' dpi</div>\n            </td></tr>\n            <tr><td>\n                <div class="col-sm-3" style="text-align: right"><small><strong>X</strong>:</small></div>\n                <div class="col-sm-3"><small>';
+' DPI\n                    <button id="set_dpi" title="Set miniumum dpi for PDF export"\n                        type="button" class="btn btn-success btn-sm export_pdf">\n                        Set DPI\n                    </button>\n                </div>\n            </td></tr>\n            <tr><td>\n                <div class="col-sm-3" style="text-align: right"><small><strong>X</strong>:</small></div>\n                <div class="col-sm-3"><small>';
  print(x) ;
 __p += '</small></div>\n\n                <div class="col-sm-3" style="text-align: right"><small><strong>Width</strong>:</small></div>\n                <div class="col-sm-3"><small>';
  print(width) ;

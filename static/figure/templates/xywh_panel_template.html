@@ -3,7 +3,13 @@
         <tbody>
             <tr><td>
                 Panel
-                <div class="pull-right"><%= dpi %> dpi</div>
+                <div class="pull-right">
+                    <%= dpi %> DPI
+                    <button id="set_dpi" title="Set miniumum dpi for PDF export"
+                        type="button" class="btn btn-success btn-sm export_pdf">
+                        Set DPI
+                    </button>
+                </div>
             </td></tr>
             <tr><td>
                 <div class="col-sm-3" style="text-align: right"><small><strong>X</strong>:</small></div>
