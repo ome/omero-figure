@@ -528,8 +528,7 @@
 
         set_dpi: function(event) {
             event.preventDefault();
-
-            console.log('set_dpi');
+            $("#dpiModal").modal('show');
         },
 
         setImageId: function(event) {
