@@ -512,11 +512,11 @@
             if (opts.models.length > 1) {
                 var self = this;
                 this.models.forEach(function(m){
-                    self.listenTo(m, 'change:x change:y change:width change:height change:imageId change:zoom', self.render);
+                    self.listenTo(m, 'change:x change:y change:width change:height change:imageId change:zoom change:export_dpi', self.render);
                 });
             } else if (opts.models.length == 1) {
                 this.model = opts.models.head();
-                this.listenTo(this.model, 'change:x change:y change:width change:height change:zoom', this.render);
+                this.listenTo(this.model, 'change:x change:y change:width change:height change:zoom change:export_dpi', this.render);
                 this.listenTo(this.model, 'drag_resize', this.drag_resize);
             }
         },
@@ -546,6 +546,7 @@
                         'width': xywh[2] >> 0,
                         'height': xywh[3] >> 0};
             json.dpi = this.model.getPanelDpi(json.width, json.height);
+            json.export_dpi = this.model.get('export_dpi');
             this.$el.append(this.xywh_template(json));
         },
 
@@ -570,7 +571,7 @@
                     json.name = title;
                     // compare json summary so far with this Panel
                     var this_json = m.toJSON(),
-                        attrs = ["imageId", "orig_width", "orig_height", "sizeT", "sizeZ", "x", "y", "width", "height", "dpi"];
+                        attrs = ["imageId", "orig_width", "orig_height", "sizeT", "sizeZ", "x", "y", "width", "height", "dpi", "export_dpi"];
                     this_json.dpi = m.getPanelDpi();
                     _.each(attrs, function(a){
                         if (json[a] != this_json[a]) {
@@ -590,6 +591,8 @@
 
                 }
             });
+
+            json.export_dpi = json.export_dpi || 0;
 
             // Format floating point values
             _.each(["x", "y", "width", "height"], function(a){

@@ -1533,6 +1533,7 @@ var ColorPickerView = Backbone.View.extend({
             new SetIdModalView({model: this.model});
             new PaperSetupModalView({model: this.model});
             new RoiModalView({model: this.model});
+            new DpiModalView({model: this.model});
 
             this.figureFiles = new FileList();
             new FileListView({model:this.figureFiles});

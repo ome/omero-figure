@@ -8,9 +8,14 @@
 
                 <form class="form-inline pull-right">
                     <div class="checkbox">
-                        <label>
-                            <%= dpi %> dpi
-                        </label>
+                        <%= dpi %> dpi
+
+                        <% if (export_dpi) { %>
+                        (Export at <%= export_dpi %> dpi
+                        <button type="button" title="Delete Label" class="close clear-dpi"
+                            aria-hidden="true" style="float: none; left: 0; margin: 0; top: -2px;">×</button>
+                        <label>)</label>
+                        <% } %>
                     </div>
                     <button class="btn btn-sm btn-success set_dpi">Set dpi</button>
                 </form>
