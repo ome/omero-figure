@@ -22,7 +22,7 @@
             if (dpi == dpiVal) {
 
                 sel.forEach(function(p) {
-                    p.set("export_dpi", dpi);
+                    p.save("export_dpi", dpi);
                 });
                 $("#dpiModal").modal('hide');
             }
