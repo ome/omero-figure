@@ -12,12 +12,14 @@
 
                         <% if (export_dpi) { %>
                         (Export at <%= export_dpi %> dpi
-                        <button type="button" title="Delete Label" class="close clear-dpi"
+                        <button type="button" title="Delete Label" class="close clear_dpi"
+                            title="Remove (don't change dpi on export)"
                             aria-hidden="true" style="float: none; left: 0; margin: 0; top: -2px;">×</button>
                         <label>)</label>
                         <% } %>
                     </div>
-                    <button class="btn btn-sm btn-success set_dpi">Set dpi</button>
+                    <button class="btn btn-sm btn-success set_dpi"
+                        title="Resample to a higher dpi at export">Set dpi</button>
                 </form>
                 
             </td></tr>

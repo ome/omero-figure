@@ -524,11 +524,20 @@
         events: {
             "click .setId": "setImageId",
             "click .set_dpi": "set_dpi",
+            "click .clear_dpi": "clear_dpi",
         },
 
         set_dpi: function(event) {
             event.preventDefault();
             $("#dpiModal").modal('show');
+        },
+
+        // remove export_dpi attribute from selected panels
+        clear_dpi: function(event) {
+            event.preventDefault();
+            this.models.forEach(function(m) {
+                m.unset("export_dpi");
+            });
         },
 
         setImageId: function(event) {
