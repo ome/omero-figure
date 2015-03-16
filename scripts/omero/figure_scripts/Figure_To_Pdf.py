@@ -884,8 +884,11 @@ class FigureExport(object):
             target_w = int(round(target_w))
             target_h = int(round(target_h))
             print "    curr_w, curr_h", curr_w, curr_h
-            print "    target_w, target_h", target_w, target_h
-            pilImg = pilImg.resize((target_w, target_h), Image.BILINEAR)
+            if target_w > curr_w:
+                print "    Resample to target_w, target_h", target_w, target_h
+                pilImg = pilImg.resize((target_w, target_h), Image.BILINEAR)
+            else:
+                print "    Already over %s dpi" % dpi
 
         # Save Image to file, then bring into PDF
         pilImg.save(imgName)
