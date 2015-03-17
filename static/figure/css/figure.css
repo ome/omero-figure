@@ -114,9 +114,32 @@
         text-align: center;
     }
 
+    /* -- Legend -- */
+    .legend-container {
+        z-index: 100;
+        position:fixed;
+        bottom:0px;
+        width: 60%;
+        min-width:400px;
+        left:20%;
+        right:20%;
+    }
+
+    .legend-container .panel {
+        background-color:white;
+        margin-bottom: 36px;
+        padding-bottom: 0px;
+    }
+
+    .legend-footer {
+        position: absolute;
+        right: 0px;
+        bottom:0px;
+    }
+
     footer {
         background: gray;
-        height: 30px;
+        height: 36px;
         width: 100%;
         position: fixed;
         bottom: 0;
