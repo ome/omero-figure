@@ -162,6 +162,34 @@
             </div>
         </div>
     </div>
+    <!-- dpi modal -->
+    <div class="modal" id="dpiModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title">Resample Panels</h4>
+                </div>
+                <form class="dpiModalForm" role="form">
+                    <div class="modal-body">
+                        <p>Set a minimum resolution for selected panels. When exported as PDF, panel images below this dpi will be resampled as necessary. 
+                        </p>
+                        <div class="form-group" style="margin-top: 15px; margin-bottom: 0px">
+                            <div class="input-group">
+                                <input type="number" class="form-control export_dpi"
+                                    placeholder="resolution" value="300">
+                                <div class="input-group-addon">dpi</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer" style="margin-top: 0">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">OK</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
     <!-- ROI Modal -->
     <div class="modal" id="roiModal" tabindex="-1" role="dialog" aria-hidden="true">
         <div class="modal-dialog" style="width: 900px">

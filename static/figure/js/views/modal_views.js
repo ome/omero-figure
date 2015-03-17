@@ -1,6 +1,36 @@
 
 // Events, show/hide and rendering for various Modal dialogs.
 
+    var DpiModalView = Backbone.View.extend({
+
+        el: $("#dpiModal"),
+
+        model: FigureModel,
+
+        events: {
+            "submit .dpiModalForm": "handleDpiForm",
+        },
+
+        handleDpiForm: function(event) {
+            event.preventDefault();
+
+            var dpiVal = $(".export_dpi", this.el).val(),
+                dpi = parseInt(dpiVal, 10),
+                sel = this.model.getSelected();
+
+            // if we have a valid number...
+            if (dpi == dpiVal) {
+
+                sel.forEach(function(p) {
+                    p.save("export_dpi", dpi);
+                });
+                $("#dpiModal").modal('hide');
+            }
+            return false;
+        }
+
+    });
+
     var PaperSetupModalView = Backbone.View.extend({
 
         el: $("#paperSetupModal"),

@@ -669,7 +669,11 @@ class FigureExport(object):
         if self.zip_folder_name is not None:
             imgName = os.path.join(self.zip_folder_name, imgName)
 
-        self.pasteImage(pilImg, imgName, x, y, width, height)
+        # for PDF export, we might have a target dpi
+        dpi = 'export_dpi' in panel and panel['export_dpi'] or None
+
+        # Paste the panel to PDF or TIFF image
+        self.pasteImage(pilImg, imgName, x, y, width, height, dpi)
 
         self.drawScalebar(panel, tile_width, page)
 
@@ -866,8 +870,26 @@ class FigureExport(object):
         c.setStrokeColorRGB(red, green, blue)
         c.line(x, y, x2, y2,)
 
-    def pasteImage(self, pilImg, imgName, x, y, width, height):
+    def pasteImage(self, pilImg, imgName, x, y, width, height, dpi):
         """ Adds the PIL image to the PDF figure. Overwritten for TIFFs """
+
+        if dpi is not None:
+            print "Resample panel to %s dpi..." % dpi
+            # E.g. target is 300 dpi and width & height is '72 dpi'
+            # so we need image to be width * dpi/72 pixels
+            target_w = (width * dpi) / 72
+            curr_w, curr_h = pilImg.size
+            dpi_scale = float(target_w) / curr_w
+            target_h = dpi_scale * curr_h
+            target_w = int(round(target_w))
+            target_h = int(round(target_h))
+            print "    curr_w, curr_h", curr_w, curr_h
+            if target_w > curr_w:
+                print "    Resample to target_w, target_h", target_w, target_h
+                pilImg = pilImg.resize((target_w, target_h), Image.BILINEAR)
+            else:
+                print "    Already over %s dpi" % dpi
+
         # Save Image to file, then bring into PDF
         pilImg.save(imgName)
         # Since coordinate system is 'bottom-up', convert from 'top-down'
@@ -920,7 +942,7 @@ class TiffExport(FigureExport):
         self.tiffFigure = Image.new("RGBA", (tiffWidth, tiffHeight), (255, 255, 255))
 
 
-    def pasteImage(self, pilImg, imgName, x, y, width, height):
+    def pasteImage(self, pilImg, imgName, x, y, width, height, dpi=None):
         """ Add the PIL image to the current figure page """
         if self.exportImages:
             pilImg.save(imgName)
