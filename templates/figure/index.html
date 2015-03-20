@@ -622,18 +622,26 @@
     </main>
 
 
-    <div class="legend-container">
+    <div id="js-legend" class="legend-container">
         <div class="panel panel-default">
-            <div class="panel-body">
+            <div class="legend panel-body">
                 <p>
                     Legend text goes here
                 </p>
             </div>
         </div>
         <div class="legend-footer">
-            <button type="button" class="btn btn-default btn-xs"
+            <button type="button" class="btn btn-default btn-xs cancel-legend"
+                title="Cancel editing legend" style="margin: 3px; display: none">
+                Cancel
+            </button>
+            <button type="button" class="btn btn-success btn-xs save-legend"
+                title="Save figure legend" style="margin: 3px; display: none">
+                Save
+            </button>
+            <button type="button" class="btn btn-default btn-xs edit-legend"
                 title="Add figure legend" style="margin: 3px">
-                Add Legend
+                Edit Figure Legend
             </button>
         </div>
     </div>
@@ -747,6 +755,7 @@
     <script src="{% static 'figure/js/views/svg_model_view.js' %}"></script>
     <script src="{% static 'figure/js/views/util.js' %}"></script>
     <script src="{% static 'figure/js/views/colorpicker.js' %}"></script>
+    <script src="{% static 'figure/js/views/legend_view.js' %}"></script>
     <script src="{% static 'figure/js/app.js' %}"></script>
 
 
