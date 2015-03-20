@@ -10,8 +10,8 @@ This release adds a number of features and bug fixes.
 Multiple page figures:
 
   - Under File > Page Setup you can choose up to 10 pages for the figure.
-  - Pages are laid out in a grid on the canvas and image panels can be dragged across the canvas onto chosen page.
-  - Export will generate multi-page PDF documents.
+  - Pages are laid out in a grid on the canvas and image panels can be dragged across the canvas onto the chosen page.
+  - Export will generate a multi-page PDF document or multiple TIFF images.
 
 Crop to Region / ROI:
 
@@ -19,11 +19,28 @@ Crop to Region / ROI:
   - The crop region can be manually chosen by dragging to select an area of the displayed image.
   - Alternatively, existing Rectangular ROIs on the image will be loaded from OMERO and can be picked as a crop region.
 
-Export of TIFFs with PDF:
+Set dpi of panel images:
 
-  - A new export option allows the constituant images within a figure to be exported alongside the PDF file as TIFFs.
+  - On the 'Info' tab, you can set a minimum resolution for image panels when they are embedded
+    within the PDF figure on export. For example, 300 dpi is required by many journals.
+  - The Info tab will then display the 'current' dpi in the figure alongside the export dpi.
+  - When the figure is exported as PDF, the resolution of these panels will be boosted if it is
+    less than the chosen export dpi.
+  - Additional pixels will be created in the image and the data resampled using a bicubic filter. 
+
+Export of Figures as TIFFs:
+
+  - You can now choose to export the figure as a TIFF image at 300 dpi.
+  - This matches the submission format for many journals and allows easy embedding in presentations.
+  - Images are resampled using a bicubic filter to match the final figure dpi.
+  - Multi-page figures will be exported as multiple TIFFs in a zip file.
+
+Export of panel images alongside figure:
+
+  - An additional export option allows the constituant images within a figure to be exported alongside
+    the figure as TIFFs.
   - For each image panel, the full sized TIFF of the image is exported, as well as the cropped and rotated TIFF
-    that is embedded within the PDF file.
+    that is embedded within the PDF or TIFF figure.
   - This provides greater clarity as to the processing steps used in creating the figure and the TIFF images
     could also be used in a manual figure creation.
 
