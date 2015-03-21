@@ -25,6 +25,7 @@
             // see http://www.a4papersize.org/a4-paper-size-in-pixels.php
             'width_mm': 210,    // A4 sizes, only used if user chooses page_size: 'mm'
             'height_mm': 297,
+            'legend': '',       // Figure legend in markdown format.
         },
 
         initialize: function() {
@@ -61,6 +62,7 @@
                         'paper_spacing': data.paper_spacing,
                         'page_col_count': data.page_col_count,
                         'orientation': data.orientation,
+                        'legend': data.legend,
                     };
 
                 // For missing attributes, we fill in with defaults
@@ -121,6 +123,7 @@
                 height_mm: this.get('height_mm'),
                 width_mm: this.get('width_mm'),
                 orientation: this.get('orientation'),
+                legend: this.get('legend'),
             };
             if (this.get('figureName')){
                 figureJSON.figureName = this.get('figureName')
