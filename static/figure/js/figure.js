@@ -25,6 +25,7 @@
             // see http://www.a4papersize.org/a4-paper-size-in-pixels.php
             'width_mm': 210,    // A4 sizes, only used if user chooses page_size: 'mm'
             'height_mm': 297,
+            'legend': '',       // Figure legend in markdown format.
         },
 
         initialize: function() {
@@ -61,6 +62,7 @@
                         'paper_spacing': data.paper_spacing,
                         'page_col_count': data.page_col_count,
                         'orientation': data.orientation,
+                        'legend': data.legend,
                     };
 
                 // For missing attributes, we fill in with defaults
@@ -121,6 +123,7 @@
                 height_mm: this.get('height_mm'),
                 width_mm: this.get('width_mm'),
                 orientation: this.get('orientation'),
+                legend: this.get('legend'),
             };
             if (this.get('figureName')){
                 figureJSON.figureName = this.get('figureName')
@@ -505,6 +508,7 @@
             pixel_size_x_symbol: '\xB5m',     // microns by default
             pixel_size_x_unit: 'MICROMETER',
 
+            // 'export_dpi' optional value to resample panel on export
             // model includes 'scalebar' object, e.g:
             // scalebar: {length: 10, position: 'bottomleft', color: 'FFFFFF',
             //                show: false, show_label: false; font_size: 10}
@@ -1534,6 +1538,7 @@ var ColorPickerView = Backbone.View.extend({
             new PaperSetupModalView({model: this.model});
             new RoiModalView({model: this.model});
             new DpiModalView({model: this.model});
+            new LegendView({model: this.model});
 
             this.figureFiles = new FileList();
             new FileListView({model:this.figureFiles});
@@ -1646,6 +1651,9 @@ var ColorPickerView = Backbone.View.extend({
             // Update text of main export_pdf button.
             var txt = $target.attr('data-export-option');
             $('.export_pdf').text("Export " + txt).attr('data-export-option', txt);
+
+            // Hide download button
+            $("#pdf_download").hide();
         },
 
         paper_setup: function(event) {
@@ -1670,18 +1678,19 @@ var ColorPickerView = Backbone.View.extend({
                 export_opt = $create_figure_pdf.attr('data-export-option'),
                 $pdf_inprogress = $("#pdf_inprogress"),
                 $pdf_download = $("#pdf_download"),
+                $script_error = $("#script_error"),
                 exportOption = "PDF";
             $create_figure_pdf.hide();
             $pdf_download.hide();
+            $script_error.hide();
             $pdf_inprogress.show();
 
-            if (export_opt == "PDF & images") {
-                exportOption = "PDF_IMAGES";
-            } else if (export_opt == "TIFF") {
-                exportOption = "TIFF";
-            } else {
-                exportOption = "PDF";
-            }
+            // Map from HTML to script options
+            opts = {"PDF": "PDF",
+                "PDF & images": "PDF_IMAGES",
+                "TIFF": "TIFF",
+                "TIFF & images": "TIFF_IMAGES"};
+            exportOption = opts[export_opt];
 
             // Get figure as json
             var figureJSON = this.model.figure_toJSON();
@@ -1698,6 +1707,18 @@ var ColorPickerView = Backbone.View.extend({
                 // {"status": "in progress", "jobId": "ProcessCallback/64be7a9e-2abb-4a48-9c5e-6d0938e1a3e2 -t:tcp -h 192.168.1.64 -p 64592"}
                 var jobId = data.jobId;
 
+                // E.g. Handle 'No Processor Available';
+                if (!jobId) {
+                    if (data.error) {
+                        alert(data.error);
+                    } else {
+                        alert("Error exporting figure");
+                    }
+                    $create_figure_pdf.show();
+                    $pdf_inprogress.hide();
+                    return;
+                }
+
                 // Now we keep polling for script completion, every second...
 
                 var i = setInterval(function (){
@@ -1710,12 +1731,21 @@ var ColorPickerView = Backbone.View.extend({
                             if (pdf_job.status == "finished") {
                                 clearInterval(i);
 
-                                // Update UI
                                 $create_figure_pdf.show();
                                 $pdf_inprogress.hide();
-                                var fa_id = pdf_job.results.File_Annotation.id,
-                                    fa_download = WEBINDEX_URL + "annotation/" + fa_id + "/";
-                                $pdf_download.attr('href', fa_download).show();
+
+                                // If there's an error, show button
+                                if (pdf_job.stderr) {
+                                    var stderr_url = WEBINDEX_URL + "get_original_file/" + pdf_job.stderr + "/";
+                                    $script_error.attr('href', stderr_url).show();
+                                }
+
+                                // Show result
+                                if (pdf_job.results.File_Annotation) {
+                                    var fa_id = pdf_job.results.File_Annotation.id,
+                                        fa_download = WEBINDEX_URL + "annotation/" + fa_id + "/";
+                                    $pdf_download.attr('href', fa_download).show();
+                                }
                             }
 
                             if (act_data.inprogress === 0) {
@@ -2541,7 +2571,139 @@ var FileListItemView = Backbone.View.extend({
 
 });
 
+// Copyright (c) 2015 University of Dundee.
+
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+
+var LegendView = Backbone.View.extend({
+
+        el: $("#js-legend"),
+
+        // template: JST["static/figure/templates/paper_setup_modal_template.html"],
+
+        model:FigureModel,
+
+        editing: false,
+
+        initialize: function() {
+
+            this.listenTo(this.model,
+                'change:x change:legend', this.render);
+
+            this.render();
+        },
+
+        events: {
+            "click .edit-legend": "addLegend",
+            "click .cancel-legend": "cancelLegend",
+            "click .save-legend": "saveLegend",
+        },
+
+        saveLegend: function(event) {
+            event.preventDefault();
+            var legendTxt = $("#js-legend textarea").val();
+            console.log("SAVE", legendTxt);
+            this.model.save("legend", legendTxt);
+            this.editing = false;
+            this.render();
+        },
+
+        addLegend: function(event) {
+            event.preventDefault();
+            this.editing = true;
+            this.render();
+        },
+
+        cancelLegend: function(event) {
+            event.preventDefault();
+            this.editing = false;
+            this.render();
+        },
+
+        render: function() {
+            
+            var self = this,
+                legendText = this.model.get('legend') || "",
+                $edit = $('.edit-legend', self.el),
+                $save = $('.save-legend', self.el),
+                $cancel = $('.cancel-legend', self.el),
+                $panel = $('.panel', self.el),
+                $legend = $('.legend', self.el);
+
+            console.log("render", legendText);
+
+            // if we're editing...
+            if (self.editing) {
+                // show 'cancel' and 'save' buttons
+                $edit.hide();
+                $save.show();
+                $cancel.show();
+
+                $panel.show();
+                var html = '<textarea class="form-control" rows="5" style="resize:none">'
+                            + legendText + '</textarea>';
+                $legend.html(html);
+            } else {
+                // ...only show 'edit' button
+                $edit.show();
+                $save.hide();
+                $cancel.hide();
+
+                if (legendText.length === 0) {
+                    $panel.hide();
+                } else {
+                    $panel.show();
+                    legendText = markdown.toHTML( legendText );
+                    $legend.html("<p>" + legendText + "</p>");
+                }
+            }
+        }
+    });
+
+
 // Events, show/hide and rendering for various Modal dialogs.
+
+    var DpiModalView = Backbone.View.extend({
+
+        el: $("#dpiModal"),
+
+        model: FigureModel,
+
+        events: {
+            "submit .dpiModalForm": "handleDpiForm",
+        },
+
+        handleDpiForm: function(event) {
+            event.preventDefault();
+
+            var dpiVal = $(".export_dpi", this.el).val(),
+                dpi = parseInt(dpiVal, 10),
+                sel = this.model.getSelected();
+
+            // if we have a valid number...
+            if (dpi == dpiVal) {
+
+                sel.forEach(function(p) {
+                    p.save("export_dpi", dpi);
+                });
+                $("#dpiModal").modal('hide');
+            }
+            return false;
+        }
+
+    });
 
     var PaperSetupModalView = Backbone.View.extend({
 
@@ -4054,17 +4216,32 @@ var RectView = Backbone.View.extend({
             if (opts.models.length > 1) {
                 var self = this;
                 this.models.forEach(function(m){
-                    self.listenTo(m, 'change:x change:y change:width change:height change:imageId change:zoom', self.render);
+                    self.listenTo(m, 'change:x change:y change:width change:height change:imageId change:zoom change:export_dpi', self.render);
                 });
             } else if (opts.models.length == 1) {
                 this.model = opts.models.head();
-                this.listenTo(this.model, 'change:x change:y change:width change:height change:zoom', this.render);
+                this.listenTo(this.model, 'change:x change:y change:width change:height change:zoom change:export_dpi', this.render);
                 this.listenTo(this.model, 'drag_resize', this.drag_resize);
             }
         },
 
         events: {
             "click .setId": "setImageId",
+            "click .set_dpi": "set_dpi",
+            "click .clear_dpi": "clear_dpi",
+        },
+
+        set_dpi: function(event) {
+            event.preventDefault();
+            $("#dpiModal").modal('show');
+        },
+
+        // remove export_dpi attribute from selected panels
+        clear_dpi: function(event) {
+            event.preventDefault();
+            this.models.forEach(function(m) {
+                m.unset("export_dpi");
+            });
         },
 
         setImageId: function(event) {
@@ -4082,6 +4259,7 @@ var RectView = Backbone.View.extend({
                         'width': xywh[2] >> 0,
                         'height': xywh[3] >> 0};
             json.dpi = this.model.getPanelDpi(json.width, json.height);
+            json.export_dpi = this.model.get('export_dpi');
             this.$el.append(this.xywh_template(json));
         },
 
@@ -4106,7 +4284,7 @@ var RectView = Backbone.View.extend({
                     json.name = title;
                     // compare json summary so far with this Panel
                     var this_json = m.toJSON(),
-                        attrs = ["imageId", "orig_width", "orig_height", "sizeT", "sizeZ", "x", "y", "width", "height", "dpi"];
+                        attrs = ["imageId", "orig_width", "orig_height", "sizeT", "sizeZ", "x", "y", "width", "height", "dpi", "export_dpi"];
                     this_json.dpi = m.getPanelDpi();
                     _.each(attrs, function(a){
                         if (json[a] != this_json[a]) {
@@ -4126,6 +4304,8 @@ var RectView = Backbone.View.extend({
 
                 }
             });
+
+            json.export_dpi = json.export_dpi || 0;
 
             // Format floating point values
             _.each(["x", "y", "width", "height"], function(a){
