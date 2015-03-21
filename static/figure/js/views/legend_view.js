@@ -27,6 +27,9 @@ var LegendView = Backbone.View.extend({
 
         initialize: function() {
 
+            this.listenTo(this.model,
+                'change:x change:legend', this.render);
+
             this.render();
         },
 
@@ -40,7 +43,7 @@ var LegendView = Backbone.View.extend({
             event.preventDefault();
             var legendTxt = $("#js-legend textarea").val();
             console.log("SAVE", legendTxt);
-            this.model.set("legend", legendTxt);
+            this.model.save("legend", legendTxt);
             this.editing = false;
             this.render();
         },
@@ -64,7 +67,10 @@ var LegendView = Backbone.View.extend({
                 $edit = $('.edit-legend', self.el),
                 $save = $('.save-legend', self.el),
                 $cancel = $('.cancel-legend', self.el),
+                $panel = $('.panel', self.el),
                 $legend = $('.legend', self.el);
+
+            console.log("render", legendText);
 
             // if we're editing...
             if (self.editing) {
@@ -72,6 +78,8 @@ var LegendView = Backbone.View.extend({
                 $edit.hide();
                 $save.show();
                 $cancel.show();
+
+                $panel.show();
                 var html = '<textarea class="form-control" rows="5" style="resize:none">'
                             + legendText + '</textarea>';
                 $legend.html(html);
@@ -81,7 +89,13 @@ var LegendView = Backbone.View.extend({
                 $save.hide();
                 $cancel.hide();
 
-                $legend.html("<p>" + legendText + "</p>");
+                if (legendText.length === 0) {
+                    $panel.hide();
+                } else {
+                    $panel.show();
+                    legendText = markdown.toHTML( legendText );
+                    $legend.html("<p>" + legendText + "</p>");
+                }
             }
         }
     });
