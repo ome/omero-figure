@@ -886,7 +886,7 @@ class FigureExport(object):
             print "    curr_w, curr_h", curr_w, curr_h
             if target_w > curr_w:
                 print "    Resample to target_w, target_h", target_w, target_h
-                pilImg = pilImg.resize((target_w, target_h), Image.BILINEAR)
+                pilImg = pilImg.resize((target_w, target_h), Image.BICUBIC)
             else:
                 print "    Already over %s dpi" % dpi
 
@@ -960,7 +960,7 @@ class TiffExport(FigureExport):
         height = int(round(height))
 
         print "resize to: x, y, width, height", x, y, width, height
-        pilImg = pilImg.resize((width, height), Image.BILINEAR)
+        pilImg = pilImg.resize((width, height), Image.BICUBIC)
         width, height = pilImg.size
 
         box = (x, y, x + width, y + height)
