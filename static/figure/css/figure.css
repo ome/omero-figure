@@ -118,7 +118,7 @@
     .legend-container {
         z-index: 100;
         position:fixed;
-        bottom:0px;
+        bottom:37px;
         width: 60%;
         min-width:400px;
         left:20%;
@@ -127,14 +127,14 @@
 
     .legend-container .panel {
         background-color:white;
-        margin-bottom: 36px;
+        margin-bottom: 0px;
         padding-bottom: 0px;
     }
 
     .legend-footer {
         position: absolute;
         right: 0px;
-        bottom:0px;
+        bottom: -37px;
     }
 
     footer {
