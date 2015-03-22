@@ -129,6 +129,8 @@
         background-color:white;
         margin-bottom: 0px;
         padding-bottom: 0px;
+        max-height: 300px;
+        overflow-y: auto;
     }
 
     .legend-footer {

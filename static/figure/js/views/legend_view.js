@@ -80,7 +80,7 @@ var LegendView = Backbone.View.extend({
                 $cancel.show();
 
                 $panel.show();
-                var html = '<textarea class="form-control" rows="5" style="resize:none">'
+                var html = '<textarea class="form-control" rows="7" style="resize:none">'
                             + legendText + '</textarea>';
                 $legend.html(html);
             } else {
@@ -94,7 +94,7 @@ var LegendView = Backbone.View.extend({
                 } else {
                     $panel.show();
                     legendText = markdown.toHTML( legendText );
-                    $legend.html("<p>" + legendText + "</p>");
+                    $legend.html(legendText);
                 }
             }
         }
