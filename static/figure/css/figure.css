@@ -127,15 +127,40 @@
 
     .legend-container .panel {
         background-color:white;
-        margin-bottom: 0px;
-        padding-bottom: 0px;
-        max-height: 300px;
+        margin-bottom: 0;
+        padding-bottom: 0;
         overflow-y: auto;
+    }
+
+    .legend-expanded {
+        max-height: 250px;
+    }
+
+    .legend-collapsed {
+        max-height: 25px;
+    }
+
+    .legend-collapsed .panel-body{
+        padding: 3px 15px;
+    }
+
+    /* hide appropriate collapse/hide button */
+    .legend-collapsed .collapse-legend{
+        display: none;
+    }
+    .legend-expanded .expand-legend{
+        display: none;
+    }
+
+    .legend-collapsed textarea {
+        position: relative;
+        top: -12px;
+        width: 95%;
     }
 
     .legend-footer {
         position: absolute;
-        right: 0px;
+        right: 0;
         bottom: -37px;
     }
 

@@ -26,6 +26,7 @@
             'width_mm': 210,    // A4 sizes, only used if user chooses page_size: 'mm'
             'height_mm': 297,
             'legend': '',       // Figure legend in markdown format.
+            'legend_collapsed': true,   // collapse or expand legend
         },
 
         initialize: function() {
@@ -63,6 +64,7 @@
                         'page_col_count': data.page_col_count,
                         'orientation': data.orientation,
                         'legend': data.legend,
+                        'legend_collapsed': data.legend_collapsed,
                     };
 
                 // For missing attributes, we fill in with defaults
@@ -124,6 +126,7 @@
                 width_mm: this.get('width_mm'),
                 orientation: this.get('orientation'),
                 legend: this.get('legend'),
+                legend_collapsed: this.get('legend_collapsed'),
             };
             if (this.get('figureName')){
                 figureJSON.figureName = this.get('figureName')

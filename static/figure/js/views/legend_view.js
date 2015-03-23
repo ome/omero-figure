@@ -34,23 +34,40 @@ var LegendView = Backbone.View.extend({
         },
 
         events: {
-            "click .edit-legend": "addLegend",
+            "click .edit-legend": "editLegend",
             "click .cancel-legend": "cancelLegend",
             "click .save-legend": "saveLegend",
+            "click .collapse-legend": "collapseLegend",
+            "click .expand-legend": "expandLegend",
+        },
+
+        collapseLegend: function(event) {
+            this.renderCollapsed(true);
+            this.model.set("legend_collapsed", true);
+        },
+
+        expandLegend: function(event) {
+            this.renderCollapsed(false);
+            this.model.set("legend_collapsed", false);
         },
 
         saveLegend: function(event) {
             event.preventDefault();
             var legendTxt = $("#js-legend textarea").val();
-            console.log("SAVE", legendTxt);
             this.model.save("legend", legendTxt);
             this.editing = false;
             this.render();
         },
 
-        addLegend: function(event) {
+        editLegend: function(event) {
             event.preventDefault();
             this.editing = true;
+            if (this.model.get("legend_collapsed")) {
+                // will trigger render
+                this.model.set("legend_collapsed", false);
+            } else {
+                this.render();
+            }
             this.render();
         },
 
@@ -60,17 +77,29 @@ var LegendView = Backbone.View.extend({
             this.render();
         },
 
+        renderCollapsed: function(collapsed) {
+            var $panel = $('.panel', self.el);
+            if (collapsed) {
+                $panel.addClass('legend-collapsed');
+                $panel.removeClass('legend-expanded');
+            } else {
+                $panel.removeClass('legend-collapsed');
+                $panel.addClass('legend-expanded');
+            }
+        },
+
         render: function() {
-            
+
             var self = this,
                 legendText = this.model.get('legend') || "",
+                legendCollapsed = this.model.get('legend_collapsed'),
                 $edit = $('.edit-legend', self.el),
                 $save = $('.save-legend', self.el),
                 $cancel = $('.cancel-legend', self.el),
                 $panel = $('.panel', self.el),
                 $legend = $('.legend', self.el);
 
-            console.log("render", legendText);
+            self.renderCollapsed(legendCollapsed);
 
             // if we're editing...
             if (self.editing) {
