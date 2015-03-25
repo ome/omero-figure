@@ -39,6 +39,12 @@ var LegendView = Backbone.View.extend({
             "click .save-legend": "saveLegend",
             "click .collapse-legend": "collapseLegend",
             "click .expand-legend": "expandLegend",
+            "click .markdown-info": "markdownInfo",
+        },
+
+        markdownInfo: function(event) {
+            event.preventDefault();
+            $("#markdownInfoModal").modal('show');
         },
 
         collapseLegend: function(event) {
