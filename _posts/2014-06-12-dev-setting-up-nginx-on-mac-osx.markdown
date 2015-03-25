@@ -29,6 +29,7 @@ Using homebrew on Mac 10.8:
 	$ ./build.py clean build
 	$ dist/bin/omero admin start
 	# you must be using fastcgi-tcp for this example
+	$ dist/bin/omero config set omero.web.application_server "fastcgi-tcp"
 	$ dist/bin/omero web start
 	$ dist/bin/omero web config nginx > omero_nginx.conf
 
@@ -60,13 +61,39 @@ what else you may have running.
 	             fastcgi_param REQUEST_METHOD $request_method;
 
 
-Then you can start nginx, working out of /omero/ and off of Django workers which use dist/lib/python/ on http://localhost:8080/omero/
+Copy the config to a new 'others' directory in your nginx location:
 
-	nginx -c `pwd`/omero_nginx.conf
+	$ cd /usr/local/etc/nginx
+	$ mkdir others
+	$ cp path/to/bin/omero/omero_nginx.conf others/
+
+Then edit the nginx config at /usr/local/etc/nginx/nginx.conf to remove the whole
+'server' section:
+
+	server { }
+
+And add the following line, right at the bottom of the http section,
+to include the omero_nginx.conf:
+
+    include /usr/local/etc/nginx/others/*.conf;
 
 
-This worked first time for me, which doesn't often happen with sysadmin stuff!
+Then you can start nginx, working off of Django workers which use
+dist/lib/python/ on http://localhost:8080/omero/
+
+	$ nginx
+
+	# if you need to stop and restart
+	$ nginx -s stop && nginx
+
 Following this, I was able to fix all the issues with OMERO.figure under /omero/figure
 and all thse fixes will be in the imminent 1.0.0-beta2 release.
 
 
+UPDATE: When I first wrote this post, all that I needed to do was run nginx from
+the bin/omero directory itself, passing it the config file there:
+
+	nginx -c `pwd`/omero_nginx.conf
+
+But now I'm trying it on a new machine some time later, this fails and I need to
+move it within the nginx directory as described above.
