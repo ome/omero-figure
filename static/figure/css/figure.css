@@ -144,6 +144,21 @@
         padding: 3px 15px;
     }
 
+    .markdown-info {
+        padding: 3px 12px;
+        color: #aaa;
+        display: none;
+        text-align: right;
+        padding-left: 40px;
+        background: url(../images/markdown_light32x20.png) 0% center no-repeat;
+    }
+    .markdown-info:hover {
+        background: url(../images/markdown_dark32x20.png) 0% center no-repeat;
+    }
+    .editing .markdown-info {
+        display: block;
+    }
+
     /* hide appropriate collapse/hide button */
     .legend-collapsed .collapse-legend{
         display: none;

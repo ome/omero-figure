@@ -108,6 +108,7 @@ var LegendView = Backbone.View.extend({
                 $save.show();
                 $cancel.show();
 
+                $panel.addClass('editing');
                 $panel.show();
                 var html = '<textarea class="form-control" rows="7" style="resize:none">'
                             + legendText + '</textarea>';
@@ -118,6 +119,7 @@ var LegendView = Backbone.View.extend({
                 $save.hide();
                 $cancel.hide();
 
+                $panel.removeClass('editing');
                 if (legendText.length === 0) {
                     $panel.hide();
                 } else {
