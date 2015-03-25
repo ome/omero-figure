@@ -66,3 +66,9 @@ markdown-js
 ===========
 https://github.com/evilstreak/markdown-js
 License: MIT
+
+
+markdown-mark
+=============
+https://github.com/dcurtis/markdown-mark
+License: Creative Commons CC0 Universal Public Domain Dedication
