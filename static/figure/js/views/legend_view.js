@@ -28,7 +28,7 @@ var LegendView = Backbone.View.extend({
         initialize: function() {
 
             this.listenTo(this.model,
-                'change:x change:legend', this.render);
+                'change:x change:legend', this.legendChanged);
 
             this.render();
         },
@@ -61,6 +61,8 @@ var LegendView = Backbone.View.extend({
             event.preventDefault();
             var legendTxt = $("#js-legend textarea").val();
             this.model.save("legend", legendTxt);
+            // This will happen anyway if legend has changed, 
+            // but just in case it hasn't....
             this.editing = false;
             this.render();
         },
@@ -69,10 +71,7 @@ var LegendView = Backbone.View.extend({
             event.preventDefault();
             this.editing = true;
             if (this.model.get("legend_collapsed")) {
-                // will trigger render
                 this.model.set("legend_collapsed", false);
-            } else {
-                this.render();
             }
             this.render();
         },
@@ -92,6 +91,12 @@ var LegendView = Backbone.View.extend({
                 $panel.removeClass('legend-collapsed');
                 $panel.addClass('legend-expanded');
             }
+        },
+
+        // May have chaned by opening a new Figure etc.
+        legendChanged: function() {
+            this.editing = false;
+            this.render();
         },
 
         render: function() {
