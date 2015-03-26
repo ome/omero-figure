@@ -107,6 +107,8 @@ class FigureExport(object):
         name = unicodedata.normalize('NFKD', self.figureName).encode('ascii','ignore')
         # in case we have path/to/name.pdf, just use name.pdf
         name = path.basename(name)
+        # Remove commas: causes problems 'duplicate headers' in file download
+        name = name.replace(",", ".")
         return "%s.zip" % name
 
     def getFigureFileName(self):
@@ -132,6 +134,9 @@ class FigureExport(object):
 
         # Name with extension and folder
         fullName = "%s.%s" % (name, fext)
+        # Remove commas: causes problems 'duplicate headers' in file download
+        fullName = fullName.replace(",", ".")
+
         index = 1
         if fext == "tiff" and self.page_count > 1:
             fullName = "%s_page_%02d.%s" % (name, index, fext)
@@ -779,11 +784,9 @@ class FigureExport(object):
                 paraLines = legend.split("<p>")
                 for p in paraLines:
                     p = "<p>" + p
-                    print p
                     pageY = self.addParaWithThumb(p, pageY, style=styleN)
             else:
                 print "Markdown not imported. See https://pythonhosted.org/Markdown/install.html"
-                print legend
                 pageY = self.addParaWithThumb(legend, pageY, style=styleN)
 
 
