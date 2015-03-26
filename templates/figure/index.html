@@ -255,6 +255,7 @@
             </div>
         </div>
     </div>
+    <!-- Color-picker Modal -->
     <div class="modal" id="colorpickerModal" tabindex="-1" role="dialog" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -357,7 +358,34 @@
             </div>
         </div>
     </div>
-    <!-- Modal -->
+    <!-- Markdown Info Modal -->
+    <div class="modal" id="markdownInfoModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog" style="width:800px">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title">Markdown Formatting</h4>
+                </div>
+                <div class="modal-body">
+                    <p>
+                        Markdown syntax allows you to add formatting in plain text. For example,
+                        **this text will be bold** and this word will be *italic*.
+                    </p>
+
+                    <table class="table">
+                        <tr><th>BOLD</th> <td>**Bolded text here**</td></tr>
+                        <tr><th>ITALIC</th> <td>*Italic text here*</td></tr>
+                        <tr><th>LINK</th> <td>[Link text](http://link_url.com)</td></tr>
+                        <tr><th>PARAGRAPHS</th> <td>You need to use 2 line breaks between paragraphs</td></tr>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- File Open Modal -->
     <div class="modal" id="openFigureModal" tabindex="-1" role="dialog" aria-labelledby="addImagesLabel" aria-hidden="true">
         <div class="modal-dialog" style="width:800px">
             <div class="modal-content">
@@ -621,6 +649,42 @@
         </div>
     </main>
 
+
+    <div id="js-legend" class="legend-container">
+        <div class="panel panel-default" style="display:none">
+            <button type="button" class="close collapse-legend" title="Collapse legend" style="margin-right:3px">
+                <span class="glyphicon glyphicon-collapse-down" aria-hidden="true"></span>
+            </button>
+            <button type="button" class="close expand-legend" title="Collapse legend" style="margin-right:3px">
+                <span class="glyphicon glyphicon-collapse-up" aria-hidden="true"></span>
+            </button>
+            <button type="button" class="btn btn-link pull-right markdown-info"
+                    title="Use Markdown formatting. Click for more info...">
+                Markdown supported
+            </button>
+            <div class="legend panel-body">
+                <p>
+                    <!-- Legend rendered here by LegendView -->
+                </p>
+            </div>
+        </div>
+        <div class="legend-footer">
+            <button type="button" class="btn btn-default btn-xs cancel-legend"
+                title="Cancel editing legend" style="margin: 3px; display: none">
+                Cancel
+            </button>
+            <button type="button" class="btn btn-success btn-xs save-legend"
+                title="Save figure legend" style="margin: 3px; display: none">
+                Save
+            </button>
+            <button type="button" class="btn btn-default btn-xs edit-legend"
+                title="Add figure legend" style="margin: 3px">
+                Edit Figure Legend
+            </button>
+        </div>
+    </div>
+
+
     <footer>
         <div id="zoom_slider" title="Zoom"></div>
         <input id="zoom_input" type="text" size="3" maxlength="3" disabled="disabled" title="zoom"/>
@@ -712,6 +776,7 @@
     <script src="{% static 'figure/3rdparty/backbone.mousetrap/backbone.mousetrap.js' %}"></script>
     <script src="{% static 'figure/3rdparty/bootstrap3/js/bootstrap.js' %}"></script>
     <script src="{% static 'figure/3rdparty/bootstrap-colorpicker/js/bootstrap-colorpicker.min.js' %}"></script>
+    <script src="{% static 'figure/3rdparty/markdown-browser-0.6.0-beta1/markdown.min.js' %}"></script>
     <script src="{% static 'figure/js/templates.js' %}"></script>
 
 
@@ -729,6 +794,7 @@
     <script src="{% static 'figure/js/views/svg_model_view.js' %}"></script>
     <script src="{% static 'figure/js/views/util.js' %}"></script>
     <script src="{% static 'figure/js/views/colorpicker.js' %}"></script>
+    <script src="{% static 'figure/js/views/legend_view.js' %}"></script>
     <script src="{% static 'figure/js/app.js' %}"></script>
 
 

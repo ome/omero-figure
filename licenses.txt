@@ -54,3 +54,21 @@ jasmine-jquery
 ==============
 https://github.com/velesin/jasmine-jquery
 License: MIT
+
+
+Bootstrap Colorpicker
+=====================
+http://mjolnic.com/bootstrap-colorpicker/
+License: Apache
+
+
+markdown-js
+===========
+https://github.com/evilstreak/markdown-js
+License: MIT
+
+
+markdown-mark
+=============
+https://github.com/dcurtis/markdown-mark
+License: Creative Commons CC0 Universal Public Domain Dedication

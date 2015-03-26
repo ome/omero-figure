@@ -34,6 +34,12 @@ except ImportError:
     import Image, ImageDraw
 
 try:
+    import markdown
+    markdownImported = True
+except ImportError:
+    markdownImported = False
+
+try:
     from reportlab.pdfgen import canvas
     from reportlab.lib.styles import getSampleStyleSheet
     from reportlab.lib.units import inch
@@ -101,6 +107,8 @@ class FigureExport(object):
         name = unicodedata.normalize('NFKD', self.figureName).encode('ascii','ignore')
         # in case we have path/to/name.pdf, just use name.pdf
         name = path.basename(name)
+        # Remove commas: causes problems 'duplicate headers' in file download
+        name = name.replace(",", ".")
         return "%s.zip" % name
 
     def getFigureFileName(self):
@@ -126,6 +134,9 @@ class FigureExport(object):
 
         # Name with extension and folder
         fullName = "%s.%s" % (name, fext)
+        # Remove commas: causes problems 'duplicate headers' in file download
+        fullName = fullName.replace(",", ".")
+
         index = 1
         if fext == "tiff" and self.page_count > 1:
             fullName = "%s_page_%02d.%s" % (name, index, fext)
@@ -699,7 +710,15 @@ class FigureExport(object):
         maxH = self.pageHeight - inch
         spacer = 10
         imgw = imgh = 25
-        para=Paragraph(text, style)
+        # Some html from markdown may not be compatible
+        # with adding to PDF.
+        try:
+            para=Paragraph(text, style)
+        except ValueError:
+            print "Couldn't add paragraph to PDF:"
+            print text
+            text = "[Failed to format paragraph - not shown]"
+            para=Paragraph(text, style)
         w,h = para.wrap(aW, pageY) # find required space
         if thumbSrc is not None:
             parah = max(h, imgh)
@@ -735,7 +754,7 @@ class FigureExport(object):
         styles = getSampleStyleSheet()
         styleN = styles['Normal']
         styleH = styles['Heading1']
-        styleH2 = styles['Heading2']
+        styleH3 = styles['Heading3']
 
         scalebars = []
         maxH = pageHeight - inch
@@ -750,7 +769,28 @@ class FigureExport(object):
             figureLink = "Link to Figure: <a href='%s' color='blue'>%s</a>" % (fileUrl, fileUrl)
             pageY = self.addParaWithThumb(figureLink, pageY, style=styleN)
 
-        pageY = self.addParaWithThumb("Figure contains the following images:", pageY, style=styleH2)
+
+        # Add Figure Legend
+        if 'legend' in self.figure_json and len(self.figure_json['legend']) > 0:
+            pageY = self.addParaWithThumb("Legend:", pageY, style=styleH3)
+            print "\n--- Adding Figure Legend ---"
+            legend = self.figure_json['legend']
+            if markdownImported:
+                # convert markdown to html
+                legend = markdown.markdown(legend)
+                # insert 'blue' style into any links
+                legend = legend.replace("<a href", "<a color='blue' href");
+                # Add paragraphs separately
+                paraLines = legend.split("<p>")
+                for p in paraLines:
+                    p = "<p>" + p
+                    pageY = self.addParaWithThumb(p, pageY, style=styleN)
+            else:
+                print "Markdown not imported. See https://pythonhosted.org/Markdown/install.html"
+                pageY = self.addParaWithThumb(legend, pageY, style=styleN)
+
+
+        pageY = self.addParaWithThumb("Figure contains the following images:", pageY, style=styleH3)
 
         # Go through sorted panels, adding paragraph for each unique image
         for p in panels_json:
@@ -778,8 +818,8 @@ class FigureExport(object):
 
         if len(scalebars) > 0:
             scalebars = list(set(scalebars))
-            pageY = self.addParaWithThumb("Scalebars", pageY, style=styleH2)
-            pageY = self.addParaWithThumb("Scalebars: %s" % ", ".join(scalebars),
+            pageY = self.addParaWithThumb("Scalebars:", pageY, style=styleH3)
+            pageY = self.addParaWithThumb("Scalebar Lengths: %s" % ", ".join(scalebars),
                     pageY, style=styleN)
 
 

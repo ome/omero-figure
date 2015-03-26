@@ -31,7 +31,7 @@
     main {
         position: fixed;
         top: 47px;
-        bottom: 30px;
+        bottom: 36px;
         width: 100%;
         overflow: auto;
         background-color: #bbb;
@@ -114,18 +114,87 @@
         text-align: center;
     }
 
+    /* -- Legend -- */
+    .legend-container {
+        z-index: 100;
+        position:fixed;
+        bottom:37px;
+        width: 60%;
+        min-width:400px;
+        left:20%;
+        right:20%;
+    }
+
+    .legend-container .panel {
+        background-color:white;
+        margin-bottom: 0;
+        padding-bottom: 0;
+        overflow-y: auto;
+    }
+
+    .legend-expanded {
+        max-height: 250px;
+    }
+
+    .legend-collapsed {
+        max-height: 25px;
+    }
+
+    .legend-collapsed .panel-body{
+        padding: 3px 15px;
+    }
+
+    .markdown-info {
+        padding: 3px 12px;
+        color: #aaa;
+        display: none;
+        text-align: right;
+        padding-left: 40px;
+        background: url(../images/markdown_light32x20.png) 0% center no-repeat;
+    }
+    .markdown-info:hover {
+        background: url(../images/markdown_dark32x20.png) 0% center no-repeat;
+    }
+    .editing .markdown-info {
+        display: block;
+    }
+
+    /* hide appropriate collapse/hide button */
+    .legend-collapsed .collapse-legend{
+        display: none;
+    }
+    .legend-expanded .expand-legend{
+        display: none;
+    }
+
+    .legend-collapsed textarea {
+        position: relative;
+        top: -12px;
+        width: 95%;
+    }
+
+    .legend-footer {
+        position: absolute;
+        right: 0;
+        bottom: -37px;
+    }
+
     footer {
-        background: gray;
-        height: 30px;
+        background: rgb(97, 97, 97);
+        height: 36px;
         width: 100%;
         position: fixed;
         bottom: 0;
     }
 
+    footer .btn-xs, .legend-footer .btn-xs {
+        padding: 5px 10px;
+    }
+
     footer input {
         position: absolute;
         left: 250px;
-        top: 3px;
+        top: 5px;
     }
 
     footer .ui-slider {
@@ -133,7 +202,7 @@
         height: 6px;
         left: 15px;
         position: absolute;
-        top: 11px;
+        top: 15px;
         width: 220px;
         background: #bbb;
     }
