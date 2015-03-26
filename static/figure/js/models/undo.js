@@ -28,7 +28,8 @@ var UndoManager = Backbone.Model.extend({
     },
     initialize: function(opts) {
         this.figureModel = opts.figureModel;    // need for setting selection etc
-        this.figureModel.on("change:paper_width change:paper_height change:page_count", this.handleChange, this);
+        this.figureModel.on("change:paper_width change:paper_height change:page_count change:legend",
+            this.handleChange, this);
         this.listenTo(this.figureModel, 'reset_undo_redo', this.resetQueue);
         this.undoQueue = [];
         this.undoInProgress = false;
