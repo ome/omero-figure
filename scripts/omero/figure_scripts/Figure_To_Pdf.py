@@ -581,6 +581,9 @@ class FigureExport(object):
 
         pilImg = image.renderImage(z, t, compression=1.0)
 
+        # We don't need to render again, so we can close rendering engine.
+        image._re.close()
+
         if origName is not None:
             pilImg.save(origName)
 
