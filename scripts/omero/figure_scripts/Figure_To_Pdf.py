@@ -1009,9 +1009,10 @@ class TiffExport(FigureExport):
         height = int(round(height))
 
         # Save image BEFORE resampling
-        rsName = os.path.join(self.zip_folder_name, RESAMPLED_DIR, imgName)
-        print "Saving pre_resampled to: ", rsName
-        pilImg.save(rsName)
+        if self.exportImages:
+            rsName = os.path.join(self.zip_folder_name, RESAMPLED_DIR, imgName)
+            print "Saving pre_resampled to: ", rsName
+            pilImg.save(rsName)
 
         print "resize to: x, y, width, height", x, y, width, height
         pilImg = pilImg.resize((width, height), Image.BICUBIC)
