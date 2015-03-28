@@ -52,7 +52,9 @@ except ImportError:
 from omero.gateway import BlitzGateway
 from omero.rtypes import rstring, robject
 
-ORIGINAL_DIR = "originals"
+ORIGINAL_DIR = "1_originals"
+RESAMPLED_DIR = "2_pre_resampled"
+FINAL_DIR = "3_final"
 
 
 def compress(target, base):
@@ -188,8 +190,9 @@ class FigureExport(object):
             zipDir = os.path.join(curr_dir, self.zip_folder_name)
             os.mkdir(zipDir)
             if self.exportImages:
-                origDir = os.path.join(zipDir, ORIGINAL_DIR)
-                os.mkdir(origDir)
+                for d in (ORIGINAL_DIR, RESAMPLED_DIR, FINAL_DIR):
+                    imgDir = os.path.join(zipDir, d)
+                    os.mkdir(imgDir)
 
         # Create the figure file(s)
         self.createFigure()
@@ -679,10 +682,6 @@ class FigureExport(object):
         pilImg = self.getPanelImage(image, panel, origName)
         tile_width = pilImg.size[0]
 
-        # in the folder to zip
-        if self.zip_folder_name is not None:
-            imgName = os.path.join(self.zip_folder_name, imgName)
-
         # for PDF export, we might have a target dpi
         dpi = 'export_dpi' in panel and panel['export_dpi'] or None
 
@@ -928,10 +927,19 @@ class FigureExport(object):
             target_h = int(round(target_h))
             print "    curr_w, curr_h", curr_w, curr_h
             if target_w > curr_w:
+                if self.exportImages:
+                    # Save image BEFORE resampling
+                    rsName = os.path.join(self.zip_folder_name, RESAMPLED_DIR, imgName)
+                    print "Saving pre_resampled to: ", rsName
+                    pilImg.save(rsName)
                 print "    Resample to target_w, target_h", target_w, target_h
                 pilImg = pilImg.resize((target_w, target_h), Image.BICUBIC)
             else:
                 print "    Already over %s dpi" % dpi
+
+        # in the folder to zip
+        if self.zip_folder_name is not None:
+            imgName = os.path.join(self.zip_folder_name, FINAL_DIR, imgName)
 
         # Save Image to file, then bring into PDF
         pilImg.save(imgName)
@@ -987,8 +995,6 @@ class TiffExport(FigureExport):
 
     def pasteImage(self, pilImg, imgName, x, y, width, height, dpi=None):
         """ Add the PIL image to the current figure page """
-        if self.exportImages:
-            pilImg.save(imgName)
 
         print "pasteImage: x, y, width, height", x, y, width, height
         x = self.scaleCoords(x)
@@ -1002,10 +1008,19 @@ class TiffExport(FigureExport):
         width = int(round(width))
         height = int(round(height))
 
+        # Save image BEFORE resampling
+        rsName = os.path.join(self.zip_folder_name, RESAMPLED_DIR, imgName)
+        print "Saving pre_resampled to: ", rsName
+        pilImg.save(rsName)
+
         print "resize to: x, y, width, height", x, y, width, height
         pilImg = pilImg.resize((width, height), Image.BICUBIC)
-        width, height = pilImg.size
 
+        if self.exportImages:
+            imgName = os.path.join(self.zip_folder_name, FINAL_DIR, imgName)
+            pilImg.save(imgName)
+
+        width, height = pilImg.size
         box = (x, y, x + width, y + height)
         self.tiffFigure.paste(pilImg, box)
 
