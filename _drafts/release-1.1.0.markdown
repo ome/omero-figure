@@ -34,6 +34,7 @@ Export of Figures as TIFFs:
   - This matches the submission format for many journals and allows easy embedding in presentations.
   - Images are resampled using a bicubic filter to match the final figure dpi.
   - Multi-page figures will be exported as multiple TIFFs in a zip file.
+  - A PDF info page is also included if your export is in a zip.
 
 Export of panel images alongside figure:
 
@@ -43,6 +44,12 @@ Export of panel images alongside figure:
     that is embedded within the PDF or TIFF figure.
   - This provides greater clarity as to the processing steps used in creating the figure and the TIFF images
     could also be used in a manual figure creation.
+
+Figure Legend:
+
+  - Legends can be added to figures and will be included in the info PDF page when the figure is exported.
+  - You can use Markdown syntax to add simple formatting, such as bold and italics. Other formatting is
+    supported in the web view, but may not be displayed properly in the exported PDF info page.
 
 Other Features:
 
