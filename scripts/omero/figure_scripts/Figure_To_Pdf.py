@@ -864,6 +864,8 @@ class FigureExport(object):
         """
         Creates a PDF figure. This is overwritten by ExportTiff subclass.
         """
+        if not reportlabInstalled:
+            raise ImportError("Need to install https://bitbucket.org/rptlab/reportlab")
         name = self.getFigureFileName()
         self.figureCanvas = canvas.Canvas(name, pagesize=(self.pageWidth, self.pageHeight))
 
@@ -1081,6 +1083,10 @@ class TiffExport(FigureExport):
         Since we need a PDF for the info page, we create one first,
         then call superclass addInfoPage
         """
+        # We allow TIFF figure export without reportlab (no Info page)
+        if not reportlabInstalled:
+            return
+
         fullName = "info_page.pdf"
         if self.zip_folder_name is not None:
             fullName = os.path.join(self.zip_folder_name, fullName)
@@ -1089,6 +1095,13 @@ class TiffExport(FigureExport):
         # Superclass method will call addParaWithThumb(),
         # to add lines to self.infoLines
         super(TiffExport, self).addInfoPage(panels_json)
+
+    def saveFigure(self):
+        """ Completes PDF figure (or info-page PDF for TIFF export) """
+        # We allow TIFF figure export without reportlab (no Info page)
+        if not reportlabInstalled:
+            return
+        self.figureCanvas.save()
 
 
 
@@ -1151,20 +1164,15 @@ def runScript():
                 scriptParams[key] = client.getInput(key, unwrap=True)
         print scriptParams
 
-        if not reportlabInstalled:
-            client.setOutput(
-                "Message",
-                rstring("Install https://bitbucket.org/rptlab/reportlab"))
-        else:
-            # call the main script - returns a file annotation wrapper
-            fileAnnotation = export_figure(conn, scriptParams)
+        # call the main script - returns a file annotation wrapper
+        fileAnnotation = export_figure(conn, scriptParams)
 
-            # return this fileAnnotation to the client.
-            client.setOutput("Message", rstring("Pdf Figure created"))
-            if fileAnnotation is not None:
-                client.setOutput(
-                    "File_Annotation",
-                    robject(fileAnnotation._obj))
+        # return this fileAnnotation to the client.
+        client.setOutput("Message", rstring("Pdf Figure created"))
+        if fileAnnotation is not None:
+            client.setOutput(
+                "File_Annotation",
+                robject(fileAnnotation._obj))
 
     finally:
         client.closeSession()
