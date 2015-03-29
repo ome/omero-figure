@@ -203,7 +203,7 @@ class FigureExport(object):
         groupId = None
         # We get our group from the first image
         id1 = panels_json[0]['imageId']
-        self.conn.getObject("Image", id1).getDetails().group.id.val
+        groupId = self.conn.getObject("Image", id1).getDetails().group.id.val
 
         # For each page, add panels...
         col = 0
