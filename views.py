@@ -17,8 +17,7 @@
 #
 
 from django.http import Http404, HttpResponse
-from django.shortcuts import render_to_response
-from django.template import RequestContext
+from django.shortcuts import render
 from datetime import datetime
 import unicodedata
 import json
@@ -107,8 +106,7 @@ def index(request, fileId=None, conn=None, **kwargs):
 
     context = {'scriptMissing': scriptMissing,
             'userFullName': userFullName}
-    return render_to_response("figure/index.html", context,
-            context_instance=RequestContext(request))
+    return render(request, "figure/index.html", context)
 
 
 @login_required()
