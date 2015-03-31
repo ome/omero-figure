@@ -69,8 +69,8 @@ var ColorPickerView = Backbone.View.extend({
             // default is to stay 'black', but we want to pick the color
             // by setting saturation and brightness.
             var c = event.color;
-            if (c.toHex() === "#000000" && cp.currentSlider &&
-                    cp.currentSlider.callTop === "setHue") {
+            if ((c.toHex() === "#000000" || c.toHex() === "#ffffff") &&
+                    cp.currentSlider && cp.currentSlider.callTop === "setHue") {
                 cp.color.setSaturation(1);
                 cp.color.setBrightness(0);
                 cp.update(true);
