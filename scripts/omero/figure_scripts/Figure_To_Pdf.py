@@ -88,6 +88,9 @@ class FigureExport(object):
         self.scriptParams = scriptParams
         self.exportImages = exportImages
 
+        self.ns = "omero.web.figure.pdf"
+        self.mimetype = "application/pdf"
+
         figure_json_string = scriptParams['Figure_JSON']
         # Since unicode can't be wrapped by rstring
         figure_json_string = figure_json_string.decode('utf8')
@@ -239,10 +242,8 @@ class FigureExport(object):
         self.conn.SERVICE_OPTS.setOmeroGroup(groupId)
 
         outputFile = self.figureFileName
-
-        # TODO - fix ns & mimetype for TIFFs
-        ns = "omero.web.figure.pdf"
-        mimetype = "application/pdf"
+        ns = self.ns
+        mimetype = self.mimetype
 
         if self.zip_folder_name is not None:
             zipName = self.getZipName()
@@ -965,6 +966,9 @@ class TiffExport(FigureExport):
         from omero.gateway import THISPATH
         self.GATEWAYPATH = THISPATH
         self.fontPath = os.path.join(THISPATH, "pilfonts", "FreeSans.ttf")
+
+        self.ns = "omero.web.figure.tiff"
+        self.mimetype = "image/tiff"
 
     def getFont(self, fontsize):
         """ Try to load font from known location in OMERO """
