@@ -52,7 +52,9 @@ except ImportError:
 from omero.gateway import BlitzGateway
 from omero.rtypes import rstring, robject
 
-ORIGINAL_DIR = "originals"
+ORIGINAL_DIR = "1_originals"
+RESAMPLED_DIR = "2_pre_resampled"
+FINAL_DIR = "3_final"
 
 
 def compress(target, base):
@@ -85,6 +87,9 @@ class FigureExport(object):
         self.conn = conn
         self.scriptParams = scriptParams
         self.exportImages = exportImages
+
+        self.ns = "omero.web.figure.pdf"
+        self.mimetype = "application/pdf"
 
         figure_json_string = scriptParams['Figure_JSON']
         # Since unicode can't be wrapped by rstring
@@ -188,8 +193,9 @@ class FigureExport(object):
             zipDir = os.path.join(curr_dir, self.zip_folder_name)
             os.mkdir(zipDir)
             if self.exportImages:
-                origDir = os.path.join(zipDir, ORIGINAL_DIR)
-                os.mkdir(origDir)
+                for d in (ORIGINAL_DIR, RESAMPLED_DIR, FINAL_DIR):
+                    imgDir = os.path.join(zipDir, d)
+                    os.mkdir(imgDir)
 
         # Create the figure file(s)
         self.createFigure()
@@ -200,7 +206,7 @@ class FigureExport(object):
         groupId = None
         # We get our group from the first image
         id1 = panels_json[0]['imageId']
-        self.conn.getObject("Image", id1).getDetails().group.id.val
+        groupId = self.conn.getObject("Image", id1).getDetails().group.id.val
 
         # For each page, add panels...
         col = 0
@@ -236,10 +242,8 @@ class FigureExport(object):
         self.conn.SERVICE_OPTS.setOmeroGroup(groupId)
 
         outputFile = self.figureFileName
-
-        # TODO - fix ns & mimetype for TIFFs
-        ns = "omero.web.figure.pdf"
-        mimetype = "application/pdf"
+        ns = self.ns
+        mimetype = self.mimetype
 
         if self.zip_folder_name is not None:
             zipName = self.getZipName()
@@ -581,6 +585,9 @@ class FigureExport(object):
 
         pilImg = image.renderImage(z, t, compression=1.0)
 
+        # We don't need to render again, so we can close rendering engine.
+        image._re.close()
+
         if origName is not None:
             pilImg.save(origName)
 
@@ -675,10 +682,6 @@ class FigureExport(object):
             print "Saving original to: ", origName
         pilImg = self.getPanelImage(image, panel, origName)
         tile_width = pilImg.size[0]
-
-        # in the folder to zip
-        if self.zip_folder_name is not None:
-            imgName = os.path.join(self.zip_folder_name, imgName)
 
         # for PDF export, we might have a target dpi
         dpi = 'export_dpi' in panel and panel['export_dpi'] or None
@@ -862,6 +865,8 @@ class FigureExport(object):
         """
         Creates a PDF figure. This is overwritten by ExportTiff subclass.
         """
+        if not reportlabInstalled:
+            raise ImportError("Need to install https://bitbucket.org/rptlab/reportlab")
         name = self.getFigureFileName()
         self.figureCanvas = canvas.Canvas(name, pagesize=(self.pageWidth, self.pageHeight))
 
@@ -925,10 +930,19 @@ class FigureExport(object):
             target_h = int(round(target_h))
             print "    curr_w, curr_h", curr_w, curr_h
             if target_w > curr_w:
+                if self.exportImages:
+                    # Save image BEFORE resampling
+                    rsName = os.path.join(self.zip_folder_name, RESAMPLED_DIR, imgName)
+                    print "Saving pre_resampled to: ", rsName
+                    pilImg.save(rsName)
                 print "    Resample to target_w, target_h", target_w, target_h
                 pilImg = pilImg.resize((target_w, target_h), Image.BICUBIC)
             else:
                 print "    Already over %s dpi" % dpi
+
+        # in the folder to zip
+        if self.zip_folder_name is not None:
+            imgName = os.path.join(self.zip_folder_name, FINAL_DIR, imgName)
 
         # Save Image to file, then bring into PDF
         pilImg.save(imgName)
@@ -952,6 +966,9 @@ class TiffExport(FigureExport):
         from omero.gateway import THISPATH
         self.GATEWAYPATH = THISPATH
         self.fontPath = os.path.join(THISPATH, "pilfonts", "FreeSans.ttf")
+
+        self.ns = "omero.web.figure.tiff"
+        self.mimetype = "image/tiff"
 
     def getFont(self, fontsize):
         """ Try to load font from known location in OMERO """
@@ -984,8 +1001,6 @@ class TiffExport(FigureExport):
 
     def pasteImage(self, pilImg, imgName, x, y, width, height, dpi=None):
         """ Add the PIL image to the current figure page """
-        if self.exportImages:
-            pilImg.save(imgName)
 
         print "pasteImage: x, y, width, height", x, y, width, height
         x = self.scaleCoords(x)
@@ -999,10 +1014,20 @@ class TiffExport(FigureExport):
         width = int(round(width))
         height = int(round(height))
 
+        # Save image BEFORE resampling
+        if self.exportImages:
+            rsName = os.path.join(self.zip_folder_name, RESAMPLED_DIR, imgName)
+            print "Saving pre_resampled to: ", rsName
+            pilImg.save(rsName)
+
         print "resize to: x, y, width, height", x, y, width, height
         pilImg = pilImg.resize((width, height), Image.BICUBIC)
-        width, height = pilImg.size
 
+        if self.exportImages:
+            imgName = os.path.join(self.zip_folder_name, FINAL_DIR, imgName)
+            pilImg.save(imgName)
+
+        width, height = pilImg.size
         box = (x, y, x + width, y + height)
         self.tiffFigure.paste(pilImg, box)
 
@@ -1062,6 +1087,10 @@ class TiffExport(FigureExport):
         Since we need a PDF for the info page, we create one first,
         then call superclass addInfoPage
         """
+        # We allow TIFF figure export without reportlab (no Info page)
+        if not reportlabInstalled:
+            return
+
         fullName = "info_page.pdf"
         if self.zip_folder_name is not None:
             fullName = os.path.join(self.zip_folder_name, fullName)
@@ -1070,6 +1099,13 @@ class TiffExport(FigureExport):
         # Superclass method will call addParaWithThumb(),
         # to add lines to self.infoLines
         super(TiffExport, self).addInfoPage(panels_json)
+
+    def saveFigure(self):
+        """ Completes PDF figure (or info-page PDF for TIFF export) """
+        # We allow TIFF figure export without reportlab (no Info page)
+        if not reportlabInstalled:
+            return
+        self.figureCanvas.save()
 
 
 
@@ -1132,20 +1168,15 @@ def runScript():
                 scriptParams[key] = client.getInput(key, unwrap=True)
         print scriptParams
 
-        if not reportlabInstalled:
-            client.setOutput(
-                "Message",
-                rstring("Install https://bitbucket.org/rptlab/reportlab"))
-        else:
-            # call the main script - returns a file annotation wrapper
-            fileAnnotation = export_figure(conn, scriptParams)
+        # call the main script - returns a file annotation wrapper
+        fileAnnotation = export_figure(conn, scriptParams)
 
-            # return this fileAnnotation to the client.
-            client.setOutput("Message", rstring("Pdf Figure created"))
-            if fileAnnotation is not None:
-                client.setOutput(
-                    "File_Annotation",
-                    robject(fileAnnotation._obj))
+        # return this fileAnnotation to the client.
+        client.setOutput("Message", rstring("Pdf Figure created"))
+        if fileAnnotation is not None:
+            client.setOutput(
+                "File_Annotation",
+                robject(fileAnnotation._obj))
 
     finally:
         client.closeSession()

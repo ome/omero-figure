@@ -71,8 +71,8 @@
                 'datasetName': data.datasetName,
                 'pixel_size_x': data.pixel_size_x,
                 'pixel_size_y': data.pixel_size_y,
-                'pixel_size_x_symbol': data.pixel_size.symbolX,
-                'pixel_size_x_unit': data.pixel_size.unitX,
+                'pixel_size_x_symbol': data.pixel_size_x_symbol,
+                'pixel_size_x_unit': data.pixel_size_x_unit,
                 'deltaT': data.deltaT,
             };
 
