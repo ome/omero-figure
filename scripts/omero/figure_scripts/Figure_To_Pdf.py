@@ -1052,18 +1052,27 @@ class TiffExport(FigureExport):
     def drawText(self, text, x, y, fontsize, rgb, align="center"):
         """ Add text to the current figure page """
         x = self.scaleCoords(x)
-        y = y - 5       # seems to help, but would be nice to fix this!
-        y = self.scaleCoords(y)
         fontsize = self.scaleCoords(fontsize)
 
-        textdraw = ImageDraw.Draw(self.tiffFigure)
         font = self.getFont(fontsize)
         txt_w, txt_h = font.getsize(text)
 
         if align == "vertical":
-            pass
-            # TODO - vertical labels!
+            # write text on temp image (transparent)
+            y = self.scaleCoords(y)
+            x = int(round(x))
+            y = int(round(y))
+            tempLabel = Image.new('RGBA', (txt_w, txt_h), (255, 255, 255, 0))
+            textdraw = ImageDraw.Draw(tempLabel)
+            textdraw.text((0, 0), text, font=font, fill=rgb)
+            w=tempLabel.rotate(90)
+            # Use label as mask, so transparent part is not pasted
+            y = y - (w.size[1]/2)
+            self.tiffFigure.paste(w, (x, y), mask=w)
         else:
+            y = y - 5       # seems to help, but would be nice to fix this!
+            y = self.scaleCoords(y)
+            textdraw = ImageDraw.Draw(self.tiffFigure)
             if align == "center":
                 x = x - (txt_w/ 2)
             elif align == "right":
