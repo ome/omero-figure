@@ -145,7 +145,11 @@ title: OMERO.figure
               In the simplest case: <code>$ pip install reportlab</code> OR  <code>$ easy_install reportlab</code><br>
               NB: For python 2.6, you'll need Reportlab 2.7: <code>$ pip install reportlab==2.7</code>
             </li>
-            <li>Upload PDF generation script (need to be Admin)
+            <li>Optional: Figure legends can be formatted using Markdown syntax. To see this correctly in the
+              exported PDF info page, we need <a href="https://pythonhosted.org/Markdown/index.html">
+              Python-markdown</a>.
+              In the simplest case: <code>$ pip install markdown</code> OR  <code>$ easy_install markdown</code>
+            <li>Upload figure export script (need to be Admin)
               <code style="width:700px">
                 $ cd figure/scripts   &nbsp &nbsp &nbsp # NB: important to be in this directory<br>
                 $ path/to/bin/omero script upload omero/figure_scripts/Figure_To_Pdf.py --official
@@ -162,6 +166,8 @@ title: OMERO.figure
               unzip and replace the contents of the current /figure
               directory with the contents of the unzipped directory.
             </li>
+            <li>NB: If you are upgrading from OMERO.figure 1.0.0, note that we can now use Python-Markdown
+                (optional, see install instructions above).</li>
             <li>Replace PDF generation script (need to be Admin)
               <code style="width:700px">
                 $ cd figure/scripts   &nbsp &nbsp &nbsp # NB: important to be in this directory<br>
