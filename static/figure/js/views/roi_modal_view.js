@@ -18,6 +18,8 @@ var RoiModalView = Backbone.View.extend({
                 self.listenTo(self.m, 'change:theZ change:theT', self.render);
                 self.cropModel.set({'selected': false, 'width': 0, 'height': 0});    // hide crop roi
                 self.zoomToFit();   // includes render()
+                // disable submit until user chooses a region/ROI
+                self.enableSubmit(false);
                 self.loadRois();
             });
 
@@ -48,6 +50,8 @@ var RoiModalView = Backbone.View.extend({
                 }
                 // No-longer correspond to saved ROI coords
                 self.currentRoiId = undefined;
+                // Allow submit of dialog
+                this.enableSubmit(true);
             });
 
             // Now set up Raphael paper...
@@ -62,6 +66,16 @@ var RoiModalView = Backbone.View.extend({
             "mousemove svg": "mousemove",
             "mouseup svg": "mouseup",
             "submit .roiModalForm": "handleRoiForm"
+        },
+
+        // we disable Submit when dialog is shown, enable when region/ROI chosen
+        enableSubmit: function(enabled) {
+            var $okBtn = $('button[type="submit"]', this.$el);
+            if (enabled) {
+                $okBtn.prop('disabled', false);
+            } else {
+                $okBtn.prop('disabled', 'disabled');
+            }
         },
 
         roiPicked: function(event) {
