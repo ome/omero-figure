@@ -701,6 +701,14 @@
         z-index: 10;
     }
 
+    .roiPickMe {
+        cursor: pointer;
+    }
+    /* On hover, use selected blue color */
+    .roiPickMe:hover {
+        background-color: rgb(190, 212, 253);
+    }
+
 
     /*  color-picker  */
 

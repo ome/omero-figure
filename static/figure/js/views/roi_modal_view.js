@@ -61,7 +61,7 @@ var RoiModalView = Backbone.View.extend({
         },
 
         events: {
-            "click .roi_content": "roiPicked",
+            "click .roiPickMe": "roiPicked",
             "mousedown svg": "mousedown",
             "mousemove svg": "mousemove",
             "mouseup svg": "mouseup",
@@ -80,7 +80,11 @@ var RoiModalView = Backbone.View.extend({
 
         roiPicked: function(event) {
 
-            var $roi = $(event.target),
+            var $target = $(event.target),
+                $tr = $target.parent();
+            // $tr might be first <td> if img clicked or <tr> if td clicked
+            // but in either case it will contain the img we need.
+            var $roi = $tr.find('img.roi_content'),
                 x = parseInt($roi.attr('data-x'), 10),
                 y = parseInt($roi.attr('data-y'), 10),
                 width = parseInt($roi.attr('data-width'), 10),
