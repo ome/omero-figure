@@ -235,6 +235,13 @@ var RoiModalView = Backbone.View.extend({
                     roi, shape, theT, theZ, z, t, rect, tkeys, zkeys,
                     minT, maxT,
                     shapes; // dict of all shapes by z & t index
+                if (data.length === 0) {
+                    $("#cropRoiMessage").text("[No rectangular ROIs found on this image in OMERO]").show();
+                    $(".roiPicker").hide();
+                } else {
+                    $("#cropRoiMessage").text("").hide();
+                    $(".roiPicker").show();
+                }
                 for (var r=0; r<data.length; r++) {
                     roi = data[r];
                     shapes = {};
