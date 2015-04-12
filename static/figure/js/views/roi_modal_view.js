@@ -18,6 +18,8 @@ var RoiModalView = Backbone.View.extend({
                 self.listenTo(self.m, 'change:theZ change:theT', self.render);
                 self.cropModel.set({'selected': false, 'width': 0, 'height': 0});    // hide crop roi
                 self.zoomToFit();   // includes render()
+                // disable submit until user chooses a region/ROI
+                self.enableSubmit(false);
                 self.loadRois();
             });
 
@@ -48,6 +50,8 @@ var RoiModalView = Backbone.View.extend({
                 }
                 // No-longer correspond to saved ROI coords
                 self.currentRoiId = undefined;
+                // Allow submit of dialog
+                this.enableSubmit(true);
             });
 
             // Now set up Raphael paper...
@@ -57,16 +61,30 @@ var RoiModalView = Backbone.View.extend({
         },
 
         events: {
-            "click .roi_content": "roiPicked",
+            "click .roiPickMe": "roiPicked",
             "mousedown svg": "mousedown",
             "mousemove svg": "mousemove",
             "mouseup svg": "mouseup",
             "submit .roiModalForm": "handleRoiForm"
         },
 
+        // we disable Submit when dialog is shown, enable when region/ROI chosen
+        enableSubmit: function(enabled) {
+            var $okBtn = $('button[type="submit"]', this.$el);
+            if (enabled) {
+                $okBtn.prop('disabled', false);
+            } else {
+                $okBtn.prop('disabled', 'disabled');
+            }
+        },
+
         roiPicked: function(event) {
 
-            var $roi = $(event.target),
+            var $target = $(event.target),
+                $tr = $target.parent();
+            // $tr might be first <td> if img clicked or <tr> if td clicked
+            // but in either case it will contain the img we need.
+            var $roi = $tr.find('img.roi_content'),
                 x = parseInt($roi.attr('data-x'), 10),
                 y = parseInt($roi.attr('data-y'), 10),
                 width = parseInt($roi.attr('data-width'), 10),
@@ -156,7 +174,8 @@ var RoiModalView = Backbone.View.extend({
                 var sh = getShape(m.get('theZ'), m.get('theT'));
 
                 m.cropToRoi({'x': sh.x, 'y': sh.y, 'width': sh.width, 'height': sh.height});
-                m.set({'theZ': parseInt(sh.theZ, 10),
+                // 'save' to trigger 'unsaved': true
+                m.save({'theZ': parseInt(sh.theZ, 10),
                        'theT': parseInt(sh.theT, 10)});
             });
             $("#roiModal").modal('hide');
@@ -217,6 +236,13 @@ var RoiModalView = Backbone.View.extend({
                     roi, shape, theT, theZ, z, t, rect, tkeys, zkeys,
                     minT, maxT,
                     shapes; // dict of all shapes by z & t index
+                if (data.length === 0) {
+                    $("#cropRoiMessage").text("[No rectangular ROIs found on this image in OMERO]").show();
+                    $(".roiPicker").hide();
+                } else {
+                    $("#cropRoiMessage").text("").hide();
+                    $(".roiPicker").show();
+                }
                 for (var r=0; r<data.length; r++) {
                     roi = data[r];
                     shapes = {};
