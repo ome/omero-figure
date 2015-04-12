@@ -174,7 +174,8 @@ var RoiModalView = Backbone.View.extend({
                 var sh = getShape(m.get('theZ'), m.get('theT'));
 
                 m.cropToRoi({'x': sh.x, 'y': sh.y, 'width': sh.width, 'height': sh.height});
-                m.set({'theZ': parseInt(sh.theZ, 10),
+                // 'save' to trigger 'unsaved': true
+                m.save({'theZ': parseInt(sh.theZ, 10),
                        'theT': parseInt(sh.theT, 10)});
             });
             $("#roiModal").modal('hide');
