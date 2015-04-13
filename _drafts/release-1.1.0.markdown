@@ -13,7 +13,7 @@ Multiple page figures:
   - Pages are laid out in a grid on the canvas and image panels can be dragged across the canvas onto the chosen page.
   - Export will generate a multi-page PDF document or multiple TIFF images.
 
-Crop to Region / ROI:
+Crop to region or ROI:
 
   - A crop button beside the panel zoom slider launches a crop dialog.
   - The crop region can be manually chosen by dragging to select an area of the displayed image.
@@ -28,7 +28,7 @@ Set dpi of panel images:
     less than the chosen export dpi.
   - Additional pixels will be created in the image and the data resampled using a bicubic filter. 
 
-Export of Figures as TIFFs:
+Export of figures as TIFFs:
 
   - You can now choose to export the figure as a TIFF image at 300 dpi.
   - This matches the submission format for many journals and allows easy embedding in presentations.
@@ -45,13 +45,13 @@ Export of panel images alongside figure:
   - This provides greater clarity as to the processing steps used in creating the figure and the TIFF images
     could also be used in a manual figure creation.
 
-Figure Legend:
+Figure legend:
 
   - Legends can be added to figures and will be included in the info PDF page when the figure is exported.
   - You can use Markdown syntax to add simple formatting, such as bold and italics. Other formatting is
     supported in the web view, but may not be displayed properly in the exported PDF info page.
 
-Other Features:
+Other features:
 
   - When multiple panels are selected, they can be automatically resized to "Align their Magnification" such
     that features appear the same size in all panels.
@@ -61,9 +61,9 @@ Other Features:
   - Unicode support: Figures can now contain special characters.
   - Figure export errors are now handled with an error button which displays the error in a new browser tab. 
 
-Bug Fixes:
+Bug fixes:
 
-  - Fix label & scalebar colors in PDF
+  - Fix label & scalebar colors in PDF figure export
 
 
 
