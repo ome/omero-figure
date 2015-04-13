@@ -2,7 +2,6 @@
 layout: post
 title:  "Release: 1.0.1"
 date:   2015-04-02
-release: True
 ---
 
 This release allows OMERO.figure to be used with the latest 5.1.0 OMERO release.
