@@ -165,7 +165,7 @@ __p += '\n    <div class="pixel_size_form" style="position:relative">\n        <
  if (pixel_size_x == 0)
                     {print('<span style="color:red">NOT SET</span>')}
                 else if (typeof pixel_size_x === 'number')
-                    {print(pixel_size_x.toFixed(3) + " &#181;m")}
+                    {print(pixel_size_x.toFixed(3) + " " + symbol)}
                 else
                     {print(pixel_size_x + " &#181;m")} ;
 __p += '\n            </span>\n        </div>\n\n    </div>\n\n    <form class="scalebar_form form-inline">\n\n    <div class="input-group pull-left">\n        <input type="text" class="scalebar-length form-control input-sm" \n                placeholder="Length" value="' +
