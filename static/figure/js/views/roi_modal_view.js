@@ -50,8 +50,12 @@ var RoiModalView = Backbone.View.extend({
                 }
                 // No-longer correspond to saved ROI coords
                 self.currentRoiId = undefined;
-                // Allow submit of dialog
-                this.enableSubmit(true);
+                // Allow submit of dialog if valid ROI
+                if (self.currentROI.width < 2 || self.currentROI.height < 2) {
+                    self.enableSubmit(false);
+                } else {
+                    self.enableSubmit(true);
+                }
             });
 
             // Now set up Raphael paper...
@@ -73,8 +77,10 @@ var RoiModalView = Backbone.View.extend({
             var $okBtn = $('button[type="submit"]', this.$el);
             if (enabled) {
                 $okBtn.prop('disabled', false);
+                $okBtn.prop('title', 'Crop selected images to chosen region');
             } else {
                 $okBtn.prop('disabled', 'disabled');
+                $okBtn.prop('title', 'No valid region selected');
             }
         },
 
