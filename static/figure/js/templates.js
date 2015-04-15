@@ -167,7 +167,7 @@ __p += '\n    <div class="pixel_size_form" style="position:relative">\n        <
                 else if (typeof pixel_size_x === 'number')
                     {print(pixel_size_x.toFixed(3) + " " + symbol)}
                 else
-                    {print(pixel_size_x + " &#181;m")} ;
+                    {print(pixel_size_x + " " + symbol)} ;
 __p += '\n            </span>\n        </div>\n\n    </div>\n\n    <form class="scalebar_form form-inline">\n\n    <div class="input-group pull-left">\n        <input type="text" class="scalebar-length form-control input-sm" \n                placeholder="Length" value="' +
 ((__t = ( length )) == null ? '' : __t) +
 '" />\n    </div>\n\n    <div class="form-group"><div class="checkbox checkbox-inline">\n        <label>' +
