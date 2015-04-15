@@ -51,10 +51,10 @@ var RoiModalView = Backbone.View.extend({
                 // No-longer correspond to saved ROI coords
                 self.currentRoiId = undefined;
                 // Allow submit of dialog if valid ROI
-                if (self.currentROI.width < 2 || self.currentROI.height < 2) {
-                    self.enableSubmit(false);
-                } else {
+                if (self.regionValid(self.currentROI)) {
                     self.enableSubmit(true);
+                } else {
+                    self.enableSubmit(false);
                 }
             });
 
@@ -82,6 +82,18 @@ var RoiModalView = Backbone.View.extend({
                 $okBtn.prop('disabled', 'disabled');
                 $okBtn.prop('title', 'No valid region selected');
             }
+        },
+
+        // Region is only valid if it has width & height > 1 and
+        // is at least partially overlapping with the image
+        regionValid: function(roi) {
+
+            if (roi.width < 2 || roi.height < 2) return false;
+            if (roi.x > this.m.get('orig_width')) return false;
+            if (roi.y > this.m.get('orig_height')) return false;
+            if (roi.x + roi.width < 0) return false;
+            if (roi.y + roi.height < 0) return false;
+            return true;
         },
 
         roiPicked: function(event) {
