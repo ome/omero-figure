@@ -139,6 +139,11 @@ var RoiModalView = Backbone.View.extend({
 
             var getShape = function getShape(z, t) {
 
+                // If all on one T-index, update to the current
+                // T-index that we're looking at.
+                if (sameT) {
+                    t = self.m.get('theT');
+                }
                 var rv = {'x': r.x,
                         'y': r.y,
                         'width': r.width,
