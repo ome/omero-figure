@@ -50,8 +50,12 @@ var RoiModalView = Backbone.View.extend({
                 }
                 // No-longer correspond to saved ROI coords
                 self.currentRoiId = undefined;
-                // Allow submit of dialog
-                this.enableSubmit(true);
+                // Allow submit of dialog if valid ROI
+                if (self.regionValid(self.currentROI)) {
+                    self.enableSubmit(true);
+                } else {
+                    self.enableSubmit(false);
+                }
             });
 
             // Now set up Raphael paper...
@@ -73,9 +77,23 @@ var RoiModalView = Backbone.View.extend({
             var $okBtn = $('button[type="submit"]', this.$el);
             if (enabled) {
                 $okBtn.prop('disabled', false);
+                $okBtn.prop('title', 'Crop selected images to chosen region');
             } else {
                 $okBtn.prop('disabled', 'disabled');
+                $okBtn.prop('title', 'No valid region selected');
             }
+        },
+
+        // Region is only valid if it has width & height > 1 and
+        // is at least partially overlapping with the image
+        regionValid: function(roi) {
+
+            if (roi.width < 2 || roi.height < 2) return false;
+            if (roi.x > this.m.get('orig_width')) return false;
+            if (roi.y > this.m.get('orig_height')) return false;
+            if (roi.x + roi.width < 0) return false;
+            if (roi.y + roi.height < 0) return false;
+            return true;
         },
 
         roiPicked: function(event) {
@@ -121,6 +139,11 @@ var RoiModalView = Backbone.View.extend({
 
             var getShape = function getShape(z, t) {
 
+                // If all on one T-index, update to the current
+                // T-index that we're looking at.
+                if (sameT) {
+                    t = self.m.get('theT');
+                }
                 var rv = {'x': r.x,
                         'y': r.y,
                         'width': r.width,
