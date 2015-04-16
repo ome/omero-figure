@@ -6,7 +6,7 @@
         <div id="vp_deltaT"><%= deltaT %></div>
         <div class="vp_frame" style="width:<%= frame_w %>px; height:<%= frame_h %>px">
             <% _.each(imgs_css, function(css, i) { %>
-            <img class="vp_img pixelated"
+            <img class="vp_img<% if (css.pixelated) {%> pixelated<% } %>"
                 style="opacity:<%= opacity %>; left:<%= css.left %>px; top:<%= css.top %>px;
                     width:<%= css.width %>px; height:<%= css.height %>px;
                     -webkit-transform-origin:<%= css['transform-origin'] %>;

@@ -18,7 +18,9 @@
                 'change:x change:y change:width change:height change:zoom change:dx change:dy change:rotation',
                 this.render_layout);
             this.listenTo(this.model, 'change:scalebar change:pixel_size_x', this.render_scalebar);
-            this.listenTo(this.model, 'change:channels change:theZ change:theT change:z_start change:z_end change:z_projection', this.render_image);
+            this.listenTo(this.model,
+                'change:channels change:theZ change:theT change:z_start change:z_end change:z_projection change:export_dpi',
+                this.render_image);
             this.listenTo(this.model, 'change:labels change:theT change:deltaT', this.render_labels);
             // This could be handled by backbone.relational, but do it manually for now...
             // this.listenTo(this.model.channels, 'change', this.render);
@@ -82,6 +84,13 @@
         render_image: function() {
             var src = this.model.get_img_src();
             this.$img_panel.attr('src', src);
+
+            // if a 'reasonable' dpi is set, we don't pixelate
+            if (this.model.get('export_dpi') > 100) {
+                this.$img_panel.removeClass('pixelated');
+            } else {
+                this.$img_panel.addClass('pixelated');
+            }
         },
 
         render_labels: function() {

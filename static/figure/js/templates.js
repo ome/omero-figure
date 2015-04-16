@@ -252,7 +252,11 @@ __p += '\n        <div id="vp_z_label">Z</div>\n        <div id="vp_z_value">' +
 ((__t = ( frame_h )) == null ? '' : __t) +
 'px">\n            ';
  _.each(imgs_css, function(css, i) { ;
-__p += '\n            <img class="vp_img pixelated"\n                style="opacity:' +
+__p += '\n            <img class="vp_img';
+ if (css.pixelated) {;
+__p += ' pixelated';
+ } ;
+__p += '"\n                style="opacity:' +
 ((__t = ( opacity )) == null ? '' : __t) +
 '; left:' +
 ((__t = ( css.left )) == null ? '' : __t) +
