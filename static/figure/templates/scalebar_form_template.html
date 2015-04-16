@@ -5,7 +5,7 @@
             <input class="input-sm form-control pixel_size_input" placeholder="Pixel Size (<%= symbol %>)"
                     style="width:100px; display:none" value="<%= pixel_size_x %>">
             <span class="pixel_size_display">
-                <% if (pixel_size_x == 0)
+                <% if (!pixel_size_x)
                     {print('<span style="color:red">NOT SET</span>')}
                 else if (typeof pixel_size_x === 'number')
                     {print(pixel_size_x.toFixed(3) + " " + symbol)}

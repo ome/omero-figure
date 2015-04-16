@@ -162,7 +162,7 @@ __p += '\n    <div class="pixel_size_form" style="position:relative">\n        <
 ')"\n                    style="width:100px; display:none" value="' +
 ((__t = ( pixel_size_x )) == null ? '' : __t) +
 '">\n            <span class="pixel_size_display">\n                ';
- if (pixel_size_x == 0)
+ if (!pixel_size_x)
                     {print('<span style="color:red">NOT SET</span>')}
                 else if (typeof pixel_size_x === 'number')
                     {print(pixel_size_x.toFixed(3) + " " + symbol)}
