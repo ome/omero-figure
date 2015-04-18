@@ -42,8 +42,9 @@ Export of panel images alongside figure:
     the figure as TIFFs.
   - For each image panel, the full sized TIFF of the image is exported, as well as the cropped and rotated TIFF
     that is embedded within the PDF or TIFF figure.
-  - This provides greater clarity as to the processing steps used in creating the figure and the TIFF images
-    could also be used in a manual figure creation.
+  - If images are resampled to increase their dpi, they will be saved before and after resampling.
+  - This provides greater clarity as to the processing steps used in generating the figure and the TIFF images
+    could also be used for creating figures in other applications.
 
 Figure legend:
 
