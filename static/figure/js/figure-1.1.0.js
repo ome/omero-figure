@@ -26,6 +26,7 @@
             'width_mm': 210,    // A4 sizes, only used if user chooses page_size: 'mm'
             'height_mm': 297,
             'legend': '',       // Figure legend in markdown format.
+            'legend_collapsed': true,   // collapse or expand legend
         },
 
         initialize: function() {
@@ -63,6 +64,7 @@
                         'page_col_count': data.page_col_count,
                         'orientation': data.orientation,
                         'legend': data.legend,
+                        'legend_collapsed': data.legend_collapsed,
                     };
 
                 // For missing attributes, we fill in with defaults
@@ -124,6 +126,7 @@
                 width_mm: this.get('width_mm'),
                 orientation: this.get('orientation'),
                 legend: this.get('legend'),
+                legend_collapsed: this.get('legend_collapsed'),
             };
             if (this.get('figureName')){
                 figureJSON.figureName = this.get('figureName')
@@ -560,8 +563,8 @@
                 'datasetName': data.datasetName,
                 'pixel_size_x': data.pixel_size_x,
                 'pixel_size_y': data.pixel_size_y,
-                'pixel_size_x_symbol': data.pixel_size.symbolX,
-                'pixel_size_x_unit': data.pixel_size.unitX,
+                'pixel_size_x_symbol': data.pixel_size_x_symbol,
+                'pixel_size_x_unit': data.pixel_size_x_unit,
                 'deltaT': data.deltaT,
             };
 
@@ -1092,7 +1095,8 @@ var UndoManager = Backbone.Model.extend({
     },
     initialize: function(opts) {
         this.figureModel = opts.figureModel;    // need for setting selection etc
-        this.figureModel.on("change:paper_width change:paper_height change:page_count", this.handleChange, this);
+        this.figureModel.on("change:paper_width change:paper_height change:page_count change:legend",
+            this.handleChange, this);
         this.listenTo(this.figureModel, 'reset_undo_redo', this.resetQueue);
         this.undoQueue = [];
         this.undoInProgress = false;
@@ -1389,17 +1393,42 @@ var ColorPickerView = Backbone.View.extend({
 
         this.$submit_btn = $("#colorpickerModal .modal-footer button[type='submit']");
 
-        $('.demo-auto').colorpicker({
+        var $cp = $('.demo-auto').colorpicker({
             'sliders': sliders,
             'color': '00ff00',
-        }).on('changeColor', function(ev){
+        });
+
+        // Access the colorpicker object for use below...
+        var cp = $cp.data('colorpicker');
+
+
+        $cp.on('changeColor', function(event){
+
+            // In edge-case of starting with 'black', clicking on Hue slider,
+            // default is to stay 'black', but we want to pick the color
+            // by setting saturation and brightness.
+            var c = event.color;
+            if ((c.toHex() === "#000000" || c.toHex() === "#ffffff") &&
+                    cp.currentSlider && cp.currentSlider.callTop === "setHue") {
+                cp.color.setSaturation(1);
+                cp.color.setBrightness(0);
+                cp.update(true);
+                cp.element.trigger({
+                    type: 'changeColor',
+                    color: cp.color
+                });
+                // so we don't do this again until next click
+                cp.currentSlider = undefined;
+                return;
+            }
+
             // enable form submission & show color
             self.$submit_btn.prop('disabled', false);
-            $('.oldNewColors li:first-child').css('background-color', ev.color.toHex());
+            $('.oldNewColors li:first-child').css('background-color', event.color.toHex());
 
             // update red, green, blue inputs
             if (!editingRGB) {
-                var rgb = ev.color.toRGB();
+                var rgb = event.color.toRGB();
                 $(".rgb-group input[name='red']").val(rgb.r);
                 $(".rgb-group input[name='green']").val(rgb.g);
                 $(".rgb-group input[name='blue']").val(rgb.b);
@@ -1734,17 +1763,15 @@ var ColorPickerView = Backbone.View.extend({
                                 $create_figure_pdf.show();
                                 $pdf_inprogress.hide();
 
-                                // If there's an error, show button
-                                if (pdf_job.stderr) {
-                                    var stderr_url = WEBINDEX_URL + "get_original_file/" + pdf_job.stderr + "/";
-                                    $script_error.attr('href', stderr_url).show();
-                                }
-
                                 // Show result
                                 if (pdf_job.results.File_Annotation) {
                                     var fa_id = pdf_job.results.File_Annotation.id,
                                         fa_download = WEBINDEX_URL + "annotation/" + fa_id + "/";
                                     $pdf_download.attr('href', fa_download).show();
+                                } else if (pdf_job.stderr) {
+                                    // Only show any errors if NO result
+                                    var stderr_url = WEBINDEX_URL + "get_original_file/" + pdf_job.stderr + "/";
+                                    $script_error.attr('href', stderr_url).show();
                                 }
                             }
 
@@ -2600,29 +2627,51 @@ var LegendView = Backbone.View.extend({
         initialize: function() {
 
             this.listenTo(this.model,
-                'change:x change:legend', this.render);
+                'change:x change:legend', this.legendChanged);
 
             this.render();
         },
 
         events: {
-            "click .edit-legend": "addLegend",
+            "click .edit-legend": "editLegend",
             "click .cancel-legend": "cancelLegend",
             "click .save-legend": "saveLegend",
+            "click .collapse-legend": "collapseLegend",
+            "click .expand-legend": "expandLegend",
+            "click .markdown-info": "markdownInfo",
+        },
+
+        markdownInfo: function(event) {
+            event.preventDefault();
+            $("#markdownInfoModal").modal('show');
+        },
+
+        collapseLegend: function(event) {
+            this.renderCollapsed(true);
+            this.model.set("legend_collapsed", true);
+        },
+
+        expandLegend: function(event) {
+            this.renderCollapsed(false);
+            this.model.set("legend_collapsed", false);
         },
 
         saveLegend: function(event) {
             event.preventDefault();
             var legendTxt = $("#js-legend textarea").val();
-            console.log("SAVE", legendTxt);
             this.model.save("legend", legendTxt);
+            // This will happen anyway if legend has changed, 
+            // but just in case it hasn't....
             this.editing = false;
             this.render();
         },
 
-        addLegend: function(event) {
+        editLegend: function(event) {
             event.preventDefault();
             this.editing = true;
+            if (this.model.get("legend_collapsed")) {
+                this.model.set("legend_collapsed", false);
+            }
             this.render();
         },
 
@@ -2632,17 +2681,35 @@ var LegendView = Backbone.View.extend({
             this.render();
         },
 
+        renderCollapsed: function(collapsed) {
+            var $panel = $('.panel', self.el);
+            if (collapsed) {
+                $panel.addClass('legend-collapsed');
+                $panel.removeClass('legend-expanded');
+            } else {
+                $panel.removeClass('legend-collapsed');
+                $panel.addClass('legend-expanded');
+            }
+        },
+
+        // May have chaned by opening a new Figure etc.
+        legendChanged: function() {
+            this.editing = false;
+            this.render();
+        },
+
         render: function() {
-            
+
             var self = this,
                 legendText = this.model.get('legend') || "",
+                legendCollapsed = this.model.get('legend_collapsed'),
                 $edit = $('.edit-legend', self.el),
                 $save = $('.save-legend', self.el),
                 $cancel = $('.cancel-legend', self.el),
                 $panel = $('.panel', self.el),
                 $legend = $('.legend', self.el);
 
-            console.log("render", legendText);
+            self.renderCollapsed(legendCollapsed);
 
             // if we're editing...
             if (self.editing) {
@@ -2651,8 +2718,9 @@ var LegendView = Backbone.View.extend({
                 $save.show();
                 $cancel.show();
 
+                $panel.addClass('editing');
                 $panel.show();
-                var html = '<textarea class="form-control" rows="5" style="resize:none">'
+                var html = '<textarea class="form-control" rows="7" style="resize:none">'
                             + legendText + '</textarea>';
                 $legend.html(html);
             } else {
@@ -2661,12 +2729,13 @@ var LegendView = Backbone.View.extend({
                 $save.hide();
                 $cancel.hide();
 
+                $panel.removeClass('editing');
                 if (legendText.length === 0) {
                     $panel.hide();
                 } else {
                     $panel.show();
                     legendText = markdown.toHTML( legendText );
-                    $legend.html("<p>" + legendText + "</p>");
+                    $legend.html(legendText);
                 }
             }
         }
@@ -3264,7 +3333,9 @@ var LegendView = Backbone.View.extend({
                 'change:x change:y change:width change:height change:zoom change:dx change:dy change:rotation',
                 this.render_layout);
             this.listenTo(this.model, 'change:scalebar change:pixel_size_x', this.render_scalebar);
-            this.listenTo(this.model, 'change:channels change:theZ change:theT change:z_start change:z_end change:z_projection', this.render_image);
+            this.listenTo(this.model,
+                'change:channels change:theZ change:theT change:z_start change:z_end change:z_projection change:export_dpi',
+                this.render_image);
             this.listenTo(this.model, 'change:labels change:theT change:deltaT', this.render_labels);
             // This could be handled by backbone.relational, but do it manually for now...
             // this.listenTo(this.model.channels, 'change', this.render);
@@ -3328,6 +3399,13 @@ var LegendView = Backbone.View.extend({
         render_image: function() {
             var src = this.model.get_img_src();
             this.$img_panel.attr('src', src);
+
+            // if a 'reasonable' dpi is set, we don't pixelate
+            if (this.model.get('export_dpi') > 100) {
+                this.$img_panel.removeClass('pixelated');
+            } else {
+                this.$img_panel.addClass('pixelated');
+            }
         },
 
         render_labels: function() {
@@ -4416,7 +4494,7 @@ var RectView = Backbone.View.extend({
 
             this.models.forEach(function(m){
                 self.listenTo(m,
-                    'change:width change:height change:channels change:zoom change:theZ change:theT change:rotation change:z_projection change:z_start change:z_end',
+                    'change:width change:height change:channels change:zoom change:theZ change:theT change:rotation change:z_projection change:z_start change:z_end change:export_dpi',
                     self.render);
                 zoom_sum += m.get('zoom');
 
@@ -4608,6 +4686,9 @@ var RectView = Backbone.View.extend({
                 var src = m.get_img_src(),
                     img_css = m.get_vp_img_css(m.get('zoom'), frame_w, frame_h, m.get('dx'), m.get('dy'));
                 img_css.src = src;
+                // if a 'reasonable' dpi is set, we don't pixelate
+                dpiSet = m.get('export_dpi') > 100;
+                img_css.pixelated = !dpiSet;
                 imgs_css.push(img_css);
             });
 
@@ -5052,6 +5133,8 @@ var RoiModalView = Backbone.View.extend({
                 self.listenTo(self.m, 'change:theZ change:theT', self.render);
                 self.cropModel.set({'selected': false, 'width': 0, 'height': 0});    // hide crop roi
                 self.zoomToFit();   // includes render()
+                // disable submit until user chooses a region/ROI
+                self.enableSubmit(false);
                 self.loadRois();
             });
 
@@ -5082,6 +5165,12 @@ var RoiModalView = Backbone.View.extend({
                 }
                 // No-longer correspond to saved ROI coords
                 self.currentRoiId = undefined;
+                // Allow submit of dialog if valid ROI
+                if (self.regionValid(self.currentROI)) {
+                    self.enableSubmit(true);
+                } else {
+                    self.enableSubmit(false);
+                }
             });
 
             // Now set up Raphael paper...
@@ -5091,16 +5180,44 @@ var RoiModalView = Backbone.View.extend({
         },
 
         events: {
-            "click .roi_content": "roiPicked",
+            "click .roiPickMe": "roiPicked",
             "mousedown svg": "mousedown",
             "mousemove svg": "mousemove",
             "mouseup svg": "mouseup",
             "submit .roiModalForm": "handleRoiForm"
         },
 
+        // we disable Submit when dialog is shown, enable when region/ROI chosen
+        enableSubmit: function(enabled) {
+            var $okBtn = $('button[type="submit"]', this.$el);
+            if (enabled) {
+                $okBtn.prop('disabled', false);
+                $okBtn.prop('title', 'Crop selected images to chosen region');
+            } else {
+                $okBtn.prop('disabled', 'disabled');
+                $okBtn.prop('title', 'No valid region selected');
+            }
+        },
+
+        // Region is only valid if it has width & height > 1 and
+        // is at least partially overlapping with the image
+        regionValid: function(roi) {
+
+            if (roi.width < 2 || roi.height < 2) return false;
+            if (roi.x > this.m.get('orig_width')) return false;
+            if (roi.y > this.m.get('orig_height')) return false;
+            if (roi.x + roi.width < 0) return false;
+            if (roi.y + roi.height < 0) return false;
+            return true;
+        },
+
         roiPicked: function(event) {
 
-            var $roi = $(event.target),
+            var $target = $(event.target),
+                $tr = $target.parent();
+            // $tr might be first <td> if img clicked or <tr> if td clicked
+            // but in either case it will contain the img we need.
+            var $roi = $tr.find('img.roi_content'),
                 x = parseInt($roi.attr('data-x'), 10),
                 y = parseInt($roi.attr('data-y'), 10),
                 width = parseInt($roi.attr('data-width'), 10),
@@ -5137,6 +5254,11 @@ var RoiModalView = Backbone.View.extend({
 
             var getShape = function getShape(z, t) {
 
+                // If all on one T-index, update to the current
+                // T-index that we're looking at.
+                if (sameT) {
+                    t = self.m.get('theT');
+                }
                 var rv = {'x': r.x,
                         'y': r.y,
                         'width': r.width,
@@ -5190,7 +5312,8 @@ var RoiModalView = Backbone.View.extend({
                 var sh = getShape(m.get('theZ'), m.get('theT'));
 
                 m.cropToRoi({'x': sh.x, 'y': sh.y, 'width': sh.width, 'height': sh.height});
-                m.set({'theZ': parseInt(sh.theZ, 10),
+                // 'save' to trigger 'unsaved': true
+                m.save({'theZ': parseInt(sh.theZ, 10),
                        'theT': parseInt(sh.theT, 10)});
             });
             $("#roiModal").modal('hide');
@@ -5251,6 +5374,13 @@ var RoiModalView = Backbone.View.extend({
                     roi, shape, theT, theZ, z, t, rect, tkeys, zkeys,
                     minT, maxT,
                     shapes; // dict of all shapes by z & t index
+                if (data.length === 0) {
+                    $("#cropRoiMessage").text("[No rectangular ROIs found on this image in OMERO]").show();
+                    $(".roiPicker").hide();
+                } else {
+                    $("#cropRoiMessage").text("").hide();
+                    $(".roiPicker").show();
+                }
                 for (var r=0; r<data.length; r++) {
                     roi = data[r];
                     shapes = {};

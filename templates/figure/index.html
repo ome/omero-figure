@@ -32,14 +32,14 @@
 
     <link rel="stylesheet" href="{% static 'figure/3rdparty/bootstrap3/css/bootstrap.css' %}">
     <link rel="stylesheet" href="{% static 'figure/3rdparty/bootstrap-colorpicker/css/bootstrap-colorpicker.min.css' %}">
-    <link rel="stylesheet" href="{% static 'figure/css/figure.css' %}">
+    <link rel="stylesheet" href="{% static 'figure/css/figure-1.1.0.css' %}">
 
     {% include "webgateway/base/includes/script_src_jquery.html" %}
     {% include "webgateway/base/includes/jquery-ui.html" %}
 
     <script>
 
-    var RELEASE_VERSION = "v1.0.0";
+    var RELEASE_VERSION = "v1.1.0";
 
     var BASE_WEBFIGURE_URL = "{% url 'figure_index' %}",
         SAVE_WEBFIGURE_URL = "{% url 'save_web_figure' %}",
@@ -805,6 +805,7 @@
 
 
     <!-- All these can be concatenated with '$ grunt concat' into figure.js.... -->
+    <!--
     <script src="{% static 'figure/js/models/figure_model.js' %}"></script>
     <script src="{% static 'figure/js/models/panel_model.js' %}"></script>
     <script src="{% static 'figure/js/models/undo.js' %}"></script>
@@ -820,12 +821,11 @@
     <script src="{% static 'figure/js/views/colorpicker.js' %}"></script>
     <script src="{% static 'figure/js/views/legend_view.js' %}"></script>
     <script src="{% static 'figure/js/app.js' %}"></script>
-
-
-    <!-- ...for release build.
-    <script type="text/javascript" src="{% static 'figure/js/figure-1.0.0.js' %}"></script>
     -->
 
+
+    <!-- ...for release build. -->
+    <script type="text/javascript" src="{% static 'figure/js/figure-1.1.0.js' %}"></script>
 
 </body>
 
