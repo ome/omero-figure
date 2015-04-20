@@ -17,7 +17,7 @@ title: OMERO.figure
           tool for rapid figure creation. Each panel of the figure becomes a multi-dimensional
           image viewer, allowing you to zoom and pan, adjust rendering settings and even
           scroll through Z and Time.
-          Figures can be exported as PDF documents, so you can move seamlessly to
+          Figures can be exported as TIFF images or PDF documents, so you can move seamlessly to
           other editing tools such as Adobe Illustrator.
         </p>
 
@@ -35,9 +35,14 @@ title: OMERO.figure
             <li><strong>Copy and paste</strong>: Duplicate rows or columns instantly, aligned perfectly.</li>
             <li><strong>Scroll Z and Time</strong>: Move image panels through Z and Time dimensions.</li>
             <li><strong>Zoom, Pan and Rotate</strong>: Crop your images simply by zooming, panning and rotating the viewport without ever losing the full image.</li>
+            <li><strong>Crop to ROI</strong>: Use Regions of Interest from the OMERO server to crop images.</li>
             <li><strong>Accurate scalebars</strong>: Use the pixel size metadata from OMERO to add 'live'
               scalebars that update as you zoom.</li>
             <li><strong>Full undo and redo</strong>: For extra convenience.</li>
+            <li><strong>Set 'dpi'</strong>: You can control the resolution of images embedded in exported PDF pages.</li>
+            <li><strong>Multi-page figures</strong>: Create, edit and view several figure pages within one OMERO.figure file at once.</li>
+            <li><strong>Export TIFF or PNG</strong>: Export as multi-page PNGs or TIFF images (at 300 dpi) suitable for journal submission or further editing.</li>
+            <li><strong>Export with panel images</strong>: Optionally export all panels as separate TIFFs to validate figure building steps or for use elsewhere.</li>
           </ul>
         </p>
 
@@ -128,7 +133,7 @@ title: OMERO.figure
               <!-- with 'target' set to open the link in a new tab: -->
               <code style="width:650px">
                 <!-- $ bin/omero config append omero.web.ui.top_links '["Figure", "figure_index", {"target": "figure"}]' -->
-                $ bin/omero config append omero.web.ui.top_links '["Figure", "figure_index"]'
+                $ bin/omero config append omero.web.ui.top_links '["Figure", "figure_index", {"title": "Open Figure in new tab", "target": "figure"}]'
 
               </code>
             </li>
@@ -145,7 +150,11 @@ title: OMERO.figure
               In the simplest case: <code>$ pip install reportlab</code> OR  <code>$ easy_install reportlab</code><br>
               NB: For python 2.6, you'll need Reportlab 2.7: <code>$ pip install reportlab==2.7</code>
             </li>
-            <li>Upload PDF generation script (need to be Admin)
+            <li>Optional: Figure legends can be formatted using Markdown syntax. To see this correctly in the
+              exported PDF info page, we need <a href="https://pythonhosted.org/Markdown/index.html">
+              Python-markdown</a>.
+              In the simplest case: <code>$ pip install markdown</code> OR  <code>$ easy_install markdown</code>
+            <li>Upload figure export script (need to be Admin):
               <code style="width:700px">
                 $ cd figure/scripts   &nbsp &nbsp &nbsp # NB: important to be in this directory<br>
                 $ path/to/bin/omero script upload omero/figure_scripts/Figure_To_Pdf.py --official
@@ -162,7 +171,9 @@ title: OMERO.figure
               unzip and replace the contents of the current /figure
               directory with the contents of the unzipped directory.
             </li>
-            <li>Replace PDF generation script (need to be Admin)
+            <li>NB: If you are upgrading from OMERO.figure 1.0.0, note that we now use Python-Markdown
+                (optional, see install instructions above).</li>
+            <li>Replace PDF generation script (need to be Admin):
               <code style="width:700px">
                 $ cd figure/scripts   &nbsp &nbsp &nbsp # NB: important to be in this directory<br>
                 # List scripts to get the ID of omero/figure_scripts/Figure_To_Pdf.py<br>
