@@ -1,11 +1,12 @@
 ---
 layout: post
 title:  "Release: 1.1.0"
-date:   2014-10-06
+date:   2015-04-20
 ---
 
 I am pleased to announce release of OMERO.figure 1.1.0.
-This release adds a number of features and bug fixes.
+This release adds a number of features to the editing and export
+of figures.
 
 Multiple page figures:
 
@@ -72,3 +73,4 @@ Bug fixes:
 <iframe width="640" height="360" src="//www.youtube.com/embed/P0MMKtIKdFY?rel=0" frameborder="0" allowfullscreen></iframe>
 
 Grab the release from the OMERO.figure [1.1.0 download page](http://downloads.openmicroscopy.org/figure/1.1.0/).
+
