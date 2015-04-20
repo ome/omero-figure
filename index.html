@@ -187,6 +187,21 @@ title: OMERO.figure
                 $ path/to/bin/omero script replace &ltscriptId&gt omero/figure_scripts/Figure_To_Pdf.py
               </code>
             </li>
+            <li>If upgrading to OMERO.figure 1.1.0, you can update the webclient link to figure,
+              so that it automatically opens the figure app in a new tab. Simply remove the old link and add back the
+              new one...
+                <code style="width:700px">
+                  # In case you need to list current links...<br>
+                  $ bin/omero config get omero.web.ui.top_links<br>
+                  <br>
+                  # Remove the figure link...<br>
+                  $ bin/omero config remove omero.web.ui.top_links '["Figure", "figure_index"]'<br>
+                  <br>
+                  # Add back new link as described in the install instructions above
+                </code>
+                NB: If your OMERO.web version is earlier than 5.1.0 then this change
+                will be ignored until you upgrade.
+            </li>
             <li>Restart web:
               <code>
                 $ bin/omero web stop<br>
