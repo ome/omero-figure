@@ -400,10 +400,7 @@
             options = options || {};
             var defaultName = this.model.get('figureName');
             if (!defaultName) {
-                var d = new Date(),
-                    dt = d.getFullYear() + "-" + (d.getMonth()+1) + "-" +d.getDate(),
-                    tm = d.getHours() + ":" + d.getMinutes() + ":" + d.getSeconds();
-                defaultName = "Figure_" + dt + "_" + tm;
+                defaultName = this.model.getDefaultFigureName();
             } else {
                 defaultName = defaultName + "_copy";
             }
