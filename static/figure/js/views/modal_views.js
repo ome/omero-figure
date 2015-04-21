@@ -501,7 +501,7 @@
                     coords.spacer = coords.spacer || data.size.width/20;
                     var full_width = (coords.colCount * (data.size.width + coords.spacer)) - coords.spacer,
                         full_height = (coords.rowCount * (data.size.height + coords.spacer)) - coords.spacer;
-                    coords.scale = (coords.paper_width - (2 * coords.spacer)) / full_width;
+                    coords.scale = coords.paper_width / (full_width + (2 * coords.spacer));
                     coords.scale = Math.min(coords.scale, 1);    // only scale down
                     coords.px = coords.px || coords.c.x - (full_width * coords.scale)/2;
                     coords.py = coords.py || coords.c.y - (full_height * coords.scale)/2;
