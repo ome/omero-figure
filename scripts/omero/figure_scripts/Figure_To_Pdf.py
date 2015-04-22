@@ -56,6 +56,24 @@ ORIGINAL_DIR = "1_originals"
 RESAMPLED_DIR = "2_pre_resampled"
 FINAL_DIR = "3_final"
 
+README_TXT = """These folders contain images used in the creation
+of the figure. Each folder contains one image per figure panel,
+with images numbered according to the order they were added to
+the figure. The numbered folders represent the sequence of
+processing steps:
+
+ - 1_originals: This contains the full-sized and un-cropped images that are
+   rendered by OMERO according to your chosen rendering settings.
+
+ - 2_pre_resampled: This folder will only contain those images that are
+   resampled in order to match the export figure resolution. This will be
+   all panels for export of TIFF figures, or individual panels that have
+   a 'dpi' set for export of PDF figures.
+
+ - 3_final: These are the image panels that are inserted into the
+   final figure, saved following any cropping, rotation and resampling steps.
+"""
+
 
 def compress(target, base):
     """
@@ -196,6 +214,7 @@ class FigureExport(object):
                 for d in (ORIGINAL_DIR, RESAMPLED_DIR, FINAL_DIR):
                     imgDir = os.path.join(zipDir, d)
                     os.mkdir(imgDir)
+                self.addReadMeFile()
 
         # Create the figure file(s)
         self.createFigure()
@@ -738,6 +757,15 @@ class FigureExport(object):
             indent = indent + imgw + spacer
         para.drawOn(c, indent, pageY - h)
         return pageY - parah - spacer # reduce the available height
+
+    def addReadMeFile(self):
+        """ Add a simple text file into the zip to explain what's there """
+        readMePath = os.path.join(self.zip_folder_name, "README.txt")
+        f = open(readMePath, 'w')
+        try:
+            f.write(README_TXT)
+        finally:
+            f.close()
 
     def addInfoPage(self, panels_json):
         """ Generates a PDF info page with figure title, links to images etc """
