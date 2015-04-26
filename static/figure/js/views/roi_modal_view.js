@@ -13,10 +13,25 @@ var RoiModalView = Backbone.View.extend({
         initialize: function() {
 
             var self = this;
+
+            // Here we handle init of the dialog when it's shown...
             $("#roiModal").bind("show.bs.modal", function(){
+                // Clone the 'first' selected panel as our reference for everything
                 self.m = self.model.getSelected().head().clone();
                 self.listenTo(self.m, 'change:theZ change:theT', self.render);
-                self.cropModel.set({'selected': false, 'width': 0, 'height': 0});    // hide crop roi
+                // set selected area
+                // var roi = self.m.getViewportAsRect();
+
+                // console.log(roi);
+                // self.cropModel.set(roi);
+                self.cropModel.set({'selected': true, 'width': 100, 'height': 100});
+
+                // if (self.m.get('zoom') > 100) {
+
+                // } else {
+                //     // hide crop roi
+                //     self.cropModel.set({'selected': false, 'width': 0, 'height': 0});
+                // }
                 self.zoomToFit();   // includes render()
                 // disable submit until user chooses a region/ROI
                 self.enableSubmit(false);

@@ -356,6 +356,28 @@
             this.set({'width': newW, 'height': newH, 'dx': dx, 'dy': dy, 'zoom': zoom});
         },
 
+        // returns the current viewport as a Rect {x, y, width, height}
+        getViewportAsRect: function() {
+            var zoom = this.get('zoom'),
+                dx = this.get('dx'),
+                dy = this.get('dy'),
+                width = this.get('width'),
+                height = this.get('height');
+
+            var xPercent = width / this.get('orig_width'),
+                yPercent = height / this.get('orig_height'),
+                scale = Math.max(xPercent, yPercent);
+
+            var roiW = width * scale,
+                roiH = height * scale;
+            var cX = width/2 + dx,
+                cY = height/2 + dy,
+                roiX = cX - (roiW / 2),
+                roiY = cY - (roiH / 2);
+
+            return {'x': roiX, 'y': roiY, 'width': roiW, 'heigh': roiH};
+        },
+
         // Drag resizing - notify the PanelView without saving
         drag_resize: function(x, y, w, h) {
             this.trigger('drag_resize', [x, y, w, h] );
