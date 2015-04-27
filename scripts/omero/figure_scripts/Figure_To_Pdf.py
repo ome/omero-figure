@@ -562,7 +562,7 @@ class FigureExport(object):
         else:
             lx_end = lx - canvas_length
 
-        self.drawLine(lx, ly, lx_end, ly, 2, (red, green, blue))
+        self.drawLine(lx, ly, lx_end, ly, 3, (red, green, blue))
 
         if 'show_label' in sb and sb['show_label']:
             # c = self.figureCanvas
