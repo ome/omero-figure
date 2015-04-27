@@ -166,7 +166,7 @@ var RoiModalView = Backbone.View.extend({
                         'y': r.y,
                         'width': r.width,
                         'height': r.height,
-                        'theZ': z,
+                        'theZ': self.m.get('theZ'),
                         'theT': t,
                     }
                 return rv;
