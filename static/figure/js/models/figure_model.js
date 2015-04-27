@@ -196,6 +196,13 @@
             return {'w': w, 'h': h, 'cols': cols, 'rows': rows}
         },
 
+        getDefaultFigureName: function() {
+            var d = new Date(),
+                dt = d.getFullYear() + "-" + (d.getMonth()+1) + "-" +d.getDate(),
+                tm = d.getHours() + ":" + d.getMinutes() + ":" + d.getSeconds();
+            return "Figure_" + dt + "_" + tm;
+        },
+
         nudge_right: function() {
             this.nudge('x', 10);
         },

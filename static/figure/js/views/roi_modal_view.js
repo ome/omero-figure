@@ -13,10 +13,28 @@ var RoiModalView = Backbone.View.extend({
         initialize: function() {
 
             var self = this;
+
+            // Here we handle init of the dialog when it's shown...
             $("#roiModal").bind("show.bs.modal", function(){
+                // Clone the 'first' selected panel as our reference for everything
                 self.m = self.model.getSelected().head().clone();
                 self.listenTo(self.m, 'change:theZ change:theT', self.render);
-                self.cropModel.set({'selected': false, 'width': 0, 'height': 0});    // hide crop roi
+
+                self.cropModel.set({'selected': false, 'width': 0, 'height': 0});
+
+                // get selected area
+                var roi = self.m.getViewportAsRect();
+
+                // Show as ROI *if* it isn't the whole image
+                if (roi.x !== 0 || roi.y !== 0
+                        || roi.width !== self.m.get('orig_width')
+                        || roi.height !== self.m.get('orig_height')) {
+                    self.currentROI = roi;
+                    self.cropModel.set({
+                        'selected': true
+                    });
+                }
+
                 self.zoomToFit();   // includes render()
                 // disable submit until user chooses a region/ROI
                 self.enableSubmit(false);
@@ -148,7 +166,7 @@ var RoiModalView = Backbone.View.extend({
                         'y': r.y,
                         'width': r.width,
                         'height': r.height,
-                        'theZ': z,
+                        'theZ': self.m.get('theZ'),
                         'theT': t,
                     }
                 return rv;
@@ -194,12 +212,13 @@ var RoiModalView = Backbone.View.extend({
 
             // Don't set Z/T if we already have different Z/T indecies.
             sel.each(function(m){
-                var sh = getShape(m.get('theZ'), m.get('theT'));
+                var sh = getShape(m.get('theZ'), m.get('theT')),
+                    newZ = Math.min(parseInt(sh.theZ, 10), m.get('sizeZ') - 1),
+                    newT = Math.min(parseInt(sh.theT, 10), m.get('sizeT') - 1);
 
                 m.cropToRoi({'x': sh.x, 'y': sh.y, 'width': sh.width, 'height': sh.height});
                 // 'save' to trigger 'unsaved': true
-                m.save({'theZ': parseInt(sh.theZ, 10),
-                       'theT': parseInt(sh.theT, 10)});
+                m.save({'theZ': newZ, 'theT': newT});
             });
             $("#roiModal").modal('hide');
         },

@@ -31,7 +31,8 @@ from cStringIO import StringIO
 try:
     from PIL import Image, ImageDraw, ImageFont
 except ImportError:
-    import Image, ImageDraw
+    import Image
+    import ImageDraw
 
 try:
     import markdown
@@ -55,6 +56,24 @@ from omero.rtypes import rstring, robject
 ORIGINAL_DIR = "1_originals"
 RESAMPLED_DIR = "2_pre_resampled"
 FINAL_DIR = "3_final"
+
+README_TXT = """These folders contain images used in the creation
+of the figure. Each folder contains one image per figure panel,
+with images numbered according to the order they were added to
+the figure. The numbered folders represent the sequence of
+processing steps:
+
+ - 1_originals: This contains the full-sized and un-cropped images that are
+   rendered by OMERO according to your chosen rendering settings.
+
+ - 2_pre_resampled: This folder will only contain those images that are
+   resampled in order to match the export figure resolution. This will be
+   all panels for export of TIFF figures, or individual panels that have
+   a 'dpi' set for export of PDF figures.
+
+ - 3_final: These are the image panels that are inserted into the
+   final figure, saved following any cropping, rotation and resampling steps.
+"""
 
 
 def compress(target, base):
@@ -109,7 +128,7 @@ class FigureExport(object):
     def getZipName(self):
 
         # file names can't include unicode characters
-        name = unicodedata.normalize('NFKD', self.figureName).encode('ascii','ignore')
+        name = unicodedata.normalize('NFKD', self.figureName).encode('ascii', 'ignore')
         # in case we have path/to/name.pdf, just use name.pdf
         name = path.basename(name)
         # Remove commas: causes problems 'duplicate headers' in file download
@@ -129,7 +148,7 @@ class FigureExport(object):
         fext = self.getFigureFileExt()
 
         # file names can't include unicode characters
-        name = unicodedata.normalize('NFKD', self.figureName).encode('ascii','ignore')
+        name = unicodedata.normalize('NFKD', self.figureName).encode('ascii', 'ignore')
         # in case we have path/to/name, just use name
         name = path.basename(name)
 
@@ -168,7 +187,7 @@ class FigureExport(object):
         for each page.
         Then we add an info page and create a zip of everything if needed.
         Finally the created file or zip is uploaded to OMERO and attached
-        as a file annotation to all the images in the figure. 
+        as a file annotation to all the images in the figure.
         """
 
         # test to see if we've got multiple pages
@@ -196,6 +215,7 @@ class FigureExport(object):
                 for d in (ORIGINAL_DIR, RESAMPLED_DIR, FINAL_DIR):
                     imgDir = os.path.join(zipDir, d)
                     os.mkdir(imgDir)
+                self.addReadMeFile()
 
         # Create the figure file(s)
         self.createFigure()
@@ -356,7 +376,7 @@ class FigureExport(object):
         Add the panel labels to the page.
         Here we calculate the position of labels but delegate
         to self.drawText() to actually place the labels on PDF/TIFF
-        """ 
+        """
         labels = panel['labels']
         x = panel['x']
         y = panel['y']
@@ -397,7 +417,6 @@ class FigureExport(object):
             l['size'] = int(l['size'])   # make sure 'size' is number
             if pos in positions:
                 positions[pos].append(l)
-
 
         def drawLab(label, lx, ly, align='left'):
             label_h = label['size']
@@ -477,14 +496,13 @@ class FigureExport(object):
                     lx = lx - l['size'] - spacer
                     drawLab(l, lx, ly, align='vertical')
 
-
     def drawScalebar(self, panel, region_width, page):
         """
         Add the scalebar to the page.
         Here we calculate the position of scalebar but delegate
         to self.drawLine() and self.drawText() to actually place
         the scalebar and label on PDF/TIFF
-        """ 
+        """
         x = panel['x']
         y = panel['y']
         width = panel['width']
@@ -513,7 +531,7 @@ class FigureExport(object):
 
         position = 'position' in sb and sb['position'] or 'bottomright'
         print 'scalebar.position', position
-        align='left'
+        align = 'left'
 
         if position == 'topleft':
             lx = x + spacer
@@ -530,7 +548,6 @@ class FigureExport(object):
             ly = y + height - spacer
             align = "right"
 
-
         print "Adding Scalebar of %s microns." % sb['length'],
         print "Pixel size is %s microns" % panel['pixel_size_x']
         pixels_length = sb['length'] / panel['pixel_size_x']
@@ -545,8 +562,7 @@ class FigureExport(object):
         else:
             lx_end = lx - canvas_length
 
-        self.drawLine(lx, ly, lx_end, ly, 2, (red, green, blue))
-
+        self.drawLine(lx, ly, lx_end, ly, 3, (red, green, blue))
 
         if 'show_label' in sb and sb['show_label']:
             # c = self.figureCanvas
@@ -716,13 +732,13 @@ class FigureExport(object):
         # Some html from markdown may not be compatible
         # with adding to PDF.
         try:
-            para=Paragraph(text, style)
+            para = Paragraph(text, style)
         except ValueError:
             print "Couldn't add paragraph to PDF:"
             print text
             text = "[Failed to format paragraph - not shown]"
-            para=Paragraph(text, style)
-        w,h = para.wrap(aW, pageY) # find required space
+            para = Paragraph(text, style)
+        w, h = para.wrap(aW, pageY)   # find required space
         if thumbSrc is not None:
             parah = max(h, imgh)
         else:
@@ -737,7 +753,16 @@ class FigureExport(object):
             c.drawImage(thumbSrc, inch, pageY - imgh, imgw, imgh)
             indent = indent + imgw + spacer
         para.drawOn(c, indent, pageY - h)
-        return pageY - parah - spacer # reduce the available height
+        return pageY - parah - spacer  # reduce the available height
+
+    def addReadMeFile(self):
+        """ Add a simple text file into the zip to explain what's there """
+        readMePath = os.path.join(self.zip_folder_name, "README.txt")
+        f = open(readMePath, 'w')
+        try:
+            f.write(README_TXT)
+        finally:
+            f.close()
 
     def addInfoPage(self, panels_json):
         """ Generates a PDF info page with figure title, links to images etc """
@@ -772,7 +797,6 @@ class FigureExport(object):
             figureLink = "Link to Figure: <a href='%s' color='blue'>%s</a>" % (fileUrl, fileUrl)
             pageY = self.addParaWithThumb(figureLink, pageY, style=styleN)
 
-
         # Add Figure Legend
         if 'legend' in self.figure_json and len(self.figure_json['legend']) > 0:
             pageY = self.addParaWithThumb("Legend:", pageY, style=styleH3)
@@ -782,7 +806,7 @@ class FigureExport(object):
                 # convert markdown to html
                 legend = markdown.markdown(legend)
                 # insert 'blue' style into any links
-                legend = legend.replace("<a href", "<a color='blue' href");
+                legend = legend.replace("<a href", "<a color='blue' href")
                 # Add paragraphs separately
                 paraLines = legend.split("<p>")
                 for p in paraLines:
@@ -791,7 +815,6 @@ class FigureExport(object):
             else:
                 print "Markdown not imported. See https://pythonhosted.org/Markdown/install.html"
                 pageY = self.addParaWithThumb(legend, pageY, style=styleN)
-
 
         pageY = self.addParaWithThumb("Figure contains the following images:", pageY, style=styleH3)
 
@@ -823,8 +846,7 @@ class FigureExport(object):
             scalebars = list(set(scalebars))
             pageY = self.addParaWithThumb("Scalebars:", pageY, style=styleH3)
             pageY = self.addParaWithThumb("Scalebar Lengths: %s" % ", ".join(scalebars),
-                    pageY, style=styleN)
-
+                                          pageY, style=styleN)
 
     def panel_is_on_page(self, panel, page):
         """ Return true if panel overlaps with this page """
@@ -838,7 +860,6 @@ class FigureExport(object):
         cy2 = cy + self.pageHeight
         #overlap needs overlap on x-axis...
         return px < cx2 and cx < px2 and py < cy2 and cy < py2
-
 
     def add_panels_to_page(self, panels_json, imageIds, page):
         """ Add panels that are within the bounds of this page """
@@ -856,7 +877,6 @@ class FigureExport(object):
                 imageIds.add(imageId)
             self.drawLabels(panel, page)
             print ""
-
 
     def getFigureFileExt(self):
         return "pdf"
@@ -951,7 +971,6 @@ class FigureExport(object):
         self.figureCanvas.drawImage(imgName, x, y, width, height)
 
 
-
 class TiffExport(FigureExport):
     """
     Subclass to handle export of Figure as TIFFs, 1 per page.
@@ -998,7 +1017,6 @@ class TiffExport(FigureExport):
         print "TIFF: width, height", tiffWidth, tiffHeight
         self.tiffFigure = Image.new("RGBA", (tiffWidth, tiffHeight), (255, 255, 255))
 
-
     def pasteImage(self, pilImg, imgName, x, y, width, height, dpi=None):
         """ Add the PIL image to the current figure page """
 
@@ -1030,7 +1048,6 @@ class TiffExport(FigureExport):
         width, height = pilImg.size
         box = (x, y, x + width, y + height)
         self.tiffFigure.paste(pilImg, box)
-
 
     def drawLine(self, x, y, x2, y2, width, rgb):
         """ Draw line on the current figure page """
@@ -1065,7 +1082,7 @@ class TiffExport(FigureExport):
             tempLabel = Image.new('RGBA', (txt_w, txt_h), (255, 255, 255, 0))
             textdraw = ImageDraw.Draw(tempLabel)
             textdraw.text((0, 0), text, font=font, fill=rgb)
-            w=tempLabel.rotate(90)
+            w = tempLabel.rotate(90)
             # Use label as mask, so transparent part is not pasted
             y = y - (w.size[1]/2)
             self.tiffFigure.paste(w, (x, y), mask=w)
@@ -1074,7 +1091,7 @@ class TiffExport(FigureExport):
             y = self.scaleCoords(y)
             textdraw = ImageDraw.Draw(self.tiffFigure)
             if align == "center":
-                x = x - (txt_w/ 2)
+                x = x - (txt_w / 2)
             elif align == "right":
                 x = x - txt_w
             textdraw.text((x, y), text, font=font, fill=rgb)
@@ -1115,7 +1132,6 @@ class TiffExport(FigureExport):
         if not reportlabInstalled:
             return
         self.figureCanvas.save()
-
 
 
 def export_figure(conn, scriptParams):

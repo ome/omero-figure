@@ -95,8 +95,9 @@ $(function(){
                             if (fileId && canEdit) {
                                 options.fileId = fileId;
                             } else {
-                                var figureName = prompt("Enter Figure Name", "unsaved");
-                                options.figureName = figureName || "unsaved";
+                                var defaultName = figureModel.getDefaultFigureName();
+                                var figureName = prompt("Enter Figure Name", defaultName);
+                                options.figureName = figureName || defaultName;
                             }
                             options.success = doClear;
                             figureModel.save_to_OMERO(options);

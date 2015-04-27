@@ -356,6 +356,42 @@
             this.set({'width': newW, 'height': newH, 'dx': dx, 'dy': dy, 'zoom': zoom});
         },
 
+        // returns the current viewport as a Rect {x, y, width, height}
+        getViewportAsRect: function() {
+            var zoom = this.get('zoom'),
+                dx = this.get('dx'),
+                dy = this.get('dy'),
+                width = this.get('width'),
+                height = this.get('height'),
+                orig_width = this.get('orig_width'),
+                orig_height = this.get('orig_height');
+
+            // find if scaling is limited by width OR height
+            var xPercent = width / orig_width,
+                yPercent = height / orig_height,
+                scale = Math.max(xPercent, yPercent);
+
+            // if not zoomed or panned and panel shape is approx same as image...
+            if (dx === 0 && dy === 0 && zoom == 100 && Math.abs(xPercent - yPercent) < 0.01) {
+                // ...ROI is whole image
+                return {'x': 0, 'y': 0, 'width': orig_width, 'height': orig_height}
+            }
+
+            // Factor in the applied zoom...
+            scale = scale * zoom / 100;
+            // ...to get roi width & height
+            var roiW = width / scale,
+                roiH = height / scale;
+
+            // Use offset from image centre to calculate ROI position
+            var cX = orig_width/2 - dx,
+                cY = orig_height    /2 - dy,
+                roiX = cX - (roiW / 2),
+                roiY = cY - (roiH / 2);
+
+            return {'x': roiX, 'y': roiY, 'width': roiW, 'height': roiH};
+        },
+
         // Drag resizing - notify the PanelView without saving
         drag_resize: function(x, y, w, h) {
             this.trigger('drag_resize', [x, y, w, h] );

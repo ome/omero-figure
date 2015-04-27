@@ -17,9 +17,8 @@
 
 var LegendView = Backbone.View.extend({
 
-        el: $("#js-legend"),
-
-        // template: JST["static/figure/templates/paper_setup_modal_template.html"],
+        // Use 'body' to handle Menu: File > Add Figure Legend
+        el: $("body"),
 
         model:FigureModel,
 
@@ -40,6 +39,25 @@ var LegendView = Backbone.View.extend({
             "click .collapse-legend": "collapseLegend",
             "click .expand-legend": "expandLegend",
             "click .markdown-info": "markdownInfo",
+            "click .panel-body p": "legendClick",
+        },
+
+        // Click on the legend <p>. Start editing or follow link
+        legendClick: function(event) {
+            event.preventDefault();
+            // If link, open new window / tab
+            if (event.target.nodeName.toLowerCase() == "a") {
+                var href = event.target.getAttribute('href');
+                window.open(href, '_blank');
+                return false;
+            // Click on legend text expands then edits legend
+            } else {
+                if (this.model.get("legend_collapsed")) {
+                    this.expandLegend();
+                } else {
+                    this.editLegend();
+                }
+            }
         },
 
         markdownInfo: function(event) {
@@ -68,7 +86,7 @@ var LegendView = Backbone.View.extend({
         },
 
         editLegend: function(event) {
-            event.preventDefault();
+            if (event) event.preventDefault();
             this.editing = true;
             if (this.model.get("legend_collapsed")) {
                 this.model.set("legend_collapsed", false);
@@ -104,11 +122,12 @@ var LegendView = Backbone.View.extend({
             var self = this,
                 legendText = this.model.get('legend') || "",
                 legendCollapsed = this.model.get('legend_collapsed'),
-                $edit = $('.edit-legend', self.el),
-                $save = $('.save-legend', self.el),
-                $cancel = $('.cancel-legend', self.el),
-                $panel = $('.panel', self.el),
-                $legend = $('.legend', self.el);
+                $el = $("#js-legend"),
+                $edit = $('.edit-legend', $el),
+                $save = $('.save-legend', $el),
+                $cancel = $('.cancel-legend', $el),
+                $panel = $('.panel', $el),
+                $legend = $('.legend', $el);
 
             self.renderCollapsed(legendCollapsed);
 
@@ -121,7 +140,7 @@ var LegendView = Backbone.View.extend({
 
                 $panel.addClass('editing');
                 $panel.show();
-                var html = '<textarea class="form-control" rows="7" style="resize:none">'
+                var html = '<textarea class="form-control" rows="9" style="resize:none">'
                             + legendText + '</textarea>';
                 $legend.html(html);
             } else {
@@ -133,10 +152,12 @@ var LegendView = Backbone.View.extend({
                 $panel.removeClass('editing');
                 if (legendText.length === 0) {
                     $panel.hide();
+                    $edit.text("Add Figure Legend");
                 } else {
                     $panel.show();
                     legendText = markdown.toHTML( legendText );
                     $legend.html(legendText);
+                    $edit.text("Edit Figure Legend");
                 }
             }
         }
