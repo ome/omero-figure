@@ -212,12 +212,13 @@ var RoiModalView = Backbone.View.extend({
 
             // Don't set Z/T if we already have different Z/T indecies.
             sel.each(function(m){
-                var sh = getShape(m.get('theZ'), m.get('theT'));
+                var sh = getShape(m.get('theZ'), m.get('theT')),
+                    newZ = Math.min(parseInt(sh.theZ, 10), m.get('sizeZ') - 1),
+                    newT = Math.min(parseInt(sh.theT, 10), m.get('sizeT') - 1);
 
                 m.cropToRoi({'x': sh.x, 'y': sh.y, 'width': sh.width, 'height': sh.height});
                 // 'save' to trigger 'unsaved': true
-                m.save({'theZ': parseInt(sh.theZ, 10),
-                       'theT': parseInt(sh.theT, 10)});
+                m.save({'theZ': newZ, 'theT': newT});
             });
             $("#roiModal").modal('hide');
         },
