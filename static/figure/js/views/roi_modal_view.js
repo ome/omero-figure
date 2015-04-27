@@ -19,19 +19,22 @@ var RoiModalView = Backbone.View.extend({
                 // Clone the 'first' selected panel as our reference for everything
                 self.m = self.model.getSelected().head().clone();
                 self.listenTo(self.m, 'change:theZ change:theT', self.render);
-                // set selected area
-                // var roi = self.m.getViewportAsRect();
 
-                // console.log(roi);
-                // self.cropModel.set(roi);
-                self.cropModel.set({'selected': true, 'width': 100, 'height': 100});
+                self.cropModel.set({'selected': false, 'width': 0, 'height': 0});
 
-                // if (self.m.get('zoom') > 100) {
+                // get selected area
+                var roi = self.m.getViewportAsRect();
 
-                // } else {
-                //     // hide crop roi
-                //     self.cropModel.set({'selected': false, 'width': 0, 'height': 0});
-                // }
+                // Show as ROI *if* it isn't the whole image
+                if (roi.x !== 0 || roi.y !== 0
+                        || roi.width !== self.m.get('orig_width')
+                        || roi.height !== self.m.get('orig_height')) {
+                    self.currentROI = roi;
+                    self.cropModel.set({
+                        'selected': true
+                    });
+                }
+
                 self.zoomToFit();   // includes render()
                 // disable submit until user chooses a region/ROI
                 self.enableSubmit(false);
