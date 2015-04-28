@@ -33,61 +33,56 @@ Single-color LUTs can be applied to each channel over a specified
 intensity range and channels can be toggled on and off. None of these
 changes will alter the original microscope data.
 
-There is no need to save data as 8-bit images before assembling your
-figure since this automatically happens when you view your figure in the browser.
+
+Figure layout
+=============
+
+OMERO.figure is similar to Inkscape and Adobe Illustrator in that it
+defines figures as vector-based format that contain raster images.
+This means that moving and resizing images within a figure does not
+require resampling of pixel data so there is no loss of image
+quality.
 
 
+Importing images
+----------------
+
+To add images to OMERO.figure, you simply specify the OMERO image ID.
+The necessary data such as image size, number of channels, pixel bit-depth etc
+is retrieved from the server.
+You can then edit the image rendering settings while working on the figure layout
+and these changes are stored in the OMERO.figure file. The file format is
+a Javascript object (saved as json data) and contains no pixel data.
+OMERO.figure retrieves rendered 8-bit images from the OMERO.server and assembles them
+into a figure in the browser as needed.
+
+The resolution (dpi) of images in OMERO.figure is calculated from their
+size on the page and the size of the page itself (which can be edited under File > Paper Setup...).
+The dpi of each image can be seen under the 'Info' tab and will change
+as the image is resized and zoomed.
+
+Journals usually require all images to be at 300 dpi or above
+in order to avoid a pixelated appearance when figures are displayed
+at their published size.
+If you need to increase the dpi for an image, you can set an export dpi and
+the panel will be resampled as necessary in the exported PDF.
 
 
+Clipping masks
+--------------
+
+OMERO.figure allows you to crop images. It uses a 'clipping mask' to produce
+the cropping effect which means you can undo or edit the crop at any time.
+You can crop by using the zoom slider to zoom the image, then pan to the
+desired spot, or you can use a standard 'crop' tool to draw a crop region
+on an image.
 
 
+Calculating scale bars
+----------------------
 
-Here, I'll explain how data is stored, manipulated and exported in OMERO.figre,
-in a similar 
+Scale bars can be easily added to images in OMERO.figure and the known
+pixel size will be used to calculate the correct length.
+Scale bars are vector objects overlaid on the image and will be
+automatically resized if you resize or zoom the image.
 
-
-produce accurate, high-quality figures.
-
-
-
-Journals have specific requirements for "publication quality" figures,
-particularly in terms of pixel resolution.
-Resolution is the density of pixels or 'dots' when the figure is
-printed, usually measured in 'dots per inch' (dpi).
-
-In order to avoid a pixelated appearance when figures are displayed
-at their published size, images must have sufficiently high resolution,
-usually 300 dpi or above.
-
-
-OMERO.figure dpi
-================
-
-The concept of "dots per inch" only has a meaning once you know the physical size
-of your figure. In OMERO.figure, the default page size is A4 (210 x 297 mm) but 
-you can specify the size of your page under Menu: File > Paper Setup... 
-We can then use this size to calculate dpi for all images in the figure.
-
-The resolution of image panels depends on the number of pixels in the image
-and the size it appears on the page. This can be different for each
-image in the figure, meaning each image has an independent dpi.
-
-To see the dpi for an image panel, select it and look under the 'Info' tab
-to the right. You can see that the dpi changes when you resize the panel
-on the page or zoom in to a region in the image.
-
-The resolution of images in OMERO.figure will be preserved when you
-export the figure as a PDF, since a PDF document is a posts
-
-
-Setting the dpi
-===============
-
-If you need to increase the resolution of images in your exported figure,
-
-
-
-When the figure is exported as a PDF, each image 
-
-
-http://cellbio.emory.edu/bnanes/figures/
