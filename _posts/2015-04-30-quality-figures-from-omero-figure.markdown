@@ -1,7 +1,7 @@
 ---
 layout: post
-title:  "What does figure dpi mean?"
-date:   
+title:  "Quality figures from OMERO.figure"
+date: 2015-04-30  
 ---
 
 
@@ -18,7 +18,7 @@ Benjamin documents specific tools that he uses for his workflow such as ImageJ f
 Inkscape for figure layout. But much of his workflow can also be applied to
 OMERO.figure since it was designed with the same principals in mind. 
 
-I highly reccomend you read the guide above, as it provides a lot of background
+I highly recommend you read the guide above, as it provides a lot of background
 information on how computers handle vector and raster data.
 The steps of Benjamin's guide that can be replicated in OMERO.figure are
 described below.
@@ -45,6 +45,14 @@ defines figures in a vector-based format that embeds linked images.
 This means that moving and resizing images within a figure does not
 require resampling of pixel data, avoiding loss of image
 quality.
+
+
+<img src="{{ site.baseurl }}/images/figure_demo_wang.png" 
+	style="width:600px"/>
+
+**Screenshot:** Editing layout and rendering settings in OMERO.figure.<br/>
+Try <a href="{{ site.baseurl }}/demo/#file/3"/>the demo</a>.
+Data from <a href="http://jcb-dataviewer.rupress.org/jcb/browse/7102/22522/">Wang et al JCB 3013</a>.
 
 
 Importing images
@@ -132,7 +140,7 @@ also provides images that can be used for other purposes if needed.
 
 
 Summary
--------
+=======
 
 OMERO.figure is a web application that stores figures in a vector-based
 file format linked to images. By linking to the original microscope images
