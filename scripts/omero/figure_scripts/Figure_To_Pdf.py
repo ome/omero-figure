@@ -117,7 +117,7 @@ class FigureExport(object):
 
         n = datetime.now()
         # time-stamp name by default: Figure_2013-10-29_22-43-53.pdf
-        self.figureName = "Figure_%s-%s-%s_%s-%s-%s" % (n.year, n.month, n.day, n.hour, n.minute, n.second)
+        self.figureName = u"Figure_%s-%s-%s_%s-%s-%s" % (n.year, n.month, n.day, n.hour, n.minute, n.second)
         if 'figureName' in self.figure_json:
             self.figureName = self.figure_json['figureName']
 
