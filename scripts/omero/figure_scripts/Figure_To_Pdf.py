@@ -68,8 +68,9 @@ processing steps:
 
  - 2_pre_resampled: This folder will only contain those images that are
    resampled in order to match the export figure resolution. This will be
-   all panels for export of TIFF figures, or individual panels that have
-   a 'dpi' set for export of PDF figures.
+   all panels for export of TIFF figures. For export of PDF Figures,
+   only panels that have a 'dpi' set, which is higher than their
+   existing resolution will be resampled.
 
  - 3_final: These are the image panels that are inserted into the
    final figure, saved following any cropping, rotation and resampling steps.
