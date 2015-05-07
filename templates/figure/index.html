@@ -32,7 +32,7 @@
 
     <link rel="stylesheet" href="{% static 'figure/3rdparty/bootstrap3/css/bootstrap.css' %}">
     <link rel="stylesheet" href="{% static 'figure/3rdparty/bootstrap-colorpicker/css/bootstrap-colorpicker.min.css' %}">
-    <link rel="stylesheet" href="{% static 'figure/css/figure-1.1.1.css' %}">
+    <link rel="stylesheet" href="{% static 'figure/css/figure.css' %}">
 
     {% include "webgateway/base/includes/script_src_jquery.html" %}
     {% include "webgateway/base/includes/jquery-ui.html" %}
@@ -805,10 +805,10 @@
     <script src="{% static 'figure/3rdparty/bootstrap3/js/bootstrap.js' %}"></script>
     <script src="{% static 'figure/3rdparty/bootstrap-colorpicker/js/bootstrap-colorpicker.min.js' %}"></script>
     <script src="{% static 'figure/3rdparty/markdown-browser-0.6.0-beta1/markdown.min.js' %}"></script>
-    <script src="{% static 'figure/js/templates-1.1.1.js' %}"></script>
+    <script src="{% static 'figure/js/templates.js' %}"></script>
 
 
-    <!-- All these can be concatenated with '$ grunt concat' into figure.js....
+    <!-- All these can be concatenated with '$ grunt concat' into figure.js....-->
     <script src="{% static 'figure/js/models/figure_model.js' %}"></script>
     <script src="{% static 'figure/js/models/panel_model.js' %}"></script>
     <script src="{% static 'figure/js/models/undo.js' %}"></script>
@@ -824,10 +824,11 @@
     <script src="{% static 'figure/js/views/colorpicker.js' %}"></script>
     <script src="{% static 'figure/js/views/legend_view.js' %}"></script>
     <script src="{% static 'figure/js/app.js' %}"></script>
-    -->
 
-    <!-- ...for release build. -->
+
+    <!-- ...for release build.
     <script type="text/javascript" src="{% static 'figure/js/figure-1.1.1.js' %}"></script>
+    -->
 
 </body>
 
