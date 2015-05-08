@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<!--
+  Copyright (C) 2015 University of Dundee & Open Microscopy Environment.
+  All rights reserved.
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU Affero General Public License as
+  published by the Free Software Foundation, either version 3 of the
+  License, or (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU Affero General Public License for more details.
+
+  You should have received a copy of the GNU Affero General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-->
+
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>OMERO.figure</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width">
+
+    <link rel="stylesheet" href="{% static 'figure/3rdparty/bootstrap3/css/bootstrap.css' %}">
+    <link rel="stylesheet" href="{% static 'figure/3rdparty/bootstrap-colorpicker/css/bootstrap-colorpicker.min.css' %}">
+    <link rel="stylesheet" href="{% static 'figure/css/figure.css' %}">
+
+    {% include "webgateway/base/includes/script_src_jquery.html" %}
+    {% include "webgateway/base/includes/jquery-ui.html" %}
+
+    <script>
+
+    var RELEASE_VERSION = "v1.1.1";
+
+    var BASE_WEBFIGURE_URL = "{% url 'figure_index' %}",
+        SAVE_WEBFIGURE_URL = "{% url 'save_web_figure' %}",
+        LIST_WEBFIGURES_URL = "{% url 'list_web_figures' %}",
+        DELETE_WEBFIGURE_URL = "{% url 'delete_web_figure' %}",
+        MAKE_WEBFIGURE_URL = "{% url 'make_web_figure' %}",
+        ACTIVITIES_JSON_URL = "{% url 'activities_json' %}",
+        WEBGATEWAYINDEX = "{% url 'webgateway' %}",
+        WEBINDEX_URL = "{% url 'webindex' %}",
+        ROIS_JSON_URL = WEBGATEWAYINDEX + "get_rois_json/",
+        USER_FULL_NAME = "{{ userFullName }}";
+
+    $(document).ready(function() {
+
+        // keep-alive ping every minute, so that OMERO session doesn't die
+        setInterval(function (){
+            $.get("{% url 'keepalive_ping' %}");
+        }, 60000);
+
+        // load Panels from localStorage (if any)
+        // figureModel.panels.fetch({
+        //     success: function(model, rsp, options) {
+        //         if (model.length == 0) {
+        //             $('#addImagesModal').modal();
+        //         }
+        //     }
+        // });
+        // figureModel.clearSelected();    // reset selection (all saved as 'true')
+
+    });
+
+    </script>
+
+</head>
+
+<body id="body">
+
+
+
+    <script src="{% static 'figure/3rdparty/json2.js' %}"></script>
+    <script src="{% static 'figure/3rdparty/underscore.js' %}"></script>
+    <script src="{% static 'figure/3rdparty/backbone.js' %}"></script>
+    <!-- <script src="{% static 'figure/3rdparty/backbone-localstorage.js' %}"></script> -->
+    <script src="{% static 'figure/3rdparty/raphael/raphael-min.js' %}"></script>
+    <script src="{% static 'figure/3rdparty/mousetrap/mousetrap.min.js' %}"></script>
+    <script src="{% static 'figure/3rdparty/backbone.mousetrap/backbone.mousetrap.js' %}"></script>
+    <script src="{% static 'figure/3rdparty/bootstrap3/js/bootstrap.js' %}"></script>
+    <script src="{% static 'figure/3rdparty/bootstrap-colorpicker/js/bootstrap-colorpicker.min.js' %}"></script>
+    <script src="{% static 'figure/3rdparty/markdown-browser-0.6.0-beta1/markdown.min.js' %}"></script>
+    <script src="{% static 'figure/js/templates.js' %}"></script>
+
+
+    <!-- All these can be concatenated with '$ grunt concat' into figure.js....-->
+    <script src="{% static 'figure/js/models/figure_model.js' %}"></script>
+    <script src="{% static 'figure/js/models/panel_model.js' %}"></script>
+    <script src="{% static 'figure/js/models/undo.js' %}"></script>
+    <script src="{% static 'figure/js/views/figure_view.js' %}"></script>
+    <script src="{% static 'figure/js/views/files.js' %}"></script>
+    <script src="{% static 'figure/js/views/modal_views.js' %}"></script>
+    <script src="{% static 'figure/js/views/roi_modal_view.js' %}"></script>
+    <script src="{% static 'figure/js/views/panel_view.js' %}"></script>
+    <script src="{% static 'figure/js/raphael_shapes/raphael-rect.js' %}"></script>
+    <script src="{% static 'figure/js/views/right_panel_view.js' %}"></script>
+    <script src="{% static 'figure/js/views/svg_model_view.js' %}"></script>
+    <script src="{% static 'figure/js/views/util.js' %}"></script>
+    <script src="{% static 'figure/js/views/colorpicker.js' %}"></script>
+    <script src="{% static 'figure/js/views/legend_view.js' %}"></script>
+    <script src="{% static 'figure/js/app.js' %}"></script>
+
+
+    <!-- ...for release build.
+    <script type="text/javascript" src="{% static 'figure/js/figure-1.1.1.js' %}"></script>
+    -->
+
+</body>
+
+</html>
