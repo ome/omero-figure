@@ -83,11 +83,9 @@ var RoiModalView = Backbone.View.extend({
         },
 
         events: {
-            "click .roiPickMe": "roiPicked",
-            "mousedown svg": "mousedown",
-            "mousemove svg": "mousemove",
-            "mouseup svg": "mouseup",
-            "submit .roiModalForm": "handleRoiForm"
+            "mousedown .shape_canvas": "mousedown",
+            "mousemove .shape_canvas": "mousemove",
+            "mouseup .shape_canvas": "mouseup"
         },
 
         // we disable Submit when dialog is shown, enable when region/ROI chosen
