@@ -21,13 +21,20 @@ var ShapeEditorView = Backbone.View.extend({
 
 
         mousedown: function(event) {
+            // Create a new Rect, and start resizing it...
             this.dragging = true;
             var os = $(event.target).offset();
             var dx = event.clientX - os.left;
             var dy = event.clientY - os.top;
             this.clientX_start = dx;
             this.clientY_start = dy;
-            console.log(dx, dy);
+            console.log("mousedown", dx, dy);
+
+            this.cropModel = new Backbone.Model({
+                'x':dx, 'y': dy, 'width': 0, 'height': 0,
+                'selected': false});
+            this.rect = new RectView({'model':this.cropModel, 'paper': this.paper});
+            this.cropModel.set('selected', true);
             return false;
         },
 
@@ -55,9 +62,9 @@ var ShapeEditorView = Backbone.View.extend({
                 }
                 var negX = Math.min(0, dx),
                     negY = Math.min(0, dy);
-                // this.cropModel.set({'x': this.imageX_start + negX,
-                //     'y': this.imageY_start + negY,
-                //     'width': Math.abs(dx), 'height': Math.abs(dy)});
+                this.cropModel.set({'x': this.clientX_start + negX,
+                    'y': this.clientY_start + negY,
+                    'width': Math.abs(dx), 'height': Math.abs(dy)});
                 return false;
             }
         }
