@@ -9,6 +9,9 @@ var ShapeEditorView = Backbone.View.extend({
 
             var self = this;
 
+            // we automatically 'sort' on fetch, add etc.
+            // this.model.bind("sync remove sort", this.render, this);
+
             // Now set up Raphael paper...
             this.paper = Raphael("shapeCanvas", 512, 512);
         },

@@ -577,3 +577,21 @@ __p += '\n    </td>\n</tr>\n';
 }
 return __p
 };
+
+this["JST"]["static/figure/templates/shapes/shape_item_template.html"] = function(obj) {
+obj || (obj = {});
+var __t, __p = '', __e = _.escape;
+with (obj) {
+__p += '\n    <div>x: ' +
+((__t = ( x )) == null ? '' : __t) +
+', y: ' +
+((__t = ( y )) == null ? '' : __t) +
+', width: ' +
+((__t = ( width )) == null ? '' : __t) +
+', height: ' +
+((__t = ( height )) == null ? '' : __t) +
+'</div>\n';
+
+}
+return __p
+};

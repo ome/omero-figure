@@ -58,7 +58,20 @@
         }, 60000);
 
 
-        new ShapeEditorView();
+
+        var Shape = Backbone.Model.extend({
+
+        });
+
+
+        var ShapeList = Backbone.Collection.extend({
+
+            model: Shape,
+
+        });
+
+        new ShapeEditorView({model: ShapeList});
+        new ShapeListView({model: ShapeList});
 
     });
 
@@ -69,7 +82,10 @@
 <body id="body">
 
 
-    <div id="shapeCanvas" class="shape_canvas" style="width:512px; height:512px; border:solid red 1px"></div>
+    <div id="shapeCanvas" class="shape_canvas"
+        style="width:512px; height:512px; border:solid red 1px; float: left"></div>
+
+    <div id="shapeList" class="shape_list" style="width: 250px; border: solid green 1px"></div>
 
 
 
