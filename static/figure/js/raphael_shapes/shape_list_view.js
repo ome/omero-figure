@@ -21,6 +21,8 @@ var ShapeListView = Backbone.View.extend({
         console.log("ShapeListView.render()");
         var self = this;
 
+        self.$el.empty();
+
         _.each(this.model.models, function (shape) {
             var e = new ShapeListItemView({model:shape}).render().el;
             self.$el.append(e);

@@ -70,8 +70,10 @@
 
         });
 
-        new ShapeEditorView({model: ShapeList});
-        new ShapeListView({model: ShapeList});
+        var shapeList = new ShapeList();
+
+        new ShapeEditorView({model: shapeList});
+        new ShapeListView({model: shapeList});
 
     });
 
@@ -85,7 +87,7 @@
     <div id="shapeCanvas" class="shape_canvas"
         style="width:512px; height:512px; border:solid red 1px; float: left"></div>
 
-    <div id="shapeList" class="shape_list" style="width: 250px; border: solid green 1px"></div>
+    <div id="shapeList" class="shape_list" style="width: 250px; border: solid green 1px; float: left"></div>
 
 
 
@@ -113,6 +115,7 @@
     <script src="{% static 'figure/js/views/panel_view.js' %}"></script>
     <script src="{% static 'figure/js/raphael_shapes/raphael-rect.js' %}"></script>
     <script src="{% static 'figure/js/raphael_shapes/shape_editor_view.js' %}"></script>
+    <script src="{% static 'figure/js/raphael_shapes/shape_list_view.js' %}"></script>
     <script src="{% static 'figure/js/views/right_panel_view.js' %}"></script>
     <script src="{% static 'figure/js/views/svg_model_view.js' %}"></script>
     <script src="{% static 'figure/js/views/util.js' %}"></script>

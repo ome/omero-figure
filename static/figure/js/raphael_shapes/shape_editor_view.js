@@ -44,6 +44,9 @@ var ShapeEditorView = Backbone.View.extend({
         mouseup: function(event) {
             if (this.dragging) {
                 this.dragging = false;
+                var json = this.cropModel.toJSON();
+                console.log("ADDING...", json);
+                this.model.add(json);
                 return false;
             }
         },
@@ -52,7 +55,6 @@ var ShapeEditorView = Backbone.View.extend({
             if (this.dragging) {
                 var dx = event.clientX - this.clientX_start,
                     dy = event.clientY - this.clientY_start;
-                console.log("drag", dx, dy);
                 if (event.shiftKey) {
                     // make region square!
                     if (Math.abs(dx) > Math.abs(dy)) {
