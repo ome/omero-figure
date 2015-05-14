@@ -17,9 +17,9 @@ var ShapeEditorView = Backbone.View.extend({
         },
 
         events: {
-            "mousedown svg": "mousedown",
-            "mousemove svg": "mousemove",
-            "mouseup svg": "mouseup"
+            "mousedown .new_shape_layer": "mousedown",
+            "mousemove .new_shape_layer": "mousemove",
+            "mouseup .new_shape_layer": "mouseup"
         },
 
 

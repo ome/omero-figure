@@ -773,3 +773,40 @@
         height: 30px;
         width: 30px;
     }
+
+    /** ------------------- Shape Editor styles --------------------- **/
+
+    .shape_canvas {
+        position: absolute;
+        top: 0px;
+        left: 0px;
+    }
+    .image_wrapper img {
+        width: 100%;
+        height: 100%;
+    }
+    .new_shape_layer {
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        width: 100%;
+        height: 100%;
+    }
+
+    /** toolbar buttons **/
+
+    .btn-toolbar span {
+        width: 16px;
+        height: 16px;
+    }
+
+    .select-btn span{
+        background-image: url("../images/cursor-icon-16.png");
+    }
+    .line-btn span{
+
+    }
+    .rect-btn span{
+        background-image: url("../images/square-outline-icon-16.png");
+    }
+
