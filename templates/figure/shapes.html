@@ -58,18 +58,6 @@
         }, 60000);
 
 
-
-        var Shape = Backbone.Model.extend({
-
-        });
-
-
-        var ShapeList = Backbone.Collection.extend({
-
-            model: Shape,
-
-        });
-
         var shapeList = new ShapeList();
 
         new ShapeEditorView({model: shapeList});
