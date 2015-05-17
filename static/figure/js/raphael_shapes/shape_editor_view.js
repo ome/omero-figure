@@ -5,7 +5,7 @@ var ShapeEditorView = Backbone.View.extend({
         el: $("#body"),
 
 
-        initialize: function() {
+        initialize: function(options) {
 
             var self = this;
 
@@ -14,12 +14,27 @@ var ShapeEditorView = Backbone.View.extend({
 
             // Now set up Raphael paper...
             this.paper = Raphael("shapeCanvas", 512, 512);
+
+            this.shapeEditor = options.shapeEditor;
+            this.listenTo(this.shapeEditor, 'change', this.updateState);
         },
 
         events: {
             "mousedown .new_shape_layer": "mousedown",
             "mousemove .new_shape_layer": "mousemove",
             "mouseup .new_shape_layer": "mouseup"
+        },
+
+
+        updateState: function() {
+
+            var state = this.shapeEditor.get('state');
+            console.log(state);
+            if (state == "RECT") {
+                $(".new_shape_layer", this.el).show();
+            } else {
+                $(".new_shape_layer", this.el).hide();
+            }
         },
 
 

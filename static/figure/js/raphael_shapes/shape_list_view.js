@@ -1,18 +1,4 @@
 
-// Models
-
-var Shape = Backbone.Model.extend({
-
-});
-
-
-var ShapeList = Backbone.Collection.extend({
-
-    model: Shape,
-
-});
-
-
 // Views 
 
 var ShapeListView = Backbone.View.extend({

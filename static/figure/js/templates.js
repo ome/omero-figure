@@ -595,3 +595,13 @@ __p += '\n    <div>x: ' +
 }
 return __p
 };
+
+this["JST"]["static/figure/templates/shapes/shape_toolbar_template.html"] = function(obj) {
+obj || (obj = {});
+var __t, __p = '', __e = _.escape;
+with (obj) {
+__p += '\n\n<div class="btn-group" role="group" aria-label="...">\n    <button type="button" class="btn btn-default select-btn">\n        <span class="glyphicon"></span></button>\n</div>\n<div class="btn-group" role="group" aria-label="...">\n    <button type="button" class="btn btn-default line-btn">\n        <span class="glyphicon">&#9586;</span></button>\n    <button type="button" class="btn btn-default rect-btn">\n        <span class="glyphicon"></span></button>\n</div>\n';
+
+}
+return __p
+};
