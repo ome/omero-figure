@@ -23,23 +23,21 @@ var ShapeToolbarView = Backbone.View.extend({
     },
 
     handleSelectBtn: function() {
-        console.log("handleSelectBtn");
         this.shapeEditor.setState("SELECT");
     },
 
     handleLineBtn: function() {
-        console.log("handleLineBtn");
         this.shapeEditor.setState("LINE");
     },
 
     handleRectBtn: function() {
-        console.log("handleRectBtn");
         this.shapeEditor.setState("RECT");
     },
 
 
     render: function render() {
 
-        $("#shapes_toolbar").html(this.template({}));
+        var json = this.shapeEditor.toJSON();
+        $("#shapes_toolbar").html(this.template(json));
     }
 });

@@ -800,6 +800,10 @@
         height: 16px;
     }
 
+    .shapes_toolbar .pressed {
+        background: #ddd;
+    }
+
     .select-btn span{
         background-image: url("../images/cursor-icon-16.png");
     }

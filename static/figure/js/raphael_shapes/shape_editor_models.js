@@ -3,6 +3,10 @@
 
 var ShapeEditor = Backbone.Model.extend({
 
+	defaults: {
+		state: "SELECT",
+	},
+
 	setState: function setState(state) {
 
 		var states = ["SELECT", "PAN", "RECT", "LINE"];  //etc

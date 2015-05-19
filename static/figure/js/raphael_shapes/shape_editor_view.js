@@ -17,6 +17,8 @@ var ShapeEditorView = Backbone.View.extend({
 
             this.shapeEditor = options.shapeEditor;
             this.listenTo(this.shapeEditor, 'change', this.updateState);
+
+            this.updateState();
         },
 
         events: {
@@ -29,7 +31,6 @@ var ShapeEditorView = Backbone.View.extend({
         updateState: function() {
 
             var state = this.shapeEditor.get('state');
-            console.log(state);
             if (state == "RECT") {
                 $(".new_shape_layer", this.el).show();
             } else {
@@ -46,7 +47,6 @@ var ShapeEditorView = Backbone.View.extend({
             var dy = event.clientY - os.top;
             this.clientX_start = dx;
             this.clientY_start = dy;
-            console.log("mousedown", dx, dy);
 
             this.cropModel = new Backbone.Model({
                 'x':dx, 'y': dy, 'width': 0, 'height': 0,
@@ -60,7 +60,6 @@ var ShapeEditorView = Backbone.View.extend({
             if (this.dragging) {
                 this.dragging = false;
                 var json = this.cropModel.toJSON();
-                console.log("ADDING...", json);
                 this.model.add(json);
                 return false;
             }

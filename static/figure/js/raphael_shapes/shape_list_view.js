@@ -21,7 +21,6 @@ var ShapeListView = Backbone.View.extend({
     },
 
     render:function () {
-        console.log("ShapeListView.render()");
         var self = this;
 
         self.$el.empty();
@@ -51,7 +50,6 @@ var ShapeListItemView = Backbone.View.extend({
 
     render:function () {
         var json = this.model.toJSON();
-        console.log(json);
         var h = this.template(json);
         $(this.el).html(h);
         return this;
