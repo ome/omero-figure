@@ -67,8 +67,9 @@ var ShapeEditorView = Backbone.View.extend({
 
         mousemove: function(event) {
             if (this.dragging) {
-                var dx = event.clientX - this.clientX_start,
-                    dy = event.clientY - this.clientY_start;
+                var os = $(event.target).offset(),
+                    dx = event.clientX - os.left - this.clientX_start,
+                    dy = event.clientY - os.top - this.clientY_start;
                 if (event.shiftKey) {
                     // make region square!
                     if (Math.abs(dx) > Math.abs(dy)) {
