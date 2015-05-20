@@ -48,7 +48,7 @@ var ShapeEditorView = Backbone.View.extend({
             this.clientX_start = dx;
             this.clientY_start = dy;
 
-            this.cropModel = new Backbone.Model({
+            this.cropModel = new Shape({
                 'x':dx, 'y': dy, 'width': 0, 'height': 0,
                 'selected': false});
             this.rect = new RectView({'model':this.cropModel, 'paper': this.paper});
@@ -60,7 +60,7 @@ var ShapeEditorView = Backbone.View.extend({
             if (this.dragging) {
                 this.dragging = false;
                 var json = this.cropModel.toJSON();
-                this.model.add(json);
+                this.model.add(this.cropModel);
                 return false;
             }
         },

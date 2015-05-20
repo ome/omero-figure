@@ -6,8 +6,8 @@ var ShapeListView = Backbone.View.extend({
     el: $("#shapeList"),
 
     initialize:function () {
-        // we automatically 'sort' on fetch, add etc.
-        this.model.bind("sync add remove", this.render, this);
+
+        this.listenTo(this.model, 'sync add remove', this.render);
     },
 
     events: {
@@ -40,7 +40,7 @@ var ShapeListItemView = Backbone.View.extend({
     template: JST["static/figure/templates/shapes/shape_item_template.html"],
 
     initialize:function () {
-        this.model.bind("change", this.render, this);
+        this.listenTo(this.model, "change", this.render);
         // this.model.bind("destroy", this.close, this);
     },
 
