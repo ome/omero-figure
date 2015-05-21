@@ -48,10 +48,13 @@ var ShapeEditorView = Backbone.View.extend({
             this.clientX_start = dx;
             this.clientY_start = dy;
 
-            this.cropModel = new Shape({
-                'x':dx, 'y': dy, 'width': 0, 'height': 0,
-                'selected': false});
-            this.rect = new RectView({'model':this.cropModel, 'paper': this.paper});
+            // this.cropModel = new Shape({
+            //     'x':dx, 'y': dy, 'width': 0, 'height': 0,
+            //     'selected': false});
+            // this.rect = new RectView({'model':this.cropModel, 'paper': this.paper});
+
+            this.cropModel = new Backbone.Model({'x1': dx, 'y1': dy, 'x2': dx, 'y2': dy});
+            this.line = new LineView({'model': this.cropModel, 'paper': this.paper});
             this.cropModel.set('selected', true);
             return false;
         },
@@ -59,8 +62,7 @@ var ShapeEditorView = Backbone.View.extend({
         mouseup: function(event) {
             if (this.dragging) {
                 this.dragging = false;
-                var json = this.cropModel.toJSON();
-                this.model.add(this.cropModel);
+                // this.model.add(this.cropModel);
                 return false;
             }
         },
@@ -68,8 +70,8 @@ var ShapeEditorView = Backbone.View.extend({
         mousemove: function(event) {
             if (this.dragging) {
                 var os = $(event.target).offset(),
-                    dx = event.clientX - os.left - this.clientX_start,
-                    dy = event.clientY - os.top - this.clientY_start;
+                    dx = event.clientX - os.left; // - this.clientX_start,
+                    dy = event.clientY - os.top; // - this.clientY_start;
                 if (event.shiftKey) {
                     // make region square!
                     if (Math.abs(dx) > Math.abs(dy)) {
@@ -82,9 +84,10 @@ var ShapeEditorView = Backbone.View.extend({
                 }
                 var negX = Math.min(0, dx),
                     negY = Math.min(0, dy);
-                this.cropModel.set({'x': this.clientX_start + negX,
-                    'y': this.clientY_start + negY,
-                    'width': Math.abs(dx), 'height': Math.abs(dy)});
+                // this.cropModel.set({'x': this.clientX_start + negX,
+                //     'y': this.clientY_start + negY,
+                //     'width': Math.abs(dx), 'height': Math.abs(dy)});
+                this.cropModel.set({'x2': dx, 'y2': dy});
                 return false;
             }
         }
