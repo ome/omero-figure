@@ -5,6 +5,7 @@ var ShapeEditor = Backbone.Model.extend({
 
     defaults: {
         state: "SELECT",
+        color: "FF0000",
     },
 
     setState: function setState(state) {

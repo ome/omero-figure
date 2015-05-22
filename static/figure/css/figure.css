@@ -795,7 +795,7 @@
 
     /** toolbar buttons **/
 
-    .btn-toolbar span {
+    .btn-toolbar span.glyphicon {
         width: 16px;
         height: 16px;
     }
