@@ -38,6 +38,8 @@ var RectView = Backbone.View.extend({
         this.handles_toFront = options.handles_toFront || false;
         this.disable_handles = options.disable_handles || false;
         this.fixed_ratio = options.fixed_ratio || false;
+
+        this.default_line_attrs = $.extend( {}, this.default_line_attrs, options.attrs);
         // this.manager = options.manager;
 
         // Set up our 'view' attributes (for rendering without updating model)
