@@ -31,7 +31,7 @@ var ShapeEditorView = Backbone.View.extend({
         updateState: function() {
 
             var state = this.shapeEditor.get('state');
-            if (state == "RECT") {
+            if (state == "RECT" || state == "LINE") {
                 $(".new_shape_layer", this.el).show();
             } else {
                 $(".new_shape_layer", this.el).hide();
@@ -48,13 +48,16 @@ var ShapeEditorView = Backbone.View.extend({
             this.clientX_start = dx;
             this.clientY_start = dy;
 
-            // this.cropModel = new Shape({
-            //     'x':dx, 'y': dy, 'width': 0, 'height': 0,
-            //     'selected': false});
-            // this.rect = new RectView({'model':this.cropModel, 'paper': this.paper});
-
-            this.cropModel = new Backbone.Model({'x1': dx, 'y1': dy, 'x2': dx, 'y2': dy});
-            this.line = new LineView({'model': this.cropModel, 'paper': this.paper});
+            var state = this.shapeEditor.get('state');
+            if (state == "RECT") {
+                this.cropModel = new Shape({
+                    'type': 'rect', 'x':dx, 'y': dy, 'width': 0, 'height': 0,
+                    'selected': false});
+                this.rect = new RectView({'model':this.cropModel, 'paper': this.paper});
+            } else if (state == "LINE") {
+                this.cropModel = new Backbone.Model({'type': 'line', 'x1': dx, 'y1': dy, 'x2': dx, 'y2': dy});
+                this.line = new LineView({'model': this.cropModel, 'paper': this.paper});
+            }
             this.cropModel.set('selected', true);
             return false;
         },
@@ -62,7 +65,7 @@ var ShapeEditorView = Backbone.View.extend({
         mouseup: function(event) {
             if (this.dragging) {
                 this.dragging = false;
-                // this.model.add(this.cropModel);
+                this.model.add(this.cropModel);
                 return false;
             }
         },
@@ -70,8 +73,11 @@ var ShapeEditorView = Backbone.View.extend({
         mousemove: function(event) {
             if (this.dragging) {
                 var os = $(event.target).offset(),
-                    dx = event.clientX - os.left; // - this.clientX_start,
-                    dy = event.clientY - os.top; // - this.clientY_start;
+                    absX = event.clientX - os.left,
+                    absY = event.clientY - os.top,
+                    dx = absX - this.clientX_start,
+                    dy = absY - this.clientY_start;
+                console.log(absX, dx);
                 if (event.shiftKey) {
                     // make region square!
                     if (Math.abs(dx) > Math.abs(dy)) {
@@ -82,12 +88,17 @@ var ShapeEditorView = Backbone.View.extend({
                         else dx = -1 * Math.abs(dy);
                     }
                 }
-                var negX = Math.min(0, dx),
-                    negY = Math.min(0, dy);
-                // this.cropModel.set({'x': this.clientX_start + negX,
-                //     'y': this.clientY_start + negY,
-                //     'width': Math.abs(dx), 'height': Math.abs(dy)});
-                this.cropModel.set({'x2': dx, 'y2': dy});
+                var negX = Math.min(0, dx),  // - this.clientX_start),
+                    negY = Math.min(0, dy);  // - this.clientY_start);
+
+                var state = this.shapeEditor.get('state');
+                if (state == "RECT") {
+                    this.cropModel.set({'x': this.clientX_start + negX,
+                        'y': this.clientY_start + negY,
+                        'width': Math.abs(dx), 'height': Math.abs(dy)});
+                } else if (state == "LINE") {
+                    this.cropModel.set({'x2': absX, 'y2': absY});
+                }
                 return false;
             }
         }

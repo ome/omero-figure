@@ -1,2 +1,10 @@
 
-    <div>x: <%= x %>, y: <%= y %>, width: <%= width %>, height: <%= height %></div>
+    <div>
+
+    	<%= type %>
+
+    	<% if (type == 'rect') print("x:" + x + " y:" + y + " width:"+ width + " height:" + height) %>
+
+    	<% if (type == 'line') print("x1:" + x1 + " y1:" + y1 + " x2:" + x2 + " y2:" + y2) %>
+
+    </div>

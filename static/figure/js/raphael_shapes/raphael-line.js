@@ -71,23 +71,26 @@ var LineView = Backbone.View.extend({
                     y2: this.line.y2
                 };
                 if (this.h_id === "start") {
-                    newRect.x1 = new_x + self.handle_wh/2;
-                    newRect.y1 = new_y + self.handle_wh/2;
+                    newLine.x1 = new_x + self.handle_wh/2;
+                    newLine.y1 = new_y + self.handle_wh/2;
                 } else if (this.h_id === "middle") {
-                    // newRect.height = new_y - self.y + self.handle_wh/2;
+                    newLine.x1 = this.line.model.get('x1') + dx;
+                    newLine.y1 = this.line.model.get('y1') + dy;
+                    newLine.x2 = this.line.model.get('x2') + dx;
+                    newLine.y2 = this.line.model.get('y2') + dy;
                 } else if (this.h_id === "end") {
-                    newRect.x2 = new_x + self.handle_wh/2;
-                    newRect.y2 = new_y + self.handle_wh/2;
+                    newLine.x2 = new_x + self.handle_wh/2;
+                    newLine.y2 = new_y + self.handle_wh/2;
                 }
 
                 // Don't allow zero sized rect.
-                // if (newRect.width < 1 || newRect.height < 1) {
+                // if (newLine.width < 1 || newLine.height < 1) {
                 //     return false;
                 // }
-                this.line.x1 = newRect.x1;
-                this.line.y1 = newRect.y1;
-                this.line.x2 = newRect.x2;
-                this.line.y2 = newRect.y2;
+                this.line.x1 = newLine.x1;
+                this.line.y1 = newLine.y1;
+                this.line.x2 = newLine.x2;
+                this.line.y2 = newLine.y2;
                 this.line.model.trigger("drag_resize", [this.line.x1, this.line.y1, this.line.x2, this.line.y2]);
                 this.line.updateShape();
                 return false;
@@ -106,8 +109,8 @@ var LineView = Backbone.View.extend({
         var _handle_drag_end = function() {
             return function() {
                 if (self.disable_handles) return false;
-                this.rect.model.trigger('drag_resize_stop', [this.line.x1, this.line.y1,
-                    this.line.x2, this.line.y2]);
+                this.line.model.set({'x1': this.line.x1, 'y1': this.line.y1,
+                    'x2':this.line.x2, 'y2':this.line.y2});
                 return false;
             };
         };

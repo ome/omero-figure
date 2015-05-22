@@ -580,17 +580,16 @@ return __p
 
 this["JST"]["static/figure/templates/shapes/shape_item_template.html"] = function(obj) {
 obj || (obj = {});
-var __t, __p = '', __e = _.escape;
+var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
+function print() { __p += __j.call(arguments, '') }
 with (obj) {
-__p += '\n    <div>x: ' +
-((__t = ( x )) == null ? '' : __t) +
-', y: ' +
-((__t = ( y )) == null ? '' : __t) +
-', width: ' +
-((__t = ( width )) == null ? '' : __t) +
-', height: ' +
-((__t = ( height )) == null ? '' : __t) +
-'</div>\n';
+__p += '\n    <div>\n\n    \t' +
+((__t = ( type )) == null ? '' : __t) +
+'\n\n    \t';
+ if (type == 'rect') print("x:" + x + " y:" + y + " width:"+ width + " height:" + height) ;
+__p += '\n\n    \t';
+ if (type == 'line') print("x1:" + x1 + " y1:" + y1 + " x2:" + x2 + " y2:" + y2) ;
+__p += '\n\n    </div>\n';
 
 }
 return __p
