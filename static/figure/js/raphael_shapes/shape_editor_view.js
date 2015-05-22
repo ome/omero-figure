@@ -58,7 +58,7 @@ var ShapeEditorView = Backbone.View.extend({
                 this.cropModel = new Backbone.Model({'type': 'line', 'x1': dx, 'y1': dy, 'x2': dx, 'y2': dy});
                 this.line = new LineView({'model': this.cropModel, 'paper': this.paper});
             }
-            this.cropModel.set('selected', true);
+            // this.cropModel.set('selected', true);
             return false;
         },
 
@@ -77,7 +77,7 @@ var ShapeEditorView = Backbone.View.extend({
                     absY = event.clientY - os.top,
                     dx = absX - this.clientX_start,
                     dy = absY - this.clientY_start;
-                console.log(absX, dx);
+
                 if (event.shiftKey) {
                     // make region square!
                     if (Math.abs(dx) > Math.abs(dy)) {

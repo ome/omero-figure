@@ -38,5 +38,22 @@ var ShapeList = Backbone.Collection.extend({
 
     model: Shape,
 
+    initialize: function() {
+        var self = this;
+        this.listenTo(this, 'add', function(model, list, event) {
+            this.listenTo(model, 'clicked', function(m){
+                console.log('clicked', arguments);
+                self.clearSelected();
+                model.set('selected', true);
+            });
+        });
+    },
+
+    clearSelected: function() {
+        this.forEach(function(m){
+            m.set('selected', false);
+        });
+    }
+
 });
 

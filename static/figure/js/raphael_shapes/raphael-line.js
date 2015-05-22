@@ -20,7 +20,7 @@
 var LineView = Backbone.View.extend({
 
     handle_wh: 6,
-    default_line_attrs: {'stroke-width':0, 'stroke': '#4b80f9', 'cursor': 'default', 'fill-opacity':0.01, 'fill': '#fff'},
+    default_line_attrs: {'stroke-width':2, 'stroke': '#4b80f9', 'cursor': 'default', 'fill-opacity':0.01, 'fill': '#fff'},
     selected_line_attrs: {'stroke':'#4b80f9', 'stroke-width':2 },
     handle_attrs: {'stroke':'#4b80f9', 'fill':'#fff', 'cursor': 'default', 'fill-opacity':1.0},
 
