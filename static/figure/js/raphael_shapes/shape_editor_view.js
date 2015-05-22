@@ -51,14 +51,16 @@ var ShapeEditorView = Backbone.View.extend({
             this.clientX_start = dx;
             this.clientY_start = dy;
 
+            // create a new shape using the current toolbar color
+            var color = this.shapeEditor.get('color');
             var state = this.shapeEditor.get('state');
             if (state == "RECT") {
                 this.cropModel = new Shape({
                     'type': 'rect', 'x':dx, 'y': dy, 'width': 0, 'height': 0,
-                    'selected': false});
+                    'selected': false, 'color': color});
                 this.rect = new RectView({'model':this.cropModel, 'paper': this.paper, 'attrs':{'stroke-width':2}});
             } else if (state == "LINE") {
-                this.cropModel = new Backbone.Model({'type': 'line', 'x1': dx, 'y1': dy, 'x2': dx, 'y2': dy});
+                this.cropModel = new Backbone.Model({'type': 'line', 'x1': dx, 'y1': dy, 'x2': dx, 'y2': dy, 'color': color});
                 this.line = new LineView({'model': this.cropModel, 'paper': this.paper});
             }
             // this.cropModel.set('selected', true);

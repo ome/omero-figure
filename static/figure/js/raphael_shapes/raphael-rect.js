@@ -20,8 +20,9 @@
 var RectView = Backbone.View.extend({
 
     handle_wh: 6,
-    default_line_attrs: {'stroke-width':0, 'stroke': '#4b80f9', 'cursor': 'default', 'fill-opacity':0.01, 'fill': '#fff'},
-    selected_line_attrs: {'stroke':'#4b80f9', 'stroke-width':2 },
+    default_color: '4b80f9',
+    default_line_attrs: {'stroke-width':0, 'cursor': 'default', 'fill-opacity':0.01, 'fill': '#fff'},
+    selected_line_attrs: {'stroke-width':2 },
     handle_attrs: {'stroke':'#4b80f9', 'fill':'#fff', 'cursor': 'default', 'fill-opacity':1.0},
 
     // make a child on click
@@ -234,6 +235,8 @@ var RectView = Backbone.View.extend({
         //     this.paper.path(path2).attr('stroke', '#4b80f9');
 
         // if (this.manager.selected_shape_id === this.model.get("id")) {
+        var lineColor = this.model.get('color') || this.default_color;
+        this.element.attr('stroke', '#' + lineColor);
         if (this.model.get('selected')) {
             this.element.attr( this.selected_line_attrs );  //.toFront();
             var self = this;

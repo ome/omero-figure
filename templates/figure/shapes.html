@@ -60,14 +60,14 @@
         window.FigureColorPicker = new ColorPickerView();
 
         // Create Models...
-        // ...to handle state of shape editor
-        var shapeEditor = new ShapeEditor();
-        /// ...and to store shapes
+        // to store shapes
         var shapeList = new ShapeList();
+        // ...to handle state of shape editor
+        var shapeEditor = new ShapeEditor({shapeList: shapeList});
 
         new ShapeEditorView({model: shapeList, shapeEditor: shapeEditor});
         new ShapeListView({model: shapeList, shapeEditor: shapeEditor});
-        new ShapeToolbarView({model: shapeList, shapeEditor: shapeEditor});
+        new ShapeToolbarView({shapeEditor: shapeEditor});
     });
 
     </script>

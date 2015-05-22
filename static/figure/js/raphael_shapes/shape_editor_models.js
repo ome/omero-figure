@@ -8,6 +8,24 @@ var ShapeEditor = Backbone.Model.extend({
         color: "FF0000",
     },
 
+    initialize: function(options) {
+
+        // Create collection to store shapes
+        // TODO: will need to populate this!
+        this.shapeList = options.shapeList;
+        this.listenTo(this.shapeList, 'selectionChange', this.selectionChanged);
+    },
+
+    // New shape selected - update toolbar color accordingly
+    selectionChanged: function() {
+        var sel = this.shapeList.getSelected();
+        if (sel.length > 0) {
+            if (sel[0].get('color')) {
+                this.set('color', sel[0].get('color'));
+            }
+        }
+    },
+
     setState: function setState(state) {
 
         var states = ["SELECT", "PAN", "RECT", "LINE"];  //etc
@@ -15,6 +33,11 @@ var ShapeEditor = Backbone.Model.extend({
             this.set('state', state);
         } else {
             throw new Error("Not valid state: " + state);
+        }
+
+        // If we're creating new shapes, deselect existing ones
+        if(["RECT", "LINE"].indexOf(state) > -1) {
+            this.shapeList.clearSelected();
         }
     }
 });
@@ -43,9 +66,9 @@ var ShapeList = Backbone.Collection.extend({
         var self = this;
         this.listenTo(this, 'add', function(model, list, event) {
             this.listenTo(model, 'clicked', function(m){
-                console.log('clicked', arguments);
                 self.clearSelected();
                 model.set('selected', true);
+                self.trigger('selectionChange');
             });
         });
     },
@@ -53,6 +76,12 @@ var ShapeList = Backbone.Collection.extend({
     clearSelected: function() {
         this.forEach(function(m){
             m.set('selected', false);
+        });
+    },
+
+    getSelected: function() {
+        return this.filter(function(panel){
+            return panel.get('selected');
         });
     }
 

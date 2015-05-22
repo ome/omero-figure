@@ -24,12 +24,12 @@ var ShapeToolbarView = Backbone.View.extend({
         "change .shape-color": "colorChange",
     },
 
-    colorChange: function() {
+    colorChange: function(event) {
         var color = $("span:first", event.target).attr('data-color');
         this.shapeEditor.set('color', color);
     },
 
-    // Handles all the various drop-down menus in the 'New' AND 'Edit Label' forms
+    // Handles all the various drop-down menus in the toolbar
     select_dropdown_option: function(event) {
         event.preventDefault();
         var $a = $(event.target),
@@ -71,12 +71,10 @@ var ShapeToolbarView = Backbone.View.extend({
     handleLineBtn: function() {
         // maybe the shapeEditor should know about the shapesList model
         // then it could handle the clearSelected() itself?
-        this.model.clearSelected();
         this.shapeEditor.setState("LINE");
     },
 
     handleRectBtn: function() {
-        this.model.clearSelected();
         this.shapeEditor.setState("RECT");
     },
 
