@@ -583,7 +583,9 @@ obj || (obj = {});
 var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
 function print() { __p += __j.call(arguments, '') }
 with (obj) {
-__p += '\n    <div>\n\n    \t' +
+__p += '\n    <div ';
+ if (selected) print ("style='background:#ddf'") ;
+__p += ' >\n\n    \t' +
 ((__t = ( type )) == null ? '' : __t) +
 '\n\n    \t';
  if (type == 'rect') print("x:" + x + " y:" + y + " width:"+ width + " height:" + height) ;

@@ -40,6 +40,9 @@ var ShapeEditorView = Backbone.View.extend({
 
 
         mousedown: function(event) {
+            // clear any existing selected shapes
+            this.model.clearSelected();
+
             // Create a new Rect, and start resizing it...
             this.dragging = true;
             var os = $(event.target).offset();
@@ -81,6 +84,7 @@ var ShapeEditorView = Backbone.View.extend({
                     }
                 }
                 // otherwise add to collection
+                this.cropModel.set('selected', true);
                 this.model.add(this.cropModel);
                 return false;
             }
