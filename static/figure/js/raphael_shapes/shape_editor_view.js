@@ -65,6 +65,22 @@ var ShapeEditorView = Backbone.View.extend({
         mouseup: function(event) {
             if (this.dragging) {
                 this.dragging = false;
+
+                var state = this.shapeEditor.get('state');
+                // If shapes are zero-sized, destroy.
+                if (state == "RECT") {
+                    if (this.cropModel.get('width') === 0 || this.cropModel.get('height') === 0) {
+                        this.cropModel.destroy();
+                        return false;
+                    }
+                } else if (state == "LINE") {
+                    if(this.cropModel.get('x1') === this.cropModel.get('x2') &&
+                        this.cropModel.get('y1') === this.cropModel.get('y2')) {
+                        this.cropModel.destroy();
+                        return false;
+                    }
+                }
+                // otherwise add to collection
                 this.model.add(this.cropModel);
                 return false;
             }
