@@ -20,8 +20,9 @@
 var LineView = Backbone.View.extend({
 
     handle_wh: 6,
-    default_line_attrs: {'stroke-width':2, 'stroke': '#4b80f9', 'cursor': 'default', 'fill-opacity':0.01, 'fill': '#fff'},
-    selected_line_attrs: {'stroke':'#4b80f9', 'stroke-width':2 },
+    default_color: '4b80f9',
+    default_line_attrs: {'stroke-width':2, 'cursor': 'default', 'fill-opacity':0.01, 'fill': '#fff'},
+    selected_line_attrs: {'stroke-width':2 },
     handle_attrs: {'stroke':'#4b80f9', 'fill':'#fff', 'cursor': 'default', 'fill-opacity':1.0},
 
     // make a child on click
@@ -204,6 +205,9 @@ var LineView = Backbone.View.extend({
         var p = "M" + this.x1 + " " + this.y1 + "L" + this.x2 + " " + this.y2;
         this.element.attr('path', p);
  
+        var lineColor = this.model.get('color') || this.default_color;
+        this.element.attr('stroke', '#' + lineColor);
+
         // if (this.manager.selected_shape_id === this.model.get("id")) {
         if (this.model.get('selected')) {
             this.element.attr( this.selected_line_attrs );  //.toFront();

@@ -26,7 +26,7 @@ var ShapeToolbarView = Backbone.View.extend({
 
     colorChange: function(event) {
         var color = $("span:first", event.target).attr('data-color');
-        this.shapeEditor.set('color', color);
+        this.shapeEditor.setColor(color);
     },
 
     // Handles all the various drop-down menus in the toolbar

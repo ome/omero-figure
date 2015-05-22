@@ -26,7 +26,7 @@ var ShapeEditor = Backbone.Model.extend({
         }
     },
 
-    setState: function setState(state) {
+    setState: function(state) {
 
         var states = ["SELECT", "PAN", "RECT", "LINE"];  //etc
         if (states.indexOf(state) > -1) {
@@ -39,6 +39,15 @@ var ShapeEditor = Backbone.Model.extend({
         if(["RECT", "LINE"].indexOf(state) > -1) {
             this.shapeList.clearSelected();
         }
+    },
+
+    // when toolbar color is changed, update any selected shapes
+    setColor: function(color) {
+        this.set('color', color);
+        var sel = this.shapeList.getSelected();
+        sel.forEach(function(m){
+            m.set('color', color);
+        });
     }
 });
 
