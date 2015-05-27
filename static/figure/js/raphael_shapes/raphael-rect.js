@@ -227,13 +227,6 @@ var RectView = Backbone.View.extend({
     updateShape: function() {
         this.element.attr({'x':this.x, 'y':this.y, 'width':this.width, 'height':this.height});
 
-        // TODO Draw diagonals on init - then simply update here (show if selected)
-        // var path1 = "M" + this.x +","+ this.y +"l"+ this.width +","+ this.height,
-        //     path2 = "M" + (this.x+this.width) +","+ this.y +"l-"+ this.width +","+ this.height;
-        //     // rectangle plus 2 diagonal lines
-        //     this.paper.path(path1).attr('stroke', '#4b80f9');
-        //     this.paper.path(path2).attr('stroke', '#4b80f9');
-
         // if (this.manager.selected_shape_id === this.model.get("id")) {
         var lineColor = this.model.get('color') || this.default_color;
         this.element.attr('stroke', '#' + lineColor);
@@ -252,6 +245,10 @@ var RectView = Backbone.View.extend({
         } else {
             this.element.attr( this.default_line_attrs );    // this should be the shapes OWN line / fill colour etc.
             this.handles.hide();
+        }
+        // If model defines line width, over-ride anything we've set above
+        if (this.model.get('lineWidth')) {
+            this.element.attr('stroke-width', this.model.get('lineWidth'));
         }
 
         this.handleIds = {'nw': [this.x, this.y],

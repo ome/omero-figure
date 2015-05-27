@@ -22,6 +22,12 @@ var ShapeToolbarView = Backbone.View.extend({
         "click .rect-btn": "handleRectBtn",
         "click .dropdown-menu a": "select_dropdown_option",
         "change .shape-color": "colorChange",
+        "change .line-width": "lineWidthChange",
+    },
+
+    lineWidthChange: function(event) {
+        var lineWidth = $("span:first", event.target).attr('data-line-width');
+        this.shapeEditor.setLineWidth(lineWidth);
     },
 
     colorChange: function(event) {
@@ -60,6 +66,9 @@ var ShapeToolbarView = Backbone.View.extend({
             });
         } else {
             $('span:first', $button).replaceWith($span);
+            if ($span.prop('title')) {
+                $button.prop('title', $span.prop('title'));
+            }
             $button.trigger('change');      // can listen for this if we want to 'submit' etc
         }
     },

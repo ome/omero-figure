@@ -225,6 +225,10 @@ var LineView = Backbone.View.extend({
             this.element.attr( this.default_line_attrs );    // this should be the shapes OWN line / fill colour etc.
             this.handles.hide();
         }
+        // If model defines line width, over-ride anything we've set above
+        if (this.model.get('lineWidth')) {
+            this.element.attr('stroke-width', this.model.get('lineWidth'));
+        }
 
         this.handleIds = {'start': [this.x1, this.y1],
             'middle': [(this.x1+this.x2)/2,(this.y1+this.y2)/2],

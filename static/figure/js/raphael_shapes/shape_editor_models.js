@@ -6,6 +6,7 @@ var ShapeEditor = Backbone.Model.extend({
     defaults: {
         state: "SELECT",
         color: "FF0000",
+        lineWidth: 2,
     },
 
     initialize: function(options) {
@@ -47,6 +48,15 @@ var ShapeEditor = Backbone.Model.extend({
         var sel = this.shapeList.getSelected();
         sel.forEach(function(m){
             m.set('color', color);
+        });
+    },
+
+    // when toolbar lineWidth is changed, update any selected shapes
+    setLineWidth: function(lineWidth) {
+        this.set('lineWidth', lineWidth);
+        var sel = this.shapeList.getSelected();
+        sel.forEach(function(m){
+            m.set('lineWidth', lineWidth);
         });
     }
 });

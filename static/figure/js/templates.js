@@ -608,13 +608,23 @@ __p += '">\n        <span class="glyphicon"></span></button>\n</div>\n<div class
  if (state==='LINE')print('pressed') ;
 __p += '">\n        <span class="glyphicon">&#9586;</span></button>\n    <button type="button" class="btn btn-default rect-btn ';
  if (state==='RECT')print('pressed') ;
-__p += '">\n        <span class="glyphicon"></span></button>\n</div>\n\n<div class="btn-group">\n        <button type="button" class="shape-color btn btn-default dropdown-toggle" title="Label Color"\n            data-toggle="dropdown">\n            <span data-color="' +
+__p += '">\n        <span class="glyphicon"></span></button>\n</div>\n\n<div class="btn-group">\n    <button type="button" class="shape-color btn btn-default dropdown-toggle" title="Label Color"\n        data-toggle="dropdown">\n        <span data-color="' +
 ((__t = ( color )) == null ? '' : __t) +
 '" style="background-color:#' +
 ((__t = ( color )) == null ? '' : __t) +
-'">&nbsp &nbsp &nbsp</span>\n            <span class="caret"></span>\n        </button>\n        <ul class="dropdown-menu colorpicker" role="menu">\n            <li><a href="#">\n                <span data-color="000000" style="background-color:#000">&nbsp &nbsp &nbsp</span>&nbsp Black\n            </a></li>\n            <li><a href="#">\n                <span data-color="0000FF" style="background-color:#00f">&nbsp &nbsp &nbsp</span>&nbsp Blue\n            </a></li>\n            <li><a href="#">\n                <span data-color="00FF00" style="background-color:#0f0">&nbsp &nbsp &nbsp</span>&nbsp Green\n            </a></li>\n            <li><a href="#">\n                <span data-color="FF0000" style="background-color:#f00">&nbsp &nbsp &nbsp</span>&nbsp Red\n            </a></li>\n            <li><a href="#">\n                <span data-color="FFFF00" style="background-color:#ff0">&nbsp &nbsp &nbsp</span>&nbsp Yellow\n            </a></li>\n            <li><a href="#">\n                <span data-color="FFFFFF" style="background-color:#fff">&nbsp &nbsp &nbsp</span>&nbsp White\n            </a></li>\n            <li><a href="#">\n                <span data-color="FF00FF" style="background-color:#f0f">&nbsp &nbsp &nbsp</span>&nbsp Magenta\n            </a></li>\n            <li class="divider"></li>\n            <li><a data-color="colorpicker" data-oldcolor="' +
+'">&nbsp &nbsp &nbsp</span>\n        <span class="caret"></span>\n    </button>\n    <ul class="dropdown-menu colorpicker" role="menu">\n        <li><a href="#">\n            <span data-color="000000" style="background-color:#000">&nbsp &nbsp &nbsp</span>&nbsp Black\n        </a></li>\n        <li><a href="#">\n            <span data-color="0000FF" style="background-color:#00f">&nbsp &nbsp &nbsp</span>&nbsp Blue\n        </a></li>\n        <li><a href="#">\n            <span data-color="00FF00" style="background-color:#0f0">&nbsp &nbsp &nbsp</span>&nbsp Green\n        </a></li>\n        <li><a href="#">\n            <span data-color="FF0000" style="background-color:#f00">&nbsp &nbsp &nbsp</span>&nbsp Red\n        </a></li>\n        <li><a href="#">\n            <span data-color="FFFF00" style="background-color:#ff0">&nbsp &nbsp &nbsp</span>&nbsp Yellow\n        </a></li>\n        <li><a href="#">\n            <span data-color="FFFFFF" style="background-color:#fff">&nbsp &nbsp &nbsp</span>&nbsp White\n        </a></li>\n        <li><a href="#">\n            <span data-color="FF00FF" style="background-color:#f0f">&nbsp &nbsp &nbsp</span>&nbsp Magenta\n        </a></li>\n        <li class="divider"></li>\n        <li><a data-color="colorpicker" data-oldcolor="' +
 ((__t = ( color )) == null ? '' : __t) +
-'" href="#">\n                <span class="colorpickerOption">&nbsp &nbsp &nbsp</span>&nbsp More Colors...\n            </a></li>\n        </ul>\n    </div>\n';
+'" href="#">\n            <span class="colorpickerOption">&nbsp &nbsp &nbsp</span>&nbsp More Colors...\n        </a></li>\n    </ul>\n</div>\n\n\n<div class="btn-group">\n    <button type="button" class="line-width btn btn-default dropdown-toggle" title="Line Width: ' +
+((__t = ( lineWidth )) == null ? '' : __t) +
+'"\n        data-toggle="dropdown">\n        <span data-line-width="' +
+((__t = ( lineWidth )) == null ? '' : __t) +
+'" class=\'linewidthOption\' style=\'height:' +
+((__t = ( lineWidth )) == null ? '' : __t) +
+'px\'></span>\n        <span class="caret"></span>\n    </button>\n    <ul class="dropdown-menu lineWidth" role="menu">\n\n        ';
+ _.each([1,2,3,4,5,7,10,15,20,30],function(p){
+            print ("<li><a href='#'>"+p+"<span title='Line Width: "+p+"' data-line-width='"+p+"' class='linewidthOption' style='height:"+p+"px'></span></a></li>")
+        }); ;
+__p += '\n\n    </ul>\n</div>\n';
 
 }
 return __p

@@ -813,4 +813,13 @@
     .rect-btn span{
         background-image: url("../images/square-outline-icon-16.png");
     }
+    .linewidthOption {
+        display: inline-block;
+        width: 25px;
+        background: black;
+        margin: 0 5px;
+    }
+    .line-width .linewidthOption {
+        max-height: 15px;
+    }
 
