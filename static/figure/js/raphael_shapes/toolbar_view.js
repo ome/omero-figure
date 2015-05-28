@@ -20,6 +20,7 @@ var ShapeToolbarView = Backbone.View.extend({
         "click .select-btn": "handleSelectBtn",
         "click .line-btn": "handleLineBtn",
         "click .rect-btn": "handleRectBtn",
+        "click .arrow-btn": "handleArrowBtn",
         "click .dropdown-menu a": "select_dropdown_option",
         "change .shape-color": "colorChange",
         "change .line-width": "lineWidthChange",
@@ -87,6 +88,9 @@ var ShapeToolbarView = Backbone.View.extend({
         this.shapeEditor.setState("RECT");
     },
 
+    handleArrowBtn: function() {
+        this.shapeEditor.setState("ARROW");
+    },
 
     render: function render() {
 

@@ -24,12 +24,15 @@ var ShapeEditor = Backbone.Model.extend({
             if (sel[0].get('color')) {
                 this.set('color', sel[0].get('color'));
             }
+            if (sel[0].get('lineWidth')) {
+                this.set('lineWidth', sel[0].get('lineWidth'));
+            }
         }
     },
 
     setState: function(state) {
 
-        var states = ["SELECT", "PAN", "RECT", "LINE"];  //etc
+        var states = ["SELECT", "PAN", "RECT", "LINE", "ARROW"];  //etc
         if (states.indexOf(state) > -1) {
             this.set('state', state);
         } else {
@@ -37,7 +40,7 @@ var ShapeEditor = Backbone.Model.extend({
         }
 
         // If we're creating new shapes, deselect existing ones
-        if(["RECT", "LINE"].indexOf(state) > -1) {
+        if(["RECT", "LINE", "ARROW"].indexOf(state) > -1) {
             this.shapeList.clearSelected();
         }
     },

@@ -798,6 +798,8 @@
     .btn-toolbar span.glyphicon {
         width: 16px;
         height: 16px;
+        position: relative;
+        top: 3px;
     }
 
     .shapes_toolbar .pressed {
@@ -807,11 +809,14 @@
     .select-btn span{
         background-image: url("../images/cursor-icon-16.png");
     }
-    .line-btn span{
-
-    }
     .rect-btn span{
         background-image: url("../images/square-outline-icon-16.png");
+    }
+    .line-btn span{
+        background-image: url("../images/line-icon-16.png");
+    }
+    .arrow-btn span{
+        background-image: url("../images/arrow-icon-16.png");
     }
     .linewidthOption {
         display: inline-block;

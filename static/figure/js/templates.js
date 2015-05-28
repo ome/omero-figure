@@ -588,9 +588,9 @@ __p += '\n    <div ';
 __p += ' >\n\n    \t' +
 ((__t = ( type )) == null ? '' : __t) +
 '\n\n    \t';
- if (type == 'rect') print("x:" + x + " y:" + y + " width:"+ width + " height:" + height) ;
+ if (type === 'RECT') print("x:" + x + " y:" + y + " width:"+ width + " height:" + height) ;
 __p += '\n\n    \t';
- if (type == 'line') print("x1:" + x1 + " y1:" + y1 + " x2:" + x2 + " y2:" + y2) ;
+ if (type === 'LINE' || type === 'ARROW') print("x1:" + x1 + " y1:" + y1 + " x2:" + x2 + " y2:" + y2) ;
 __p += '\n\n    </div>\n';
 
 }
@@ -604,10 +604,12 @@ function print() { __p += __j.call(arguments, '') }
 with (obj) {
 __p += '\n\n<div class="btn-group" role="group" aria-label="...">\n    <button type="button"\n    \tclass="btn btn-default select-btn ';
  if (state==='SELECT')print('pressed') ;
-__p += '">\n        <span class="glyphicon"></span></button>\n</div>\n<div class="btn-group" role="group" aria-label="...">\n    <button type="button" class="btn btn-default line-btn ';
- if (state==='LINE')print('pressed') ;
-__p += '">\n        <span class="glyphicon">&#9586;</span></button>\n    <button type="button" class="btn btn-default rect-btn ';
+__p += '">\n        <span class="glyphicon"></span></button>\n</div>\n<div class="btn-group" role="group" aria-label="...">\n    <button type="button" class="btn btn-default rect-btn ';
  if (state==='RECT')print('pressed') ;
+__p += '">\n        <span class="glyphicon"></span></button>\n    <button type="button" class="btn btn-default line-btn ';
+ if (state==='LINE')print('pressed') ;
+__p += '">\n        <span class="glyphicon"></span></button>\n    <button type="button" class="btn btn-default arrow-btn ';
+ if (state==='ARROW')print('pressed') ;
 __p += '">\n        <span class="glyphicon"></span></button>\n</div>\n\n<div class="btn-group">\n    <button type="button" class="shape-color btn btn-default dropdown-toggle" title="Label Color"\n        data-toggle="dropdown">\n        <span data-color="' +
 ((__t = ( color )) == null ? '' : __t) +
 '" style="background-color:#' +

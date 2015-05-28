@@ -31,7 +31,7 @@ var ShapeEditorView = Backbone.View.extend({
         updateState: function() {
 
             var state = this.shapeEditor.get('state');
-            if (state == "RECT" || state == "LINE") {
+            if (state == "RECT" || state == "LINE" || state == "ARROW") {
                 $(".new_shape_layer", this.el).show();
             } else {
                 $(".new_shape_layer", this.el).hide();
@@ -57,13 +57,17 @@ var ShapeEditorView = Backbone.View.extend({
             var lineWidth = this.shapeEditor.get('lineWidth');
             if (state == "RECT") {
                 this.cropModel = new Shape({
-                    'type': 'rect', 'x':dx, 'y': dy, 'width': 0, 'height': 0,
+                    'type': state, 'x':dx, 'y': dy, 'width': 0, 'height': 0,
                     'selected': false, 'color': color, 'lineWidth': lineWidth});
                 this.rect = new RectView({'model':this.cropModel, 'paper': this.paper, 'attrs':{'stroke-width':2}});
-            } else if (state == "LINE") {
-                this.cropModel = new Backbone.Model({'type': 'line', 'x1': dx, 'y1': dy, 'x2': dx, 'y2': dy,
+            } else if (state === "LINE" || state === "ARROW") {
+                this.cropModel = new Backbone.Model({'type': state, 'x1': dx, 'y1': dy, 'x2': dx, 'y2': dy,
                     'color': color, 'lineWidth': lineWidth});
-                this.line = new LineView({'model': this.cropModel, 'paper': this.paper});
+                if (state === "ARROW") {
+                    this.line = new ArrowView({'model': this.cropModel, 'paper': this.paper});
+                } else {
+                    this.line = new LineView({'model': this.cropModel, 'paper': this.paper});
+                }
             }
             // this.cropModel.set('selected', true);
             return false;
@@ -80,7 +84,7 @@ var ShapeEditorView = Backbone.View.extend({
                         this.cropModel.destroy();
                         return false;
                     }
-                } else if (state == "LINE") {
+                } else if (state == "LINE" || state === "ARROW") {
                     if(this.cropModel.get('x1') === this.cropModel.get('x2') &&
                         this.cropModel.get('y1') === this.cropModel.get('y2')) {
                         this.cropModel.destroy();
@@ -120,7 +124,7 @@ var ShapeEditorView = Backbone.View.extend({
                     this.cropModel.set({'x': this.clientX_start + negX,
                         'y': this.clientY_start + negY,
                         'width': Math.abs(dx), 'height': Math.abs(dy)});
-                } else if (state == "LINE") {
+                } else if (state === "LINE" || state === "ARROW") {
                     this.cropModel.set({'x2': absX, 'y2': absY});
                 }
                 return false;

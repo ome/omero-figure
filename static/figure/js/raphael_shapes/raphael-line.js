@@ -21,7 +21,7 @@ var LineView = Backbone.View.extend({
 
     handle_wh: 6,
     default_color: '4b80f9',
-    default_line_attrs: {'stroke-width':2, 'cursor': 'default', 'fill-opacity':0.01, 'fill': '#fff'},
+    default_line_attrs: {'stroke-width':2, 'cursor': 'default', 'fill-opacity':1},
     selected_line_attrs: {'stroke-width':2 },
     handle_attrs: {'stroke':'#4b80f9', 'fill':'#fff', 'cursor': 'default', 'fill-opacity':1.0},
 
@@ -198,15 +198,19 @@ var LineView = Backbone.View.extend({
         this.updateShape();
     },
 
+    getPath: function() {
+        return "M" + this.x1 + " " + this.y1 + "L" + this.x2 + " " + this.y2;
+    },
+
     // used to update during drags etc. Also called by render()
     updateShape: function() {
         this.element.attr({'x':this.x, 'y':this.y, 'width':this.width, 'height':this.height});
         // E.g. "M10 10L90 90"
-        var p = "M" + this.x1 + " " + this.y1 + "L" + this.x2 + " " + this.y2;
+        var p = this.getPath();
         this.element.attr('path', p);
  
         var lineColor = this.model.get('color') || this.default_color;
-        this.element.attr('stroke', '#' + lineColor);
+        this.element.attr({'stroke': '#' + lineColor, 'fill': '#' + lineColor});
 
         // if (this.manager.selected_shape_id === this.model.get("id")) {
         if (this.model.get('selected')) {
@@ -256,3 +260,32 @@ var LineView = Backbone.View.extend({
         this.model.off('change', this.render, this);
     }
 });
+
+var ArrowView = LineView.extend({
+
+    getPath: function() {
+
+        var headSize = (this.model.get('lineWidth') * 3) + 9,
+            x2 = this.x2,
+            y2 = this.y2,
+            dx = x2 - this.x1,
+            dy = y2 - this.y1;
+
+        var linePath = "M" + this.x1 + " " + this.y1 + "L" + this.x2 + " " + this.y2;
+        var lineAngle = Math.atan(dx / dy);
+        var f = (dy < 0 ? 1 : -1);
+
+        // Angle of arrow head is 1 radian (0.5 either side of lineAngle)
+        var arrowPoint1x = x2 + (f * Math.sin(lineAngle - 0.5) * headSize),
+            arrowPoint1y = y2 + (f * Math.cos(lineAngle - 0.5) * headSize),
+            arrowPoint2x = x2 + (f * Math.sin(lineAngle + 0.5) * headSize),
+            arrowPoint2y = y2 + (f * Math.cos(lineAngle + 0.5) * headSize);
+
+        // Full path goes around the head, past the tip and back to tip so that the tip is 'pointy'  
+        // and 'fill' is not from a head corner to the start of arrow.
+        var arrowPath = linePath + "L" + arrowPoint1x + " " + arrowPoint1y + "L" + arrowPoint2x + " " + arrowPoint2y;
+        arrowPath = arrowPath + "L" + this.x2 + " " + this.y2 + "L" + arrowPoint1x + " " + arrowPoint1y + "L" + this.x2 + " " + this.y2;
+        return arrowPath;
+    }
+
+})
