@@ -231,7 +231,7 @@ var RectView = Backbone.View.extend({
         var lineColor = this.model.get('color') || this.default_color;
         this.element.attr('stroke', '#' + lineColor);
         if (this.model.get('selected')) {
-            this.element.attr( this.selected_line_attrs );  //.toFront();
+            this.element.attr( this.selected_line_attrs ).toFront();
             var self = this;
             // If several Rects get selected at the same time, one with handles_toFront will
             // end up with the handles at the top

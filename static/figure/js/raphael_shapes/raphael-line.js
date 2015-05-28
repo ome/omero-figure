@@ -214,7 +214,7 @@ var LineView = Backbone.View.extend({
 
         // if (this.manager.selected_shape_id === this.model.get("id")) {
         if (this.model.get('selected')) {
-            this.element.attr( this.selected_line_attrs );  //.toFront();
+            this.element.attr( this.selected_line_attrs ).toFront();
             var self = this;
             // If several Rects get selected at the same time, one with handles_toFront will
             // end up with the handles at the top

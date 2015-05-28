@@ -7,34 +7,36 @@ var ShapeEditorView = Backbone.View.extend({
 
         initialize: function(options) {
 
-            var self = this;
-
-            // we automatically 'sort' on fetch, add etc.
-            // this.model.bind("sync remove sort", this.render, this);
-
             // Now set up Raphael paper...
             this.paper = Raphael("shapeCanvas", 512, 512);
+
+            // Add a full-size background to cover existing shapes while
+            // we're creating new shapes, to stop them being selected. 
+            // Mouse events on this will bubble up to svg and are handled below
+            this.newShapeBg = this.paper.rect(0, 0, 512, 512);
+            this.newShapeBg.attr({'fill':'#000', 'fill-opacity':0.01});
 
             this.shapeEditor = options.shapeEditor;
             this.listenTo(this.shapeEditor, 'change', this.updateState);
 
             this.updateState();
+            $(".new_shape_layer", this.el).hide();
         },
 
         events: {
-            "mousedown .new_shape_layer": "mousedown",
-            "mousemove .new_shape_layer": "mousemove",
-            "mouseup .new_shape_layer": "mouseup"
+            "mousedown svg": "mousedown",
+            "mousemove svg": "mousemove",
+            "mouseup svg": "mouseup"
         },
 
 
         updateState: function() {
-
+            // When creating shapes, cover existing shapes with newShapeBg
             var state = this.shapeEditor.get('state');
-            if (state == "RECT" || state == "LINE" || state == "ARROW") {
-                $(".new_shape_layer", this.el).show();
+            if (state === "RECT" || state === "LINE" || state === "ARROW") {
+                this.newShapeBg.show().toFront();
             } else {
-                $(".new_shape_layer", this.el).hide();
+                this.newShapeBg.hide();
             }
         },
 
@@ -42,6 +44,7 @@ var ShapeEditorView = Backbone.View.extend({
         mousedown: function(event) {
             // clear any existing selected shapes
             this.model.clearSelected();
+            this.cropModel = undefined;
 
             // Create a new Rect, and start resizing it...
             this.dragging = true;
@@ -69,13 +72,15 @@ var ShapeEditorView = Backbone.View.extend({
                     this.line = new LineView({'model': this.cropModel, 'paper': this.paper});
                 }
             }
-            // this.cropModel.set('selected', true);
+            // Move this in front of new shape so that drag events don't get lost to the new shape
+            this.newShapeBg.toFront();
             return false;
         },
 
         mouseup: function(event) {
             if (this.dragging) {
                 this.dragging = false;
+                if (!this.cropModel) return;
 
                 var state = this.shapeEditor.get('state');
                 // If shapes are zero-sized, destroy.
@@ -116,11 +121,11 @@ var ShapeEditorView = Backbone.View.extend({
                         else dx = -1 * Math.abs(dy);
                     }
                 }
-                var negX = Math.min(0, dx),  // - this.clientX_start),
-                    negY = Math.min(0, dy);  // - this.clientY_start);
+                var negX = Math.min(0, dx),
+                    negY = Math.min(0, dy);
 
                 var state = this.shapeEditor.get('state');
-                if (state == "RECT") {
+                if (state === "RECT") {
                     this.cropModel.set({'x': this.clientX_start + negX,
                         'y': this.clientY_start + negY,
                         'width': Math.abs(dx), 'height': Math.abs(dy)});
