@@ -145,33 +145,32 @@ var LineView = Backbone.View.extend({
         this.delegateEvents(this.events);   // we need to rebind the events
 
         // Handle drag
-        // this.element.drag(
-        //     function(dx, dy) {
-        //         // DRAG, update location and redraw
-        //         // TODO - need some way to disable drag if we're not in select state
-        //         //if (manager.getState() !== ShapeManager.STATES.SELECT) {
-        //         //    return;
-        //         //}
-        //         self.x = dx+this.ox;
-        //         self.y = this.oy+dy;
-        //         self.dragging = true;
-        //         self.model.trigger("drag_xy", [dx, dy]);
-        //         self.updateShape();
-        //         return false;
-        //     },
-        //     function() {
-        //         // START drag: note the location of all points (copy list)
-        //         this.ox = this.attr('x');
-        //         this.oy = this.attr('y');
-        //         return false;
-        //     },
-        //     function() {
-        //         // STOP: save current position to model
-        //         self.model.trigger('drag_xy_stop', [self.x-this.ox, self.y-this.oy]);
-        //         self.dragging = false;
-        //         return false;
-        //     }
-        // );
+        this.element.drag(
+            function(dx, dy) {
+                // DRAG, update location and redraw
+                self.x1 = dx+this.ox1;
+                self.y1 = this.oy1+dy;
+                self.x2 = dx+this.ox2;
+                self.y2 = this.oy2+dy;
+                self.dragging = true;
+                self.updateShape();
+                return false;
+            },
+            function() {
+                // START drag: note the location of points
+                this.ox1 = self.model.get('x1');
+                this.oy1 = self.model.get('y1');
+                this.ox2 = self.model.get('x2');
+                this.oy2 = self.model.get('y2');
+                return false;
+            },
+            function() {
+                // STOP: save current position to model
+                self.model.set({'x1': self.x1, 'y1': self.y1, 'x2': self.x2, 'y2': self.y2});
+                self.dragging = false;
+                return false;
+            }
+        );
 
         // If we're starting DRAG, don't let event propogate up to dragdiv etc.
         // https://groups.google.com/forum/?fromgroups=#!topic/raphaeljs/s06GIUCUZLk
@@ -204,7 +203,6 @@ var LineView = Backbone.View.extend({
 
     // used to update during drags etc. Also called by render()
     updateShape: function() {
-        this.element.attr({'x':this.x, 'y':this.y, 'width':this.width, 'height':this.height});
         // E.g. "M10 10L90 90"
         var p = this.getPath();
         this.element.attr('path', p);

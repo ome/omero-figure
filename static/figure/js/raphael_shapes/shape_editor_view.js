@@ -14,7 +14,7 @@ var ShapeEditorView = Backbone.View.extend({
             // we're creating new shapes, to stop them being selected. 
             // Mouse events on this will bubble up to svg and are handled below
             this.newShapeBg = this.paper.rect(0, 0, 512, 512);
-            this.newShapeBg.attr({'fill':'#000', 'fill-opacity':0.01});
+            this.newShapeBg.attr({'fill':'#000', 'fill-opacity':0.01, 'cursor': 'crosshair'});
 
             this.shapeEditor = options.shapeEditor;
             this.listenTo(this.shapeEditor, 'change', this.updateState);
