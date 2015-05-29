@@ -74,7 +74,7 @@ var ShapeEditorView = Backbone.View.extend({
                 }
             } else if (state === "ELLIPSE") {
                 this.cropModel = new Backbone.Model({'type': state,
-                    'cx': dx, 'cy': dy, 'rx': 100, 'ry': 50, 'rotation': 85,
+                    'cx': dx, 'cy': dy, 'rx': 0, 'ry': 50, 'rotation': 0,
                     'color': color, 'lineWidth': lineWidth});
                 this.ellipse = new EllipseView({'model': this.cropModel, 'paper': this.paper});
             }
@@ -90,17 +90,22 @@ var ShapeEditorView = Backbone.View.extend({
 
                 var state = this.shapeEditor.get('state');
                 // If shapes are zero-sized, destroy.
-                if (state == "RECT") {
+                if (state === "RECT") {
                     if (this.cropModel.get('width') === 0 || this.cropModel.get('height') === 0) {
                         this.cropModel.destroy();
                         return false;
                     }
-                } else if (state == "LINE" || state === "ARROW") {
+                } else if (state === "LINE" || state === "ARROW") {
                     if(this.cropModel.get('x1') === this.cropModel.get('x2') &&
                         this.cropModel.get('y1') === this.cropModel.get('y2')) {
                         this.cropModel.destroy();
                         return false;
                     }
+                } else if (state === "ELLIPSE") {
+                    this.cropModel.set({'cx':this.ellipse.cx,
+                                        'cy':this.ellipse.cy,
+                                        'rx':this.ellipse.rx,
+                                        'ry':this.ellipse.ry,});
                 }
                 // otherwise add to collection
                 this.cropModel.set('selected', true);
@@ -137,6 +142,9 @@ var ShapeEditorView = Backbone.View.extend({
                         'width': Math.abs(dx), 'height': Math.abs(dy)});
                 } else if (state === "LINE" || state === "ARROW") {
                     this.cropModel.set({'x2': absX, 'y2': absY});
+                } else if (state === "ELLIPSE") {
+                    this.ellipse.updateHandle('end', absX, absY);
+                    // this.cropModel.set({'x2': absX, 'y2': absY});
                 }
                 return false;
             }
