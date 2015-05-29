@@ -592,7 +592,7 @@ __p += ' >\n\n    \t' +
 __p += '\n\n    \t';
  if (type === 'LINE' || type === 'ARROW') print("x1:" + x1 + " y1:" + y1 + " x2:" + x2 + " y2:" + y2) ;
 __p += '\n\n    \t';
- if (type === 'ELLIPSE') print("x:" + cx + " y:" + cy + " rx:" + rx + " ry:" + ry) ;
+ if (type === 'ELLIPSE') print("x:" + (cx >> 0) + " y:" + (cy >> 0) + " rx:" + (rx >> 0) + " ry:" + (ry >> 0)) ;
 __p += '\n\n    </div>\n';
 
 }

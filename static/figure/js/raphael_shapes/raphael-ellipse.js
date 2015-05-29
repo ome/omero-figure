@@ -53,7 +53,6 @@ var EllipseView = Backbone.View.extend({
         // ---- Create Handles -----
         // map of centre-points for each handle
         this.handleIds = this.getHandleCoords(this.cx, this.cy, this.rx, this.ry, this.rotation);
-        console.log(this.handleIds);
         // draw handles
         self.handles = this.paper.set();
         var _handle_drag = function() {
@@ -89,9 +88,8 @@ var EllipseView = Backbone.View.extend({
         for (var key in this.handleIds) {
             var hx = this.handleIds[key].x;
             var hy = this.handleIds[key].y;
-            console.log(hx, hy);
             var handle = this.paper.rect(hx-self.handle_wh/2, hy-self.handle_wh/2, self.handle_wh, self.handle_wh).attr(self.handle_attrs);
-            // handle.attr({'cursor': key + '-resize'});     // css, E.g. ne-resize
+            handle.attr({'cursor': 'move'});     // css, E.g. ne-resize
             handle.h_id = key;
             handle.rect = self;
 
