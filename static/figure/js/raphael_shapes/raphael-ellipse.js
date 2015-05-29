@@ -33,7 +33,7 @@ var EllipseModel = Backbone.Model.extend({
 var EllipseView = Backbone.View.extend({
 
     shapeAttrs: {'fill-opacity':0.01, 'fill': '#fff'},
-    handleAttrs: {'stroke':'#4b80f9', 'fill':'#fff', 'cursor': 'default', 'fill-opacity':1.0},
+    handleAttrs: {'stroke':'#4b80f9', 'fill':'#fff', 'fill-opacity':1.0},
 
     initialize: function(options) {
         // Here we create the shape itself, the drawing handles and
@@ -51,7 +51,7 @@ var EllipseView = Backbone.View.extend({
 
         // ---- Create Handles -----
         // map of centre-points for each handle
-        this.handleIds = this.getHandleCoords(this.cx, this.cy, this.rx, this.ry, this.rotation);
+        this.handleIds = this.getHandleCoords();
         // draw handles
         self.handles = this.paper.set();
         var _handle_drag = function() {
@@ -86,7 +86,7 @@ var EllipseView = Backbone.View.extend({
         for (var key in this.handleIds) {
             var hx = this.handleIds[key].x;
             var hy = this.handleIds[key].y;
-            var handle = this.paper.rect(hx-hsize/2, hy-hsize/2, hsize, hsize).attr(self.handleAttrs);
+            var handle = this.paper.rect(hx-hsize/2, hy-hsize/2, hsize, hsize);
             handle.attr({'cursor': 'move'});     // css, E.g. ne-resize
             handle.h_id = key;
 
@@ -98,7 +98,7 @@ var EllipseView = Backbone.View.extend({
             handle.mousedown(_stop_event_propagation);
             self.handles.push(handle);
         }
-        self.handles.hide();     // show on selection
+        self.handles.attr(self.handleAttrs).hide();     // show on selection
 
 
         // ----- Create the ellipse itself ----
@@ -144,17 +144,17 @@ var EllipseView = Backbone.View.extend({
         this.model.on('destroy', this.destroy, this);
     },
 
-    getHandleCoords: function(cx, cy, rx, ry, rotation) {
+    getHandleCoords: function() {
 
-        var rot = Raphael.rad(rotation),
-            startX = cx - (Math.cos(rot) * rx),
-            startY = cy - (Math.sin(rot) * rx),
-            endX = cx + (Math.cos(rot) * rx),
-            endY = cy + (Math.sin(rot) * rx),
-            leftX = cx + (Math.sin(rot) * ry),
-            leftY = cy - (Math.cos(rot) * ry),
-            rightX = cx - (Math.sin(rot) * ry),
-            rightY = cy + (Math.cos(rot) * ry);
+        var rot = Raphael.rad(this.rotation),
+            startX = this.cx - (Math.cos(rot) * this.rx),
+            startY = this.cy - (Math.sin(rot) * this.rx),
+            endX = this.cx + (Math.cos(rot) * this.rx),
+            endY = this.cy + (Math.sin(rot) * this.rx),
+            leftX = this.cx + (Math.sin(rot) * this.ry),
+            leftY = this.cy - (Math.cos(rot) * this.ry),
+            rightX = this.cx - (Math.sin(rot) * this.ry),
+            rightY = this.cy + (Math.cos(rot) * this.ry);
 
         return {'start':{x: startX, y: startY},
                 'end':{x: endX, y: endY},
@@ -167,10 +167,10 @@ var EllipseView = Backbone.View.extend({
         var h = this.handleIds[handleId];
         h.x = x;
         h.y = y;
-        this.updateEllipseFromHandles();
+        this.updateShapeFromHandles();
     },
 
-    updateEllipseFromHandles: function() {
+    updateShapeFromHandles: function() {
         var hh = this.handleIds,
             lengthX = hh.end.x - hh.start.x,
             lengthY = hh.end.y - hh.start.y,
@@ -224,7 +224,7 @@ var EllipseView = Backbone.View.extend({
             this.handles.hide();
         }
 
-        this.handleIds = this.getHandleCoords(this.cx, this.cy, this.rx, this.ry, this.rotation);
+        this.handleIds = this.getHandleCoords();
         var hnd, h_id, hx, hy;
         var hsize = this.model.get('handle_wh');
         for (var h=0, l=this.handles.length; h<l; h++) {

@@ -19,28 +19,16 @@
 
 var LineView = Backbone.View.extend({
 
-    handle_wh: 6,
-    default_color: '4b80f9',
-    default_line_attrs: {'stroke-width':2, 'cursor': 'default', 'fill-opacity':1},
-    selected_line_attrs: {'stroke-width':2 },
-    handle_attrs: {'stroke':'#4b80f9', 'fill':'#fff', 'cursor': 'default', 'fill-opacity':1.0},
+    shapeAttrs: {'fill-opacity':0.01, 'fill': '#fff'},
+    handleAttrs: {'stroke':'#4b80f9', 'fill':'#fff', 'fill-opacity':1.0},
 
-    // make a child on click
-    events: {
-        //'mousedown': 'selectShape'    // we need to handle this more manually (see below)
-    },
     initialize: function(options) {
         // Here we create the shape itself, the drawing handles and
         // bind drag events to all of them to drag/resize the line.
 
         var self = this;
         this.paper = options.paper;
-        this.handle_wh = options.handle_wh || this.handle_wh;
-        this.handles_toFront = options.handles_toFront || false;
-        this.disable_handles = options.disable_handles || false;
-        this.fixed_ratio = options.fixed_ratio || false;
-        // this.manager = options.manager;
-
+        
         // Set up our 'view' attributes (for rendering without updating model)
         this.x1 = this.model.get("x1");
         this.y1 = this.model.get("y1");
@@ -49,10 +37,7 @@ var LineView = Backbone.View.extend({
 
         // ---- Create Handles -----
         // map of centre-points for each handle
-        this.handleIds = {'start': [this.x1, this.y1],
-            'middle': [(this.x1+this.x2)/2,(this.y1+this.y2)/2],
-            'end': [this.x2,this.y2]
-        };
+        this.handleIds = this.getHandleCoords();
         // draw handles
         self.handles = this.paper.set();
         var _handle_drag = function() {
@@ -60,40 +45,9 @@ var LineView = Backbone.View.extend({
                 if (self.disable_handles) return false;
                 // on DRAG...
 
-                var keep_ratio = event.shiftKey;
-
-                // Use dx & dy to update the location of the handle and the corresponding point of the parent
-                var new_x = this.ox + dx;
-                var new_y = this.oy + dy;
-                var newLine = {
-                    x1: this.line.x1,
-                    y1: this.line.y1,
-                    x2: this.line.x2,
-                    y2: this.line.y2
-                };
-                if (this.h_id === "start") {
-                    newLine.x1 = new_x + self.handle_wh/2;
-                    newLine.y1 = new_y + self.handle_wh/2;
-                } else if (this.h_id === "middle") {
-                    newLine.x1 = this.line.model.get('x1') + dx;
-                    newLine.y1 = this.line.model.get('y1') + dy;
-                    newLine.x2 = this.line.model.get('x2') + dx;
-                    newLine.y2 = this.line.model.get('y2') + dy;
-                } else if (this.h_id === "end") {
-                    newLine.x2 = new_x + self.handle_wh/2;
-                    newLine.y2 = new_y + self.handle_wh/2;
-                }
-
-                // Don't allow zero sized rect.
-                // if (newLine.width < 1 || newLine.height < 1) {
-                //     return false;
-                // }
-                this.line.x1 = newLine.x1;
-                this.line.y1 = newLine.y1;
-                this.line.x2 = newLine.x2;
-                this.line.y2 = newLine.y2;
-                this.line.model.trigger("drag_resize", [this.line.x1, this.line.y1, this.line.x2, this.line.y2]);
-                this.line.updateShape();
+                var absX = dx + this.ox,
+                    absY = dy + this.oy;
+                self.updateHandle(this.h_id, absX, absY);
                 return false;
             };
         };
@@ -101,9 +55,8 @@ var LineView = Backbone.View.extend({
             return function () {
                 if (self.disable_handles) return false;
                 // START drag: simply note the location we started
-                this.ox = this.attr("x");
-                this.oy = this.attr("y");
-                // this.aspect = self.model.get('width') / self.model.get('height');
+                this.ox = this.attr("x") + this.attr('width')/2;
+                this.oy = this.attr("y") + this.attr('width')/2;
                 return false;
             };
         };
@@ -118,11 +71,13 @@ var LineView = Backbone.View.extend({
         var _stop_event_propagation = function(e) {
             e.stopImmediatePropagation();
         }
+
+        var hsize = this.model.get('handle_wh');
         for (var key in this.handleIds) {
-            var hx = this.handleIds[key][0];
-            var hy = this.handleIds[key][1];
-            var handle = this.paper.rect(hx-self.handle_wh/2, hy-self.handle_wh/2, self.handle_wh, self.handle_wh).attr(self.handle_attrs);
-            handle.attr({'cursor': 'pointer'});
+            var hx = this.handleIds[key].x;
+            var hy = this.handleIds[key].y;
+            var handle = this.paper.rect(hx-hsize/2, hy-hsize/2, hsize, hsize);
+            handle.attr({'cursor': 'move'});
             handle.h_id = key;
             handle.line = self;
 
@@ -134,7 +89,7 @@ var LineView = Backbone.View.extend({
             handle.mousedown(_stop_event_propagation);
             self.handles.push(handle);
         }
-        self.handles.hide();     // show on selection
+        self.handles.attr(self.handleAttrs).hide();     // show on selection
 
 
         // ----- Create the line itself ----
@@ -187,6 +142,39 @@ var LineView = Backbone.View.extend({
 
     },
 
+    getHandleCoords: function() {
+        return {'start': {x: this.x1, y: this.y1},
+            'middle': {x: (this.x1+this.x2)/2, y: (this.y1+this.y2)/2},
+            'end': {x: this.x2, y: this.y2}
+        };
+    },
+
+    updateHandle: function(handleId, x, y) {
+        var h = this.handleIds[handleId];
+        // middle handle is 'drag', so update all
+        if (handleId == 'middle') {
+            var dx = x - h.x;
+            var dy = y - h.y;
+            this.handleIds.start.x += dx;
+            this.handleIds.start.y += dy;
+            this.handleIds.end.x += dx;
+            this.handleIds.end.y += dy;
+        } else {
+            h.x = x;
+            h.y = y;
+        }
+        this.updateShapeFromHandles();
+    },
+
+    updateShapeFromHandles: function() {
+        var hh = this.handleIds;
+        this.x1 = hh.start.x,
+        this.y1 = hh.start.y,
+        this.x2 = hh.end.x,
+        this.y2 = hh.end.y;
+        this.updateShape();
+    },
+
     // render updates our local attributes from the Model AND updates coordinates
     render: function(event) {
         if (this.dragging) return;
@@ -204,45 +192,28 @@ var LineView = Backbone.View.extend({
     // used to update during drags etc. Also called by render()
     updateShape: function() {
         // E.g. "M10 10L90 90"
-        var p = this.getPath();
-        this.element.attr('path', p);
- 
-        var lineColor = this.model.get('color') || this.default_color;
-        this.element.attr({'stroke': '#' + lineColor, 'fill': '#' + lineColor});
+        var attrs = {'path': this.getPath(),
+                     'stroke': '#' +this.model.get('color'),
+                     'fill': '#' +this.model.get('color'),
+                     'stroke-width': this.model.get('stroke-width')};
+        this.element.attr(attrs);
 
-        // if (this.manager.selected_shape_id === this.model.get("id")) {
         if (this.model.get('selected')) {
-            this.element.attr( this.selected_line_attrs ).toFront();
-            var self = this;
-            // If several Rects get selected at the same time, one with handles_toFront will
-            // end up with the handles at the top
-            if (this.handles_toFront) {
-                setTimeout(function(){
-                    self.handles.show().toFront();
-                },50);
-            } else {
-                this.handles.show().toFront();
-            }
+            this.element.toFront();
+            this.handles.show().toFront();
         } else {
-            this.element.attr( this.default_line_attrs );    // this should be the shapes OWN line / fill colour etc.
             this.handles.hide();
         }
-        // If model defines line width, over-ride anything we've set above
-        if (this.model.get('lineWidth')) {
-            this.element.attr('stroke-width', this.model.get('lineWidth'));
-        }
 
-        this.handleIds = {'start': [this.x1, this.y1],
-            'middle': [(this.x1+this.x2)/2,(this.y1+this.y2)/2],
-            'end': [this.x2,this.y2]
-        };
+        this.handleIds = this.getHandleCoords();
         var hnd, h_id, hx, hy;
+        var hsize = this.model.get('handle_wh');
         for (var h=0, l=this.handles.length; h<l; h++) {
             hnd = this.handles[h];
             h_id = hnd.h_id;
-            hx = this.handleIds[h_id][0];
-            hy = this.handleIds[h_id][1];
-            hnd.attr({'x':hx-this.handle_wh/2, 'y':hy-this.handle_wh/2});
+            hx = this.handleIds[h_id].x;
+            hy = this.handleIds[h_id].y;
+            hnd.attr({'x':hx-hsize/2, 'y':hy-hsize/2});
         }
     },
 
@@ -263,7 +234,7 @@ var ArrowView = LineView.extend({
 
     getPath: function() {
 
-        var headSize = (this.model.get('lineWidth') * 3) + 9,
+        var headSize = (this.model.get('stroke-width') * 3) + 9,
             x2 = this.x2,
             y2 = this.y2,
             dx = x2 - this.x1,

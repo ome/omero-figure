@@ -65,8 +65,9 @@ var ShapeEditorView = Backbone.View.extend({
                     'selected': false, 'color': color, 'lineWidth': lineWidth});
                 this.rect = new RectView({'model':this.cropModel, 'paper': this.paper, 'attrs':{'stroke-width':2}});
             } else if (state === "LINE" || state === "ARROW") {
-                this.cropModel = new Backbone.Model({'type': state, 'x1': dx, 'y1': dy, 'x2': dx, 'y2': dy,
-                    'color': color, 'lineWidth': lineWidth});
+                this.cropModel = new EllipseModel({'type': state,
+                    'x1': dx, 'y1': dy, 'x2': dx, 'y2': dy,
+                    'color': color, 'stroke-width': lineWidth});
                 if (state === "ARROW") {
                     this.line = new ArrowView({'model': this.cropModel, 'paper': this.paper});
                 } else {
