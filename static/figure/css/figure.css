@@ -818,6 +818,9 @@
     .arrow-btn span{
         background-image: url("../images/arrow-icon-16.png");
     }
+    .ellipse-btn span{
+        background-image: url("../images/ellipse-icon-16.png");
+    }
     .linewidthOption {
         display: inline-block;
         width: 25px;

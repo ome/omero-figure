@@ -32,8 +32,9 @@ var ShapeEditorView = Backbone.View.extend({
 
         updateState: function() {
             // When creating shapes, cover existing shapes with newShapeBg
-            var state = this.shapeEditor.get('state');
-            if (state === "RECT" || state === "LINE" || state === "ARROW") {
+            var state = this.shapeEditor.get('state'),
+                shapes = ["RECT", "LINE", "ARROW", "ELLIPSE"];
+            if (shapes.indexOf(state) > -1) {
                 this.newShapeBg.show().toFront();
             } else {
                 this.newShapeBg.hide();
@@ -71,6 +72,11 @@ var ShapeEditorView = Backbone.View.extend({
                 } else {
                     this.line = new LineView({'model': this.cropModel, 'paper': this.paper});
                 }
+            } else if (state === "ELLIPSE") {
+                this.cropModel = new Backbone.Model({'type': state,
+                    'cx': dx, 'cy': dy, 'rx': 100, 'ry': 50, 'rotation': 85,
+                    'color': color, 'lineWidth': lineWidth});
+                this.ellipse = new EllipseView({'model': this.cropModel, 'paper': this.paper});
             }
             // Move this in front of new shape so that drag events don't get lost to the new shape
             this.newShapeBg.toFront();

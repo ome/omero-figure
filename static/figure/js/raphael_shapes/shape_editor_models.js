@@ -32,7 +32,7 @@ var ShapeEditor = Backbone.Model.extend({
 
     setState: function(state) {
 
-        var states = ["SELECT", "PAN", "RECT", "LINE", "ARROW"];  //etc
+        var states = ["SELECT", "PAN", "RECT", "LINE", "ARROW", "ELLIPSE"];  //etc
         if (states.indexOf(state) > -1) {
             this.set('state', state);
         } else {
@@ -40,7 +40,7 @@ var ShapeEditor = Backbone.Model.extend({
         }
 
         // If we're creating new shapes, deselect existing ones
-        if(["RECT", "LINE", "ARROW"].indexOf(state) > -1) {
+        if(["RECT", "LINE", "ARROW", "ELLIPSE"].indexOf(state) > -1) {
             this.shapeList.clearSelected();
         }
     },

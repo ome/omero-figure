@@ -21,6 +21,7 @@ var ShapeToolbarView = Backbone.View.extend({
         "click .line-btn": "handleLineBtn",
         "click .rect-btn": "handleRectBtn",
         "click .arrow-btn": "handleArrowBtn",
+        "click .ellipse-btn": "handleEllipseBtn",
         "click .dropdown-menu a": "select_dropdown_option",
         "change .shape-color": "colorChange",
         "change .line-width": "lineWidthChange",
@@ -90,6 +91,10 @@ var ShapeToolbarView = Backbone.View.extend({
 
     handleArrowBtn: function() {
         this.shapeEditor.setState("ARROW");
+    },
+
+    handleEllipseBtn: function() {
+        this.shapeEditor.setState("ELLIPSE");
     },
 
     render: function render() {
