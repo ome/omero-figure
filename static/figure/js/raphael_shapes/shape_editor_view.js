@@ -102,6 +102,10 @@ var ShapeEditorView = Backbone.View.extend({
                         return false;
                     }
                 } else if (state === "ELLIPSE") {
+                    if (this.ellipse.rx === 0) {
+                        this.cropModel.destroy();
+                        return false;
+                    }
                     this.cropModel.set({'cx':this.ellipse.cx,
                                         'cy':this.ellipse.cy,
                                         'rx':this.ellipse.rx,

@@ -32,29 +32,15 @@ var EllipseModel = Backbone.Model.extend({
 
 var EllipseView = Backbone.View.extend({
 
-    // handle_wh: 6,
-    // default_color: '4b80f9',
-    default_line_attrs: {'fill-opacity':0.01, 'fill': '#fff'},
-    selected_line_attrs: {'stroke-width':2 },
-    handle_attrs: {'stroke':'#4b80f9', 'fill':'#fff', 'cursor': 'default', 'fill-opacity':1.0},
+    shapeAttrs: {'fill-opacity':0.01, 'fill': '#fff'},
+    handleAttrs: {'stroke':'#4b80f9', 'fill':'#fff', 'cursor': 'default', 'fill-opacity':1.0},
 
-    // make a child on click
-    events: {
-        //'mousedown': 'selectShape'    // we need to handle this more manually (see below)
-    },
     initialize: function(options) {
         // Here we create the shape itself, the drawing handles and
-        // bind drag events to all of them to drag/resize the rect.
+        // bind drag events to all of them to drag/resize the ellipse.
 
         var self = this;
         this.paper = options.paper;
-        // this.handle_wh = options.handle_wh || this.handle_wh;
-        // this.handles_toFront = options.handles_toFront || false;
-        this.disable_handles = options.disable_handles || false;
-        // this.fixed_ratio = options.fixed_ratio || false;
-
-        // this.default_line_attrs = $.extend( {}, this.default_line_attrs, options.attrs);
-        // this.manager = options.manager;
 
         // Set up our 'view' attributes (for rendering without updating model)
         this.cx = this.model.get("cx");
@@ -70,28 +56,25 @@ var EllipseView = Backbone.View.extend({
         self.handles = this.paper.set();
         var _handle_drag = function() {
             return function (dx, dy, mouseX, mouseY, event) {
-                if (self.disable_handles) return false;
                 // on DRAG...
                 var absX = dx + this.ox,
                     absY = dy + this.oy;
-                this.rect.updateHandle(this.h_id, absX, absY);
+                self.updateHandle(this.h_id, absX, absY);
                 return false;
             };
         };
         var _handle_drag_start = function() {
             return function () {
-                if (self.disable_handles) return false;
                 // START drag: simply note the location we started
-                this.ox = this.attr("x");
-                this.oy = this.attr("y");
+                this.ox = this.attr("x") + this.attr('width')/2;
+                this.oy = this.attr("y") + this.attr('height')/2;
                 return false;
             };
         };
         var _handle_drag_end = function() {
             return function() {
-                if (self.disable_handles) return false;
-                this.rect.model.set({'cx':this.rect.cx, 'cy': this.rect.cy,
-                    'rx': this.rect.rx, 'ry': this.rect.ry});
+                self.model.set({'cx':self.cx, 'cy': self.cy,
+                    'rx': self.rx, 'ry': self.ry});
                 return false;
             };
         };
@@ -103,10 +86,9 @@ var EllipseView = Backbone.View.extend({
         for (var key in this.handleIds) {
             var hx = this.handleIds[key].x;
             var hy = this.handleIds[key].y;
-            var handle = this.paper.rect(hx-hsize/2, hy-hsize/2, hsize, hsize).attr(self.handle_attrs);
+            var handle = this.paper.rect(hx-hsize/2, hy-hsize/2, hsize, hsize).attr(self.handleAttrs);
             handle.attr({'cursor': 'move'});     // css, E.g. ne-resize
             handle.h_id = key;
-            handle.rect = self;
 
             handle.drag(
                 _handle_drag(),
@@ -121,7 +103,7 @@ var EllipseView = Backbone.View.extend({
 
         // ----- Create the ellipse itself ----
         this.element = this.paper.ellipse();
-        this.element.attr( self.default_line_attrs );
+        this.element.attr( self.shapeAttrs );
         // set "element" to the raphael node (allows Backbone to handle events)
         this.setElement(this.element.node);
         this.delegateEvents(this.events);   // we need to rebind the events
