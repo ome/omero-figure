@@ -24,8 +24,8 @@ var ShapeEditor = Backbone.Model.extend({
             if (sel[0].get('color')) {
                 this.set('color', sel[0].get('color'));
             }
-            if (sel[0].get('lineWidth')) {
-                this.set('lineWidth', sel[0].get('lineWidth'));
+            if (sel[0].get('stroke-width')) {
+                this.set('lineWidth', sel[0].get('stroke-width'));
             }
         }
     },
@@ -59,7 +59,7 @@ var ShapeEditor = Backbone.Model.extend({
         this.set('lineWidth', lineWidth);
         var sel = this.shapeList.getSelected();
         sel.forEach(function(m){
-            m.set('lineWidth', lineWidth);
+            m.set('stroke-width', lineWidth);
         });
     }
 });

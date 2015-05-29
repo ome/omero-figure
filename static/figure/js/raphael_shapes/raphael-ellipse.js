@@ -17,11 +17,24 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+
+var EllipseModel = Backbone.Model.extend({
+
+    defaults: {
+        color: '4b80f9',
+        handle_wh: 6,
+        'stroke-width': 2,
+        cursor: 'default',
+        'fill-opacity':0.01,
+        'fill': '#fff',
+    }
+});
+
 var EllipseView = Backbone.View.extend({
 
-    handle_wh: 6,
-    default_color: '4b80f9',
-    default_line_attrs: {'stroke-width':0, 'cursor': 'default', 'fill-opacity':0.01, 'fill': '#fff'},
+    // handle_wh: 6,
+    // default_color: '4b80f9',
+    default_line_attrs: {'fill-opacity':0.01, 'fill': '#fff'},
     selected_line_attrs: {'stroke-width':2 },
     handle_attrs: {'stroke':'#4b80f9', 'fill':'#fff', 'cursor': 'default', 'fill-opacity':1.0},
 
@@ -35,12 +48,12 @@ var EllipseView = Backbone.View.extend({
 
         var self = this;
         this.paper = options.paper;
-        this.handle_wh = options.handle_wh || this.handle_wh;
-        this.handles_toFront = options.handles_toFront || false;
+        // this.handle_wh = options.handle_wh || this.handle_wh;
+        // this.handles_toFront = options.handles_toFront || false;
         this.disable_handles = options.disable_handles || false;
-        this.fixed_ratio = options.fixed_ratio || false;
+        // this.fixed_ratio = options.fixed_ratio || false;
 
-        this.default_line_attrs = $.extend( {}, this.default_line_attrs, options.attrs);
+        // this.default_line_attrs = $.extend( {}, this.default_line_attrs, options.attrs);
         // this.manager = options.manager;
 
         // Set up our 'view' attributes (for rendering without updating model)
@@ -85,10 +98,12 @@ var EllipseView = Backbone.View.extend({
         var _stop_event_propagation = function(e) {
             e.stopImmediatePropagation();
         }
+
+        var hsize = this.model.get('handle_wh');
         for (var key in this.handleIds) {
             var hx = this.handleIds[key].x;
             var hy = this.handleIds[key].y;
-            var handle = this.paper.rect(hx-self.handle_wh/2, hy-self.handle_wh/2, self.handle_wh, self.handle_wh).attr(self.handle_attrs);
+            var handle = this.paper.rect(hx-hsize/2, hy-hsize/2, hsize, hsize).attr(self.handle_attrs);
             handle.attr({'cursor': 'move'});     // css, E.g. ne-resize
             handle.h_id = key;
             handle.rect = self;
@@ -210,41 +225,32 @@ var EllipseView = Backbone.View.extend({
 
     // used to update during drags etc. Also called by render()
     updateShape: function() {
-        this.element.attr({'cx':this.cx, 'cy':this.cy, 'rx':this.rx, 'ry':this.ry});
+
+        var attrs = {'cx':this.cx,
+                     'cy':this.cy,
+                     'rx':this.rx,
+                     'ry':this.ry,
+                     'stroke': '#' +this.model.get('color'),
+                     'stroke-width': this.model.get('stroke-width')};
+        this.element.attr(attrs);
         this.element.transform('r'+ this.rotation);
 
-        // if (this.manager.selected_shape_id === this.model.get("id")) {
-        var lineColor = this.model.get('color') || this.default_color;
-        this.element.attr('stroke', '#' + lineColor);
         if (this.model.get('selected')) {
-            this.element.attr( this.selected_line_attrs ).toFront();
-            var self = this;
-            // If several Rects get selected at the same time, one with handles_toFront will
-            // end up with the handles at the top
-            if (this.handles_toFront) {
-                setTimeout(function(){
-                    self.handles.show().toFront();
-                },50);
-            } else {
-                this.handles.show().toFront();
-            }
+            this.element.toFront();
+            this.handles.show().toFront();
         } else {
-            this.element.attr( this.default_line_attrs );    // this should be the shapes OWN line / fill colour etc.
             this.handles.hide();
-        }
-        // If model defines line width, over-ride anything we've set above
-        if (this.model.get('lineWidth')) {
-            this.element.attr('stroke-width', this.model.get('lineWidth'));
         }
 
         this.handleIds = this.getHandleCoords(this.cx, this.cy, this.rx, this.ry, this.rotation);
         var hnd, h_id, hx, hy;
+        var hsize = this.model.get('handle_wh');
         for (var h=0, l=this.handles.length; h<l; h++) {
             hnd = this.handles[h];
             h_id = hnd.h_id;
             hx = this.handleIds[h_id].x;
             hy = this.handleIds[h_id].y;
-            hnd.attr({'x':hx-this.handle_wh/2, 'y':hy-this.handle_wh/2});
+            hnd.attr({'x':hx-hsize/2, 'y':hy-hsize/2});
         }
     },
 

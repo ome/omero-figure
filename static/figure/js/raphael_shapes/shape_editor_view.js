@@ -73,9 +73,9 @@ var ShapeEditorView = Backbone.View.extend({
                     this.line = new LineView({'model': this.cropModel, 'paper': this.paper});
                 }
             } else if (state === "ELLIPSE") {
-                this.cropModel = new Backbone.Model({'type': state,
+                this.cropModel = new EllipseModel({'type': state,
                     'cx': dx, 'cy': dy, 'rx': 0, 'ry': 50, 'rotation': 0,
-                    'color': color, 'lineWidth': lineWidth});
+                    'color': color, 'stroke-width': lineWidth});
                 this.ellipse = new EllipseView({'model': this.cropModel, 'paper': this.paper});
             }
             // Move this in front of new shape so that drag events don't get lost to the new shape
