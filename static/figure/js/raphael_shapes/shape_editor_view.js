@@ -40,11 +40,9 @@ var ShapeEditorView = Backbone.View.extend({
         },
 
         deleteSelectedShapes: function() {
-            console.log("deleteSelectedShapes");
-            shapeEditor.deleteSelectedShapes();
+            this.shapeEditor.deleteSelectedShapes();
             return false;
         },
-
 
         updateState: function() {
             // When creating shapes, cover existing shapes with newShapeBg
@@ -56,7 +54,6 @@ var ShapeEditorView = Backbone.View.extend({
                 this.newShapeBg.hide();
             }
         },
-
 
         mousedown: function(event) {
             // clear any existing selected shapes
