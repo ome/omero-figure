@@ -29,6 +29,22 @@ var ShapeEditorView = Backbone.View.extend({
             "mouseup svg": "mouseup"
         },
 
+        keyboardEvents: {
+            'backspace': 'deleteSelectedShapes',
+            // 'mod+c': 'copy_selected_panels',
+            // 'mod+v': 'paste_panels',
+            // 'down' : 'nudge_down',
+            // 'up' : 'nudge_up',
+            // 'left' : 'nudge_left',
+            // 'right' : 'nudge_right',
+        },
+
+        deleteSelectedShapes: function() {
+            console.log("deleteSelectedShapes");
+            shapeEditor.deleteSelectedShapes();
+            return false;
+        },
+
 
         updateState: function() {
             // When creating shapes, cover existing shapes with newShapeBg

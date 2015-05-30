@@ -45,6 +45,14 @@ var ShapeEditor = Backbone.Model.extend({
         }
     },
 
+    deleteSelectedShapes: function() {
+
+        var sel = this.shapeList.getSelected();
+        sel.forEach(function(m){
+            m.destroy();
+        });
+    },
+
     // when toolbar color is changed, update any selected shapes
     setColor: function(color) {
         this.set('color', color);
