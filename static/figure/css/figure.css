@@ -800,6 +800,7 @@
         height: 16px;
         position: relative;
         top: 3px;
+        background-repeat: no-repeat;
     }
 
     .shapes_toolbar .pressed {
