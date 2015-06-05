@@ -136,11 +136,15 @@
         
     </div>
 
-    <div class="image_wrapper" style="width:512px; height:512px; border:solid red 1px; float: left; overflow: hidden;
-  position: relative">
-        <img src="{% url 'webgateway' %}render_image/3730/0/0/"/>
-        <!-- shapes are drawn here -->
-        <div id="shapeCanvas" class="shape_canvas" style="width:512px; height:512px"></div>
+    <div id="imageContainer" class="vp_frame" style="width:512px; height:512px; float:left; position:relative; left:0px">
+
+        <div class="image_wrapper" style="width:1024px; height:1024px;
+      position: absolute; top:-256px; left:-256px">
+            <img src="{% url 'webgateway' %}render_image/3730/0/0/"/>
+            <!-- shapes are drawn here -->
+            <div id="shapeCanvas" class="shape_canvas" style="width:100%; height:100%"></div>
+        </div>
+
     </div>
 
     <div id="shapeList" class="shape_list" style="width: 250px; border: solid green 1px; float: left"></div>
@@ -152,6 +156,7 @@
     <script src="{% static 'figure/3rdparty/backbone.js' %}"></script>
     <!-- <script src="{% static 'figure/3rdparty/backbone-localstorage.js' %}"></script> -->
     <script src="{% static 'figure/3rdparty/raphael/raphael-min.js' %}"></script>
+    <script src="{% static 'figure/3rdparty/raphael/scaleraphael.js' %}"></script>
     <script src="{% static 'figure/3rdparty/mousetrap/mousetrap.min.js' %}"></script>
     <script src="{% static 'figure/3rdparty/backbone.mousetrap/backbone.mousetrap.js' %}"></script>
     <script src="{% static 'figure/3rdparty/bootstrap3/js/bootstrap.js' %}"></script>
