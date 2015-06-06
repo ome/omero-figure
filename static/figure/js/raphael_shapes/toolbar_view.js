@@ -25,6 +25,13 @@ var ShapeToolbarView = Backbone.View.extend({
         "click .dropdown-menu a": "select_dropdown_option",
         "change .shape-color": "colorChange",
         "change .line-width": "lineWidthChange",
+        "change .zoomInput": "handleZoomChange",
+    },
+
+    handleZoomChange: function(event) {
+        var zoom = $(event.target).val();
+        zoom = parseInt(zoom, 10);
+        this.shapeEditor.set('zoom', zoom);
     },
 
     lineWidthChange: function(event) {

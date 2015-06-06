@@ -630,7 +630,9 @@ __p += '">\n        <span class="glyphicon"></span></button>\n</div>\n\n<div cla
  _.each([1,2,3,4,5,7,10,15,20,30],function(p){
             print ("<li><a href='#'>"+p+"<span title='Line Width: "+p+"' data-line-width='"+p+"' class='linewidthOption' style='height:"+p+"px'></span></a></li>")
         }); ;
-__p += '\n\n    </ul>\n</div>\n';
+__p += '\n\n    </ul>\n</div>\n\n\n<div class="btn-group">\n    <input type="number" name="zoom" value="' +
+((__t = ( zoom )) == null ? '' : __t) +
+'" class="zoomInput"/>\n</div>\n';
 
 }
 return __p

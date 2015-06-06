@@ -15,10 +15,11 @@ var ShapeEditorView = Backbone.View.extend({
             testRect.attr({'stroke-width': 2, 'stroke': '#ff0'});
 
             // this.paper.scaleAll(2);
-            var width = 1024,
-                height = 1024;
-            $("#shapeCanvas").css({'width': width + "px", 'height': height + "px"});
-            this.paper.setSize(width, height);
+            // var width = 1024,
+            //     height = 1024;
+            // $("#shapeCanvas").css({'width': width + "px", 'height': height + "px"});
+            // $("svg").css({'width': width + "px", 'height': height + "px"});
+            // // this.paper.setSize(width, height);
             // this.paper.canvas.setAttribute("viewBox", "0 0 "+width+" "+height);
 
             // Add a full-size background to cover existing shapes while
@@ -28,7 +29,8 @@ var ShapeEditorView = Backbone.View.extend({
             this.newShapeBg.attr({'fill':'#000', 'fill-opacity':0.01, 'cursor': 'crosshair'});
 
             this.shapeEditor = options.shapeEditor;
-            this.listenTo(this.shapeEditor, 'change', this.updateState);
+            this.listenTo(this.shapeEditor, 'change:state', this.updateState);
+            this.listenTo(this.shapeEditor, 'change:zoom', this.updateZoom);
 
             this.updateState();
             $(".new_shape_layer", this.el).hide();
@@ -48,6 +50,20 @@ var ShapeEditorView = Backbone.View.extend({
             // 'up' : 'nudge_up',
             // 'left' : 'nudge_left',
             // 'right' : 'nudge_right',
+        },
+
+        updateZoom: function() {
+            var zoom = this.shapeEditor.get('zoom');
+
+            var width = 512 * zoom / 100,
+                height = 512 * zoom / 100;
+            $("#shapeCanvas").css({'width': width + "px", 'height': height + "px"});
+            $("svg").css({'width': width + "px", 'height': height + "px"});
+            // this.paper.setSize(width, height);
+            this.paper.canvas.setAttribute("viewBox", "0 0 "+width+" "+height);
+
+            // image 
+            $(".image_wrapper").css({'width': width + "px", 'height': height + "px"});
         },
 
         deleteSelectedShapes: function() {

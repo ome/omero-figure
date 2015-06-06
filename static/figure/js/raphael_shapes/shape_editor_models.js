@@ -7,6 +7,7 @@ var ShapeEditor = Backbone.Model.extend({
         state: "SELECT",
         color: "FF0000",
         lineWidth: 2,
+        zoom: 100,
     },
 
     initialize: function(options) {
