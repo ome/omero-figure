@@ -10,7 +10,17 @@ var ShapeEditorView = Backbone.View.extend({
             // Now set up Raphael paper...
             this.paper = ScaleRaphael("shapeCanvas", 512, 512);
 
-            this.paper.scaleAll(2);
+
+            var testRect = this.paper.rect(256, 256, 125, 125);
+            testRect.attr({'stroke-width': 2, 'stroke': '#ff0'});
+
+            // this.paper.scaleAll(2);
+            var width = 1024,
+                height = 1024;
+            $("#shapeCanvas").css({'width': width + "px", 'height': height + "px"});
+            this.paper.setSize(width, height);
+            // this.paper.canvas.setAttribute("viewBox", "0 0 "+width+" "+height);
+
             // Add a full-size background to cover existing shapes while
             // we're creating new shapes, to stop them being selected. 
             // Mouse events on this will bubble up to svg and are handled below
