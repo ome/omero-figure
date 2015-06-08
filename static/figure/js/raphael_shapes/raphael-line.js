@@ -254,11 +254,11 @@ var ArrowView = LineView.extend({
         var lineAngle = Math.atan(dx / dy);
         var f = (dy < 0 ? 1 : -1);
 
-        // Angle of arrow head is 1 radian (0.5 either side of lineAngle)
-        var arrowPoint1x = x2 + (f * Math.sin(lineAngle - 0.5) * headSize),
-            arrowPoint1y = y2 + (f * Math.cos(lineAngle - 0.5) * headSize),
-            arrowPoint2x = x2 + (f * Math.sin(lineAngle + 0.5) * headSize),
-            arrowPoint2y = y2 + (f * Math.cos(lineAngle + 0.5) * headSize);
+        // Angle of arrow head is 0.8 radians (0.4 either side of lineAngle)
+        var arrowPoint1x = x2 + (f * Math.sin(lineAngle - 0.4) * headSize),
+            arrowPoint1y = y2 + (f * Math.cos(lineAngle - 0.4) * headSize),
+            arrowPoint2x = x2 + (f * Math.sin(lineAngle + 0.4) * headSize),
+            arrowPoint2y = y2 + (f * Math.cos(lineAngle + 0.4) * headSize);
 
         // Full path goes around the head, past the tip and back to tip so that the tip is 'pointy'  
         // and 'fill' is not from a head corner to the start of arrow.
