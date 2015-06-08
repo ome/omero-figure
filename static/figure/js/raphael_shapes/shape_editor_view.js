@@ -11,8 +11,8 @@ var ShapeEditorView = Backbone.View.extend({
             this.paper = ScaleRaphael("shapeCanvas", 512, 512);
 
 
-            var testRect = this.paper.rect(256, 256, 125, 125);
-            testRect.attr({'stroke-width': 2, 'stroke': '#ff0'});
+            // var testRect = this.paper.rect(256, 256, 125, 125);
+            // testRect.attr({'stroke-width': 2, 'stroke': '#ff0'});
 
             // this.paper.scaleAll(2);
             // var width = 1024,
@@ -55,15 +55,28 @@ var ShapeEditorView = Backbone.View.extend({
         updateZoom: function() {
             var zoom = this.shapeEditor.get('zoom');
 
+            var $imgWrapper = $(".image_wrapper"),
+                currWidth = $imgWrapper.width(),
+                currHeight = $imgWrapper.height(),
+                currTop = parseInt($imgWrapper.css('top'), 10),
+                currLeft = parseInt($imgWrapper.css('left'), 10);
+
             var width = 512 * zoom / 100,
                 height = 512 * zoom / 100;
             $("#shapeCanvas").css({'width': width + "px", 'height': height + "px"});
+
+            // Update the svg and our newShapeBg.
             $("svg").css({'width': width + "px", 'height': height + "px"});
-            // this.paper.setSize(width, height);
             this.paper.canvas.setAttribute("viewBox", "0 0 "+width+" "+height);
+            this.newShapeBg.attr({'width': width, 'height': height});
 
             // image 
             $(".image_wrapper").css({'width': width + "px", 'height': height + "px"});
+            // offset
+            var deltaTop = (height - currHeight) / 2,
+                deltaLeft = (width - currWidth) / 2;
+            $(".image_wrapper").css({'left': (currLeft - deltaLeft) + "px",
+                                     'top': (currTop - deltaTop) + "px"});
         },
 
         deleteSelectedShapes: function() {
@@ -174,7 +187,6 @@ var ShapeEditorView = Backbone.View.extend({
                 var zoom = this.shapeEditor.get('zoom');
                 absX = absX * 100 / zoom;
                 absY = absY * 100 / zoom;
-                console.log("move", absX, absY);
 
                 if (event.shiftKey) {
                     // make region square!

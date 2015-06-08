@@ -209,9 +209,10 @@ var LineView = Backbone.View.extend({
         this.element.attr(attrs);
 
         if (this.model.get('selected')) {
-            this.element.toFront();
+            this.element.attr('cursor', 'move').toFront();
             this.handles.show().toFront();
         } else {
+            this.element.attr('cursor', 'default');
             this.handles.hide();
         }
 
