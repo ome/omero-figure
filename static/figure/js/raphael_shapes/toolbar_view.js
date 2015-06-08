@@ -31,7 +31,7 @@ var ShapeToolbarView = Backbone.View.extend({
     handleZoomChange: function(event) {
         var zoom = $(event.target).val();
         zoom = parseInt(zoom, 10);
-        this.shapeEditor.set('zoom', zoom);
+        this.shapeEditor.setZoom(zoom);
     },
 
     lineWidthChange: function(event) {

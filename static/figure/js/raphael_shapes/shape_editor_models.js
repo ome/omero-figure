@@ -70,7 +70,16 @@ var ShapeEditor = Backbone.Model.extend({
         sel.forEach(function(m){
             m.set('stroke-width', lineWidth);
         });
-    }
+    },
+
+    setZoom: function(zoom) {
+        console.log("setZoom", zoom);
+        this.set('zoom', zoom);
+        this.shapeList.forEach(function(m){
+            console.log('shape.set(zoom)');
+            m.set('zoom', zoom);
+        });
+    },
 });
 
 

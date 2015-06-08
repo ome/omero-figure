@@ -99,13 +99,17 @@ var ShapeEditorView = Backbone.View.extend({
             var color = this.shapeEditor.get('color');
             var state = this.shapeEditor.get('state');
             var lineWidth = this.shapeEditor.get('lineWidth');
+            var zoom = this.shapeEditor.get('zoom');
+            dx = dx * 100 / zoom;
+            dy = dy * 100 / zoom;
+
             if (state == "RECT") {
                 this.cropModel = new Shape({
                     'type': state, 'x':dx, 'y': dy, 'width': 0, 'height': 0,
                     'selected': false, 'color': color, 'lineWidth': lineWidth});
                 this.rect = new RectView({'model':this.cropModel, 'paper': this.paper, 'attrs':{'stroke-width':2}});
             } else if (state === "LINE" || state === "ARROW") {
-                this.cropModel = new EllipseModel({'type': state,
+                this.cropModel = new EllipseModel({'type': state, 'zoom': zoom,
                     'x1': dx, 'y1': dy, 'x2': dx, 'y2': dy,
                     'color': color, 'stroke-width': lineWidth});
                 if (state === "ARROW") {
@@ -166,6 +170,11 @@ var ShapeEditorView = Backbone.View.extend({
                     absY = event.clientY - os.top,
                     dx = absX - this.clientX_start,
                     dy = absY - this.clientY_start;
+
+                var zoom = this.shapeEditor.get('zoom');
+                absX = absX * 100 / zoom;
+                absY = absY * 100 / zoom;
+                console.log("move", absX, absY);
 
                 if (event.shiftKey) {
                     // make region square!

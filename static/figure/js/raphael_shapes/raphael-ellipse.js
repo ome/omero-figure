@@ -27,6 +27,7 @@ var EllipseModel = Backbone.Model.extend({
         cursor: 'default',
         'fill-opacity':0.01,
         'fill': '#fff',
+        zoom: 100,
     }
 });
 

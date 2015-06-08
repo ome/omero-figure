@@ -34,6 +34,7 @@ var LineView = Backbone.View.extend({
         this.y1 = this.model.get("y1");
         this.x2 = this.model.get("x2");
         this.y2 = this.model.get("y2");
+        this.zoom = this.model.get("zoom");
 
         // ---- Create Handles -----
         // map of centre-points for each handle
@@ -63,8 +64,12 @@ var LineView = Backbone.View.extend({
         var _handle_drag_end = function() {
             return function() {
                 if (self.disable_handles) return false;
-                this.line.model.set({'x1': this.line.x1, 'y1': this.line.y1,
-                    'x2':this.line.x2, 'y2':this.line.y2});
+                this.line.model.set({
+                    'x1': this.line.x1 * 100 / self.zoom,
+                    'y1': this.line.y1 * 100 / self.zoom,
+                    'x2':this.line.x2 * 100 / self.zoom,
+                    'y2':this.line.y2 * 100 / self.zoom
+                });
                 return false;
             };
         };
@@ -113,15 +118,19 @@ var LineView = Backbone.View.extend({
             },
             function() {
                 // START drag: note the location of points
-                this.ox1 = self.model.get('x1');
-                this.oy1 = self.model.get('y1');
-                this.ox2 = self.model.get('x2');
-                this.oy2 = self.model.get('y2');
+                this.ox1 = self.model.get('x1') * self.zoom / 100;
+                this.oy1 = self.model.get('y1') * self.zoom / 100;
+                this.ox2 = self.model.get('x2') * self.zoom / 100;
+                this.oy2 = self.model.get('y2') * self.zoom / 100;
                 return false;
             },
             function() {
                 // STOP: save current position to model
-                self.model.set({'x1': self.x1, 'y1': self.y1, 'x2': self.x2, 'y2': self.y2});
+                self.model.set({'x1': self.x1 * 100 / self.zoom,
+                                'y1': self.y1 * 100 / self.zoom,
+                                'x2': self.x2 * 100 / self.zoom,
+                                'y2': self.y2 * 100 / self.zoom
+                                });
                 self.dragging = false;
                 return false;
             }
@@ -178,10 +187,11 @@ var LineView = Backbone.View.extend({
     // render updates our local attributes from the Model AND updates coordinates
     render: function(event) {
         if (this.dragging) return;
-        this.x1 = this.model.get("x1");
-        this.y1 = this.model.get("y1");
-        this.x2 = this.model.get("x2");
-        this.y2 = this.model.get("y2");
+        this.zoom = this.model.get("zoom");
+        this.x1 = this.zoom * this.model.get("x1") / 100;
+        this.y1 = this.zoom * this.model.get("y1") / 100;
+        this.x2 = this.zoom * this.model.get("x2") / 100;
+        this.y2 = this.zoom * this.model.get("y2") / 100;
         this.updateShape();
     },
 
@@ -195,7 +205,7 @@ var LineView = Backbone.View.extend({
         var attrs = {'path': this.getPath(),
                      'stroke': '#' +this.model.get('color'),
                      'fill': '#' +this.model.get('color'),
-                     'stroke-width': this.model.get('stroke-width')};
+                     'stroke-width': this.model.get('stroke-width') * this.zoom / 100};
         this.element.attr(attrs);
 
         if (this.model.get('selected')) {
