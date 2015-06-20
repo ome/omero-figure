@@ -33,7 +33,7 @@ var ShapeEditorView = Backbone.View.extend({
             this.listenTo(this.shapeEditor, 'change:zoom', this.updateZoom);
 
             this.updateState();
-            $(".new_shape_layer", this.el).hide();
+            // $(".new_shape_layer", this.el).hide();
         },
 
         events: {
