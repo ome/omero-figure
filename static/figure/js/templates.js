@@ -577,3 +577,63 @@ __p += '\n    </td>\n</tr>\n';
 }
 return __p
 };
+
+this["JST"]["static/figure/templates/shapes/shape_item_template.html"] = function(obj) {
+obj || (obj = {});
+var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
+function print() { __p += __j.call(arguments, '') }
+with (obj) {
+__p += '\n    <div ';
+ if (selected) print ("style='background:#ddf'") ;
+__p += ' >\n\n    \t' +
+((__t = ( type )) == null ? '' : __t) +
+'\n\n    \t';
+ if (type === 'RECT') print("x:" + x + " y:" + y + " width:"+ width + " height:" + height) ;
+__p += '\n\n    \t';
+ if (type === 'LINE' || type === 'ARROW') print("x1:" + (x1 >> 0) + " y1:" + (y1 >> 0) + " x2:" + (x2 >> 0) + " y2:" + (y2 >> 0)) ;
+__p += '\n\n    \t';
+ if (type === 'ELLIPSE') print("x:" + (cx >> 0) + " y:" + (cy >> 0) + " rx:" + (rx >> 0) + " ry:" + (ry >> 0)) ;
+__p += '\n\n    </div>\n';
+
+}
+return __p
+};
+
+this["JST"]["static/figure/templates/shapes/shape_toolbar_template.html"] = function(obj) {
+obj || (obj = {});
+var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
+function print() { __p += __j.call(arguments, '') }
+with (obj) {
+__p += '\n\n<div class="btn-group" role="group" aria-label="...">\n    <button type="button"\n    \tclass="btn btn-default select-btn ';
+ if (state==='SELECT')print('pressed') ;
+__p += '">\n        <span class="glyphicon"></span></button>\n</div>\n<div class="btn-group" role="group" aria-label="...">\n    <button type="button" class="btn btn-default rect-btn ';
+ if (state==='RECT')print('pressed') ;
+__p += '">\n        <span class="glyphicon"></span></button>\n    <button type="button" class="btn btn-default line-btn ';
+ if (state==='LINE')print('pressed') ;
+__p += '">\n        <span class="glyphicon"></span></button>\n    <button type="button" class="btn btn-default arrow-btn ';
+ if (state==='ARROW')print('pressed') ;
+__p += '">\n        <span class="glyphicon"></span></button>\n    <button type="button" class="btn btn-default ellipse-btn ';
+ if (state==='ELLIPSE')print('pressed') ;
+__p += '">\n        <span class="glyphicon"></span></button>\n</div>\n\n<div class="btn-group">\n    <button type="button" class="shape-color btn btn-default dropdown-toggle" title="Label Color"\n        data-toggle="dropdown">\n        <span data-color="' +
+((__t = ( color )) == null ? '' : __t) +
+'" style="background-color:#' +
+((__t = ( color )) == null ? '' : __t) +
+'">&nbsp &nbsp &nbsp</span>\n        <span class="caret"></span>\n    </button>\n    <ul class="dropdown-menu colorpicker" role="menu">\n        <li><a href="#">\n            <span data-color="000000" style="background-color:#000">&nbsp &nbsp &nbsp</span>&nbsp Black\n        </a></li>\n        <li><a href="#">\n            <span data-color="0000FF" style="background-color:#00f">&nbsp &nbsp &nbsp</span>&nbsp Blue\n        </a></li>\n        <li><a href="#">\n            <span data-color="00FF00" style="background-color:#0f0">&nbsp &nbsp &nbsp</span>&nbsp Green\n        </a></li>\n        <li><a href="#">\n            <span data-color="FF0000" style="background-color:#f00">&nbsp &nbsp &nbsp</span>&nbsp Red\n        </a></li>\n        <li><a href="#">\n            <span data-color="FFFF00" style="background-color:#ff0">&nbsp &nbsp &nbsp</span>&nbsp Yellow\n        </a></li>\n        <li><a href="#">\n            <span data-color="FFFFFF" style="background-color:#fff">&nbsp &nbsp &nbsp</span>&nbsp White\n        </a></li>\n        <li><a href="#">\n            <span data-color="FF00FF" style="background-color:#f0f">&nbsp &nbsp &nbsp</span>&nbsp Magenta\n        </a></li>\n        <li class="divider"></li>\n        <li><a data-color="colorpicker" data-oldcolor="' +
+((__t = ( color )) == null ? '' : __t) +
+'" href="#">\n            <span class="colorpickerOption">&nbsp &nbsp &nbsp</span>&nbsp More Colors...\n        </a></li>\n    </ul>\n</div>\n\n\n<div class="btn-group">\n    <button type="button" class="line-width btn btn-default dropdown-toggle" title="Line Width: ' +
+((__t = ( lineWidth )) == null ? '' : __t) +
+'"\n        data-toggle="dropdown">\n        <span data-line-width="' +
+((__t = ( lineWidth )) == null ? '' : __t) +
+'" class=\'linewidthOption\' style=\'height:' +
+((__t = ( lineWidth )) == null ? '' : __t) +
+'px\'></span>\n        <span class="caret"></span>\n    </button>\n    <ul class="dropdown-menu lineWidth" role="menu">\n\n        ';
+ _.each([1,2,3,4,5,7,10,15,20,30],function(p){
+            print ("<li><a href='#'>"+p+"<span title='Line Width: "+p+"' data-line-width='"+p+"' class='linewidthOption' style='height:"+p+"px'></span></a></li>")
+        }); ;
+__p += '\n\n    </ul>\n</div>\n\n\n<div class="btn-group">\n    <input type="number" name="zoom" value="' +
+((__t = ( zoom )) == null ? '' : __t) +
+'" class="zoomInput"/>\n</div>\n';
+
+}
+return __p
+};
