@@ -3,7 +3,7 @@ OMERO.figure
 
 OMERO.web app for creating figures from images in OMERO.
 
-For full details see http://will-moore.github.io/figure/
+For full details see http://figure.openmicroscopy.org
 
 
 Requirements
@@ -14,14 +14,14 @@ Requirements
 Installation
 ============
 
-Please see instructions at http://will-moore.github.io/figure/
+Please see instructions at http://figure.openmicroscopy.org
 
 
 Development
 ===========
 
 We use Grunt for various tools.
-See http://will-moore.github.io/figure/2014/05/01/testing-with-jshint-jasmine-grunt.html
+See http://figure.openmicroscopy.org/2014/05/01/testing-with-jshint-jasmine-grunt.html
 for an introduction.
 
 Install:
