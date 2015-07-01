@@ -1,4 +1,4 @@
 name: Your New Jekyll Site
 markdown: redcarpet
-pygments: true
+highlighter: pygments
 baseurl: /figure
