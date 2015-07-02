@@ -32,7 +32,7 @@
 
         // Get commits data from github, add to page then scroll through.
         $.ajax({
-            url: "https://api.github.com/repos/will-moore/figure/commits",
+            url: "https://api.github.com/repos/ome/figure/commits",
             jsonp: "callback",
             success: function( data ) {
               var commit, message, date, html = "";
@@ -148,7 +148,7 @@
       </div>
       <div class="github_ticker inner" style="top: -80px; overflow: visible" title="Recent commits to OMERO.figure on GitHub">
         <ul class="ticker_title_right">
-        	<li><a href="https://github.com/will-moore/figure/commits/develop">See all commits</a>
-        </li></ul>
+          <li><a href="https://github.com/ome/figure/commits/develop">See all commits</a></li>
+        </ul>
       </div>
     </div>
