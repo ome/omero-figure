@@ -22,7 +22,7 @@ a team effort.
 From now on, individual Pull Requests will be deployed, reviewed, tested and any issues
 addressed *before* being merged, in the same way as on all the other OME projects.
 
-The same process applies to the OMERO.figure website (including this blog post) and the
+The same process applies to the OMERO.figure website (including [this blog post](https://github.com/ome/figure/pull/96)) and the
 site has a new, improved url: [figure.openmicroscopy.org](http://figure.openmicroscopy.org),
 which you are looking at right now.
 
@@ -61,7 +61,8 @@ releases will add the ability to copy and paste ROIs between image panels and re
 write ROIs from OMERO.
 The schedule will depend on how long it takes to get the basic workflow complete,
 and the time available during the main [OMERO 5.1.4](https://trello.com/b/elylnkWf/omero-5-1-4)
-and [5.2](https://trello.com/b/Y5vC8ceF/omero-5-2-0) releases. Both of these are
-a little unknown, but hopefully we'll have something in a month or two. Thanks for your patience!
+and [5.2](https://trello.com/b/Y5vC8ceF/omero-5-2-0) releases. Hopefully we'll
+have something out about the same time as OMERO 5.1.4, due in September.
+Thanks for your patience!
 
  - Will Moore
