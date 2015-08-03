@@ -53,7 +53,7 @@ to draw and edit simple shapes that are then displayed in the figure.
 A crucial part of this functionality will be the ability to add shapes to exported figures, both in
 the PDF and TIFF formats.
 Ideally ROIs will be kept as atomic entities in the PDF figures, allowing them to be
-individual edited in postscript tools such as Adobe Illustrator. However, this may
+individually edited in vector-based tools such as Adobe Illustrator. However, this may
 be a little challenging, so we'll have to see.
 
 This core functionality will be enough to justify a major release. Following minor
