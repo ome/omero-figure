@@ -5,7 +5,7 @@ title: OMERO.figure blog
 
   <h1 style="font-size: 36px">OMERO.figure blog</h1>
     {% for post in site.posts %}
-        <h2><a href="{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a></h2>
+        <h1><a href="{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a></h1>
         <span>{{ post.date | date_to_string }}</span>
         {{ post.content }}
     {% endfor %}
