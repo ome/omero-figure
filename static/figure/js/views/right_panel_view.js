@@ -1055,7 +1055,7 @@
         show_crop_dialog: function(event) {
             event.preventDefault();
             // Simply show dialog - Everything else handled by that
-            $("#roiModal").modal('show');
+            $("#cropModal").modal('show');
         },
 
         resetZoomShape: function(event) {

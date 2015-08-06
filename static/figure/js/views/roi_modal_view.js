@@ -1,8 +1,8 @@
 
 
-var RoiModalView = Backbone.View.extend({
+var CropModalView = Backbone.View.extend({
 
-        el: $("#roiModal"),
+        el: $("#cropModal"),
 
         // template: JST["static/figure/templates/paper_setup_modal_template.html"],
         template: JST["static/figure/templates/modal_dialogs/roi_modal_template.html"],
@@ -15,7 +15,7 @@ var RoiModalView = Backbone.View.extend({
             var self = this;
 
             // Here we handle init of the dialog when it's shown...
-            $("#roiModal").bind("show.bs.modal", function(){
+            $("#cropModal").bind("show.bs.modal", function(){
                 // Clone the 'first' selected panel as our reference for everything
                 self.m = self.model.getSelected().head().clone();
                 self.listenTo(self.m, 'change:theZ change:theT', self.render);
@@ -77,7 +77,7 @@ var RoiModalView = Backbone.View.extend({
             });
 
             // Now set up Raphael paper...
-            this.paper = Raphael("roi_paper", 500, 500);
+            this.paper = Raphael("crop_paper", 500, 500);
             this.rect = new RectView({'model':this.cropModel, 'paper': this.paper});
             this.$roiImg = $('.roi_image', this.$el);
         },
@@ -87,7 +87,7 @@ var RoiModalView = Backbone.View.extend({
             "mousedown svg": "mousedown",
             "mousemove svg": "mousemove",
             "mouseup svg": "mouseup",
-            "submit .roiModalForm": "handleRoiForm"
+            "submit .cropModalForm": "handleRoiForm"
         },
 
         // we disable Submit when dialog is shown, enable when region/ROI chosen
@@ -220,7 +220,7 @@ var RoiModalView = Backbone.View.extend({
                 // 'save' to trigger 'unsaved': true
                 m.save({'theZ': newZ, 'theT': newT});
             });
-            $("#roiModal").modal('hide');
+            $("#cropModal").modal('hide');
         },
 
         mousedown: function(event) {
@@ -407,9 +407,9 @@ var RoiModalView = Backbone.View.extend({
         },
 
         zoomToFit: function() {
-            var $roiViewer = $("#roiViewer"),
-                viewer_w = $roiViewer.width(),
-                viewer_h = $roiViewer.height(),
+            var $cropViewer = $("#cropViewer"),
+                viewer_w = $cropViewer.width(),
+                viewer_h = $cropViewer.height(),
                 w = this.m.get('orig_width'),
                 h = this.m.get('orig_height');
                 scale = Math.min(viewer_w/w, viewer_h/h);

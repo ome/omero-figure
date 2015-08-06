@@ -696,14 +696,14 @@
         opacity: 0.4;
     }
 
-    #roiViewer {
+    #cropViewer {
         width: 500px;
         height: 450px;
         overflow: auto;
         position: relative;
     }
 
-    #roi_paper svg {
+    #crop_paper svg {
         cursor:  crosshair;
         cursor:  url("../images/crop20.png") 10 10, crosshair;
         z-index: 10;
