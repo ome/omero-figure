@@ -431,7 +431,7 @@ var CropModalView = Backbone.View.extend({
             var src = this.m.get_img_src()
 
             this.paper.setSize(newW, newH);
-            $("#roi_paper").css({'height': newH, 'width': newW});
+            $("#crop_paper").css({'height': newH, 'width': newW});
 
             this.$roiImg.css({'height': newH, 'width': newW})
                     .attr('src', src);

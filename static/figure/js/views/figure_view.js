@@ -15,6 +15,7 @@
             new SetIdModalView({model: this.model});
             new PaperSetupModalView({model: this.model});
             new CropModalView({model: this.model});
+            new RoiModalView({model: this.model});
             new DpiModalView({model: this.model});
             new LegendView({model: this.model});
 

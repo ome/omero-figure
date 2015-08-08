@@ -77,6 +77,12 @@
         events: {
             "submit .new-label-form": "handle_new_label",
             "click .dropdown-menu a": "select_dropdown_option",
+            "click .edit_rois": "editRois",
+        },
+
+        editRois: function(event) {
+            console.log("editRois");
+            $("#roiModal").modal("show");
         },
 
         // Handles all the various drop-down menus in the 'New' AND 'Edit Label' forms
