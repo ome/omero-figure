@@ -5,7 +5,6 @@ var CropModalView = Backbone.View.extend({
         el: $("#cropModal"),
 
         // template: JST["static/figure/templates/paper_setup_modal_template.html"],
-        template: JST["static/figure/templates/modal_dialogs/roi_modal_template.html"],
         roiTemplate: JST["static/figure/templates/modal_dialogs/roi_modal_roi.html"],
 
         model:FigureModel,
@@ -79,7 +78,7 @@ var CropModalView = Backbone.View.extend({
             // Now set up Raphael paper...
             this.paper = Raphael("crop_paper", 500, 500);
             this.rect = new RectView({'model':this.cropModel, 'paper': this.paper});
-            this.$roiImg = $('.roi_image', this.$el);
+            this.$roiImg = $('.crop_image', this.$el);
         },
 
         events: {
