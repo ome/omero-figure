@@ -717,6 +717,13 @@
         background-color: rgb(190, 212, 253);
     }
 
+    .roiViewer {
+        width: 500px;
+        height: 450px;
+        overflow: auto;
+        position: relative;
+    }
+
 
     /*  color-picker  */
 
