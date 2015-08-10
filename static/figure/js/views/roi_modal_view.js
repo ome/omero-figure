@@ -4,10 +4,6 @@ var RoiModalView = Backbone.View.extend({
 
         el: $("#roiModal"),
 
-        // template: JST["static/figure/templates/paper_setup_modal_template.html"],
-        // template: JST["static/figure/templates/modal_dialogs/roi_modal_template.html"],
-        // roiTemplate: JST["static/figure/templates/modal_dialogs/roi_modal_roi.html"],
-
         model:FigureModel,
 
         initialize: function() {
@@ -22,12 +18,15 @@ var RoiModalView = Backbone.View.extend({
 
                 self.zoomToFit();  // includes render()
 
+                // TODO: load any existing shapes on selected panel
+                // self.shapeManager.deleteAll();
+                self.shapeManager.setState("ELLIPSE");
+
                 // disable submit until user chooses a region/ROI
                 self.enableSubmit(false);
             });
 
-            // Now set up Raphael paper...
-            this.paper = Raphael("roi_paper", 500, 500);
+            this.shapeManager = new ShapeManager("roi_paper", 1, 1);
 
             this.$roiImg = $('.roi_image', this.$el);
         },
@@ -55,7 +54,11 @@ var RoiModalView = Backbone.View.extend({
                 w = this.m.get('orig_width'),
                 h = this.m.get('orig_height');
                 scale = Math.min(viewer_w/w, viewer_h/h);
+            // TODO: add public methods to set w & h
+            this.shapeManager._orig_width = w;
+            this.shapeManager._orig_height = h;
             this.setZoom(scale * 100);
+            this.shapeManager.setZoom(scale * 100);
         },
 
         setZoom: function(percent) {
@@ -70,9 +73,6 @@ var RoiModalView = Backbone.View.extend({
             var newW = w * scale,
                 newH = h * scale;
             var src = this.m.get_img_src();
-
-            this.paper.setSize(newW, newH);
-            $("#roi_paper").css({'height': newH, 'width': newW});
 
             this.$roiImg.css({'height': newH, 'width': newW})
                     .attr('src', src);
