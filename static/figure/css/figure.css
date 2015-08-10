@@ -810,7 +810,7 @@
         background-repeat: no-repeat;
     }
 
-    .shapes_toolbar .pressed {
+    .roi_toolbar .pressed {
         background: #ddd;
     }
 

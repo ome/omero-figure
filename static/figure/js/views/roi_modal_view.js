@@ -2,6 +2,8 @@
 
 var RoiModalView = Backbone.View.extend({
 
+        template: JST["static/figure/templates/shapes/shape_toolbar_template.html"],
+
         el: $("#roiModal"),
 
         model:FigureModel,
@@ -16,11 +18,11 @@ var RoiModalView = Backbone.View.extend({
                 self.m = self.model.getSelected().head().clone();
                 self.listenTo(self.m, 'change:theZ change:theT', self.render);
 
-                self.zoomToFit();  // includes render()
-
                 // TODO: load any existing shapes on selected panel
                 // self.shapeManager.deleteAll();
-                self.shapeManager.setState("ELLIPSE");
+                self.shapeManager.setState("ARROW");
+
+                self.zoomToFit();  // includes render()
 
                 // disable submit until user chooses a region/ROI
                 self.enableSubmit(false);
@@ -32,7 +34,20 @@ var RoiModalView = Backbone.View.extend({
         },
 
         events: {
-            "submit .roiModalForm": "handleRoiForm"
+            "submit .roiModalForm": "handleRoiForm",
+            "click .shape-option .btn": "selectShape",
+        },
+
+        selectShape: function(event) {
+            var $target = $(event.target),
+                newState = $target.attr('data-state');
+            if (newState === undefined) {
+                // in case we clicked 'span'
+                newState = $target.parent().attr('data-state');
+            }
+            console.log(newState);
+            this.shapeManager.setState(newState);
+            this.renderToolbar();
         },
 
         // we disable Submit when dialog is shown, enable when region/ROI chosen
@@ -66,6 +81,16 @@ var RoiModalView = Backbone.View.extend({
             this.render();
         },
 
+        renderToolbar: function() {
+            // render toolbar
+            var state = this.shapeManager.getState();
+            var json = {'state': state,
+                        'lineWidth': 5,
+                        'color': "ff0000",
+                        'zoom': parseInt(scale * 100, 10)};
+            $(".roi_toolbar", this.$el).html(this.template(json));
+        },
+
         render: function() {
             var scale = this.zoom / 100,
                 w = this.m.get('orig_width'),
@@ -76,5 +101,7 @@ var RoiModalView = Backbone.View.extend({
 
             this.$roiImg.css({'height': newH, 'width': newW})
                     .attr('src', src);
+
+            this.renderToolbar();
         }
     });
