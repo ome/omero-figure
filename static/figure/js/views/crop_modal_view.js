@@ -78,7 +78,7 @@ var CropModalView = Backbone.View.extend({
             // Now set up Raphael paper...
             this.paper = Raphael("crop_paper", 500, 500);
             this.rect = new RectView({'model':this.cropModel, 'paper': this.paper});
-            this.$roiImg = $('.crop_image', this.$el);
+            this.$cropImg = $('.crop_image', this.$el);
         },
 
         events: {
@@ -432,7 +432,7 @@ var CropModalView = Backbone.View.extend({
             this.paper.setSize(newW, newH);
             $("#crop_paper").css({'height': newH, 'width': newW});
 
-            this.$roiImg.css({'height': newH, 'width': newW})
+            this.$cropImg.css({'height': newH, 'width': newW})
                     .attr('src', src);
 
             var roiX = this.currentROI.x * scale,
