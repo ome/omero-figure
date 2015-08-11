@@ -810,6 +810,10 @@
         background-repeat: no-repeat;
     }
 
+    .roi_toolbar {
+        overflow: visible;
+    }
+
     .roi_toolbar .pressed {
         background: #ddd;
     }
