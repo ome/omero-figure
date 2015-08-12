@@ -37,6 +37,19 @@ var RoiModalView = Backbone.View.extend({
             "submit .roiModalForm": "handleRoiForm",
             "click .shape-option .btn": "selectShape",
             "click .dropdown-menu a": "select_dropdown_option",
+            "change .line-width": "changeLineWidth",
+            "change .shape-color": "changeColor",
+        },
+
+        changeLineWidth: function(event) {
+            var lineWidth = $("span:first", event.target).attr('data-line-width');
+            lineWidth = parseInt(lineWidth, 10);
+            this.shapeManager.setLineWidth(lineWidth);
+        },
+
+        changeColor: function(event) {
+            var color = $("span:first", event.target).attr('data-color');
+            this.shapeManager.setColor(color);
         },
 
         // Handles all the various drop-down menus in the toolbar
@@ -122,10 +135,12 @@ var RoiModalView = Backbone.View.extend({
 
         renderToolbar: function() {
             // render toolbar
-            var state = this.shapeManager.getState();
+            var state = this.shapeManager.getState(),
+                lineW = this.shapeManager.getLineWidth(),
+                color = this.shapeManager.getColor();
             var json = {'state': state,
-                        'lineWidth': 5,
-                        'color': "ff0000",
+                        'lineWidth': lineW,
+                        'color': color,
                         'zoom': parseInt(scale * 100, 10)};
             $(".roi_toolbar", this.$el).html(this.template(json));
         },
