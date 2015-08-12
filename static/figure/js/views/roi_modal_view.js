@@ -35,10 +35,18 @@ var RoiModalView = Backbone.View.extend({
 
         events: {
             "submit .roiModalForm": "handleRoiForm",
-            "click .shape-option .btn": "selectShape",
+            "click .shape-option .btn": "selectState",
+            "click .select-btn": "selectState",
             "click .dropdown-menu a": "select_dropdown_option",
             "change .line-width": "changeLineWidth",
             "change .shape-color": "changeColor",
+            // shapeManager triggers on canvas element
+            "change:selected .roi_paper": "shapeSelected",
+        },
+
+        shapeSelected: function() {
+            // simply re-render toolbar
+            this.renderToolbar();
         },
 
         changeLineWidth: function(event) {
@@ -90,14 +98,13 @@ var RoiModalView = Backbone.View.extend({
             }
         },
 
-        selectShape: function(event) {
+        selectState: function(event) {
             var $target = $(event.target),
                 newState = $target.attr('data-state');
             if (newState === undefined) {
                 // in case we clicked 'span'
                 newState = $target.parent().attr('data-state');
             }
-            console.log(newState);
             this.shapeManager.setState(newState);
             this.renderToolbar();
         },
@@ -137,7 +144,8 @@ var RoiModalView = Backbone.View.extend({
             // render toolbar
             var state = this.shapeManager.getState(),
                 lineW = this.shapeManager.getLineWidth(),
-                color = this.shapeManager.getColor();
+                color = this.shapeManager.getColor(),
+                scale = this.zoom;
             var json = {'state': state,
                         'lineWidth': lineW,
                         'color': color,
