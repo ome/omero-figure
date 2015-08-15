@@ -22,7 +22,7 @@ var RoiModalView = Backbone.View.extend({
                 // self.shapeManager.deleteAll();
                 self.shapeManager.setState("ARROW");
 
-                self.zoomToFit();  // includes render()
+                self.render();
 
                 // disable submit until user chooses a region/ROI
                 self.enableSubmit(false);
@@ -121,25 +121,6 @@ var RoiModalView = Backbone.View.extend({
             }
         },
 
-        zoomToFit: function() {
-            var $roiViewer = $("#roiViewer"),
-                viewer_w = $roiViewer.width(),
-                viewer_h = $roiViewer.height(),
-                w = this.m.get('orig_width'),
-                h = this.m.get('orig_height');
-                scale = Math.min(viewer_w/w, viewer_h/h);
-            // TODO: add public methods to set w & h
-            this.shapeManager._orig_width = w;
-            this.shapeManager._orig_height = h;
-            this.setZoom(scale * 100);
-            this.shapeManager.setZoom(scale * 100);
-        },
-
-        setZoom: function(percent) {
-            this.zoom = percent;
-            this.render();
-        },
-
         renderToolbar: function() {
             // render toolbar
             var state = this.shapeManager.getState(),
@@ -154,15 +135,47 @@ var RoiModalView = Backbone.View.extend({
         },
 
         render: function() {
-            var scale = this.zoom / 100,
-                w = this.m.get('orig_width'),
-                h = this.m.get('orig_height');
-            var newW = w * scale,
-                newH = h * scale;
+
             var src = this.m.get_img_src();
 
-            this.$roiImg.css({'height': newH, 'width': newW})
-                    .attr('src', src);
+            var maxSize = 450,
+                frame_w = maxSize,
+                frame_h = maxSize,
+                wh = this.m.get('width') / this.m.get('height');
+            if (wh <= 1) {
+                frame_h = maxSize;
+                frame_w = maxSize * wh;
+            } else {
+                frame_w = maxSize;
+                frame_h = maxSize / wh;
+            }
+
+            var c = this.m.get_vp_img_css(this.m.get('zoom'), frame_w, frame_h, this.m.get('dx'), this.m.get('dy'));
+
+            var w = this.m.get('orig_width'),
+                h = this.m.get('orig_height');
+            var scale = c.width / w;
+            // TODO: add public methods to set w & h
+            this.shapeManager._orig_width = w;
+            this.shapeManager._orig_height = h;
+            this.shapeManager.setZoom(scale * 100);
+
+            var css = {
+                "left": c.left + "px",
+                "top": c.top + "px",
+                "width": c.width + "px",
+                "height": c.height + "px",
+                "-webkit-transform-origin": c['transform-origin'],
+                "transform-origin": c['transform-origin'],
+                "-webkit-transform": c.transform,
+                "transform": c.transform
+            }
+            this.$roiImg.css(css)
+                .attr('src', src);
+
+            $("#roi_paper").css(css);
+
+            $("#roiViewer").css({'width': frame_w + 'px', 'height': frame_h + 'px'});
 
             this.renderToolbar();
         }

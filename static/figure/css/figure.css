@@ -718,9 +718,7 @@
     }
 
     .roiViewer {
-        width: 500px;
-        height: 450px;
-        overflow: auto;
+        overflow: hidden;
         position: relative;
     }
 
