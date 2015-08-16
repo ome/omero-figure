@@ -18,14 +18,19 @@ var RoiModalView = Backbone.View.extend({
                 self.m = self.model.getSelected().head().clone();
                 self.listenTo(self.m, 'change:theZ change:theT', self.render);
 
-                // TODO: load any existing shapes on selected panel
-                // self.shapeManager.deleteAll();
-                self.shapeManager.setState("ARROW");
+                self.shapeManager.setState("SELECT");
+                self.shapeManager.deleteAll();
+
+                // Load any existing shapes on panel
+                var shapesJson = self.m.get('shapes');
+                if (shapesJson) {
+                    self.shapeManager.setShapesJson(shapesJson);
+                }
 
                 self.render();
 
                 // disable submit until user chooses a region/ROI
-                self.enableSubmit(false);
+                // self.enableSubmit(false);
             });
 
             this.shapeManager = new ShapeManager("roi_paper", 1, 1);
@@ -42,6 +47,18 @@ var RoiModalView = Backbone.View.extend({
             "change .shape-color": "changeColor",
             // shapeManager triggers on canvas element
             "change:selected .roi_paper": "shapeSelected",
+        },
+
+        handleRoiForm: function(event) {
+            event.preventDefault();
+
+            var shapesJson = this.shapeManager.getShapesJson();
+            this.model.getSelected().forEach(function(panel){
+
+                panel.set('shapes', shapesJson);
+            });
+
+            return false;
         },
 
         shapeSelected: function() {
