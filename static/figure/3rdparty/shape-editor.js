@@ -33,38 +33,40 @@ var Line = function Line(options) {
     this.element = this.paper.path();
 
     // Drag handling of line
-    this.element.drag(
-        function(dx, dy) {
-            // DRAG, update location and redraw
-            dx = dx / self._zoomFraction;
-            dy = dy / self._zoomFraction;
-            self._x1 = this.old.x1 + dx;
-            self._y1 = this.old.y1 + dy;
-            self._x2 = this.old.x2 + dx;
-            self._y2 = this.old.y2 + dy;
-            self.drawShape();
-            return false;
-        },
-        function() {
-            // START drag: note the location of all points
-            self._handleMousedown();
-            this.old = {
-                'x1': self._x1,
-                'x2': self._x2,
-                'y1': self._y1,
-                'y2': self._y2
-            };
-            return false;
-        },
-        function() {
-            // STOP
-            // notify manager if line has moved
-            if (self._x1 !== this.old.x1 || self._y1 !== this.old.y1) {
-                self.manager.notifyShapeChanged(self);
+    if (this.manager.canEdit) {
+        this.element.drag(
+            function(dx, dy) {
+                // DRAG, update location and redraw
+                dx = dx / self._zoomFraction;
+                dy = dy / self._zoomFraction;
+                self._x1 = this.old.x1 + dx;
+                self._y1 = this.old.y1 + dy;
+                self._x2 = this.old.x2 + dx;
+                self._y2 = this.old.y2 + dy;
+                self.drawShape();
+                return false;
+            },
+            function() {
+                // START drag: note the location of all points
+                self._handleMousedown();
+                this.old = {
+                    'x1': self._x1,
+                    'x2': self._x2,
+                    'y1': self._y1,
+                    'y2': self._y2
+                };
+                return false;
+            },
+            function() {
+                // STOP
+                // notify manager if line has moved
+                if (self._x1 !== this.old.x1 || self._y1 !== this.old.y1) {
+                    self.manager.notifyShapeChanged(self);
+                }
+                return false;
             }
-            return false;
-        }
-    );
+        );
+    }
 
     this.createHandles();
 
@@ -248,11 +250,13 @@ Line.prototype.createHandles = function createHandles() {
         handle.h_id = key;
         handle.line = self;
 
-        handle.drag(
-            _handle_drag(),
-            _handle_drag_start(),
-            _handle_drag_end()
-        );
+        if (this.manager.canEdit) {
+            handle.drag(
+                _handle_drag(),
+                _handle_drag_start(),
+                _handle_drag_end()
+            );
+        }
         self.handles.push(handle);
     }
     self.handles.attr(handleAttrs).hide();     // show on selection
@@ -423,33 +427,35 @@ var Rect = function Rect(options) {
     this.element = this.paper.rect();
     this.element.attr({'fill-opacity': 0.01, 'fill': '#fff'});
 
-    // Drag handling of element
-    this.element.drag(
-        function(dx, dy) {
-            // DRAG, update location and redraw
-            dx = dx / self._zoomFraction;
-            dy = dy / self._zoomFraction;
-            self._x = dx+this.ox;
-            self._y = this.oy+dy;
-            self.drawShape();
-            return false;
-        },
-        function() {
-            self._handleMousedown();
-            // START drag: note the location of this handle
-            this.ox = self._x;
-            this.oy = self._y;
-            return false;
-        },
-        function() {
-            // STOP
-            // notify manager if rectangle has moved
-            if (self._x !== this.ox || self._y !== this.oy) {
-                self.manager.notifyShapeChanged(self);
+    if (this.manager.canEdit) {
+        // Drag handling of element
+        this.element.drag(
+            function(dx, dy) {
+                // DRAG, update location and redraw
+                dx = dx / self._zoomFraction;
+                dy = dy / self._zoomFraction;
+                self._x = dx+this.ox;
+                self._y = this.oy+dy;
+                self.drawShape();
+                return false;
+            },
+            function() {
+                self._handleMousedown();
+                // START drag: note the location of this handle
+                this.ox = self._x;
+                this.oy = self._y;
+                return false;
+            },
+            function() {
+                // STOP
+                // notify manager if rectangle has moved
+                if (self._x !== this.ox || self._y !== this.oy) {
+                    self.manager.notifyShapeChanged(self);
+                }
+                return false;
             }
-            return false;
-        }
-    );
+        );
+    }
 
     this.createHandles();
 
@@ -686,11 +692,13 @@ Rect.prototype.createHandles = function createHandles() {
         handle.h_id = key;
         handle.rect = self;
 
-        handle.drag(
-            _handle_drag(),
-            _handle_drag_start(),
-            _handle_drag_end()
-        );
+        if (self.manager.canEdit) {
+            handle.drag(
+                _handle_drag(),
+                _handle_drag_start(),
+                _handle_drag_end()
+            );
+        }
         // handle.mousedown(_stop_event_propagation);
         self.handles.push(handle);
     }
@@ -783,32 +791,34 @@ var Ellipse = function Ellipse(options) {
     this.element.attr({'fill-opacity': 0.01, 'fill': '#fff'});
 
     // Drag handling of ellipse
-    this.element.drag(
-        function(dx, dy) {
-            // DRAG, update location and redraw
-            dx = dx / self._zoomFraction;
-            dy = dy / self._zoomFraction;
-            self._cx = dx+this.ox;
-            self._cy = this.oy+dy;
-            self.drawShape();
-            return false;
-        },
-        function() {
-            // START drag: note the start location
-            self._handleMousedown();
-            this.ox = self._cx;
-            this.oy = self._cy;
-            return false;
-        },
-        function() {
-            // STOP
-            // notify changed if moved
-            if (this.ox !== self._cx || this.oy !== self._cy) {
-                self.manager.notifyShapeChanged(self);
+    if (this.manager.canEdit) {
+        this.element.drag(
+            function(dx, dy) {
+                // DRAG, update location and redraw
+                dx = dx / self._zoomFraction;
+                dy = dy / self._zoomFraction;
+                self._cx = dx+this.ox;
+                self._cy = this.oy+dy;
+                self.drawShape();
+                return false;
+            },
+            function() {
+                // START drag: note the start location
+                self._handleMousedown();
+                this.ox = self._cx;
+                this.oy = self._cy;
+                return false;
+            },
+            function() {
+                // STOP
+                // notify changed if moved
+                if (this.ox !== self._cx || this.oy !== self._cy) {
+                    self.manager.notifyShapeChanged(self);
+                }
+                return false;
             }
-            return false;
-        }
-    );
+        );
+    }
 
     this.createHandles();
 
@@ -1026,11 +1036,13 @@ Ellipse.prototype.createHandles = function createHandles() {
         handle.h_id = key;
         handle.line = self;
 
-        handle.drag(
-            _handle_drag(),
-            _handle_drag_start(),
-            _handle_drag_end()
-        );
+        if (this.manager.canEdit) {
+            handle.drag(
+                _handle_drag(),
+                _handle_drag_start(),
+                _handle_drag_end()
+            );
+        }
         self.handles.push(handle);
     }
 
@@ -1119,6 +1131,7 @@ CreateEllipse.prototype.stopDrag = function stopDrag() {
 var ShapeManager = function ShapeManager(elementId, width, height, options) {
 
     var self = this;
+    options = options || {};
 
     // Keep track of state, strokeColor etc
     this.STATES = ["SELECT", "RECT", "LINE", "ARROW", "ELLIPSE"];
@@ -1128,6 +1141,8 @@ var ShapeManager = function ShapeManager(elementId, width, height, options) {
     this._orig_width = width;
     this._orig_height = height;
     this._zoom = 100;
+    // Don't allow editing of shapes - no drag/click events
+    this.canEdit = !options.readOnly;
 
     // Set up Raphael paper...
     this.paper = Raphael(elementId, width, height);
@@ -1145,25 +1160,29 @@ var ShapeManager = function ShapeManager(elementId, width, height, options) {
     this.newShapeBg.attr({'fill':'#000',
                           'fill-opacity':0.01,
                           'cursor': 'crosshair'});
-    this.newShapeBg.drag(
-        function(){
-            self.drag.apply(self, arguments);
-        },
-        function(){
-            self.startDrag.apply(self, arguments);
-        },
-        function(){
-            self.stopDrag.apply(self, arguments);
-        });
+    if (this.canEdit) {
+        this.newShapeBg.drag(
+            function(){
+                self.drag.apply(self, arguments);
+            },
+            function(){
+                self.startDrag.apply(self, arguments);
+            },
+            function(){
+                self.stopDrag.apply(self, arguments);
+            });
 
-    this.shapeFactories = {
-        "RECT": new CreateRect({'manager': this, 'paper': this.paper}),
-        "ELLIPSE": new CreateEllipse({'manager': this, 'paper': this.paper}),
-        "LINE": new CreateLine({'manager': this, 'paper': this.paper}),
-        "ARROW": new CreateArrow({'manager': this, 'paper': this.paper})
-    };
+        this.shapeFactories = {
+            "RECT": new CreateRect({'manager': this, 'paper': this.paper}),
+            "ELLIPSE": new CreateEllipse({'manager': this, 'paper': this.paper}),
+            "LINE": new CreateLine({'manager': this, 'paper': this.paper}),
+            "ARROW": new CreateArrow({'manager': this, 'paper': this.paper})
+        };
 
-    this.createShape = this.shapeFactories.LINE;
+        this.createShape = this.shapeFactories.LINE;
+    } else {
+        this.shapeFactories = {};
+    }
 };
 
 ShapeManager.prototype.startDrag = function startDrag(x, y, event){
