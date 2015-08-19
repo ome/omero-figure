@@ -58,6 +58,7 @@ var RoiModalView = Backbone.View.extend({
                 panel.set('shapes', shapesJson);
             });
 
+            $("#roiModal").modal("hide");
             return false;
         },
 
@@ -69,12 +70,12 @@ var RoiModalView = Backbone.View.extend({
         changeLineWidth: function(event) {
             var lineWidth = $("span:first", event.target).attr('data-line-width');
             lineWidth = parseInt(lineWidth, 10);
-            this.shapeManager.setLineWidth(lineWidth);
+            this.shapeManager.setStrokeWidth(lineWidth);
         },
 
         changeColor: function(event) {
             var color = $("span:first", event.target).attr('data-color');
-            this.shapeManager.setColor(color);
+            this.shapeManager.setStrokeColor("#" + color);
         },
 
         // Handles all the various drop-down menus in the toolbar
@@ -141,8 +142,8 @@ var RoiModalView = Backbone.View.extend({
         renderToolbar: function() {
             // render toolbar
             var state = this.shapeManager.getState(),
-                lineW = this.shapeManager.getLineWidth(),
-                color = this.shapeManager.getColor(),
+                lineW = this.shapeManager.getStrokeWidth(),
+                color = this.shapeManager.getStrokeColor().replace("#", ""),
                 scale = this.zoom;
             var json = {'state': state,
                         'lineWidth': lineW,

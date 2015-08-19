@@ -49,7 +49,9 @@ this["JST"]["static/figure/templates/figure_panel_template.html"] = function(obj
 obj || (obj = {});
 var __t, __p = '', __e = _.escape;
 with (obj) {
-__p += '    <!-- The content of <div class=\'imagePanel\'> for each panel -->\n    <div class="imgContainer">\n        <img class="img_panel" />\n    </div>\n';
+__p += '    <!-- The content of <div class=\'imagePanel\'> for each panel -->\n    <div class="imgContainer">\n        <img class="img_panel" />\n        <div id="' +
+((__t = ( randomId )) == null ? '' : __t) +
+'" class="panel_canvas"></div>\n    </div>\n';
 
 }
 return __p
