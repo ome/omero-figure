@@ -98,7 +98,7 @@
                     var canvasId = this.$panel_canvas.attr('id');
                     this.$panel_canvas.attr({'width': w + 'px', 'height': h + 'px'});
                     var panel_scale = this.$img_panel.width() / w;
-                    this.shapeManager = new ShapeManager(canvasId, w, h);
+                    this.shapeManager = new ShapeManager(canvasId, w, h, {'readOnly': true});
                     this.shapeManager.setZoom(panel_scale * 100);
                 }
                 this.shapeManager.setShapesJson(shapes);
@@ -214,11 +214,12 @@
             this.render_labels();
             this.render_scalebar();     // also calls render_layout()
 
+            // At this point, element is not ready for Raphael svg
+            // If we wait a short time, works fine
             var self = this;
             setTimeout(function(){
                 self.render_shapes();
-            }, 500);
-            // this.render_shapes();
+            }, 10);
 
             return this;
         }
