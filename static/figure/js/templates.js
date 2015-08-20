@@ -608,7 +608,15 @@ function print() { __p += __j.call(arguments, '') }
 with (obj) {
 __p += '\n\n<div class="btn-group" role="group" aria-label="...">\n    <button type="button" data-state="SELECT"\n    \tclass="btn btn-default select-btn ';
  if (state==='SELECT')print('pressed') ;
-__p += '">\n        <span class="glyphicon"></span></button>\n</div>\n\n\n<div class="btn-group">\n    <button type="button" class="shape-color btn btn-default dropdown-toggle" title="Label Color"\n        data-toggle="dropdown">\n        <span data-color="' +
+__p += '">\n        <span class="glyphicon"></span></button>\n</div>\n\n\n<div class="btn-group shape-option" role="group" aria-label="...">\n    <button type="button" class="btn btn-default rect-btn ';
+ if (state==='RECT')print('pressed') ;
+__p += '"\n            data-state="RECT">\n        <span class="glyphicon"></span></button>\n    <button type="button" class="btn btn-default line-btn ';
+ if (state==='LINE')print('pressed') ;
+__p += '"\n            data-state="LINE">\n        <span class="glyphicon"></span></button>\n    <button type="button" class="btn btn-default arrow-btn ';
+ if (state==='ARROW')print('pressed') ;
+__p += '"\n            data-state="ARROW">\n        <span class="glyphicon"></span></button>\n    <button type="button" class="btn btn-default ellipse-btn ';
+ if (state==='ELLIPSE')print('pressed') ;
+__p += '"\n            data-state="ELLIPSE">\n        <span class="glyphicon"></span></button>\n</div>\n\n\n<div class="btn-group">\n    <button type="button" class="shape-color btn btn-default dropdown-toggle" title="Label Color"\n        data-toggle="dropdown">\n        <span data-color="' +
 ((__t = ( color )) == null ? '' : __t) +
 '" style="background-color:#' +
 ((__t = ( color )) == null ? '' : __t) +
@@ -624,17 +632,7 @@ __p += '">\n        <span class="glyphicon"></span></button>\n</div>\n\n\n<div c
  _.each([1,2,3,4,5,7,10,15,20,30],function(p){
             print ("<li><a href='#'>"+p+"<span title='Line Width: "+p+"' data-line-width='"+p+"' class='linewidthOption' style='height:"+p+"px'></span></a></li>")
         }); ;
-__p += '\n\n    </ul>\n</div>\n\n<div class="clearfix">\n</div>\n\n<div class="btn-group shape-option" role="group" aria-label="...">\n    <button type="button" class="btn btn-default rect-btn ';
- if (state==='RECT')print('pressed') ;
-__p += '"\n            data-state="RECT">\n        <span class="glyphicon"></span></button>\n    <button type="button" class="btn btn-default line-btn ';
- if (state==='LINE')print('pressed') ;
-__p += '"\n            data-state="LINE">\n        <span class="glyphicon"></span></button>\n    <button type="button" class="btn btn-default arrow-btn ';
- if (state==='ARROW')print('pressed') ;
-__p += '"\n            data-state="ARROW">\n        <span class="glyphicon"></span></button>\n    <button type="button" class="btn btn-default ellipse-btn ';
- if (state==='ELLIPSE')print('pressed') ;
-__p += '"\n            data-state="ELLIPSE">\n        <span class="glyphicon"></span></button>\n</div>\n\n\n<div class="btn-group">\n    <input type="number" name="zoom" value="' +
-((__t = ( zoom )) == null ? '' : __t) +
-'" class="zoomInput"/>\n</div>\n';
+__p += '\n\n    </ul>\n</div>\n\n';
 
 }
 return __p

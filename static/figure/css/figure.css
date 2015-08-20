@@ -812,8 +812,14 @@
         background-repeat: no-repeat;
     }
 
+    .roiModalForm .modal-body {
+        max-height: 500px;
+        padding-top: 10px;
+    }
+
     .roi_toolbar {
         overflow: visible;
+        padding-bottom: 10px;
     }
 
     .roi_toolbar .pressed {
