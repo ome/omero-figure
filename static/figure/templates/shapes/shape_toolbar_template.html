@@ -84,13 +84,13 @@
     <ul class="dropdown-menu" role="menu" style="width:200px">
         <li <% if (!sel) print('class="disabled"') %> >
             <a href="#" class="copyShape">
-                <span class="glyphicon glyphicon-copy" aria-hidden="true"></span>
+                <span class="glyphicon" aria-hidden="true"></span>
                 Copy Shape <span class="pull-right"><%= cmdKey %>C</span>
             </a>
         </li>
-        <li>
+        <li <% if (!toPaste) print('class="disabled"') %> >
             <a href="#" class="pasteShape">
-                <span class="glyphicon glyphicon-paste" aria-hidden="true"></span>
+                <span class="glyphicon" aria-hidden="true"></span>
                 Paste Shape <span class="pull-right"><%= cmdKey %>V</span>
             </a>
         </li>

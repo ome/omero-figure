@@ -16,7 +16,7 @@ var RoiModalView = Backbone.View.extend({
             $("#roiModal").bind("show.bs.modal", function(){
                 // Clone the 'first' selected panel as our reference for everything
                 self.m = self.model.getSelected().head().clone();
-                self.listenTo(self.m, 'change:theZ change:theT', self.render);
+                // self.listenTo(self.m, 'change:theZ change:theT', self.render);
 
                 self.shapeManager.setState("SELECT");
                 self.shapeManager.deleteAll();
@@ -60,7 +60,7 @@ var RoiModalView = Backbone.View.extend({
         },
 
         pasteShape: function(event) {
-            var shapeJson = this.model.get('shapesClipboard', shapeJson);
+            var shapeJson = this.model.get('shapesClipboard');
             if (shapeJson) {
                 this.shapeManager.addShapesJson(shapeJson);
             }
@@ -167,12 +167,14 @@ var RoiModalView = Backbone.View.extend({
                 color = this.shapeManager.getStrokeColor().replace("#", ""),
                 scale = this.zoom,
                 sel = this.shapeManager.getSelected().length > 0,
+                toPaste = this.model.get('shapesClipboard'),
                 windows = navigator.platform.toUpperCase().indexOf('WIN') > -1;
             var json = {'state': state,
                         'lineWidth': lineW,
                         'color': color,
                         'sel': sel,
                         'cmdKey': windows ? "Ctrl+" : "⌘",
+                        'toPaste': toPaste ? toPaste.length > 0 : false,
                         'zoom': parseInt(scale * 100, 10)};
             $(".roi_toolbar", this.$el).html(this.template(json));
         },
