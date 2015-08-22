@@ -47,6 +47,11 @@ var RoiModalView = Backbone.View.extend({
             "change .shape-color": "changeColor",
             // shapeManager triggers on canvas element
             "change:selected .roi_paper": "shapeSelected",
+            "click .deleteShape": "deleteShape",
+        },
+
+        deleteShape: function(event) {
+            this.shapeManager.deleteSelected();
         },
 
         handleRoiForm: function(event) {
@@ -145,10 +150,12 @@ var RoiModalView = Backbone.View.extend({
                 lineW = this.shapeManager.getStrokeWidth(),
                 color = this.shapeManager.getStrokeColor().replace("#", ""),
                 scale = this.zoom,
+                sel = this.shapeManager.getSelected().length > 0,
                 windows = navigator.platform.toUpperCase().indexOf('WIN') > -1;
             var json = {'state': state,
                         'lineWidth': lineW,
                         'color': color,
+                        'sel': sel,
                         'cmdKey': windows ? "Ctrl+" : "⌘",
                         'zoom': parseInt(scale * 100, 10)};
             $(".roi_toolbar", this.$el).html(this.template(json));
