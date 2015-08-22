@@ -47,7 +47,23 @@ var RoiModalView = Backbone.View.extend({
             "change .shape-color": "changeColor",
             // shapeManager triggers on canvas element
             "change:selected .roi_paper": "shapeSelected",
+            "click .copyShape": "copyShape",
+            "click .pasteShape": "pasteShape",
             "click .deleteShape": "deleteShape",
+        },
+
+        copyShape: function(event) {
+            var shapeJson = this.shapeManager.getSelectedShapesJson();
+            if (shapeJson.length > 0) {
+                this.model.set('shapesClipboard', shapeJson);
+            }
+        },
+
+        pasteShape: function(event) {
+            var shapeJson = this.model.get('shapesClipboard', shapeJson);
+            if (shapeJson) {
+                this.shapeManager.addShapesJson(shapeJson);
+            }
         },
 
         deleteShape: function(event) {

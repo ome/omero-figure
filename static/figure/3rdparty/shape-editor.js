@@ -1328,6 +1328,13 @@ ShapeManager.prototype.setShapesJson = function setShapesJson(jsonShapes) {
     });
 };
 
+ShapeManager.prototype.addShapesJson = function addShapesJson(jsonShapes) {
+    var self = this;
+    jsonShapes.forEach(function(s){
+        self.addShapeJson(s);
+    });
+};
+
 // Add a json shape object
 ShapeManager.prototype.addShapeJson = function addShapeJson(jsonShape) {
     
@@ -1406,6 +1413,16 @@ ShapeManager.prototype.getSelected = function getSelected() {
         }
     }
     return selected;
+};
+
+ShapeManager.prototype.getSelectedShapesJson = function getShapesJson() {
+    var data = [];
+    this.getShapes().forEach(function(s){
+        if (s.isSelected()) {
+            data.push(s.toJson());
+        }
+    });
+    return data;
 };
 
 ShapeManager.prototype.deleteAll = function deleteAll() {

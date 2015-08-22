@@ -634,9 +634,9 @@ __p += '"\n            data-state="ELLIPSE">\n        <span class="glyphicon"></
         }); ;
 __p += '\n\n    </ul>\n</div>\n\n\n<div class="btn-group">\n    <button type="button" class="btn btn-default" title="Delete, Copy, Paste etc"\n        data-toggle="dropdown">\n        <span class="glyphicon glyphicon-wrench"></span>\n        <span class="caret"></span>\n    </button>\n    <ul class="dropdown-menu" role="menu" style="width:200px">\n        <li ';
  if (!sel) print('class="disabled"') ;
-__p += ' >\n            <a href="#">\n                <span class="glyphicon glyphicon-copy" aria-hidden="true"></span>\n                Copy Shape <span class="pull-right">' +
+__p += ' >\n            <a href="#" class="copyShape">\n                <span class="glyphicon glyphicon-copy" aria-hidden="true"></span>\n                Copy Shape <span class="pull-right">' +
 ((__t = ( cmdKey )) == null ? '' : __t) +
-'C</span>\n            </a>\n        </li>\n        <li>\n            <a href="#">\n                <span class="glyphicon glyphicon-paste" aria-hidden="true"></span>\n                Paste Shape <span class="pull-right">' +
+'C</span>\n            </a>\n        </li>\n        <li>\n            <a href="#" class="pasteShape">\n                <span class="glyphicon glyphicon-paste" aria-hidden="true"></span>\n                Paste Shape <span class="pull-right">' +
 ((__t = ( cmdKey )) == null ? '' : __t) +
 'V</span>\n            </a>\n        </li>\n        <li ';
  if (!sel) print('class="disabled"') ;
