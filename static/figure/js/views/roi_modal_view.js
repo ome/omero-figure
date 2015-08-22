@@ -57,12 +57,14 @@ var RoiModalView = Backbone.View.extend({
             if (shapeJson.length > 0) {
                 this.model.set('shapesClipboard', shapeJson);
             }
+            this.renderToolbar();    // to enable paste
         },
 
         pasteShape: function(event) {
             var shapeJson = this.model.get('shapesClipboard');
             if (shapeJson) {
-                this.shapeManager.addShapesJson(shapeJson);
+                // paste shapes, with offset if matching existing shape
+                this.shapeManager.pasteShapesJson(shapeJson);
             }
         },
 
