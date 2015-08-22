@@ -29,7 +29,7 @@
         <span data-color="<%= color %>" style="background-color:#<%= color %>">&nbsp &nbsp &nbsp</span>
         <span class="caret"></span>
     </button>
-    <ul class="dropdown-menu colorpicker" role="menu">
+    <ul class="dropdown-menu dropdownSelect colorpicker" role="menu">
         <li><a href="#">
             <span data-color="000000" style="background-color:#000">&nbsp &nbsp &nbsp</span>&nbsp Black
         </a></li>
@@ -65,12 +65,35 @@
         <span data-line-width="<%= lineWidth %>" class='linewidthOption' style='height:<%= lineWidth %>px'></span>
         <span class="caret"></span>
     </button>
-    <ul class="dropdown-menu lineWidth" role="menu">
+    <ul class="dropdown-menu dropdownSelect lineWidth" role="menu">
 
         <% _.each([1,2,3,4,5,7,10,15,20,30],function(p){
             print ("<li><a href='#'>"+p+"<span title='Line Width: "+p+"' data-line-width='"+p+"' class='linewidthOption' style='height:"+p+"px'></span></a></li>")
         }); %>
 
+    </ul>
+</div>
+
+
+<div class="btn-group">
+    <button type="button" class="btn btn-default" title="Delete, Copy, Paste etc"
+        data-toggle="dropdown">
+        <span class="glyphicon glyphicon-wrench"></span>
+        <span class="caret"></span>
+    </button>
+    <ul class="dropdown-menu" role="menu" style="width:200px">
+        <li><a href="#">
+            <span class="glyphicon glyphicon-copy" aria-hidden="true"></span>
+            Copy Shape <span class="pull-right"><%= cmdKey %>C</span>
+        </a></li>
+        <li><a href="#">
+            <span class="glyphicon glyphicon-paste" aria-hidden="true"></span>
+            Paste Shape <span class="pull-right"><%= cmdKey %>V</span>
+        </a></li>
+        <li><a href="#">
+            <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+            Delete Shape <span class="pull-right">Del</span>
+        </a></li>
     </ul>
 </div>
 

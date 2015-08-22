@@ -42,7 +42,7 @@ var RoiModalView = Backbone.View.extend({
             "submit .roiModalForm": "handleRoiForm",
             "click .shape-option .btn": "selectState",
             "click .select-btn": "selectState",
-            "click .dropdown-menu a": "select_dropdown_option",
+            "click .dropdownSelect a": "select_dropdown_option",
             "change .line-width": "changeLineWidth",
             "change .shape-color": "changeColor",
             // shapeManager triggers on canvas element
@@ -144,10 +144,12 @@ var RoiModalView = Backbone.View.extend({
             var state = this.shapeManager.getState(),
                 lineW = this.shapeManager.getStrokeWidth(),
                 color = this.shapeManager.getStrokeColor().replace("#", ""),
-                scale = this.zoom;
+                scale = this.zoom,
+                windows = navigator.platform.toUpperCase().indexOf('WIN') > -1;
             var json = {'state': state,
                         'lineWidth': lineW,
                         'color': color,
+                        'cmdKey': windows ? "Ctrl+" : "⌘",
                         'zoom': parseInt(scale * 100, 10)};
             $(".roi_toolbar", this.$el).html(this.template(json));
         },
