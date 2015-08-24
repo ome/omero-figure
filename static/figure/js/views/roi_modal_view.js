@@ -98,7 +98,8 @@ var RoiModalView = Backbone.View.extend({
             var shapesJson = this.shapeManager.getShapesJson();
             this.model.getSelected().forEach(function(panel){
 
-                panel.set('shapes', shapesJson);
+                // We use save() to notify undo/redo queue. TODO - fix!
+                panel.save('shapes', shapesJson);
             });
 
             $("#roiModal").modal("hide");
