@@ -12,6 +12,26 @@ var RoiModalView = Backbone.View.extend({
 
             var self = this;
 
+            // We manually bind Mousetrap keyboardEvents to modal dialog so as
+            // not to clash with the global keyboardEvents in figure_view.js
+            // These should only be fired when dialog is visible.
+            var dialog = document.getElementById('roiModal');
+            Mousetrap(dialog).bind(['backspace', 'del'], function(event, combo) {
+                event.preventDefault();
+                self.deleteShapes();
+                return false;
+            });
+            Mousetrap(dialog).bind('mod+c', function(event, combo) {
+                event.preventDefault();
+                self.copyShapes();
+                return false;
+            });
+            Mousetrap(dialog).bind('mod+v', function(event, combo) {
+                event.preventDefault();
+                self.pasteShapes();
+                return false;
+            });
+
             // Here we handle init of the dialog when it's shown...
             $("#roiModal").bind("show.bs.modal", function(){
                 // Clone the 'first' selected panel as our reference for everything
@@ -52,7 +72,7 @@ var RoiModalView = Backbone.View.extend({
             "click .deleteShape": "deleteShape",
         },
 
-        copyShape: function(event) {
+        copyShapes: function(event) {
             var shapeJson = this.shapeManager.getSelectedShapesJson();
             if (shapeJson.length > 0) {
                 this.model.set('shapesClipboard', shapeJson);
@@ -60,7 +80,7 @@ var RoiModalView = Backbone.View.extend({
             this.renderToolbar();    // to enable paste
         },
 
-        pasteShape: function(event) {
+        pasteShapes: function(event) {
             var shapeJson = this.model.get('shapesClipboard');
             if (shapeJson) {
                 // paste shapes, with offset if matching existing shape
@@ -68,7 +88,7 @@ var RoiModalView = Backbone.View.extend({
             }
         },
 
-        deleteShape: function(event) {
+        deleteShapes: function(event) {
             this.shapeManager.deleteSelected();
         },
 

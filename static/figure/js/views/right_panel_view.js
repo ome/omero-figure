@@ -81,7 +81,6 @@
         },
 
         editRois: function(event) {
-            console.log("editRois");
             $("#roiModal").modal("show");
         },
 
