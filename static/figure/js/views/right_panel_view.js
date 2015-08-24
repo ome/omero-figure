@@ -60,6 +60,7 @@
         model: FigureModel,
 
         template: JST["static/figure/templates/labels_form_inner_template.html"],
+        roisTemplate: JST["static/figure/templates/rois_form_template.html"],
 
         el: $("#labelsTab"),
 
@@ -172,7 +173,24 @@
             return false;
         },
 
+        renderRois: function() {
+
+            var selectionCount = this.model.getSelected().length,
+                disableEdit = selectionCount > 1;
+
+            if (selectionCount === 0) {
+                $('#edit_rois_form').empty();
+            } else {
+                var json = {
+                    'disabled': disableEdit
+                }
+                $('#edit_rois_form').html(this.roisTemplate(json));
+            }
+        },
+
         render: function() {
+
+            this.renderRois();
 
             var selected = this.model.getSelected();
 

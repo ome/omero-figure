@@ -154,6 +154,25 @@ __p += '\n        </div>\n';
 return __p
 };
 
+this["JST"]["static/figure/templates/rois_form_template.html"] = function(obj) {
+obj || (obj = {});
+var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
+function print() { __p += __j.call(arguments, '') }
+with (obj) {
+__p += '\n<!-- Add tooltip to div around the button since it doesn\'t show on disabled button -->\n<div class="pull-right"\n    ';
+ if (disabled) { ;
+__p += '\n        title="Cannot edit ROIs on multiple panels. Select a single panel"\n    ';
+ } ;
+__p += ' >\n    <button type="submit" class="edit_rois btn btn-sm btn-success"\n        ';
+ if (disabled) { ;
+__p += ' disabled="disabled"';
+ } ;
+__p += ' >\n        Edit ROIs\n    </button>\n</div>\n';
+
+}
+return __p
+};
+
 this["JST"]["static/figure/templates/scalebar_form_template.html"] = function(obj) {
 obj || (obj = {});
 var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
