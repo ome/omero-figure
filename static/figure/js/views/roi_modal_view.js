@@ -206,7 +206,7 @@ var RoiModalView = Backbone.View.extend({
 
             var src = this.m.get_img_src();
 
-            var maxSize = 450,
+            var maxSize = 550,
                 frame_w = maxSize,
                 frame_h = maxSize,
                 wh = this.m.get('width') / this.m.get('height');
