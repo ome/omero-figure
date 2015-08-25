@@ -36,7 +36,10 @@ var RoiModalView = Backbone.View.extend({
             $("#roiModal").bind("show.bs.modal", function(){
                 // Clone the 'first' selected panel as our reference for everything
                 self.m = self.model.getSelected().head().clone();
-                // self.listenTo(self.m, 'change:theZ change:theT', self.render);
+
+                // We don't support Shape editing when rotated!
+                self.rotated = self.m.get('rotation') !== 0;
+                self.m.set('rotation', 0);
 
                 self.shapeManager.setState("SELECT");
                 self.shapeManager.deleteAll();
@@ -67,9 +70,9 @@ var RoiModalView = Backbone.View.extend({
             "change .shape-color": "changeColor",
             // shapeManager triggers on canvas element
             "change:selected .roi_paper": "shapeSelected",
-            "click .copyShape": "copyShape",
-            "click .pasteShape": "pasteShape",
-            "click .deleteShape": "deleteShape",
+            "click .copyShape": "copyShapes",
+            "click .pasteShape": "pasteShapes",
+            "click .deleteShape": "deleteShapes",
         },
 
         copyShapes: function(event) {
@@ -202,6 +205,23 @@ var RoiModalView = Backbone.View.extend({
             $(".roi_toolbar", this.$el).html(this.template(json));
         },
 
+        renderSidebar: function() {
+            var tips = [
+                "Add ROIs to the image panel by choosing Rectangle, Line, Arrow or Ellipse from the toolbar.",
+                "You can copy and paste shapes to duplicate them or move them between panels.",
+                "If you copy a region from the Crop dialog (under the 'Preview' tab), you can paste it here to create a new Rectangle."],
+                tip;
+            if (this.rotated) {
+                tip = "<span class='label label-warning'>Warning</span> " +
+                      "This image panel is rotated in the figure, but this ROI editor can't work with rotated images. " +
+                      "The image is displayed here <b>without</b> rotation, but the ROIs you add will be applied " +
+                      "correctly to the image panel in the figure.";
+            } else {
+                tip = "<span class='label label-primary'>Tip</span> " + tips[parseInt(Math.random() * tips.length, 10)];
+            }
+            $("#roiModalTip").html(tip);
+        },
+
         render: function() {
 
             var src = this.m.get_img_src();
@@ -246,5 +266,6 @@ var RoiModalView = Backbone.View.extend({
             $("#roiViewer").css({'width': frame_w + 'px', 'height': frame_h + 'px'});
 
             this.renderToolbar();
+            this.renderSidebar();
         }
     });

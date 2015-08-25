@@ -629,13 +629,13 @@ __p += '\n\n<div class="btn-group" role="group" aria-label="...">\n    <button t
  if (state==='SELECT')print('pressed') ;
 __p += '">\n        <span class="glyphicon"></span></button>\n</div>\n\n\n<div class="btn-group shape-option" role="group" aria-label="...">\n    <button type="button" class="btn btn-default rect-btn ';
  if (state==='RECT')print('pressed') ;
-__p += '"\n            data-state="RECT">\n        <span class="glyphicon"></span></button>\n    <button type="button" class="btn btn-default line-btn ';
+__p += '"\n            title="Rectangle" data-state="RECT">\n        <span class="glyphicon"></span></button>\n    <button type="button" class="btn btn-default line-btn ';
  if (state==='LINE')print('pressed') ;
-__p += '"\n            data-state="LINE">\n        <span class="glyphicon"></span></button>\n    <button type="button" class="btn btn-default arrow-btn ';
+__p += '"\n            title="Line" data-state="LINE">\n        <span class="glyphicon"></span></button>\n    <button type="button" class="btn btn-default arrow-btn ';
  if (state==='ARROW')print('pressed') ;
-__p += '"\n            data-state="ARROW">\n        <span class="glyphicon"></span></button>\n    <button type="button" class="btn btn-default ellipse-btn ';
+__p += '"\n            title="Arrow" data-state="ARROW">\n        <span class="glyphicon"></span></button>\n    <button type="button" class="btn btn-default ellipse-btn ';
  if (state==='ELLIPSE')print('pressed') ;
-__p += '"\n            data-state="ELLIPSE">\n        <span class="glyphicon"></span></button>\n</div>\n\n\n<div class="btn-group">\n    <button type="button" class="shape-color btn btn-default dropdown-toggle" title="Label Color"\n        data-toggle="dropdown">\n        <span data-color="' +
+__p += '"\n            title="Ellipse" data-state="ELLIPSE">\n        <span class="glyphicon"></span></button>\n</div>\n\n\n<div class="btn-group">\n    <button type="button" class="shape-color btn btn-default dropdown-toggle" title="Label Color"\n        data-toggle="dropdown">\n        <span data-color="' +
 ((__t = ( color )) == null ? '' : __t) +
 '" style="background-color:#' +
 ((__t = ( color )) == null ? '' : __t) +
