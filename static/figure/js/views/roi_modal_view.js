@@ -18,21 +18,21 @@ var RoiModalView = Backbone.View.extend({
             // some events maybe getting lost to Raphael elements??
             var dialog = document.getElementById('body');
             Mousetrap(dialog).bind(['backspace', 'del'], function(event, combo) {
-                event.preventDefault();
                 // Need to ignore if the dialog isn't visible
                 if(!self.$el.is(":visible")) return true;
+                event.preventDefault();
                 self.deleteShapes();
                 return false;
             });
             Mousetrap(dialog).bind('mod+c', function(event, combo) {
-                event.preventDefault();
                 if(!self.$el.is(":visible")) return true;
+                event.preventDefault();
                 self.copyShapes();
                 return false;
             });
             Mousetrap(dialog).bind('mod+v', function(event, combo) {
-                event.preventDefault();
                 if(!self.$el.is(":visible")) return true;
+                event.preventDefault();
                 self.pasteShapes();
                 return false;
             });

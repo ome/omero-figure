@@ -264,25 +264,25 @@
 
         nudge_right: function(event) {
             event.preventDefault();
-            if (this.modal_visible()) return;
+            if (this.modal_visible()) return true;
             this.model.nudge_right();
         },
 
         nudge_left: function(event) {
             event.preventDefault();
-            if (this.modal_visible()) return;
+            if (this.modal_visible()) return true;
             this.model.nudge_left();
         },
 
         nudge_down: function(event) {
             event.preventDefault();
-            if (this.modal_visible()) return;
+            if (this.modal_visible()) return true;
             this.model.nudge_down();
         },
 
         nudge_up: function(event) {
             event.preventDefault();
-            if (this.modal_visible()) return;
+            if (this.modal_visible()) return true;
             this.model.nudge_up();
         },
 
@@ -443,7 +443,7 @@
 
         copy_selected_panels: function(event) {
             event.preventDefault();
-            if (this.modal_visible()) return;
+            if (this.modal_visible()) return true;
             var s = this.model.getSelected();
             this.clipboard_data = cd = [];
             s.forEach(function(m) {
@@ -456,7 +456,7 @@
 
         paste_panels: function(event) {
             event.preventDefault();
-            if (this.modal_visible()) return;
+            if (this.modal_visible()) return true;
             if (!this.clipboard_data) return;
 
             var self = this;
@@ -504,13 +504,13 @@
 
         select_all: function(event) {
             event.preventDefault();
-            if (this.modal_visible()) return;
+            if (this.modal_visible()) return true;
             this.model.select_all();
         },
 
         deleteSelectedPanels: function(event) {
             event.preventDefault();
-            if (this.modal_visible()) return;
+            if (this.modal_visible()) return true;
             this.model.deleteSelected();
         },
 
