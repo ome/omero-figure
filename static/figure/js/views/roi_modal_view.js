@@ -12,22 +12,27 @@ var RoiModalView = Backbone.View.extend({
 
             var self = this;
 
-            // We manually bind Mousetrap keyboardEvents to modal dialog so as
+            // We manually bind Mousetrap keyboardEvents to body so as
             // not to clash with the global keyboardEvents in figure_view.js
-            // These should only be fired when dialog is visible.
-            var dialog = document.getElementById('roiModal');
+            // Bind to 'body' instead of #roiModal since this didn't always work with
+            // some events maybe getting lost to Raphael elements??
+            var dialog = document.getElementById('body');
             Mousetrap(dialog).bind(['backspace', 'del'], function(event, combo) {
                 event.preventDefault();
+                // Need to ignore if the dialog isn't visible
+                if(!self.$el.is(":visible")) return true;
                 self.deleteShapes();
                 return false;
             });
             Mousetrap(dialog).bind('mod+c', function(event, combo) {
                 event.preventDefault();
+                if(!self.$el.is(":visible")) return true;
                 self.copyShapes();
                 return false;
             });
             Mousetrap(dialog).bind('mod+v', function(event, combo) {
                 event.preventDefault();
+                if(!self.$el.is(":visible")) return true;
                 self.pasteShapes();
                 return false;
             });
@@ -70,6 +75,7 @@ var RoiModalView = Backbone.View.extend({
             "change .shape-color": "changeColor",
             // shapeManager triggers on canvas element
             "change:selected .roi_paper": "shapeSelected",
+            "new:shape .roi_paper": "shapeSelected",
             "click .copyShape": "copyShapes",
             "click .pasteShape": "pasteShapes",
             "click .deleteShape": "deleteShapes",
