@@ -23,6 +23,7 @@ from datetime import datetime
 import os
 from os import path
 import zipfile
+from math import atan, sin, cos
 
 from omero.model import ImageAnnotationLinkI, ImageI
 import omero.scripts as scripts
@@ -95,6 +96,46 @@ def compress(target, base):
                 zip_file.write(fullpath, archive_name)
     finally:
         zip_file.close()
+
+
+def arrow(canvas, x1, y1, x2, y2, strokeWidth, rgb):
+
+    canvas.setLineWidth(strokeWidth)
+    r = float(rgb[0])/255
+    g = float(rgb[1])/255
+    b = float(rgb[2])/255
+    canvas.setStrokeColorRGB(r, g, b)
+    canvas.setFillColorRGB(r, g, b)
+    p = canvas.beginPath()
+
+    headSize = (strokeWidth * 3) + 9
+    dx = x2 - x1
+    dy = y2 - y1
+
+    p.moveTo(x1, y1)
+    p.lineTo(x2, y2)
+
+    lineAngle = atan(dx / dy)
+    f = -1
+    if dy < 0:
+        f = 1
+
+    # Angle of arrow head is 0.8 radians (0.4 either side of lineAngle)
+    arrowPoint1x = x2 + (f * sin(lineAngle - 0.4) * headSize)
+    arrowPoint1y = y2 + (f * cos(lineAngle - 0.4) * headSize)
+    arrowPoint2x = x2 + (f * sin(lineAngle + 0.4) * headSize)
+    arrowPoint2y = y2 + (f * cos(lineAngle + 0.4) * headSize)
+
+    # Full path goes around the head, past the tip and back to tip so that the tip is 'pointy'
+    # and 'fill' is not from a head corner to the start of arrow.
+    p.moveTo(arrowPoint1x, arrowPoint1y)
+    p.lineTo(arrowPoint2x, arrowPoint2y)
+    p.lineTo(x2, y2)
+    p.lineTo(arrowPoint1x, arrowPoint1y)
+    # p.lineTo(x2, y2)
+    p.lineTo(arrowPoint2x, arrowPoint2y)
+
+    canvas.drawPath(p, fill=1, stroke=1)
 
 
 class FigureExport(object):
@@ -315,7 +356,7 @@ class FigureExport(object):
         print "setActiveChannels", cIdxs, windows, colors
         image.setActiveChannels(cIdxs, windows, colors)
 
-    def get_panel_size(self, panel):
+    def getCropRegion(self, panel):
         """
         Gets the width and height in points/pixels for a panel in the
         figure. This is at the 'original' figure / PDF coordinates
@@ -352,8 +393,12 @@ class FigureExport(object):
                 print "viewport longer"
                 tile_w = tile_h * wh
 
+        print 'dx', dx, '(orig_w - tile_w)/2', (orig_w - tile_w)/2
+        cropX = ((orig_w - tile_w)/2) - dx
+        cropY = ((orig_h - tile_h)/2) - dy
+
         print 'tile_w', tile_w, 'tile_h', tile_h
-        return {'width': tile_w, 'height': tile_h}
+        return {'x': cropX, 'y': cropY, 'width': tile_w, 'height': tile_h}
 
     def get_time_label_text(self, deltaT, format):
         """ Gets the text for 'live' time-stamp labels """
@@ -371,6 +416,51 @@ class FigureExport(object):
             s = deltaT % 60
             text = "%s:%02d:%02d" % (h, m, s)
         return text
+
+    def addROIs(self, panel, page):
+        """
+        Add any Shapes
+        """
+        if "shapes" not in panel:
+            return
+
+        cropRegion = self.getCropRegion(panel)
+        scale = float(panel['width']) / cropRegion['width']
+        print "Scale", panel['width'], cropRegion['width'], scale
+        x = panel['x']
+        y = panel['y']
+        # Handle page offsets
+        x = x - page['x']
+        y = y - page['y']
+
+        def panelToPageCoords(shapeX, shapeY):
+            # convert to coords within crop region
+            shapeX = shapeX - cropRegion['x']
+            shapeY = shapeY - cropRegion['y']
+            # scale and position on page within panel
+            shapeX = (shapeX * scale) + x
+            shapeY = (shapeY * scale) + y
+            return {'x': shapeX, 'y': shapeY}
+
+        for shape in panel["shapes"]:
+
+            color = shape['strokeColor']   # E.g. #FF0000
+            print color
+            red = int(color[1:3], 16)
+            green = int(color[3:5], 16)
+            blue = int(color[5:7], 16)
+            rgb = (red, green, blue)
+            print rgb
+
+            if (shape['type'] == "Arrow"):
+                start = panelToPageCoords(shape['x1'], shape['y1'])
+                end = panelToPageCoords(shape['x2'], shape['y2'])
+                x1 = start['x']
+                y1 = self.pageHeight - start['y']
+                x2 = end['x']
+                y2 = self.pageHeight - end['y']
+                strokeWidth = shape['strokeWidth'] * scale
+                arrow(self.figureCanvas, x1, y1, x2, y2, strokeWidth, rgb)
 
     def drawLabels(self, panel, page):
         """
@@ -647,7 +737,7 @@ class FigureExport(object):
             pilImg = pilImg.rotate(rotation, Image.BICUBIC)
 
         # Final crop to size
-        panel_size = self.get_panel_size(panel)
+        panel_size = self.getCropRegion(panel)
 
         w, h = pilImg.size
         tile_w = panel_size['width']
@@ -877,6 +967,7 @@ class FigureExport(object):
             if image.canAnnotate():
                 imageIds.add(imageId)
             self.drawLabels(panel, page)
+            self.addROIs(panel, page)
             print ""
 
     def getFigureFileExt(self):
