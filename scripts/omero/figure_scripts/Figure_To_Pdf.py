@@ -675,6 +675,105 @@ class FigureExport(object):
 
             self.drawText(label, (lx + lx_end)/2, ly, font_size, (red, green, blue), align="center")
 
+    def addROIsToFullImage(self, pilImg, panel):
+        """ At this point, pilImg is the full plane of the image """
+
+        if "shapes" not in panel:
+            return
+
+        for shape in panel["shapes"]:
+
+            if shape['type'] == "Arrow":
+
+                # PIL.ImageDraw.Draw.polygon(xy, fill=None, outline=None)
+
+                x1 = shape['x1']
+                y1 = shape['y1']
+                x2 = shape['x2']
+                y2 = shape['y2']
+                strokeWidth = shape['strokeWidth']
+
+                headSize = (strokeWidth * 3) + 9
+                dx = x2 - x1
+                dy = y2 - y1
+
+                lineAngle = atan(dx / dy)
+                f = -1
+                if dy < 0:
+                    f = 1
+
+                # Angle of arrow head is 0.8 radians (0.4 either side of lineAngle)
+                arrowPoint1x = x2 + (f * sin(lineAngle - 0.4) * headSize)
+                arrowPoint1y = y2 + (f * cos(lineAngle - 0.4) * headSize)
+                arrowPoint2x = x2 + (f * sin(lineAngle + 0.4) * headSize)
+                arrowPoint2y = y2 + (f * cos(lineAngle + 0.4) * headSize)
+
+                points = ((x1, y1),
+                          (x2, y2),
+                          (arrowPoint1x, arrowPoint1y),
+                          (arrowPoint2x, arrowPoint2y),
+                          (x2, y2)
+                          )
+                draw = ImageDraw.Draw(pilImg)
+                color = shape['strokeColor']   # E.g. #FF0000
+                red = int(color[1:3], 16)
+                green = int(color[3:5], 16)
+                blue = int(color[5:7], 16)
+                draw.polygon(points, fill=(red, green, blue), outline=(red, green, blue))
+
+    def addROIsToCroppedImage(self, pilImg, panel):
+        """ At this point, pilImg is cropped, at the full resolution """
+
+        if "shapes" not in panel:
+            return
+
+        crop = self.getCropRegion(panel)
+        scale = pilImg.size[0] / crop['width']
+
+        print "crop['width']", crop['width'], "pilImg.size", pilImg.size
+        print 'scale', scale, crop
+
+        for shape in panel["shapes"]:
+
+            if shape['type'] == "Arrow":
+
+                # PIL.ImageDraw.Draw.polygon(xy, fill=None, outline=None)
+
+                x1 = (shape['x1'] - crop['x']) * scale
+                y1 = (shape['y1'] - crop['y']) * scale
+                x2 = (shape['x2'] - crop['x']) * scale
+                y2 = (shape['y2'] - crop['y']) * scale
+                strokeWidth = shape['strokeWidth'] * scale
+
+                headSize = (strokeWidth * 3) + 9
+                dx = x2 - x1
+                dy = y2 - y1
+
+                lineAngle = atan(dx / dy)
+                f = -1
+                if dy < 0:
+                    f = 1
+
+                # Angle of arrow head is 0.8 radians (0.4 either side of lineAngle)
+                arrowPoint1x = x2 + (f * sin(lineAngle - 0.4) * headSize)
+                arrowPoint1y = y2 + (f * cos(lineAngle - 0.4) * headSize)
+                arrowPoint2x = x2 + (f * sin(lineAngle + 0.4) * headSize)
+                arrowPoint2y = y2 + (f * cos(lineAngle + 0.4) * headSize)
+
+                points = ((x2, y2),
+                          (arrowPoint1x, arrowPoint1y),
+                          (arrowPoint2x, arrowPoint2y),
+                          (x2, y2)
+                          )
+                draw = ImageDraw.Draw(pilImg)
+                color = shape['strokeColor']   # E.g. #FF0000
+                red = int(color[1:3], 16)
+                green = int(color[3:5], 16)
+                blue = int(color[5:7], 16)
+                draw.line([(x1, y1),
+                          (x2, y2)], fill=(red, green, blue), width=int(strokeWidth))
+                draw.polygon(points, fill=(red, green, blue), outline=(red, green, blue))
+
     def getPanelImage(self, image, panel, origName=None):
         """
         Gets the rendered image from OMERO, then crops & rotates as needed.
@@ -697,6 +796,8 @@ class FigureExport(object):
 
         if origName is not None:
             pilImg.save(origName)
+
+        # self.addROIsToImage(pilImg, panel)
 
         # Need to crop around centre before rotating...
         sizeX = image.getSizeX()
@@ -794,7 +895,8 @@ class FigureExport(object):
         dpi = 'export_dpi' in panel and panel['export_dpi'] or None
 
         # Paste the panel to PDF or TIFF image
-        self.pasteImage(pilImg, imgName, x, y, width, height, dpi)
+        # TODO - if we put 'panel' here we don't need x, y, width, height
+        self.pasteImage(pilImg, imgName, x, y, width, height, dpi, panel)
 
         self.drawScalebar(panel, tile_width, page)
 
@@ -967,7 +1069,7 @@ class FigureExport(object):
             if image.canAnnotate():
                 imageIds.add(imageId)
             self.drawLabels(panel, page)
-            self.addROIs(panel, page)
+            # self.addROIs(panel, page)
             print ""
 
     def getFigureFileExt(self):
@@ -1109,7 +1211,7 @@ class TiffExport(FigureExport):
         print "TIFF: width, height", tiffWidth, tiffHeight
         self.tiffFigure = Image.new("RGBA", (tiffWidth, tiffHeight), (255, 255, 255))
 
-    def pasteImage(self, pilImg, imgName, x, y, width, height, dpi=None):
+    def pasteImage(self, pilImg, imgName, x, y, width, height, dpi=None, panel=None):
         """ Add the PIL image to the current figure page """
 
         print "pasteImage: x, y, width, height", x, y, width, height
@@ -1130,8 +1232,12 @@ class TiffExport(FigureExport):
             print "Saving pre_resampled to: ", rsName
             pilImg.save(rsName)
 
+        # Resize to our target size to match DPI of figure
         print "resize to: x, y, width, height", x, y, width, height
         pilImg = pilImg.resize((width, height), Image.BICUBIC)
+
+        # Now at full figure resolution - Good time to add shapes...
+        self.addROIsToCroppedImage(pilImg, panel)
 
         if self.exportImages:
             imgName = os.path.join(self.zip_folder_name, FINAL_DIR, imgName)
