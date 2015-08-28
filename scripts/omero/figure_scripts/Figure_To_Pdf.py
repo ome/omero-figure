@@ -745,7 +745,7 @@ class FigureExport(object):
                 y2 = (shape['y2'] - crop['y']) * scale
                 strokeWidth = shape['strokeWidth'] * scale
 
-                headSize = (strokeWidth * 3) + 9
+                headSize = (strokeWidth * 5) + 9
                 dx = x2 - x1
                 dy = y2 - y1
 
@@ -759,6 +759,8 @@ class FigureExport(object):
                 arrowPoint1y = y2 + (f * cos(lineAngle - 0.4) * headSize)
                 arrowPoint2x = x2 + (f * sin(lineAngle + 0.4) * headSize)
                 arrowPoint2y = y2 + (f * cos(lineAngle + 0.4) * headSize)
+                arrowPointMidx = x2 + (f * sin(lineAngle) * headSize * 0.5)
+                arrowPointMidy = y2 + (f * cos(lineAngle) * headSize * 0.5)
 
                 points = ((x2, y2),
                           (arrowPoint1x, arrowPoint1y),
@@ -771,7 +773,8 @@ class FigureExport(object):
                 green = int(color[3:5], 16)
                 blue = int(color[5:7], 16)
                 draw.line([(x1, y1),
-                          (x2, y2)], fill=(red, green, blue), width=int(strokeWidth))
+                          (arrowPointMidx, arrowPointMidy)],
+                          fill=(red, green, blue), width=int(strokeWidth))
                 draw.polygon(points, fill=(red, green, blue), outline=(red, green, blue))
 
     def getPanelImage(self, image, panel, origName=None):
