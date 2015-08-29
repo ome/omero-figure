@@ -98,6 +98,76 @@ def compress(target, base):
         zip_file.close()
 
 
+class ShapeToPilExport(object):
+    """
+    Class for drawing panel shapes onto a PIL image.
+    We get a PIL image, the panel dict, and crop coordinates
+    """
+
+    def __init__(self, pilImg, panel, crop):
+
+        # self.pilImg = pilImg
+        self.panel = panel
+        # The crop region on the original image coordinates...
+        self.crop = crop
+        # Get a mapping from original coordinates to the actual size of the panel
+        self.scale = pilImg.size[0] / crop['width']
+        self.draw = ImageDraw.Draw(pilImg)
+
+        if "shapes" in panel:
+            for shape in panel["shapes"]:
+                if shape['type'] == "Arrow":
+                    self.drawArrow(shape)
+
+    def getX(self, x):
+        return (x - self.crop['x']) * self.scale
+
+    def getY(self, y):
+        return (y - self.crop['y']) * self.scale
+
+    def getRGB(self, color):
+        # Convert from E.g. '#ff0000' to (255, 0, 0)
+        red = int(color[1:3], 16)
+        green = int(color[3:5], 16)
+        blue = int(color[5:7], 16)
+        return (red, green, blue)
+
+    def drawArrow(self, shape):
+
+        x1 = self.getX(shape['x1'])
+        y1 = self.getY(shape['y1'])
+        x2 = self.getX(shape['x2'])
+        y2 = self.getY(shape['y2'])
+        headSize = ((shape['strokeWidth'] * 5) + 9) * self.scale
+        strokeWidth = shape['strokeWidth'] * self.scale
+
+        # Do some trigonometry to get the line angle can calculate arrow points
+        dx = x2 - x1
+        dy = y2 - y1
+        lineAngle = atan(dx / dy)
+        f = -1
+        if dy < 0:
+            f = 1
+        # Angle of arrow head is 0.8 radians (0.4 either side of lineAngle)
+        arrowPoint1x = x2 + (f * sin(lineAngle - 0.4) * headSize)
+        arrowPoint1y = y2 + (f * cos(lineAngle - 0.4) * headSize)
+        arrowPoint2x = x2 + (f * sin(lineAngle + 0.4) * headSize)
+        arrowPoint2y = y2 + (f * cos(lineAngle + 0.4) * headSize)
+        arrowPointMidx = x2 + (f * sin(lineAngle) * headSize * 0.5)
+        arrowPointMidy = y2 + (f * cos(lineAngle) * headSize * 0.5)
+
+        points = ((x2, y2),
+                  (arrowPoint1x, arrowPoint1y),
+                  (arrowPoint2x, arrowPoint2y),
+                  (x2, y2)
+                  )
+
+        rgb = self.getRGB(shape['strokeColor'])
+        self.draw.line([(x1, y1), (arrowPointMidx, arrowPointMidy)],
+                       fill=rgb, width=int(strokeWidth))
+        self.draw.polygon(points, fill=rgb, outline=rgb)
+
+
 def arrow(canvas, x1, y1, x2, y2, strokeWidth, rgb, scale):
 
     r = float(rgb[0])/255
@@ -683,63 +753,6 @@ class FigureExport(object):
 
             self.drawText(label, (lx + lx_end)/2, ly, font_size, (red, green, blue), align="center")
 
-    def addROIsToCroppedImage(self, pilImg, panel):
-        """ At this point, pilImg is cropped, at the full resolution """
-
-        if "shapes" not in panel:
-            return
-
-        crop = self.getCropRegion(panel)
-        scale = pilImg.size[0] / crop['width']
-
-        print "crop['width']", crop['width'], "pilImg.size", pilImg.size
-        print 'scale', scale, crop
-
-        for shape in panel["shapes"]:
-
-            if shape['type'] == "Arrow":
-
-                # PIL.ImageDraw.Draw.polygon(xy, fill=None, outline=None)
-
-                x1 = (shape['x1'] - crop['x']) * scale
-                y1 = (shape['y1'] - crop['y']) * scale
-                x2 = (shape['x2'] - crop['x']) * scale
-                y2 = (shape['y2'] - crop['y']) * scale
-                strokeWidth = shape['strokeWidth'] * scale
-
-                headSize = (shape['strokeWidth'] * 5) + 9
-                dx = x2 - x1
-                dy = y2 - y1
-                headSize = headSize * scale
-
-                lineAngle = atan(dx / dy)
-                f = -1
-                if dy < 0:
-                    f = 1
-
-                # Angle of arrow head is 0.8 radians (0.4 either side of lineAngle)
-                arrowPoint1x = x2 + (f * sin(lineAngle - 0.4) * headSize)
-                arrowPoint1y = y2 + (f * cos(lineAngle - 0.4) * headSize)
-                arrowPoint2x = x2 + (f * sin(lineAngle + 0.4) * headSize)
-                arrowPoint2y = y2 + (f * cos(lineAngle + 0.4) * headSize)
-                arrowPointMidx = x2 + (f * sin(lineAngle) * headSize * 0.5)
-                arrowPointMidy = y2 + (f * cos(lineAngle) * headSize * 0.5)
-
-                points = ((x2, y2),
-                          (arrowPoint1x, arrowPoint1y),
-                          (arrowPoint2x, arrowPoint2y),
-                          (x2, y2)
-                          )
-                draw = ImageDraw.Draw(pilImg)
-                color = shape['strokeColor']   # E.g. #FF0000
-                red = int(color[1:3], 16)
-                green = int(color[3:5], 16)
-                blue = int(color[5:7], 16)
-                draw.line([(x1, y1),
-                          (arrowPointMidx, arrowPointMidy)],
-                          fill=(red, green, blue), width=int(strokeWidth))
-                draw.polygon(points, fill=(red, green, blue), outline=(red, green, blue))
-
     def getPanelImage(self, image, panel, origName=None):
         """
         Gets the rendered image from OMERO, then crops & rotates as needed.
@@ -1150,6 +1163,10 @@ class TiffExport(FigureExport):
         self.ns = "omero.web.figure.tiff"
         self.mimetype = "image/tiff"
 
+    def addROIs(self, panel, page):
+        """ TIFF export doesn't add ROIs to page (does it to panel)"""
+        pass
+
     def getFont(self, fontsize):
         """ Try to load font from known location in OMERO """
         try:
@@ -1204,7 +1221,9 @@ class TiffExport(FigureExport):
         pilImg = pilImg.resize((width, height), Image.BICUBIC)
 
         # Now at full figure resolution - Good time to add shapes...
-        self.addROIsToCroppedImage(pilImg, panel)
+        # self.addROIsToCroppedImage(pilImg, panel)
+        crop = self.getCropRegion(panel)
+        ShapeToPilExport(pilImg, panel, crop)
 
         if self.exportImages:
             imgName = os.path.join(self.zip_folder_name, FINAL_DIR, imgName)
