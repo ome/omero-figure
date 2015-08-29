@@ -745,9 +745,10 @@ class FigureExport(object):
                 y2 = (shape['y2'] - crop['y']) * scale
                 strokeWidth = shape['strokeWidth'] * scale
 
-                headSize = (strokeWidth * 5) + 9
+                headSize = (shape['strokeWidth'] * 5) + 9
                 dx = x2 - x1
                 dy = y2 - y1
+                headSize = headSize * scale
 
                 lineAngle = atan(dx / dy)
                 f = -1
