@@ -118,6 +118,8 @@ class ShapeToPilExport(object):
             for shape in panel["shapes"]:
                 if shape['type'] == "Arrow":
                     self.drawArrow(shape)
+                elif shape['type'] == "Line":
+                    self.drawLine(shape)
 
     def getX(self, x):
         return (x - self.crop['x']) * self.scale
@@ -140,6 +142,7 @@ class ShapeToPilExport(object):
         y2 = self.getY(shape['y2'])
         headSize = ((shape['strokeWidth'] * 5) + 9) * self.scale
         strokeWidth = shape['strokeWidth'] * self.scale
+        rgb = self.getRGB(shape['strokeColor'])
 
         # Do some trigonometry to get the line angle can calculate arrow points
         dx = x2 - x1
@@ -162,10 +165,21 @@ class ShapeToPilExport(object):
                   (x2, y2)
                   )
 
-        rgb = self.getRGB(shape['strokeColor'])
+        # Draw Line of arrow - to midpoint of head at full stroke width
         self.draw.line([(x1, y1), (arrowPointMidx, arrowPointMidy)],
                        fill=rgb, width=int(strokeWidth))
+        # Draw Arrow head, up to tip at x2, y2
         self.draw.polygon(points, fill=rgb, outline=rgb)
+
+    def drawLine(self, shape):
+        x1 = self.getX(shape['x1'])
+        y1 = self.getY(shape['y1'])
+        x2 = self.getX(shape['x2'])
+        y2 = self.getY(shape['y2'])
+        strokeWidth = shape['strokeWidth'] * self.scale
+        rgb = self.getRGB(shape['strokeColor'])
+
+        self.draw.line([(x1, y1), (x2, y2)], fill=rgb, width=int(strokeWidth))
 
 
 def arrow(canvas, x1, y1, x2, y2, strokeWidth, rgb, scale):
