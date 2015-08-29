@@ -98,22 +98,23 @@ def compress(target, base):
         zip_file.close()
 
 
-def arrow(canvas, x1, y1, x2, y2, strokeWidth, rgb):
+def arrow(canvas, x1, y1, x2, y2, strokeWidth, rgb, scale):
 
-    canvas.setLineWidth(strokeWidth)
     r = float(rgb[0])/255
     g = float(rgb[1])/255
     b = float(rgb[2])/255
     canvas.setStrokeColorRGB(r, g, b)
     canvas.setFillColorRGB(r, g, b)
-    p = canvas.beginPath()
 
-    headSize = (strokeWidth * 3) + 9
+    headSize = (strokeWidth * 5) + 9
+    headSize = headSize * scale
     dx = x2 - x1
     dy = y2 - y1
 
-    p.moveTo(x1, y1)
-    p.lineTo(x2, y2)
+    strokeWidth = strokeWidth * scale
+    canvas.setLineWidth(strokeWidth)
+
+    p = canvas.beginPath()
 
     lineAngle = atan(dx / dy)
     f = -1
@@ -125,15 +126,23 @@ def arrow(canvas, x1, y1, x2, y2, strokeWidth, rgb):
     arrowPoint1y = y2 + (f * cos(lineAngle - 0.4) * headSize)
     arrowPoint2x = x2 + (f * sin(lineAngle + 0.4) * headSize)
     arrowPoint2y = y2 + (f * cos(lineAngle + 0.4) * headSize)
+    arrowPointMidx = x2 + (f * sin(lineAngle) * headSize * 0.5)
+    arrowPointMidy = y2 + (f * cos(lineAngle) * headSize * 0.5)
 
-    # Full path goes around the head, past the tip and back to tip so that the tip is 'pointy'
-    # and 'fill' is not from a head corner to the start of arrow.
+    # Draw the line (at lineWidth)
+    p.moveTo(x1, y1)
+    p.lineTo(arrowPointMidx, arrowPointMidy)
+    canvas.drawPath(p, fill=1, stroke=1)
+
+    # Draw the arrow head (at lineWidth: 0)
+    canvas.setLineWidth(0)
+
     p.moveTo(arrowPoint1x, arrowPoint1y)
     p.lineTo(arrowPoint2x, arrowPoint2y)
     p.lineTo(x2, y2)
     p.lineTo(arrowPoint1x, arrowPoint1y)
     # p.lineTo(x2, y2)
-    p.lineTo(arrowPoint2x, arrowPoint2y)
+    # p.lineTo(arrowPoint2x, arrowPoint2y)
 
     canvas.drawPath(p, fill=1, stroke=1)
 
@@ -459,8 +468,7 @@ class FigureExport(object):
                 y1 = self.pageHeight - start['y']
                 x2 = end['x']
                 y2 = self.pageHeight - end['y']
-                strokeWidth = shape['strokeWidth'] * scale
-                arrow(self.figureCanvas, x1, y1, x2, y2, strokeWidth, rgb)
+                arrow(self.figureCanvas, x1, y1, x2, y2, shape['strokeWidth'], rgb, scale)
 
     def drawLabels(self, panel, page):
         """
@@ -674,52 +682,6 @@ class FigureExport(object):
                 ly = ly + 5
 
             self.drawText(label, (lx + lx_end)/2, ly, font_size, (red, green, blue), align="center")
-
-    def addROIsToFullImage(self, pilImg, panel):
-        """ At this point, pilImg is the full plane of the image """
-
-        if "shapes" not in panel:
-            return
-
-        for shape in panel["shapes"]:
-
-            if shape['type'] == "Arrow":
-
-                # PIL.ImageDraw.Draw.polygon(xy, fill=None, outline=None)
-
-                x1 = shape['x1']
-                y1 = shape['y1']
-                x2 = shape['x2']
-                y2 = shape['y2']
-                strokeWidth = shape['strokeWidth']
-
-                headSize = (strokeWidth * 3) + 9
-                dx = x2 - x1
-                dy = y2 - y1
-
-                lineAngle = atan(dx / dy)
-                f = -1
-                if dy < 0:
-                    f = 1
-
-                # Angle of arrow head is 0.8 radians (0.4 either side of lineAngle)
-                arrowPoint1x = x2 + (f * sin(lineAngle - 0.4) * headSize)
-                arrowPoint1y = y2 + (f * cos(lineAngle - 0.4) * headSize)
-                arrowPoint2x = x2 + (f * sin(lineAngle + 0.4) * headSize)
-                arrowPoint2y = y2 + (f * cos(lineAngle + 0.4) * headSize)
-
-                points = ((x1, y1),
-                          (x2, y2),
-                          (arrowPoint1x, arrowPoint1y),
-                          (arrowPoint2x, arrowPoint2y),
-                          (x2, y2)
-                          )
-                draw = ImageDraw.Draw(pilImg)
-                color = shape['strokeColor']   # E.g. #FF0000
-                red = int(color[1:3], 16)
-                green = int(color[3:5], 16)
-                blue = int(color[5:7], 16)
-                draw.polygon(points, fill=(red, green, blue), outline=(red, green, blue))
 
     def addROIsToCroppedImage(self, pilImg, panel):
         """ At this point, pilImg is cropped, at the full resolution """
@@ -1072,8 +1034,9 @@ class FigureExport(object):
             image = self.drawPanel(panel, page, i)
             if image.canAnnotate():
                 imageIds.add(imageId)
+            # For PDF we add ROIs last, on top of panel etc.
+            self.addROIs(panel, page)
             self.drawLabels(panel, page)
-            # self.addROIs(panel, page)
             print ""
 
     def getFigureFileExt(self):
@@ -1133,7 +1096,7 @@ class FigureExport(object):
         c.setStrokeColorRGB(red, green, blue)
         c.line(x, y, x2, y2,)
 
-    def pasteImage(self, pilImg, imgName, x, y, width, height, dpi):
+    def pasteImage(self, pilImg, imgName, x, y, width, height, dpi, panel=None):
         """ Adds the PIL image to the PDF figure. Overwritten for TIFFs """
 
         if dpi is not None:
