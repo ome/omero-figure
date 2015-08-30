@@ -124,9 +124,17 @@ class ShapeToPilExport(object):
                     self.drawRectangle(shape)
 
     def getX(self, x):
+        """
+        Helper method to convert from coordinates of Image to
+        coordinates of the cropped PIL image
+        """
         return (x - self.crop['x']) * self.scale
 
     def getY(self, y):
+        """
+        Helper method to convert from coordinates of Image to
+        coordinates of the cropped PIL image
+        """
         return (y - self.crop['y']) * self.scale
 
     def getRGB(self, color):
@@ -184,26 +192,25 @@ class ShapeToPilExport(object):
         self.draw.line([(x1, y1), (x2, y2)], fill=rgb, width=int(strokeWidth))
 
     def drawRectangle(self, shape):
-        # clockwise list of corner points
-        p1x = self.getX(shape['x'])
-        p1y = self.getY(shape['y'])
-        p2x = self.getX(shape['x'] + shape['width'])
+        # clockwise list of corner points on the OUTSIDE of thick line
+        w = shape['strokeWidth']
+        hw = w * 0.5
+        p1x = self.getX(shape['x'] - hw)
+        p1y = self.getY(shape['y'] - hw)
+        p2x = self.getX(shape['x'] + shape['width'] + hw)
         p2y = p1y
         p3x = p2x
-        p3y = self.getY(shape['y'] + shape['height'])
+        p3y = self.getY(shape['y'] + shape['height'] + hw)
         p4x = p1x
         p4y = p3y
-        strokeWidth = int(shape['strokeWidth'] * self.scale)
-        w = strokeWidth * 0.5
+        scaleW = w * self.scale
         rgb = self.getRGB(shape['strokeColor'])
 
-        print rgb
-        print p1x, p1y, p2x, p2y, p3x, p3y, p4x, p4y, w
-        # 4 lines of Rectangle
-        self.draw.line([(p1x - w, p1y), (p2x + w, p2y)], fill=rgb, width=strokeWidth)
-        self.draw.line([(p2x, p2y - w), (p3x, p3y + w)], fill=rgb, width=strokeWidth)
-        self.draw.line([(p3x + w, p3y), (p4x - w, p4y)], fill=rgb, width=strokeWidth)
-        self.draw.line([(p4x, p4y + w), (p1x, p1y - w)], fill=rgb, width=strokeWidth)
+        # 4 rectangles, from the outside to inside of line
+        self.draw.rectangle((p1x, p1y, p2x, p2y + scaleW), fill=rgb)
+        self.draw.rectangle((p2x - scaleW, p1y, p3x, p3y), fill=rgb)
+        self.draw.rectangle((p3x, p3y, p4x, p4y - scaleW), fill=rgb)
+        self.draw.rectangle((p4x, p4y, p1x + scaleW, p1y), fill=rgb)
 
 
 def arrow(canvas, x1, y1, x2, y2, strokeWidth, rgb, scale):
