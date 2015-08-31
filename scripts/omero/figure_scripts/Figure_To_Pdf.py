@@ -115,8 +115,8 @@ class ShapeToPdfExport(object):
             for shape in panel["shapes"]:
                 if shape['type'] == "Arrow":
                     self.drawArrow(shape)
-                # elif shape['type'] == "Line":
-                #     self.drawLine(shape)
+                elif shape['type'] == "Line":
+                    self.drawLine(shape)
                 # elif shape['type'] == "Rectangle":
                 #     self.drawRectangle(shape)
                 # elif shape['type'] == "Ellipse":
@@ -140,6 +140,28 @@ class ShapeToPdfExport(object):
         shapeX = (shapeX * self.scale) + x
         shapeY = (shapeY * self.scale) + y
         return {'x': shapeX, 'y': shapeY}
+
+    def drawLine(self, shape):
+        start = self.panelToPageCoords(shape['x1'], shape['y1'])
+        end = self.panelToPageCoords(shape['x2'], shape['y2'])
+        x1 = start['x']
+        y1 = self.pageHeight - start['y']
+        x2 = end['x']
+        y2 = self.pageHeight - end['y']
+
+        rgb = self.getRGB(shape['strokeColor'])
+        r = float(rgb[0])/255
+        g = float(rgb[1])/255
+        b = float(rgb[2])/255
+        self.canvas.setStrokeColorRGB(r, g, b)
+        self.canvas.setFillColorRGB(r, g, b)
+        strokeWidth = shape['strokeWidth'] * self.scale
+        self.canvas.setLineWidth(strokeWidth)
+
+        p = self.canvas.beginPath()
+        p.moveTo(x1, y1)
+        p.lineTo(x2, y2)
+        self.canvas.drawPath(p, fill=1, stroke=1)
 
     def drawArrow(self, shape):
         start = self.panelToPageCoords(shape['x1'], shape['y1'])
