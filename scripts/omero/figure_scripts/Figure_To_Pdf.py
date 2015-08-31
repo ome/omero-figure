@@ -117,8 +117,8 @@ class ShapeToPdfExport(object):
                     self.drawArrow(shape)
                 elif shape['type'] == "Line":
                     self.drawLine(shape)
-                # elif shape['type'] == "Rectangle":
-                #     self.drawRectangle(shape)
+                elif shape['type'] == "Rectangle":
+                    self.drawRectangle(shape)
                 # elif shape['type'] == "Ellipse":
                 #     self.drawEllipse(shape)
 
@@ -141,6 +141,23 @@ class ShapeToPdfExport(object):
         shapeY = (shapeY * self.scale) + y
         return {'x': shapeX, 'y': shapeY}
 
+    def drawRectangle(self, shape):
+        topLeft = self.panelToPageCoords(shape['x'], shape['y'])
+        width = shape['width'] * self.scale
+        height = shape['height'] * self.scale
+        x = topLeft['x']
+        y = self.pageHeight - topLeft['y'] - height
+
+        rgb = self.getRGB(shape['strokeColor'])
+        r = float(rgb[0])/255
+        g = float(rgb[1])/255
+        b = float(rgb[2])/255
+        self.canvas.setStrokeColorRGB(r, g, b)
+        strokeWidth = shape['strokeWidth'] * self.scale
+        self.canvas.setLineWidth(strokeWidth)
+
+        self.canvas.rect(x, y, width, height, stroke=1)
+
     def drawLine(self, shape):
         start = self.panelToPageCoords(shape['x1'], shape['y1'])
         end = self.panelToPageCoords(shape['x2'], shape['y2'])
@@ -154,7 +171,6 @@ class ShapeToPdfExport(object):
         g = float(rgb[1])/255
         b = float(rgb[2])/255
         self.canvas.setStrokeColorRGB(r, g, b)
-        self.canvas.setFillColorRGB(r, g, b)
         strokeWidth = shape['strokeWidth'] * self.scale
         self.canvas.setLineWidth(strokeWidth)
 
