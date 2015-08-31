@@ -98,6 +98,103 @@ def compress(target, base):
         zip_file.close()
 
 
+class ShapeToPdfExport(object):
+
+    def __init__(self, canvas, panel, page, crop, pageHeight):
+
+        self.canvas = canvas
+        self.panel = panel
+        self.page = page
+        # The crop region on the original image coordinates...
+        self.crop = crop
+        self.pageHeight = pageHeight
+        # Get a mapping from original coordinates to the actual size of the panel
+        self.scale = float(panel['width']) / crop['width']
+
+        if "shapes" in panel:
+            for shape in panel["shapes"]:
+                if shape['type'] == "Arrow":
+                    self.drawArrow(shape)
+                # elif shape['type'] == "Line":
+                #     self.drawLine(shape)
+                # elif shape['type'] == "Rectangle":
+                #     self.drawRectangle(shape)
+                # elif shape['type'] == "Ellipse":
+                #     self.drawEllipse(shape)
+
+    def getRGB(self, color):
+        # Convert from E.g. '#ff0000' to (255, 0, 0)
+        red = int(color[1:3], 16)
+        green = int(color[3:5], 16)
+        blue = int(color[5:7], 16)
+        return (red, green, blue)
+
+    def panelToPageCoords(self, shapeX, shapeY):
+        # Handle page offsets
+        x = self.panel['x'] - self.page['x']
+        y = self.panel['y'] - self.page['y']
+        # convert to coords within crop region
+        shapeX = shapeX - self.crop['x']
+        shapeY = shapeY - self.crop['y']
+        # scale and position on page within panel
+        shapeX = (shapeX * self.scale) + x
+        shapeY = (shapeY * self.scale) + y
+        return {'x': shapeX, 'y': shapeY}
+
+    def drawArrow(self, shape):
+        start = self.panelToPageCoords(shape['x1'], shape['y1'])
+        end = self.panelToPageCoords(shape['x2'], shape['y2'])
+        x1 = start['x']
+        y1 = self.pageHeight - start['y']
+        x2 = end['x']
+        y2 = self.pageHeight - end['y']
+        strokeWidth = shape['strokeWidth']
+        # arrow(self.figureCanvas, x1, y1, x2, y2, shape['strokeWidth'], rgb, scale)
+
+        rgb = self.getRGB(shape['strokeColor'])
+        r = float(rgb[0])/255
+        g = float(rgb[1])/255
+        b = float(rgb[2])/255
+        self.canvas.setStrokeColorRGB(r, g, b)
+        self.canvas.setFillColorRGB(r, g, b)
+
+        headSize = (strokeWidth * 5) + 9
+        headSize = headSize * self.scale
+        dx = x2 - x1
+        dy = y2 - y1
+
+        strokeWidth = strokeWidth * self.scale
+        self.canvas.setLineWidth(strokeWidth)
+
+        p = self.canvas.beginPath()
+
+        lineAngle = atan(dx / dy)
+        f = -1
+        if dy < 0:
+            f = 1
+
+        # Angle of arrow head is 0.8 radians (0.4 either side of lineAngle)
+        arrowPoint1x = x2 + (f * sin(lineAngle - 0.4) * headSize)
+        arrowPoint1y = y2 + (f * cos(lineAngle - 0.4) * headSize)
+        arrowPoint2x = x2 + (f * sin(lineAngle + 0.4) * headSize)
+        arrowPoint2y = y2 + (f * cos(lineAngle + 0.4) * headSize)
+        arrowPointMidx = x2 + (f * sin(lineAngle) * headSize * 0.5)
+        arrowPointMidy = y2 + (f * cos(lineAngle) * headSize * 0.5)
+
+        # Draw the line (at lineWidth)
+        p.moveTo(x1, y1)
+        p.lineTo(arrowPointMidx, arrowPointMidy)
+        self.canvas.drawPath(p, fill=1, stroke=1)
+
+        # Draw the arrow head (at lineWidth: 0)
+        self.canvas.setLineWidth(0)
+        p.moveTo(arrowPoint1x, arrowPoint1y)
+        p.lineTo(arrowPoint2x, arrowPoint2y)
+        p.lineTo(x2, y2)
+        p.lineTo(arrowPoint1x, arrowPoint1y)
+        self.canvas.drawPath(p, fill=1, stroke=1)
+
+
 class ShapeToPilExport(object):
     """
     Class for drawing panel shapes onto a PIL image.
@@ -110,7 +207,6 @@ class ShapeToPilExport(object):
         self.panel = panel
         # The crop region on the original image coordinates...
         self.crop = crop
-        # Get a mapping from original coordinates to the actual size of the panel
         self.scale = pilImg.size[0] / crop['width']
         self.draw = ImageDraw.Draw(pilImg)
 
@@ -237,55 +333,6 @@ class ShapeToPilExport(object):
         pasteX = cx - (tempEllipse.size[0]/2)
         pasteY = cy - (tempEllipse.size[1]/2)
         self.pilImg.paste(tempEllipse, (int(pasteX), int(pasteY)), mask=tempEllipse)
-
-
-def arrow(canvas, x1, y1, x2, y2, strokeWidth, rgb, scale):
-
-    r = float(rgb[0])/255
-    g = float(rgb[1])/255
-    b = float(rgb[2])/255
-    canvas.setStrokeColorRGB(r, g, b)
-    canvas.setFillColorRGB(r, g, b)
-
-    headSize = (strokeWidth * 5) + 9
-    headSize = headSize * scale
-    dx = x2 - x1
-    dy = y2 - y1
-
-    strokeWidth = strokeWidth * scale
-    canvas.setLineWidth(strokeWidth)
-
-    p = canvas.beginPath()
-
-    lineAngle = atan(dx / dy)
-    f = -1
-    if dy < 0:
-        f = 1
-
-    # Angle of arrow head is 0.8 radians (0.4 either side of lineAngle)
-    arrowPoint1x = x2 + (f * sin(lineAngle - 0.4) * headSize)
-    arrowPoint1y = y2 + (f * cos(lineAngle - 0.4) * headSize)
-    arrowPoint2x = x2 + (f * sin(lineAngle + 0.4) * headSize)
-    arrowPoint2y = y2 + (f * cos(lineAngle + 0.4) * headSize)
-    arrowPointMidx = x2 + (f * sin(lineAngle) * headSize * 0.5)
-    arrowPointMidy = y2 + (f * cos(lineAngle) * headSize * 0.5)
-
-    # Draw the line (at lineWidth)
-    p.moveTo(x1, y1)
-    p.lineTo(arrowPointMidx, arrowPointMidy)
-    canvas.drawPath(p, fill=1, stroke=1)
-
-    # Draw the arrow head (at lineWidth: 0)
-    canvas.setLineWidth(0)
-
-    p.moveTo(arrowPoint1x, arrowPoint1y)
-    p.lineTo(arrowPoint2x, arrowPoint2y)
-    p.lineTo(x2, y2)
-    p.lineTo(arrowPoint1x, arrowPoint1y)
-    # p.lineTo(x2, y2)
-    # p.lineTo(arrowPoint2x, arrowPoint2y)
-
-    canvas.drawPath(p, fill=1, stroke=1)
 
 
 class FigureExport(object):
@@ -574,42 +621,8 @@ class FigureExport(object):
         if "shapes" not in panel:
             return
 
-        cropRegion = self.getCropRegion(panel)
-        scale = float(panel['width']) / cropRegion['width']
-        print "Scale", panel['width'], cropRegion['width'], scale
-        x = panel['x']
-        y = panel['y']
-        # Handle page offsets
-        x = x - page['x']
-        y = y - page['y']
-
-        def panelToPageCoords(shapeX, shapeY):
-            # convert to coords within crop region
-            shapeX = shapeX - cropRegion['x']
-            shapeY = shapeY - cropRegion['y']
-            # scale and position on page within panel
-            shapeX = (shapeX * scale) + x
-            shapeY = (shapeY * scale) + y
-            return {'x': shapeX, 'y': shapeY}
-
-        for shape in panel["shapes"]:
-
-            color = shape['strokeColor']   # E.g. #FF0000
-            print color
-            red = int(color[1:3], 16)
-            green = int(color[3:5], 16)
-            blue = int(color[5:7], 16)
-            rgb = (red, green, blue)
-            print rgb
-
-            if (shape['type'] == "Arrow"):
-                start = panelToPageCoords(shape['x1'], shape['y1'])
-                end = panelToPageCoords(shape['x2'], shape['y2'])
-                x1 = start['x']
-                y1 = self.pageHeight - start['y']
-                x2 = end['x']
-                y2 = self.pageHeight - end['y']
-                arrow(self.figureCanvas, x1, y1, x2, y2, shape['strokeWidth'], rgb, scale)
+        crop = self.getCropRegion(panel)
+        ShapeToPdfExport(self.figureCanvas, panel, page, crop, self.pageHeight)
 
     def drawLabels(self, panel, page):
         """
