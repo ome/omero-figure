@@ -106,7 +106,7 @@ class ShapeToPilExport(object):
 
     def __init__(self, pilImg, panel, crop):
 
-        # self.pilImg = pilImg
+        self.pilImg = pilImg
         self.panel = panel
         # The crop region on the original image coordinates...
         self.crop = crop
@@ -122,6 +122,8 @@ class ShapeToPilExport(object):
                     self.drawLine(shape)
                 elif shape['type'] == "Rectangle":
                     self.drawRectangle(shape)
+                elif shape['type'] == "Ellipse":
+                    self.drawEllipse(shape)
 
     def getX(self, x):
         """
@@ -211,6 +213,30 @@ class ShapeToPilExport(object):
         self.draw.rectangle((p2x - scaleW, p1y, p3x, p3y), fill=rgb)
         self.draw.rectangle((p3x, p3y, p4x, p4y - scaleW), fill=rgb)
         self.draw.rectangle((p4x, p4y, p1x + scaleW, p1y), fill=rgb)
+
+    def drawEllipse(self, shape):
+
+        w = int(shape['strokeWidth'] * self.scale)
+        cx = self.getX(shape['cx'])
+        cy = self.getY(shape['cy'])
+        rx = self.scale * shape['rx']
+        ry = self.scale * shape['ry']
+        rotation = shape['rotation'] * -1
+        rgb = self.getRGB(shape['strokeColor'])
+
+        width = int((rx * 2) + w)
+        height = int((ry * 2) + w)
+        tempEllipse = Image.new('RGBA', (width + 1, height + 1), (255, 255, 255, 0))
+        ellipseDraw = ImageDraw.Draw(tempEllipse)
+        # Draw outer ellipse, then remove inner ellipse with full opacity
+        ellipseDraw.ellipse((0, 0, width, height), fill=rgb)
+        rgba = (255, 255, 255, 0)
+        ellipseDraw.ellipse((w, w, width - w, height - w), fill=rgba)
+        tempEllipse = tempEllipse.rotate(rotation, resample=Image.BICUBIC, expand=True)
+        # Use label as mask, so transparent part is not pasted
+        pasteX = cx - (tempEllipse.size[0]/2)
+        pasteY = cy - (tempEllipse.size[1]/2)
+        self.pilImg.paste(tempEllipse, (int(pasteX), int(pasteY)), mask=tempEllipse)
 
 
 def arrow(canvas, x1, y1, x2, y2, strokeWidth, rgb, scale):
