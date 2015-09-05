@@ -93,7 +93,12 @@ var RoiModalView = Backbone.View.extend({
             var shapeJson = this.model.get('shapesClipboard');
             if (shapeJson) {
                 // paste shapes, with offset if matching existing shape
-                this.shapeManager.pasteShapesJson(shapeJson);
+                // Constrain pasting to within viewport
+                var viewport = this.m.getViewportAsRect();
+                var p = this.shapeManager.pasteShapesJson(shapeJson, viewport);
+                if (!p) {
+                    this.renderSidebarWarning("Could not paste shape outside viewport.");
+                }
             }
         },
 
@@ -211,6 +216,12 @@ var RoiModalView = Backbone.View.extend({
             $(".roi_toolbar", this.$el).html(this.template(json));
         },
 
+        renderSidebarWarning: function(text) {
+            var html = "<p><span class='label label-warning'>Warning</span> " + text + "</p>";
+            $("#roiModalTip").html(html).show().fadeOut(5000);
+        },
+
+        // this is called each time the ROI dialog is displayed
         renderSidebar: function() {
             var tips = [
                 "Add ROIs to the image panel by choosing Rectangle, Line, Arrow or Ellipse from the toolbar.",
@@ -225,7 +236,7 @@ var RoiModalView = Backbone.View.extend({
             } else {
                 tip = "<span class='label label-primary'>Tip</span> " + tips[parseInt(Math.random() * tips.length, 10)];
             }
-            $("#roiModalTip").html(tip);
+            $("#roiModalTip").show().html(tip);
         },
 
         render: function() {
