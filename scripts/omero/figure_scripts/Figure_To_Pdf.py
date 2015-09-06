@@ -119,8 +119,8 @@ class ShapeToPdfExport(object):
                     self.drawLine(shape)
                 elif shape['type'] == "Rectangle":
                     self.drawRectangle(shape)
-                # elif shape['type'] == "Ellipse":
-                #     self.drawEllipse(shape)
+                elif shape['type'] == "Ellipse":
+                    self.drawEllipse(shape)
 
     def getRGB(self, color):
         # Convert from E.g. '#ff0000' to (255, 0, 0)
@@ -231,6 +231,42 @@ class ShapeToPdfExport(object):
         p.lineTo(x2, y2)
         p.lineTo(arrowPoint1x, arrowPoint1y)
         self.canvas.drawPath(p, fill=1, stroke=1)
+
+    def drawEllipse(self, shape):
+        strokeWidth = shape['strokeWidth'] * self.scale
+        c = self.panelToPageCoords(shape['cx'], shape['cy'])
+        cx = c['x']
+        cy = self.pageHeight - c['y']
+        rx = shape['rx'] * self.scale
+        ry = shape['ry'] * self.scale
+        rotation = shape['rotation'] * -1
+        rgb = self.getRGB(shape['strokeColor'])
+        r = float(rgb[0])/255
+        g = float(rgb[1])/255
+        b = float(rgb[2])/255
+        self.canvas.setStrokeColorRGB(r, g, b)
+
+        # For rotation, we reset our coordinates around cx, cy
+        # so that rotation applies around cx, cy
+        self.canvas.saveState()
+        self.canvas.translate(cx, cy)
+        self.canvas.rotate(rotation)
+        # centre is now at 0, 0
+        cx = 0
+        cy = 0
+        height = ry * 2
+        width = rx * 2
+        left = cx - rx
+        bottom = cy - ry
+
+        # Draw ellipse...
+        p = self.canvas.beginPath()
+        self.canvas.setLineWidth(strokeWidth)
+        p.ellipse(left, bottom, width, height)
+        self.canvas.drawPath(p, stroke=1)
+
+        # Restore coordinates, rotation etc.
+        self.canvas.restoreState()
 
 
 class ShapeToPilExport(object):
