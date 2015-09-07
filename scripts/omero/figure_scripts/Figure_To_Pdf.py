@@ -1004,8 +1004,6 @@ class FigureExport(object):
         channels = panel['channels']
         x = panel['x']
         y = panel['y']
-        width = panel['width']
-        height = panel['height']
 
         # Handle page offsets
         # pageHeight = self.pageHeight
@@ -1031,8 +1029,7 @@ class FigureExport(object):
         dpi = 'export_dpi' in panel and panel['export_dpi'] or None
 
         # Paste the panel to PDF or TIFF image
-        # TODO - if we put 'panel' here we don't need x, y, width, height
-        self.pasteImage(pilImg, imgName, x, y, width, height, dpi, panel)
+        self.pasteImage(pilImg, imgName, panel, page, dpi)
 
         return image, pilImg
 
@@ -1270,8 +1267,16 @@ class FigureExport(object):
         c.setStrokeColorRGB(red, green, blue)
         c.line(x, y, x2, y2,)
 
-    def pasteImage(self, pilImg, imgName, x, y, width, height, dpi, panel=None):
+    def pasteImage(self, pilImg, imgName, panel, page, dpi):
         """ Adds the PIL image to the PDF figure. Overwritten for TIFFs """
+
+        x = panel['x']
+        y = panel['y']
+        width = panel['width']
+        height = panel['height']
+        # Handle page offsets
+        x = x - page['x']
+        y = y - page['y']
 
         if dpi is not None:
             print "Resample panel to %s dpi..." % dpi
@@ -1356,8 +1361,18 @@ class TiffExport(FigureExport):
         print "TIFF: width, height", tiffWidth, tiffHeight
         self.tiffFigure = Image.new("RGBA", (tiffWidth, tiffHeight), (255, 255, 255))
 
-    def pasteImage(self, pilImg, imgName, x, y, width, height, dpi=None, panel=None):
+    def pasteImage(self, pilImg, imgName, panel, page, dpi=None):
         """ Add the PIL image to the current figure page """
+
+        x = panel['x']
+        y = panel['y']
+        width = panel['width']
+        height = panel['height']
+
+        # Handle page offsets
+        # pageHeight = self.pageHeight
+        x = x - page['x']
+        y = y - page['y']
 
         print "pasteImage: x, y, width, height", x, y, width, height
         x = self.scaleCoords(x)
