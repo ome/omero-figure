@@ -167,7 +167,7 @@ __p += ' >\n    <button type="submit" class="edit_rois btn btn-sm btn-success"\n
  if (disabled) { ;
 __p += ' disabled="disabled"';
  } ;
-__p += ' >\n        Edit ROIs\n    </button>\n</div>\n';
+__p += ' >\n        Draw ROIs\n    </button>\n</div>\n';
 
 }
 return __p
