@@ -62,6 +62,9 @@ var RoiModalView = Backbone.View.extend({
             });
 
             this.shapeManager = new ShapeManager("roi_paper", 1, 1);
+            // Initially start with thin white lines.
+            self.shapeManager.setStrokeWidth(1);
+            self.shapeManager.setStrokeColor('#FFFFFF');
 
             this.$roiImg = $('.roi_image', this.$el);
         },
