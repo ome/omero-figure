@@ -651,7 +651,7 @@ __p += '"\n            title="Ellipse" data-state="ELLIPSE">\n        <span clas
  _.each([1,2,3,4,5,7,10,15,20,30],function(p){
             print ("<li><a href='#'>"+p+"<span title='Line Width: "+p+"' data-line-width='"+p+"' class='linewidthOption' style='height:"+p+"px'></span></a></li>")
         }); ;
-__p += '\n\n    </ul>\n</div>\n\n\n<div class="btn-group">\n    <button type="button" class="btn btn-default" title="Delete, Copy, Paste etc"\n        data-toggle="dropdown">\n        <span class="glyphicon glyphicon-wrench"></span>\n        <span class="caret"></span>\n    </button>\n    <ul class="dropdown-menu" role="menu" style="width:200px">\n        <li ';
+__p += '\n\n    </ul>\n</div>\n\n\n<div class="btn-group">\n    <button type="button" class="btn btn-default" title="Delete, Copy, Paste etc"\n        data-toggle="dropdown">\n        <span>Edit</span>\n        <span class="caret"></span>\n    </button>\n    <ul class="dropdown-menu" role="menu" style="width:200px">\n        <li ';
  if (!sel) print('class="disabled"') ;
 __p += ' >\n            <a href="#" class="copyShape">\n                <span class="glyphicon" aria-hidden="true"></span>\n                Copy Shape <span class="pull-right">' +
 ((__t = ( cmdKey )) == null ? '' : __t) +
