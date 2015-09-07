@@ -1026,7 +1026,6 @@ class FigureExport(object):
             origName = os.path.join(self.zip_folder_name, ORIGINAL_DIR, imgName)
             print "Saving original to: ", origName
         pilImg = self.getPanelImage(image, panel, origName)
-        tile_width = pilImg.size[0]
 
         # for PDF export, we might have a target dpi
         dpi = 'export_dpi' in panel and panel['export_dpi'] or None
@@ -1035,9 +1034,7 @@ class FigureExport(object):
         # TODO - if we put 'panel' here we don't need x, y, width, height
         self.pasteImage(pilImg, imgName, x, y, width, height, dpi, panel)
 
-        self.drawScalebar(panel, tile_width, page)
-
-        return image
+        return image, pilImg
 
     def getThumbnail(self, imageId):
         """ Saves thumb as local jpg and returns name """
@@ -1202,11 +1199,17 @@ class FigureExport(object):
             print "\n-------------------------------- "
             imageId = panel['imageId']
             print "Adding PANEL - Image ID:", imageId
-            image = self.drawPanel(panel, page, i)
+            # drawPanel() creates PIL image then applies it to the page.
+            # For TIFF export, drawPanel() also adds shapes to the
+            # PIL image before pasting onto the page...
+            image, pilImg = self.drawPanel(panel, page, i)
             if image.canAnnotate():
                 imageIds.add(imageId)
-            # For PDF we add ROIs last, on top of panel etc.
-            self.addROIs(panel, page)
+            # ... but for PDF we have to add shapes to the whole PDF page
+            self.addROIs(panel, page)       # This does nothing for TIFF export
+
+            # Finally, add scale bar and labels to the page
+            self.drawScalebar(panel, pilImg.size[0], page)
             self.drawLabels(panel, page)
             print ""
 
