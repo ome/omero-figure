@@ -55,7 +55,7 @@ def createOriginalFileFromFileObj(
     if mimetype:
         originalFile.mimetype = rstring(mimetype)
     originalFile.setSize(rlong(fileSize))
-    # set sha1 # ONLY for OMERO-4
+    # set sha1  # ONLY for OMERO-4
     try:
         import hashlib
         hash_sha1 = hashlib.sha1
@@ -105,7 +105,7 @@ def index(request, fileId=None, conn=None, **kwargs):
     userFullName = conn.getUser().getFullName()
 
     context = {'scriptMissing': scriptMissing,
-            'userFullName': userFullName}
+               'userFullName': userFullName}
     return render(request, "figure/index.html", context)
 
 
@@ -199,14 +199,15 @@ def save_web_figure(request, conn=None, **kwargs):
         if 'figureName' in json_data and len(json_data['figureName']) > 0:
             figureName = json_data['figureName']
         else:
-            n = datetime.now( )
+            n = datetime.now()
             # time-stamp name by default: WebFigure_2013-10-29_22-43-53.json
             figureName = "Figure_%s-%s-%s_%s-%s-%s.json" % \
                 (n.year, n.month, n.day, n.hour, n.minute, n.second)
         # we store json in description field...
         description = {}
         if firstImgId is not None:
-            # We duplicate the figure name here for quicker access when listing files
+            # We duplicate the figure name here for quicker access when
+            # listing files
             # (use this instead of file name because it supports unicode)
             description['name'] = figureName
             description['imageId'] = firstImgId
@@ -231,7 +232,8 @@ def save_web_figure(request, conn=None, **kwargs):
         f = StringIO()
         f.write(figureJSON)
         # Can't use unicode for file name
-        figureName = unicodedata.normalize('NFKD', figureName).encode('ascii','ignore')
+        figureName = unicodedata.normalize(
+            'NFKD', figureName).encode('ascii', 'ignore')
         origF = createOriginalFileFromFileObj(
             conn, f, '', figureName, fileSize, mimetype="application/json")
         fa = omero.model.FileAnnotationI()
@@ -342,7 +344,7 @@ def make_web_figure(request, conn=None, **kwargs):
     sId = scriptService.getScriptID(SCRIPT_PATH)
 
     figureJSON = request.POST.get('figureJSON')
-    exportOption = request.POST.get('exportOption')     # E.g. "PDF", "PDF_IMAGES"
+    exportOption = request.POST.get('exportOption')  # E.g. "PDF", "PDF_IMAGES"
     webclient_uri = request.build_absolute_uri(reverse('webindex'))
 
     inputMap = {
@@ -369,7 +371,7 @@ def list_web_figures(request, conn=None, **kwargs):
 
     fileAnns = list(conn.getObjects(
         "FileAnnotation", attributes={'ns': JSON_FILEANN_NS}))
-    #fileAnns.sort(key=lambda x: x.creationEventDate(), reverse=True)
+    # fileAnns.sort(key=lambda x: x.creationEventDate(), reverse=True)
 
     rsp = []
     for fa in fileAnns:
@@ -414,6 +416,7 @@ def delete_web_figure(request, conn=None, **kwargs):
     conn.deleteObjects("Annotation", [fileId])
     return HttpResponse("Deleted OK")
 
+
 def unit_conversion(request, value, fromUnit, toUnit, conn=None, **kwargs):
     """
     OMERO 5.1 only: Converts Lengths of value in 'fromUnit' to 'toUnit'.
@@ -434,7 +437,7 @@ def unit_conversion(request, value, fromUnit, toUnit, conn=None, **kwargs):
         error = ex.message
 
     if error:
-        return HttpResponse(json.dumps({'error':error}), content_type='json')
+        return HttpResponse(json.dumps({'error': error}), content_type='json')
 
     fromValue = omero.model.LengthI(value, fromUnit)
     toValue = omero.model.LengthI(fromValue, toUnit)
