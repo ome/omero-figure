@@ -227,7 +227,7 @@ var RoiModalView = Backbone.View.extend({
         // this is called each time the ROI dialog is displayed
         renderSidebar: function() {
             var tips = [
-                "Add ROIs to the image panel by choosing Rectangle, Line, Arrow or Ellipse from the toolbar.",
+                // "Add ROIs to the image panel by choosing Rectangle, Line, Arrow or Ellipse from the toolbar.",
                 "You can copy and paste shapes to duplicate them or move them between panels.",
                 "If you copy a region from the Crop dialog (under the 'Preview' tab), you can paste it here to create a new Rectangle."],
                 tip;
