@@ -23,7 +23,7 @@ from datetime import datetime
 import os
 from os import path
 import zipfile
-from math import atan, sin, cos
+from math import atan, sin, cos, sqrt, radians
 
 from omero.model import ImageAnnotationLinkI, ImageI
 import omero.scripts as scripts
@@ -130,6 +130,24 @@ class ShapeToPdfExport(object):
         return (red, green, blue)
 
     def panelToPageCoords(self, shapeX, shapeY):
+        rotation = self.panel['rotation']
+        # centre of rotation
+        cx = self.crop['x'] + (self.crop['width']/2)
+        cy = self.crop['y'] = (self.crop['height']/2)
+        o = cx - shapeX
+        a = cy - shapeY
+        h = sqrt(o * o + a * a)
+        angle1 = atan(o/a)
+        print 'rotation', rotation
+        print 'o', o, 'a', a, 'angle1', angle1
+
+        angle2 = angle1 + radians(rotation)
+        newO = sin(angle2) * h
+        newA = cos(angle2) * h
+
+        shapeX = cx - newO
+        shapeY = cy - newA
+
         # Handle page offsets
         x = self.panel['x'] - self.page['x']
         y = self.panel['y'] - self.page['y']
