@@ -81,7 +81,6 @@
     .imagePanel {
         position: absolute;
         background: #fff;
-        overflow: hidden;
     }
 
     .dragging{
@@ -90,6 +89,8 @@
 
     .imgContainer {
         overflow: hidden;
+        width: 100%;
+        height: 100%;
         position: absolute;
     }
     .imgContainer img, .imgContainer div {
