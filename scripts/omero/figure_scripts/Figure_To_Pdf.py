@@ -131,17 +131,20 @@ class ShapeToPdfExport(object):
 
     def panelToPageCoords(self, shapeX, shapeY):
         rotation = self.panel['rotation']
-        # centre of rotation
+        # img coords: centre of rotation
         cx = self.crop['x'] + (self.crop['width']/2)
-        cy = self.crop['y'] = (self.crop['height']/2)
-        o = cx - shapeX
-        a = cy - shapeY
-        h = sqrt(o * o + a * a)
-        angle1 = atan(o/a)
+        cy = self.crop['y'] + (self.crop['height']/2)
+        dx = cx - shapeX
+        dy = cy - shapeY
+        h = sqrt(dx * dx + dy * dy)
+        angle1 = atan(dx/dy)
         print 'rotation', rotation
-        print 'o', o, 'a', a, 'angle1', angle1
+        print 'dx', dx, 'dy', dy, 'h', h, 'angle1', angle1
 
-        angle2 = angle1 + radians(rotation)
+        if (angle1 < 0 and dy < 0) or (angle1 > 0 and dy < 0):
+            angle1 += radians(180)
+
+        angle2 = angle1 - radians(rotation)
         newO = sin(angle2) * h
         newA = cos(angle2) * h
 
@@ -164,7 +167,7 @@ class ShapeToPdfExport(object):
         width = shape['width'] * self.scale
         height = shape['height'] * self.scale
         x = topLeft['x']
-        y = self.pageHeight - topLeft['y'] - height
+        y = self.pageHeight - topLeft['y']    # - height
 
         rgb = self.getRGB(shape['strokeColor'])
         r = float(rgb[0])/255
@@ -174,7 +177,20 @@ class ShapeToPdfExport(object):
         strokeWidth = shape['strokeWidth'] * self.scale
         self.canvas.setLineWidth(strokeWidth)
 
-        self.canvas.rect(x, y, width, height, stroke=1)
+        rotation = self.panel['rotation'] * -1
+        if rotation != 0:
+            self.canvas.saveState()
+            self.canvas.translate(x, y)
+            self.canvas.rotate(rotation)
+            # top-left is now at 0, 0
+            x = 0
+            y = 0
+
+        self.canvas.rect(x, y, width, height * -1, stroke=1)
+
+        if rotation != 0:
+            # Restore coordinates, rotation etc.
+            self.canvas.restoreState()
 
     def drawLine(self, shape):
         start = self.panelToPageCoords(shape['x1'], shape['y1'])
@@ -257,7 +273,7 @@ class ShapeToPdfExport(object):
         cy = self.pageHeight - c['y']
         rx = shape['rx'] * self.scale
         ry = shape['ry'] * self.scale
-        rotation = shape['rotation'] * -1
+        rotation = (shape['rotation'] + self.panel['rotation']) * -1
         rgb = self.getRGB(shape['strokeColor'])
         r = float(rgb[0])/255
         g = float(rgb[1])/255
