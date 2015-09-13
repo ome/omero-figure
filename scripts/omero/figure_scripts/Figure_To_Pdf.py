@@ -130,30 +130,33 @@ class ShapeToPdfExport(object):
         return (red, green, blue)
 
     def panelToPageCoords(self, shapeX, shapeY):
-        print "--------------------------------------"
-        print "crop region", self.crop
+        """
+        Convert coordinate from the image onto the PDF page.
+        Handles zoom, offset & rotation of panel, rotating the
+        x, y point around the centre of the cropped region
+        and scaling appropriately
+        """
         rotation = self.panel['rotation']
         # img coords: centre of rotation
         cx = self.crop['x'] + (self.crop['width']/2)
         cy = self.crop['y'] + (self.crop['height']/2)
         dx = cx - shapeX
         dy = cy - shapeY
+        # distance of point from centre of rotation
         h = sqrt(dx * dx + dy * dy)
+        # and the angle
         angle1 = atan(dx/dy)
-        print 'rotation', rotation
-        print 'dx', dx, 'dy', dy, 'h', h, 'angle1', angle1
-        print "Centre of rotation: cx, cy", cx, cy
-        print "shapeX, shapeY...", shapeX, shapeY
         if (angle1 < 0 and dy < 0) or (angle1 > 0 and dy < 0):
             angle1 += radians(180)
 
+        # Add the rotation to the angle and calculate new
+        # opposite and adjacent lengths from centre of rotation
         angle2 = angle1 - radians(rotation)
         newO = sin(angle2) * h
         newA = cos(angle2) * h
-
+        # to give correct x and y within cropped panel
         shapeX = cx - newO
         shapeY = cy - newA
-        print "...shapeX, shapeY", shapeX, shapeY
 
         # Handle page offsets
         x = self.panel['x'] - self.page['x']
