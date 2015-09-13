@@ -130,6 +130,8 @@ class ShapeToPdfExport(object):
         return (red, green, blue)
 
     def panelToPageCoords(self, shapeX, shapeY):
+        print "--------------------------------------"
+        print "crop region", self.crop
         rotation = self.panel['rotation']
         # img coords: centre of rotation
         cx = self.crop['x'] + (self.crop['width']/2)
@@ -140,7 +142,8 @@ class ShapeToPdfExport(object):
         angle1 = atan(dx/dy)
         print 'rotation', rotation
         print 'dx', dx, 'dy', dy, 'h', h, 'angle1', angle1
-
+        print "Centre of rotation: cx, cy", cx, cy
+        print "shapeX, shapeY...", shapeX, shapeY
         if (angle1 < 0 and dy < 0) or (angle1 > 0 and dy < 0):
             angle1 += radians(180)
 
@@ -150,6 +153,7 @@ class ShapeToPdfExport(object):
 
         shapeX = cx - newO
         shapeY = cy - newA
+        print "...shapeX, shapeY", shapeX, shapeY
 
         # Handle page offsets
         x = self.panel['x'] - self.page['x']
