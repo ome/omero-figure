@@ -676,8 +676,6 @@ class FigureExport(object):
         frame_h = panel['height']
         dx = panel['dx']
         dy = panel['dy']
-        dx = dx * (zoom/100)
-        dy = dy * (zoom/100)
         orig_w = panel['orig_width']
         orig_h = panel['orig_height']
 
