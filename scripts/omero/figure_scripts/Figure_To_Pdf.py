@@ -331,24 +331,59 @@ class ShapeToPilExport(object):
                     self.drawArrow(shape)
                 elif shape['type'] == "Line":
                     self.drawLine(shape)
-                elif shape['type'] == "Rectangle":
-                    self.drawRectangle(shape)
-                elif shape['type'] == "Ellipse":
-                    self.drawEllipse(shape)
+                # elif shape['type'] == "Rectangle":
+                #     self.drawRectangle(shape)
+                # elif shape['type'] == "Ellipse":
+                #     self.drawEllipse(shape)
 
-    def getX(self, x):
+    def getPanelCoords(self, shapeX, shapeY):
         """
-        Helper method to convert from coordinates of Image to
-        coordinates of the cropped PIL image
+        Convert coordinate from the image onto the panel.
+        Handles zoom, offset & rotation of panel, rotating the
+        x, y point around the centre of the cropped region
+        and scaling appropriately
         """
-        return (x - self.crop['x']) * self.scale
+        rotation = self.panel['rotation']
+        # img coords: centre of rotation
+        cx = self.crop['x'] + (self.crop['width']/2)
+        cy = self.crop['y'] + (self.crop['height']/2)
+        dx = cx - shapeX
+        dy = cy - shapeY
+        # distance of point from centre of rotation
+        h = sqrt(dx * dx + dy * dy)
+        # and the angle
+        angle1 = atan(dx/dy)
+        if (angle1 < 0 and dy < 0) or (angle1 > 0 and dy < 0):
+            angle1 += radians(180)
 
-    def getY(self, y):
-        """
-        Helper method to convert from coordinates of Image to
-        coordinates of the cropped PIL image
-        """
-        return (y - self.crop['y']) * self.scale
+        # Add the rotation to the angle and calculate new
+        # opposite and adjacent lengths from centre of rotation
+        angle2 = angle1 - radians(rotation)
+        newO = sin(angle2) * h
+        newA = cos(angle2) * h
+        # to give correct x and y within cropped panel
+        shapeX = cx - newO
+        shapeY = cy - newA
+
+        # convert to coords within crop region
+        shapeX = shapeX - self.crop['x'] * self.scale
+        shapeY = shapeY - self.crop['y'] * self.scale
+
+        return {'x': shapeX, 'y': shapeY}
+
+    # def getX(self, x):
+    #     """
+    #     Helper method to convert from coordinates of Image to
+    #     coordinates of the cropped PIL image
+    #     """
+    #     return (x - self.crop['x']) * self.scale
+
+    # def getY(self, y):
+    #     """
+    #     Helper method to convert from coordinates of Image to
+    #     coordinates of the cropped PIL image
+    #     """
+    #     return (y - self.crop['y']) * self.scale
 
     def getRGB(self, color):
         # Convert from E.g. '#ff0000' to (255, 0, 0)
@@ -359,10 +394,12 @@ class ShapeToPilExport(object):
 
     def drawArrow(self, shape):
 
-        x1 = self.getX(shape['x1'])
-        y1 = self.getY(shape['y1'])
-        x2 = self.getX(shape['x2'])
-        y2 = self.getY(shape['y2'])
+        start = self.getPanelCoords(shape['x1'], shape['y1'])
+        end = self.getPanelCoords(shape['x2'], shape['y2'])
+        x1 = start['x']
+        y1 = start['y']
+        x2 = end['x']
+        y2 = end['y']
         headSize = ((shape['strokeWidth'] * 5) + 9) * self.scale
         strokeWidth = shape['strokeWidth'] * self.scale
         rgb = self.getRGB(shape['strokeColor'])
@@ -395,10 +432,12 @@ class ShapeToPilExport(object):
         self.draw.polygon(points, fill=rgb, outline=rgb)
 
     def drawLine(self, shape):
-        x1 = self.getX(shape['x1'])
-        y1 = self.getY(shape['y1'])
-        x2 = self.getX(shape['x2'])
-        y2 = self.getY(shape['y2'])
+        start = self.getPanelCoords(shape['x1'], shape['y1'])
+        end = self.getPanelCoords(shape['x2'], shape['y2'])
+        x1 = start['x']
+        y1 = start['y']
+        x2 = end['x']
+        y2 = end['y']
         strokeWidth = shape['strokeWidth'] * self.scale
         rgb = self.getRGB(shape['strokeColor'])
 
@@ -428,8 +467,9 @@ class ShapeToPilExport(object):
     def drawEllipse(self, shape):
 
         w = int(shape['strokeWidth'] * self.scale)
-        cx = self.getX(shape['cx'])
-        cy = self.getY(shape['cy'])
+        ctr = self.getPanelCoords(shape['cx'], shape['cy'])
+        cx = ctr['x']
+        cy = ctr['y']
         rx = self.scale * shape['rx']
         ry = self.scale * shape['ry']
         rotation = shape['rotation'] * -1
