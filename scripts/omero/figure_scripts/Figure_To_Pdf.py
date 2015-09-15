@@ -366,8 +366,8 @@ class ShapeToPilExport(object):
         shapeY = cy - newA
 
         # convert to coords within crop region
-        shapeX = shapeX - self.crop['x'] * self.scale
-        shapeY = shapeY - self.crop['y'] * self.scale
+        shapeX = (shapeX - self.crop['x']) * self.scale
+        shapeY = (shapeY - self.crop['y']) * self.scale
 
         return {'x': shapeX, 'y': shapeY}
 
