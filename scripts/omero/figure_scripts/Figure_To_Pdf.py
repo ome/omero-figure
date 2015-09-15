@@ -331,10 +331,10 @@ class ShapeToPilExport(object):
                     self.drawArrow(shape)
                 elif shape['type'] == "Line":
                     self.drawLine(shape)
-                # elif shape['type'] == "Rectangle":
-                #     self.drawRectangle(shape)
-                # elif shape['type'] == "Ellipse":
-                #     self.drawEllipse(shape)
+                elif shape['type'] == "Rectangle":
+                    self.drawRectangle(shape)
+                elif shape['type'] == "Ellipse":
+                    self.drawEllipse(shape)
 
     def getPanelCoords(self, shapeX, shapeY):
         """
@@ -370,20 +370,6 @@ class ShapeToPilExport(object):
         shapeY = (shapeY - self.crop['y']) * self.scale
 
         return {'x': shapeX, 'y': shapeY}
-
-    # def getX(self, x):
-    #     """
-    #     Helper method to convert from coordinates of Image to
-    #     coordinates of the cropped PIL image
-    #     """
-    #     return (x - self.crop['x']) * self.scale
-
-    # def getY(self, y):
-    #     """
-    #     Helper method to convert from coordinates of Image to
-    #     coordinates of the cropped PIL image
-    #     """
-    #     return (y - self.crop['y']) * self.scale
 
     def getRGB(self, color):
         # Convert from E.g. '#ff0000' to (255, 0, 0)
@@ -446,23 +432,32 @@ class ShapeToPilExport(object):
     def drawRectangle(self, shape):
         # clockwise list of corner points on the OUTSIDE of thick line
         w = shape['strokeWidth']
-        hw = w * 0.5
-        p1x = self.getX(shape['x'] - hw)
-        p1y = self.getY(shape['y'] - hw)
-        p2x = self.getX(shape['x'] + shape['width'] + hw)
-        p2y = p1y
-        p3x = p2x
-        p3y = self.getY(shape['y'] + shape['height'] + hw)
-        p4x = p1x
-        p4y = p3y
+        cx = shape['x'] + (shape['width']/2)
+        cy = shape['y'] + (shape['height']/2)
+        rotation = self.panel['rotation'] * -1
+
+        # Centre of rect rotation in PIL image
+        centre = self.getPanelCoords(cx, cy)
+        cx = centre['x']
+        cy = centre['y']
         scaleW = w * self.scale
         rgb = self.getRGB(shape['strokeColor'])
 
-        # 4 rectangles, from the outside to inside of line
-        self.draw.rectangle((p1x, p1y, p2x, p2y + scaleW), fill=rgb)
-        self.draw.rectangle((p2x - scaleW, p1y, p3x, p3y), fill=rgb)
-        self.draw.rectangle((p3x, p3y, p4x, p4y - scaleW), fill=rgb)
-        self.draw.rectangle((p4x, p4y, p1x + scaleW, p1y), fill=rgb)
+        # To support rotation, draw rect on temp canvas, rotate and paste
+        width = int((shape['width'] + w) * self.scale)
+        height = int((shape['height'] + w) * self.scale)
+        tempRect = Image.new('RGBA', (width, height), (255, 255, 255, 0))
+        rectDraw = ImageDraw.Draw(tempRect)
+
+        # Draw outer rectangle, then remove inner rect with full opacity
+        rectDraw.rectangle((0, 0, width, height), fill=rgb)
+        rgba = (255, 255, 255, 0)
+        rectDraw.rectangle((scaleW, scaleW, width-scaleW, height-scaleW), fill=rgba)
+        tempRect = tempRect.rotate(rotation, resample=Image.BICUBIC, expand=True)
+        # Use rect as mask, so transparent part is not pasted
+        pasteX = cx - (tempRect.size[0]/2)
+        pasteY = cy - (tempRect.size[1]/2)
+        self.pilImg.paste(tempRect, (int(pasteX), int(pasteY)), mask=tempRect)
 
     def drawEllipse(self, shape):
 
@@ -472,7 +467,7 @@ class ShapeToPilExport(object):
         cy = ctr['y']
         rx = self.scale * shape['rx']
         ry = self.scale * shape['ry']
-        rotation = shape['rotation'] * -1
+        rotation = (shape['rotation'] + self.panel['rotation']) * -1
         rgb = self.getRGB(shape['strokeColor'])
 
         width = int((rx * 2) + w)
@@ -484,7 +479,7 @@ class ShapeToPilExport(object):
         rgba = (255, 255, 255, 0)
         ellipseDraw.ellipse((w, w, width - w, height - w), fill=rgba)
         tempEllipse = tempEllipse.rotate(rotation, resample=Image.BICUBIC, expand=True)
-        # Use label as mask, so transparent part is not pasted
+        # Use ellipse as mask, so transparent part is not pasted
         pasteX = cx - (tempEllipse.size[0]/2)
         pasteY = cy - (tempEllipse.size[1]/2)
         self.pilImg.paste(tempEllipse, (int(pasteX), int(pasteY)), mask=tempEllipse)
