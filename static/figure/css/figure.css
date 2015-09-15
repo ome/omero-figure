@@ -78,12 +78,12 @@
         background: white;
     }
 
-    #figure .imagePanel {
+    .imagePanel {
         position: absolute;
         background: #fff;
     }
 
-    #figure .dragging{
+    .dragging{
         background: none;
     }
 
@@ -92,6 +92,11 @@
         width: 100%;
         height: 100%;
         position: absolute;
+    }
+    .imgContainer img, .imgContainer div {
+        position: absolute;
+        top: 0;
+        left: 0;
     }
 
     .dragging .imgContainer {
@@ -696,14 +701,14 @@
         opacity: 0.4;
     }
 
-    #roiViewer {
+    #cropViewer {
         width: 500px;
         height: 450px;
         overflow: auto;
         position: relative;
     }
 
-    #roi_paper svg {
+    #crop_paper svg {
         cursor:  crosshair;
         cursor:  url("../images/crop20.png") 10 10, crosshair;
         z-index: 10;
@@ -715,6 +720,11 @@
     /* On hover, use selected blue color */
     .roiPickMe:hover {
         background-color: rgb(190, 212, 253);
+    }
+
+    .roiViewer {
+        overflow: hidden;
+        position: relative;
     }
 
 
@@ -773,3 +783,72 @@
         height: 30px;
         width: 30px;
     }
+
+    /** ------------------- Shape Editor styles --------------------- **/
+
+    .shape_canvas {
+        position: absolute;
+        top: 0px;
+        left: 0px;
+    }
+    .image_wrapper img {
+        width: 100%;
+        height: 100%;
+    }
+    .new_shape_layer {
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        width: 100%;
+        height: 100%;
+    }
+
+    /** toolbar buttons **/
+
+    .btn-toolbar span.glyphicon {
+        width: 16px;
+        height: 16px;
+        position: relative;
+        top: 3px;
+        background-repeat: no-repeat;
+    }
+
+    .roiModalForm .modal-body {
+        max-height: 650px;
+        padding-top: 10px;
+    }
+
+    .roi_toolbar {
+        overflow: visible;
+        padding-bottom: 10px;
+    }
+
+    .roi_toolbar .pressed {
+        background: #ddd;
+    }
+
+    .select-btn span{
+        background-image: url("../images/cursor-icon-16.png");
+    }
+    .rect-btn span{
+        background-image: url("../images/square-outline-icon-16.png");
+    }
+    .line-btn span{
+        background-image: url("../images/line-icon-16.png");
+    }
+    .arrow-btn span{
+        background-image: url("../images/arrow-icon-16.png");
+    }
+    .ellipse-btn span{
+        background-image: url("../images/ellipse-icon-16.png");
+    }
+    .linewidthOption {
+        display: inline-block;
+        width: 25px;
+        background: black;
+        margin: 0 5px;
+    }
+    .line-width .linewidthOption {
+        max-height: 15px;
+    }
+

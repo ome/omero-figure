@@ -2,11 +2,9 @@
 
 var RoiModalView = Backbone.View.extend({
 
-        el: $("#roiModal"),
+        template: JST["static/figure/templates/shapes/shape_toolbar_template.html"],
 
-        // template: JST["static/figure/templates/paper_setup_modal_template.html"],
-        template: JST["static/figure/templates/modal_dialogs/roi_modal_template.html"],
-        roiTemplate: JST["static/figure/templates/modal_dialogs/roi_modal_roi.html"],
+        el: $("#roiModal"),
 
         model:FigureModel,
 
@@ -14,80 +12,183 @@ var RoiModalView = Backbone.View.extend({
 
             var self = this;
 
+            // We manually bind Mousetrap keyboardEvents to body so as
+            // not to clash with the global keyboardEvents in figure_view.js
+            // Bind to 'body' instead of #roiModal since this didn't always work with
+            // some events maybe getting lost to Raphael elements??
+            var dialog = document.getElementById('body');
+            Mousetrap(dialog).bind(['backspace', 'del'], function(event, combo) {
+                // Need to ignore if the dialog isn't visible
+                if(!self.$el.is(":visible")) return true;
+                event.preventDefault();
+                self.deleteShapes();
+                return false;
+            });
+            Mousetrap(dialog).bind('mod+c', function(event, combo) {
+                if(!self.$el.is(":visible")) return true;
+                event.preventDefault();
+                self.copyShapes();
+                return false;
+            });
+            Mousetrap(dialog).bind('mod+v', function(event, combo) {
+                if(!self.$el.is(":visible")) return true;
+                event.preventDefault();
+                self.pasteShapes();
+                return false;
+            });
+
             // Here we handle init of the dialog when it's shown...
             $("#roiModal").bind("show.bs.modal", function(){
                 // Clone the 'first' selected panel as our reference for everything
                 self.m = self.model.getSelected().head().clone();
-                self.listenTo(self.m, 'change:theZ change:theT', self.render);
 
-                self.cropModel.set({'selected': false, 'width': 0, 'height': 0});
+                // We don't support Shape editing when rotated!
+                self.rotated = self.m.get('rotation') !== 0;
+                self.m.set('rotation', 0);
 
-                // get selected area
-                var roi = self.m.getViewportAsRect();
+                self.shapeManager.setState("SELECT");
+                self.shapeManager.deleteAll();
 
-                // Show as ROI *if* it isn't the whole image
-                if (roi.x !== 0 || roi.y !== 0
-                        || roi.width !== self.m.get('orig_width')
-                        || roi.height !== self.m.get('orig_height')) {
-                    self.currentROI = roi;
-                    self.cropModel.set({
-                        'selected': true
-                    });
+                // Load any existing shapes on panel
+                var shapesJson = self.m.get('shapes');
+                if (shapesJson) {
+                    self.shapeManager.setShapesJson(shapesJson);
                 }
 
-                self.zoomToFit();   // includes render()
+                self.render();
+
                 // disable submit until user chooses a region/ROI
-                self.enableSubmit(false);
-                self.loadRois();
+                // self.enableSubmit(false);
             });
 
-            // keep track of currently selected ROI
-            this.currentROI = {'x':0, 'y': 0, 'width': 0, 'height': 0}
+            this.shapeManager = new ShapeManager("roi_paper", 1, 1);
+            // Initially start with thin white lines.
+            self.shapeManager.setStrokeWidth(1);
+            self.shapeManager.setStrokeColor('#FFFFFF');
 
-            // used by model underlying Rect.
-            // NB: values in cropModel are scaled by zoom percent
-            this.cropModel = new Backbone.Model({
-                'x':0, 'y': 0, 'width': 0, 'height': 0,
-                'selected': false});
-            // since resizes & drags don't actually update cropModel automatically, we do it...
-            this.cropModel.bind('drag_resize_stop', function(args) {
-                this.set({'x': args[0], 'y': args[1], 'width': args[2], 'height': args[3]});
-            });
-            this.cropModel.bind('drag_xy_stop', function(args) {
-                this.set({'x': args[0] + this.get('x'), 'y': args[1] + this.get('y')});
-            });
-
-            // we also need to update the scaled ROI coords...
-            this.listenTo(this.cropModel, 'change:x change:y change:width change:height', function(m){
-                var scale = self.zoom / 100;
-                self.currentROI = {
-                    'x': m.get('x') / scale,
-                    'y': m.get('y') / scale,
-                    'width': m.get('width') / scale,
-                    'height': m.get('height') / scale
-                }
-                // No-longer correspond to saved ROI coords
-                self.currentRoiId = undefined;
-                // Allow submit of dialog if valid ROI
-                if (self.regionValid(self.currentROI)) {
-                    self.enableSubmit(true);
-                } else {
-                    self.enableSubmit(false);
-                }
-            });
-
-            // Now set up Raphael paper...
-            this.paper = Raphael("roi_paper", 500, 500);
-            this.rect = new RectView({'model':this.cropModel, 'paper': this.paper});
             this.$roiImg = $('.roi_image', this.$el);
         },
 
         events: {
-            "click .roiPickMe": "roiPicked",
-            "mousedown svg": "mousedown",
-            "mousemove svg": "mousemove",
-            "mouseup svg": "mouseup",
-            "submit .roiModalForm": "handleRoiForm"
+            "submit .roiModalForm": "handleRoiForm",
+            "click .shape-option .btn": "selectState",
+            "click .select-btn": "selectState",
+            "click .dropdownSelect a": "select_dropdown_option",
+            "change .line-width": "changeLineWidth",
+            "change .shape-color": "changeColor",
+            // shapeManager triggers on canvas element
+            "change:selected .roi_paper": "shapeSelected",
+            "new:shape .roi_paper": "shapeSelected",
+            "click .copyShape": "copyShapes",
+            "click .pasteShape": "pasteShapes",
+            "click .deleteShape": "deleteShapes",
+        },
+
+        copyShapes: function(event) {
+            var shapeJson = this.shapeManager.getSelectedShapesJson();
+            if (shapeJson.length > 0) {
+                this.model.set('clipboard', {'SHAPES': shapeJson});
+            }
+            this.renderToolbar();    // to enable paste
+        },
+
+        pasteShapes: function(event) {
+            var clipboard_data = this.model.get('clipboard'),
+                shapeJson;
+            if (clipboard_data && 'SHAPES' in clipboard_data){
+                shapeJson = clipboard_data.SHAPES;
+
+                // paste shapes, with offset if matching existing shape
+                // Constrain pasting to within viewport
+                var viewport = this.m.getViewportAsRect();
+                var p = this.shapeManager.pasteShapesJson(shapeJson, viewport);
+                if (!p) {
+                    this.renderSidebarWarning("Could not paste shape outside viewport.");
+                }
+            }
+        },
+
+        deleteShapes: function(event) {
+            this.shapeManager.deleteSelected();
+        },
+
+        handleRoiForm: function(event) {
+            event.preventDefault();
+
+            var shapesJson = this.shapeManager.getShapesJson();
+            this.model.getSelected().forEach(function(panel){
+
+                // We use save() to notify undo/redo queue. TODO - fix!
+                panel.save('shapes', shapesJson);
+            });
+
+            $("#roiModal").modal("hide");
+            return false;
+        },
+
+        shapeSelected: function() {
+            // simply re-render toolbar
+            this.renderToolbar();
+        },
+
+        changeLineWidth: function(event) {
+            var lineWidth = $("span:first", event.target).attr('data-line-width');
+            lineWidth = parseInt(lineWidth, 10);
+            this.shapeManager.setStrokeWidth(lineWidth);
+        },
+
+        changeColor: function(event) {
+            var color = $("span:first", event.target).attr('data-color');
+            this.shapeManager.setStrokeColor("#" + color);
+        },
+
+        // Handles all the various drop-down menus in the toolbar
+        select_dropdown_option: function(event) {
+            event.preventDefault();
+            var $a = $(event.target),
+                $span = $a.children('span');
+            // For the Label Text, handle this differently...
+            if ($a.attr('data-label')) {
+                $('.new-label-form .label-text', this.$el).val( $a.attr('data-label') );
+            }
+            // All others, we take the <span> from the <a> and place it in the <button>
+            if ($span.length === 0) $span = $a;  // in case we clicked on <span>
+            var $li = $span.parent().parent(),
+                $button = $li.parent().prev();
+            $span = $span.clone();
+
+            if ($span.hasClass('colorpickerOption')) {
+                var oldcolor = $a.attr('data-oldcolor');
+                FigureColorPicker.show({
+                    'color': oldcolor,
+                    'success': function(newColor){
+                        $span.css({'background-color': newColor, 'background-image': 'none'});
+                        // remove # from E.g. #ff00ff
+                        newColor = newColor.replace("#", "");
+                        $span.attr('data-color', newColor);
+                        $('span:first', $button).replaceWith($span);
+                        // can listen for this if we want to 'submit' etc
+                        $button.trigger('change');
+                    }
+                });
+            } else {
+                $('span:first', $button).replaceWith($span);
+                if ($span.prop('title')) {
+                    $button.prop('title', $span.prop('title'));
+                }
+                $button.trigger('change');      // can listen for this if we want to 'submit' etc
+            }
+        },
+
+        selectState: function(event) {
+            var $target = $(event.target),
+                newState = $target.attr('data-state');
+            if (newState === undefined) {
+                // in case we clicked 'span'
+                newState = $target.parent().attr('data-state');
+            }
+            this.shapeManager.setState(newState);
+            this.renderToolbar();
         },
 
         // we disable Submit when dialog is shown, enable when region/ROI chosen
@@ -102,346 +203,92 @@ var RoiModalView = Backbone.View.extend({
             }
         },
 
-        // Region is only valid if it has width & height > 1 and
-        // is at least partially overlapping with the image
-        regionValid: function(roi) {
-
-            if (roi.width < 2 || roi.height < 2) return false;
-            if (roi.x > this.m.get('orig_width')) return false;
-            if (roi.y > this.m.get('orig_height')) return false;
-            if (roi.x + roi.width < 0) return false;
-            if (roi.y + roi.height < 0) return false;
-            return true;
+        renderToolbar: function() {
+            // render toolbar
+            var state = this.shapeManager.getState(),
+                lineW = this.shapeManager.getStrokeWidth(),
+                color = this.shapeManager.getStrokeColor().replace("#", ""),
+                scale = this.zoom,
+                sel = this.shapeManager.getSelected().length > 0,
+                toPaste = this.model.get('shapesClipboard'),
+                windows = navigator.platform.toUpperCase().indexOf('WIN') > -1;
+            var json = {'state': state,
+                        'lineWidth': lineW,
+                        'color': color,
+                        'sel': sel,
+                        'cmdKey': windows ? "Ctrl+" : "⌘",
+                        'toPaste': toPaste ? toPaste.length > 0 : false,
+                        'zoom': parseInt(scale * 100, 10)};
+            $(".roi_toolbar", this.$el).html(this.template(json));
         },
 
-        roiPicked: function(event) {
+        renderSidebarWarning: function(text) {
+            var html = "<p><span class='label label-warning'>Warning</span> " + text + "</p>";
+            $("#roiModalTip").html(html).show().fadeOut(10000);
+        },
 
-            var $target = $(event.target),
-                $tr = $target.parent();
-            // $tr might be first <td> if img clicked or <tr> if td clicked
-            // but in either case it will contain the img we need.
-            var $roi = $tr.find('img.roi_content'),
-                x = parseInt($roi.attr('data-x'), 10),
-                y = parseInt($roi.attr('data-y'), 10),
-                width = parseInt($roi.attr('data-width'), 10),
-                height = parseInt($roi.attr('data-height'), 10),
-                theT = parseInt($roi.attr('data-theT'), 10),
-                theZ = parseInt($roi.attr('data-theZ'), 10);
-
-            this.m.set({'theT': theT, 'theZ': theZ});
-
-            this.currentROI = {
-                'x':x, 'y':y, 'width':width, 'height':height
+        // this is called each time the ROI dialog is displayed
+        renderSidebar: function() {
+            var tips = [
+                // "Add ROIs to the image panel by choosing Rectangle, Line, Arrow or Ellipse from the toolbar.",
+                "You can copy and paste shapes to duplicate them or move them between panels.",
+                "If you copy a region from the Crop dialog (under the 'Preview' tab), you can paste it here to create a new Rectangle."],
+                tip;
+            if (this.rotated) {
+                tip = "<span class='label label-warning'>Warning</span> " +
+                      "This image panel is rotated in the figure, but this ROI editor can't work with rotated images. " +
+                      "The image is displayed here <b>without</b> rotation, but the ROIs you add will be applied " +
+                      "correctly to the image panel in the figure.";
+            } else {
+                tip = "<span class='label label-primary'>Tip</span> " + tips[parseInt(Math.random() * tips.length, 10)];
             }
-
-            this.render();
-
-            this.cropModel.set({
-                'selected': true
-            });
-
-            // Save ROI ID
-            this.currentRoiId = $roi.attr('data-roiId');
-        },
-
-        handleRoiForm: function(event) {
-            event.preventDefault();
-            // var json = this.processForm();
-            var self = this,
-                r = this.currentROI,
-                theZ = this.m.get('theZ'),
-                theT = this.m.get('theT'),
-                sel = this.model.getSelected(),
-                sameT = sel.allEqual('theT');
-                // sameZT = sel.allEqual('theT') && sel.allEqual('theT');
-
-            var getShape = function getShape(z, t) {
-
-                // If all on one T-index, update to the current
-                // T-index that we're looking at.
-                if (sameT) {
-                    t = self.m.get('theT');
-                }
-                var rv = {'x': r.x,
-                        'y': r.y,
-                        'width': r.width,
-                        'height': r.height,
-                        'theZ': self.m.get('theZ'),
-                        'theT': t,
-                    }
-                return rv;
-            }
-
-            // IF we have an ROI selected (instead of hand-drawn shape)
-            // then try to use appropriate shape for that plane.
-            if (this.currentRoiId) {
-
-                getShape = function getShape(currZ, currT) {
-
-                    var tzShapeMap = self.cachedRois[self.currentRoiId],
-                        tkeys = _.keys(tzShapeMap).sort(),
-                        zkeys, z, t, s;
-
-                    if (tzShapeMap[currT]) {
-                        t = currT;
-                    } else {
-                        t = tkeys[parseInt(tkeys.length/2 ,10)]
-                    }
-                    zkeys = _.keys(tzShapeMap[t]).sort();
-                    if (tzShapeMap[t][currZ]) {
-                        z = currZ;
-                    } else {
-                        z = zkeys[parseInt(zkeys.length/2, 10)]
-                    }
-                    s = tzShapeMap[t][z]
-
-                    // if we have a range of T values, don't change T!
-                    if (!sameT) {
-                        t = currT;
-                    }
-
-                    return {'x': s.x,
-                            'y': s.y,
-                            'width': s.width,
-                            'height': s.height,
-                            'theZ': z,
-                            'theT': t,
-                        }
-                };
-            }
-
-            // Don't set Z/T if we already have different Z/T indecies.
-            sel.each(function(m){
-                var sh = getShape(m.get('theZ'), m.get('theT')),
-                    newZ = Math.min(parseInt(sh.theZ, 10), m.get('sizeZ') - 1),
-                    newT = Math.min(parseInt(sh.theT, 10), m.get('sizeT') - 1);
-
-                m.cropToRoi({'x': sh.x, 'y': sh.y, 'width': sh.width, 'height': sh.height});
-                // 'save' to trigger 'unsaved': true
-                m.save({'theZ': newZ, 'theT': newT});
-            });
-            $("#roiModal").modal('hide');
-        },
-
-        mousedown: function(event) {
-            this.dragging = true;
-            var os = $(event.target).offset();
-            this.clientX_start = event.clientX;
-            this.clientY_start = event.clientY;
-            this.imageX_start = this.clientX_start - os.left;
-            this.imageY_start = this.clientY_start - os.top;
-            this.cropModel.set({'x': this.imageX_start, 'y': this.imageY_start, 'width': 0, 'height': 0, 'selected': true})
-            return false;
-        },
-
-        mouseup: function(event) {
-            if (this.dragging) {
-                this.dragging = false;
-                return false;
-            }
-        },
-
-        mousemove: function(event) {
-            if (this.dragging) {
-                var dx = event.clientX - this.clientX_start,
-                    dy = event.clientY - this.clientY_start;
-                if (event.shiftKey) {
-                    // make region square!
-                    if (Math.abs(dx) > Math.abs(dy)) {
-                        if (dy > 0) dy = Math.abs(dx);
-                        else dy = -1 * Math.abs(dx);
-                    } else {
-                        if (dx > 0) dx = Math.abs(dy);
-                        else dx = -1 * Math.abs(dy);
-                    }
-                }
-                var negX = Math.min(0, dx),
-                    negY = Math.min(0, dy);
-                this.cropModel.set({'x': this.imageX_start + negX,
-                    'y': this.imageY_start + negY,
-                    'width': Math.abs(dx), 'height': Math.abs(dy)});
-                return false;
-            }
-        },
-
-        loadRois: function() {
-            var self = this,
-                iid = self.m.get('imageId');
-            $.getJSON(ROIS_JSON_URL + iid, function(data){
-
-                // get a representative Rect from each ROI.
-                // Include a z and t index, trying to pick current z/t if ROI includes a shape there
-                var currT = self.m.get('theT'),
-                    currZ = self.m.get('theZ');
-                var rects = [],
-                    cachedRois = {},    // roiId: shapes (z/t dict)
-                    roi, shape, theT, theZ, z, t, rect, tkeys, zkeys,
-                    minT, maxT,
-                    shapes; // dict of all shapes by z & t index
-                if (data.length === 0) {
-                    $("#cropRoiMessage").text("[No rectangular ROIs found on this image in OMERO]").show();
-                    $(".roiPicker").hide();
-                } else {
-                    $("#cropRoiMessage").text("").hide();
-                    $(".roiPicker").show();
-                }
-                for (var r=0; r<data.length; r++) {
-                    roi = data[r];
-                    shapes = {};
-                    minT = undefined;
-                    maxT = 0;
-                    for (var s=0; s<roi.shapes.length; s++) {
-                        shape = roi.shapes[s];
-                        if (shape.type !== "Rectangle") continue;
-                        // Handle null Z/T
-                        if (shape.theZ === undefined) {
-                            shape.theZ = currZ;
-                        }
-                        theZ = shape.theZ;
-                        if (shape.theT === undefined) {
-                            shape.theT = currT;
-                        }
-                        theT = shape.theT;
-                        // Keep track of min/max T for display
-                        if (minT === undefined) {minT = theT}
-                        else {minT = Math.min(minT, theT)}
-                        maxT = Math.max(maxT, theT);
-
-                        // Build our map of shapes[t][z]
-                        if (shapes[theT] === undefined) {
-                            shapes[theT] = {};
-                        }
-                        shapes[theT][theZ] = shape;
-                    }
-                    cachedRois[roi.id] = shapes;
-                    // get display shape for picking ROI
-                    // on current plane or pick median T/Z...
-                    tkeys = _.keys(shapes).sort();
-                    if (tkeys.length === 0) continue;   // no Rectangles
-                    if (shapes[currT]) {
-                        t = currT;
-                    } else {
-                        t = tkeys[(tkeys.length/2)>>0]
-                    }
-                    zkeys = _.keys(shapes[t]).sort();
-                    if (shapes[t][currZ]) {
-                        z = currZ;
-                    } else {
-                        z = zkeys[(zkeys.length/2)>>0]
-                    }
-                    shape = shapes[t][z]
-                    rects.push({'theZ': shape.theZ,
-                                'theT': shape.theT,
-                                'x': shape.x,
-                                'y': shape.y,
-                                'width': shape.width,
-                                'height': shape.height,
-                                'roiId': roi.id,
-                                'tStart': minT,
-                                'tEnd': maxT,
-                                'zStart': zkeys[0],
-                                'zEnd': zkeys[zkeys.length-1]});
-                }
-                // Show ROIS...
-                self.renderRois(rects);
-                self.cachedRois = cachedRois;
-            });
-        },
-
-        renderRois: function(rects) {
-
-            var orig_width = this.m.get('orig_width'),
-                orig_height = this.m.get('orig_height');
-
-            var html = "",
-                size = 50,
-                rect, src, zoom,
-                top, left, div_w, div_h, img_w, img_h;
-
-            // loop through ROIs, using our cloned model to generate src urls
-            // first, get the current Z and T of cloned model...
-            this.m.set('z_projection', false);      // in case z_projection is true
-            var origT = this.m.get('theT'),
-                origZ = this.m.get('theZ');
-            for (var r=0; r<rects.length; r++) {
-                rect = rects[r];
-                if (rect.theT > -1) this.m.set('theT', rect.theT, {'silent': true});
-                if (rect.theZ > -1) this.m.set('theZ', rect.theZ, {'silent': true});
-                src = this.m.get_img_src();
-                if (rect.width > rect.height) {
-                    div_w = size;
-                    div_h = (rect.height/rect.width) * div_w;
-                } else {
-                    div_h = size;
-                    div_w = (rect.width/rect.height) * div_h;
-                }
-                zoom = div_w/rect.width;
-                img_w = orig_width * zoom;
-                img_h = orig_height * zoom;
-                top = -(zoom * rect.y);
-                left = -(zoom * rect.x);
-
-                var json = {
-                    'src': src,
-                    'rect': rect,
-                    'w': div_w,
-                    'h': div_h,
-                    'top': top,
-                    'left': left,
-                    'img_w': img_w,
-                    'img_h': img_h,
-                    'theZ': rect.theZ + 1,
-                    'theT': rect.theT + 1,
-                    'zStart': (+rect.zStart) + 1,
-                    'zEnd': (+rect.zEnd) + 1,
-                    'tStart': (+rect.tStart) + 1,
-                    'tEnd': (+rect.tEnd) + 1,
-                    'roiId': rect.roiId,
-                }
-                html += this.roiTemplate(json);
-            }
-            $(".roiPicker tbody").html(html);
-
-            // reset Z/T as before
-            this.m.set({'theT': origT, 'theZ': origZ});
-        },
-
-        zoomToFit: function() {
-            var $roiViewer = $("#roiViewer"),
-                viewer_w = $roiViewer.width(),
-                viewer_h = $roiViewer.height(),
-                w = this.m.get('orig_width'),
-                h = this.m.get('orig_height');
-                scale = Math.min(viewer_w/w, viewer_h/h);
-            this.setZoom(scale * 100);
-        },
-
-        setZoom: function(percent) {
-            this.zoom = percent;
-            this.render();
+            $("#roiModalTip").show().html(tip);
         },
 
         render: function() {
-            var scale = this.zoom / 100,
-                roi = this.currentROI,
-                w = this.m.get('orig_width'),
+
+            var src = this.m.get_img_src();
+
+            var maxSize = 550,
+                frame_w = maxSize,
+                frame_h = maxSize,
+                wh = this.m.get('width') / this.m.get('height');
+            if (wh <= 1) {
+                frame_h = maxSize;
+                frame_w = maxSize * wh;
+            } else {
+                frame_w = maxSize;
+                frame_h = maxSize / wh;
+            }
+
+            var c = this.m.get_vp_img_css(this.m.get('zoom'), frame_w, frame_h, this.m.get('dx'), this.m.get('dy'));
+
+            var w = this.m.get('orig_width'),
                 h = this.m.get('orig_height');
-            var newW = w * scale,
-                newH = h * scale;
-            var src = this.m.get_img_src()
+            var scale = c.width / w;
+            // TODO: add public methods to set w & h
+            this.shapeManager._orig_width = w;
+            this.shapeManager._orig_height = h;
+            this.shapeManager.setZoom(scale * 100);
 
-            this.paper.setSize(newW, newH);
-            $("#roi_paper").css({'height': newH, 'width': newW});
+            var css = {
+                "left": c.left + "px",
+                "top": c.top + "px",
+                "width": c.width + "px",
+                "height": c.height + "px",
+                "-webkit-transform-origin": c['transform-origin'],
+                "transform-origin": c['transform-origin'],
+                "-webkit-transform": c.transform,
+                "transform": c.transform
+            }
+            this.$roiImg.css(css)
+                .attr('src', src);
 
-            this.$roiImg.css({'height': newH, 'width': newW})
-                    .attr('src', src);
+            $("#roi_paper").css(css);
 
-            var roiX = this.currentROI.x * scale,
-                roiY = this.currentROI.y * scale,
-                roiW = this.currentROI.width * scale,
-                roiH = this.currentROI.height * scale;
-            this.cropModel.set({
-                'x': roiX, 'y': roiY, 'width': roiW, 'height': roiH
-            });
+            $("#roiViewer").css({'width': frame_w + 'px', 'height': frame_h + 'px'});
+
+            this.renderToolbar();
+            this.renderSidebar();
         }
     });

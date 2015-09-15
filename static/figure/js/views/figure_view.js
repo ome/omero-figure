@@ -14,6 +14,7 @@
             new AddImagesModalView({model: this.model, figureView: this});
             new SetIdModalView({model: this.model});
             new PaperSetupModalView({model: this.model});
+            new CropModalView({model: this.model});
             new RoiModalView({model: this.model});
             new DpiModalView({model: this.model});
             new LegendView({model: this.model});
@@ -114,6 +115,12 @@
             'up' : 'nudge_up',
             'left' : 'nudge_left',
             'right' : 'nudge_right',
+        },
+
+        // If any modal is visible, we want to ignore keyboard events above
+        // All those methods should use this
+        modal_visible: function() {
+            return $("div.modal:visible").length > 0;
         },
 
         // choose an export option from the drop-down list
@@ -257,21 +264,25 @@
 
         nudge_right: function(event) {
             event.preventDefault();
+            if (this.modal_visible()) return true;
             this.model.nudge_right();
         },
 
         nudge_left: function(event) {
             event.preventDefault();
+            if (this.modal_visible()) return true;
             this.model.nudge_left();
         },
 
         nudge_down: function(event) {
             event.preventDefault();
+            if (this.modal_visible()) return true;
             this.model.nudge_down();
         },
 
         nudge_up: function(event) {
             event.preventDefault();
+            if (this.modal_visible()) return true;
             this.model.nudge_up();
         },
 
@@ -432,27 +443,35 @@
 
         copy_selected_panels: function(event) {
             event.preventDefault();
+            if (this.modal_visible()) return true;
             var s = this.model.getSelected();
-            this.clipboard_data = cd = [];
+            var cd = [];
             s.forEach(function(m) {
                 var copy = m.toJSON();
                 delete copy.id;
                 cd.push(copy);
             });
+            this.model.set('clipboard', {'PANELS': cd});
             this.$pasteBtn.removeClass("disabled");
         },
 
         paste_panels: function(event) {
             event.preventDefault();
-
-            if (!this.clipboard_data) return;
+            if (this.modal_visible()) return true;
+            var clipboard_data = this.model.get('clipboard'),
+                clipboard_panels;
+            if (clipboard_data && 'PANELS' in clipboard_data){
+                clipboard_panels = clipboard_data.PANELS;
+            } else {
+                return;
+            }
 
             var self = this;
             this.model.clearSelected();
 
             // first work out the bounding box of clipboard panels
             var top, left, bottom, right;
-            _.each(this.clipboard_data, function(m, i) {
+            _.each(clipboard_panels, function(m, i) {
                 var t = m.y,
                     l = m.x,
                     b = t + m.height,
@@ -479,7 +498,8 @@
             }
 
             // apply offset to clipboard data & paste
-            _.each(this.clipboard_data, function(m) {
+            // NB: we are modifying the list that is in the clipboard
+            _.each(clipboard_panels, function(m) {
                 m.x = m.x + offset_x;
                 m.y = m.y + offset_y;
                 self.model.panels.create(m);
@@ -488,15 +508,15 @@
             this.model.notifySelectionChange();
         },
 
-        clipboard_data: undefined,
-
         select_all: function(event) {
             event.preventDefault();
+            if (this.modal_visible()) return true;
             this.model.select_all();
         },
 
         deleteSelectedPanels: function(event) {
             event.preventDefault();
+            if (this.modal_visible()) return true;
             this.model.deleteSelected();
         },
 

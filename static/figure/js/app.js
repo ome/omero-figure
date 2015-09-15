@@ -21,18 +21,16 @@ $(function(){
 
     var figureModel = new FigureModel();
 
-    // var figureFiles = new FileList();
-    // figureFiles.fetch();
-
-    // Backbone.unsaveSync = function(method, model, options, error) {
-    //     figureModel.set("unsaved", true);
-    // };
-
     window.FigureColorPicker = new ColorPickerView();
 
     // Override 'Backbone.sync'...
     Backbone.ajaxSync = Backbone.sync;
 
+    // TODO: - Use the undo/redo queue instead of sync to trigger figureModel.set("unsaved", true);
+
+    // If syncOverride, then instead of actually trying to Save via ajax on model.save(attr, value)
+    // We simply set the 'unsaved' flag on the figureModel.
+    // This works for FigureModel and also for Panels collection.
     Backbone.getSyncMethod = function(model) {
         if(model.syncOverride || (model.collection && model.collection.syncOverride))
         {

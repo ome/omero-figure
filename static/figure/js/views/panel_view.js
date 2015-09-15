@@ -22,6 +22,7 @@
                 'change:channels change:theZ change:theT change:z_start change:z_end change:z_projection change:export_dpi',
                 this.render_image);
             this.listenTo(this.model, 'change:labels change:theT change:deltaT', this.render_labels);
+            this.listenTo(this.model, 'change:shapes', this.render_shapes);
             // This could be handled by backbone.relational, but do it manually for now...
             // this.listenTo(this.model.channels, 'change', this.render);
             // During drag, model isn't updated, but we trigger 'drag'
@@ -42,6 +43,7 @@
                 h = xywh[3];
             this.update_resize(x, y, w, h);
             this.$el.addClass('dragging');
+            this.render_shapes();
         },
 
         render_layout: function() {
@@ -67,17 +69,48 @@
 
             // update the img within the panel
             var zoom = this.model.get('zoom'),
-                vp_css = this.model.get_vp_img_css(zoom, w, h);
+                vp_css = this.model.get_vp_img_css(zoom, w, h),
+                panel_scale = vp_css.width / this.model.get('orig_width');
+
+            // These two elements are siblings under imgContainer and must
+            // maintain exactly on top of each other
             this.$img_panel.css(vp_css);
+            this.$panel_canvas.css(vp_css);
+
+            // panel_canvas contains the shapeManager svg, which we zoom:
+            if (this.shapeManager) {
+                this.shapeManager.setZoom(panel_scale * 100);
+            }
 
             // update length of scalebar
             var sb = this.model.get('scalebar');
             if (sb && sb.show) {
                 // this.$scalebar.css('width':);
-                var sb_pixels = sb.length / this.model.get('pixel_size_x');
-                var panel_scale = vp_css.width / this.model.get('orig_width'),
+                var sb_pixels = sb.length / this.model.get('pixel_size_x'),
                     sb_width = panel_scale * sb_pixels;
                 this.$scalebar.css('width', sb_width);
+            }
+        },
+
+        render_shapes: function() {
+            var shapes = this.model.get('shapes'),
+                w = this.model.get('orig_width'),
+                h = this.model.get('orig_height');
+            if (shapes) {
+                // init shapeManager if doesn't exist
+                if (!this.shapeManager) {
+                    var canvasId = this.$panel_canvas.attr('id');
+                    this.$panel_canvas.attr({'width': w + 'px', 'height': h + 'px'});
+                    var panel_scale = this.$img_panel.width() / w;
+                    this.shapeManager = new ShapeManager(canvasId, w, h, {'readOnly': true});
+                    this.shapeManager.setZoom(panel_scale * 100);
+                }
+                this.shapeManager.setShapesJson(shapes);
+            } else {
+                // delete shapes
+                if (this.shapeManager) {
+                    this.shapeManager.deleteAll();
+                }
             }
         },
 
@@ -165,19 +198,32 @@
         },
 
         render: function() {
+            // This render() is only called when the panel is first created
+            // to set up the elements. It then calls other render methods to
+            // set sizes, image src, labels, scalebar etc.
+            // All subsequent changes to panel attributes are handled directly
+            // by other appropriate render methods.
 
-            // Have to handle potential nulls, since the template doesn't like them!
-            var json = {'imageId': this.model.get('imageId')};
-            // need to add the render string, E.g: 1|110:398$00FF00,2|...
-
+            var json = {'randomId': 'r' + Math.random()};
             var html = this.template(json);
             this.$el.html(html);
 
-            this.$img_panel = $(".img_panel", this.$el);    // cache for later
+            // cache various elements for later...
+            this.$img_panel = $(".img_panel", this.$el);
+            this.$imgContainer = $(".imgContainer", this.$el);
+            this.$panel_canvas = $(".panel_canvas", this.$el);
 
+            // update src, layout etc.
             this.render_image();
             this.render_labels();
             this.render_scalebar();     // also calls render_layout()
+
+            // At this point, element is not ready for Raphael svg
+            // If we wait a short time, works fine
+            var self = this;
+            setTimeout(function(){
+                self.render_shapes();
+            }, 10);
 
             return this;
         }

@@ -60,6 +60,7 @@
         model: FigureModel,
 
         template: JST["static/figure/templates/labels_form_inner_template.html"],
+        roisTemplate: JST["static/figure/templates/rois_form_template.html"],
 
         el: $("#labelsTab"),
 
@@ -77,6 +78,11 @@
         events: {
             "submit .new-label-form": "handle_new_label",
             "click .dropdown-menu a": "select_dropdown_option",
+            "click .edit_rois": "editRois",
+        },
+
+        editRois: function(event) {
+            $("#roiModal").modal("show");
         },
 
         // Handles all the various drop-down menus in the 'New' AND 'Edit Label' forms
@@ -167,7 +173,24 @@
             return false;
         },
 
+        renderRois: function() {
+
+            var selectionCount = this.model.getSelected().length,
+                disableEdit = selectionCount > 1;
+
+            if (selectionCount === 0) {
+                $('#edit_rois_form').empty();
+            } else {
+                var json = {
+                    'disabled': disableEdit
+                }
+                $('#edit_rois_form').html(this.roisTemplate(json));
+            }
+        },
+
         render: function() {
+
+            this.renderRois();
 
             var selected = this.model.getSelected();
 
@@ -1055,7 +1078,7 @@
         show_crop_dialog: function(event) {
             event.preventDefault();
             // Simply show dialog - Everything else handled by that
-            $("#roiModal").modal('show');
+            $("#cropModal").modal('show');
         },
 
         resetZoomShape: function(event) {

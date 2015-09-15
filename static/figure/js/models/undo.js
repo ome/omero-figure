@@ -260,13 +260,20 @@ var UndoView = Backbone.View.extend({
         }
         return this;
     },
-    
+
+    // If modal dialags are visible, we want to ignore undo/redo
+    modal_visible: function() {
+        return $("div.modal:visible").length > 0;
+    },
+
     undo: function(event) {
         event.preventDefault();
+        if (this.modal_visible()) return;
         this.model.undo();
     },
     redo: function(event) {
         event.preventDefault();
+        if (this.modal_visible()) return;
         this.model.redo();
     }
 });
