@@ -134,7 +134,9 @@ class ShapeToPdfExport(object):
         Convert coordinate from the image onto the PDF page.
         Handles zoom, offset & rotation of panel, rotating the
         x, y point around the centre of the cropped region
-        and scaling appropriately
+        and scaling appropriately.
+        Also includes 'inPanel' key - True if point within
+        the cropped panel region
         """
         rotation = self.panel['rotation']
         # img coords: centre of rotation
@@ -161,19 +163,36 @@ class ShapeToPdfExport(object):
         shapeX = cx - newO
         shapeY = cy - newA
 
-        # Handle page offsets
-        x = self.panel['x'] - self.page['x']
-        y = self.panel['y'] - self.page['y']
         # convert to coords within crop region
         shapeX = shapeX - self.crop['x']
         shapeY = shapeY - self.crop['y']
+        # check if points are within panel
+        inPanel = True
+        if shapeX < 0 or shapeX > self.crop['width']:
+            inPanel = False
+        if shapeY < 0 or shapeY > self.crop['height']:
+            inPanel = False
+        # Handle page offsets
+        x = self.panel['x'] - self.page['x']
+        y = self.panel['y'] - self.page['y']
         # scale and position on page within panel
         shapeX = (shapeX * self.scale) + x
         shapeY = (shapeY * self.scale) + y
-        return {'x': shapeX, 'y': shapeY}
+        return {'x': shapeX, 'y': shapeY, 'inPanel': inPanel}
 
     def drawRectangle(self, shape):
         topLeft = self.panelToPageCoords(shape['x'], shape['y'])
+
+        # Don't draw if all corners are outside the panel
+        topRight = self.panelToPageCoords(shape['x'] + shape['width'], shape['y'])
+        bottomLeft = self.panelToPageCoords(shape['x'],
+                                            shape['y'] + shape['height'])
+        bottomRight = self.panelToPageCoords(shape['x'] + shape['width'],
+                                             shape['y'] + shape['height'])
+        if (topLeft['inPanel'] is False) and (topRight['inPanel'] is False) and (
+                bottomLeft['inPanel'] is False) and (bottomRight['inPanel'] is False):
+            return
+
         width = shape['width'] * self.scale
         height = shape['height'] * self.scale
         x = topLeft['x']
@@ -209,6 +228,9 @@ class ShapeToPdfExport(object):
         y1 = self.pageHeight - start['y']
         x2 = end['x']
         y2 = self.pageHeight - end['y']
+        # Don't draw if both points outside panel
+        if (start['inPanel'] is False) and (end['inPanel'] is False):
+            return
 
         rgb = self.getRGB(shape['strokeColor'])
         r = float(rgb[0])/255
@@ -231,7 +253,9 @@ class ShapeToPdfExport(object):
         x2 = end['x']
         y2 = self.pageHeight - end['y']
         strokeWidth = shape['strokeWidth']
-        # arrow(self.figureCanvas, x1, y1, x2, y2, shape['strokeWidth'], rgb, scale)
+        # Don't draw if both points outside panel
+        if (start['inPanel'] is False) and (end['inPanel'] is False):
+            return
 
         rgb = self.getRGB(shape['strokeColor'])
         r = float(rgb[0])/255
@@ -289,6 +313,9 @@ class ShapeToPdfExport(object):
         g = float(rgb[1])/255
         b = float(rgb[2])/255
         self.canvas.setStrokeColorRGB(r, g, b)
+        # Don't draw if centre outside panel
+        if c['inPanel'] is False:
+            return
 
         # For rotation, we reset our coordinates around cx, cy
         # so that rotation applies around cx, cy
