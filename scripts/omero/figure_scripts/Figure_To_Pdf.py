@@ -144,10 +144,13 @@ class ShapeToPdfExport(object):
         dy = cy - shapeY
         # distance of point from centre of rotation
         h = sqrt(dx * dx + dy * dy)
-        # and the angle
-        angle1 = atan(dx/dy)
-        if (angle1 < 0 and dy < 0) or (angle1 > 0 and dy < 0):
-            angle1 += radians(180)
+        # and the angle (avoid division by zero!)
+        if dy == 0:
+            angle1 = 90
+        else:
+            angle1 = atan(dx/dy)
+            if (dy < 0):
+                angle1 += radians(180)
 
         # Add the rotation to the angle and calculate new
         # opposite and adjacent lengths from centre of rotation
@@ -351,10 +354,13 @@ class ShapeToPilExport(object):
         dy = cy - shapeY
         # distance of point from centre of rotation
         h = sqrt(dx * dx + dy * dy)
-        # and the angle
-        angle1 = atan(dx/dy)
-        if (angle1 < 0 and dy < 0) or (angle1 > 0 and dy < 0):
-            angle1 += radians(180)
+        # and the angle (avoid division by zero!)
+        if dy == 0:
+            angle1 = 90
+        else:
+            angle1 = atan(dx/dy)
+            if (dy < 0):
+                angle1 += radians(180)
 
         # Add the rotation to the angle and calculate new
         # opposite and adjacent lengths from centre of rotation
