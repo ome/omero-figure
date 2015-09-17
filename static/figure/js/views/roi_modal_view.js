@@ -62,6 +62,9 @@ var RoiModalView = Backbone.View.extend({
             });
 
             this.shapeManager = new ShapeManager("roi_paper", 1, 1);
+            // Initially start with thin white lines.
+            self.shapeManager.setStrokeWidth(1);
+            self.shapeManager.setStrokeColor('#FFFFFF');
 
             this.$roiImg = $('.roi_image', this.$el);
         },
@@ -84,14 +87,17 @@ var RoiModalView = Backbone.View.extend({
         copyShapes: function(event) {
             var shapeJson = this.shapeManager.getSelectedShapesJson();
             if (shapeJson.length > 0) {
-                this.model.set('shapesClipboard', shapeJson);
+                this.model.set('clipboard', {'SHAPES': shapeJson});
             }
             this.renderToolbar();    // to enable paste
         },
 
         pasteShapes: function(event) {
-            var shapeJson = this.model.get('shapesClipboard');
-            if (shapeJson) {
+            var clipboard_data = this.model.get('clipboard'),
+                shapeJson;
+            if (clipboard_data && 'SHAPES' in clipboard_data){
+                shapeJson = clipboard_data.SHAPES;
+
                 // paste shapes, with offset if matching existing shape
                 // Constrain pasting to within viewport
                 var viewport = this.m.getViewportAsRect();
@@ -218,13 +224,13 @@ var RoiModalView = Backbone.View.extend({
 
         renderSidebarWarning: function(text) {
             var html = "<p><span class='label label-warning'>Warning</span> " + text + "</p>";
-            $("#roiModalTip").html(html).show().fadeOut(5000);
+            $("#roiModalTip").html(html).show().fadeOut(10000);
         },
 
         // this is called each time the ROI dialog is displayed
         renderSidebar: function() {
             var tips = [
-                "Add ROIs to the image panel by choosing Rectangle, Line, Arrow or Ellipse from the toolbar.",
+                // "Add ROIs to the image panel by choosing Rectangle, Line, Arrow or Ellipse from the toolbar.",
                 "You can copy and paste shapes to duplicate them or move them between panels.",
                 "If you copy a region from the Crop dialog (under the 'Preview' tab), you can paste it here to create a new Rectangle."],
                 tip;

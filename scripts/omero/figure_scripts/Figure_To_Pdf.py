@@ -539,7 +539,8 @@ class FigureExport(object):
 
         n = datetime.now()
         # time-stamp name by default: Figure_2013-10-29_22-43-53.pdf
-        self.figureName = u"Figure_%s-%s-%s_%s-%s-%s" % (n.year, n.month, n.day, n.hour, n.minute, n.second)
+        self.figureName = u"Figure_%s-%s-%s_%s-%s-%s" % (
+            n.year, n.month, n.day, n.hour, n.minute, n.second)
         if 'figureName' in self.figure_json:
             self.figureName = self.figure_json['figureName']
 
@@ -550,7 +551,8 @@ class FigureExport(object):
     def getZipName(self):
 
         # file names can't include unicode characters
-        name = unicodedata.normalize('NFKD', self.figureName).encode('ascii', 'ignore')
+        name = unicodedata.normalize(
+            'NFKD', self.figureName).encode('ascii', 'ignore')
         # in case we have path/to/name.pdf, just use name.pdf
         name = path.basename(name)
         # Remove commas: causes problems 'duplicate headers' in file download
@@ -570,7 +572,8 @@ class FigureExport(object):
         fext = self.getFigureFileExt()
 
         # file names can't include unicode characters
-        name = unicodedata.normalize('NFKD', self.figureName).encode('ascii', 'ignore')
+        name = unicodedata.normalize(
+            'NFKD', self.figureName).encode('ascii', 'ignore')
         # in case we have path/to/name, just use name
         name = path.basename(name)
 
@@ -613,10 +616,13 @@ class FigureExport(object):
         """
 
         # test to see if we've got multiple pages
-        page_count = 'page_count' in self.figure_json and self.figure_json['page_count'] or 1
+        page_count = ('page_count' in self.figure_json and
+                      self.figure_json['page_count'] or 1)
         self.page_count = int(page_count)
-        paper_spacing = 'paper_spacing' in self.figure_json and self.figure_json['paper_spacing'] or 50
-        page_col_count = 'page_col_count' in self.figure_json and self.figure_json['page_col_count'] or 1
+        paper_spacing = ('paper_spacing' in self.figure_json and
+                         self.figure_json['paper_spacing'] or 50)
+        page_col_count = ('page_col_count' in self.figure_json and
+                          self.figure_json['page_col_count'] or 1)
 
         # Create a zip if we have multiple TIFF pages or we're exporting Images
         export_option = self.scriptParams['Export_Option']
@@ -654,13 +660,15 @@ class FigureExport(object):
         col = 0
         row = 0
         for p in range(self.page_count):
-            print "\n------------------------- PAGE ", p + 1, "--------------------------"
+            print ("\n------------------------- PAGE ", p + 1,
+                   "--------------------------")
             px = col * (self.pageWidth + paper_spacing)
             py = row * (self.pageHeight + paper_spacing)
             page = {'x': px, 'y': py}
 
             # if export_option == "TIFF":
-            #     add_panels_to_tiff(conn, tiffFigure, panels_json, imageIds, page)
+            #     add_panels_to_tiff(conn, tiffFigure, panels_json, imageIds,
+            #     page)
             # elif export_option == "PDF":
             self.add_panels_to_page(panels_json, imageIds, page)
 
@@ -714,7 +722,8 @@ class FigureExport(object):
                 links = self.conn.getUpdateService().saveAndReturnArray(
                     links, self.conn.SERVICE_OPTS)
             except:
-                print "Failed to attach figure: %s to images %s" % (fileAnn, imageIds)
+                print ("Failed to attach figure: %s to images %s"
+                       % (fileAnn, imageIds))
 
         return fileAnn
 
@@ -1016,7 +1025,9 @@ class FigureExport(object):
             else:
                 ly = ly + 5
 
-            self.drawText(label, (lx + lx_end)/2, ly, font_size, (red, green, blue), align="center")
+            self.drawText(
+                label, (lx + lx_end)/2, ly, font_size, (red, green, blue),
+                align="center")
 
     def getPanelImage(self, image, panel, origName=None):
         """
@@ -1128,7 +1139,8 @@ class FigureExport(object):
         # get cropped image (saving original)
         origName = None
         if self.exportImages:
-            origName = os.path.join(self.zip_folder_name, ORIGINAL_DIR, imgName)
+            origName = os.path.join(
+                self.zip_folder_name, ORIGINAL_DIR, imgName)
             print "Saving original to: ", origName
         pilImg = self.getPanelImage(image, panel, origName)
 
@@ -1196,7 +1208,7 @@ class FigureExport(object):
             f.close()
 
     def addInfoPage(self, panels_json):
-        """ Generates a PDF info page with figure title, links to images etc """
+        """Generates a PDF info page with figure title, links to images etc"""
         scriptParams = self.scriptParams
         figureName = self.figureName
         base_url = None
@@ -1225,11 +1237,13 @@ class FigureExport(object):
         if "Figure_URI" in scriptParams:
             fileUrl = scriptParams["Figure_URI"]
             print "Figure URL", fileUrl
-            figureLink = "Link to Figure: <a href='%s' color='blue'>%s</a>" % (fileUrl, fileUrl)
+            figureLink = ("Link to Figure: <a href='%s' color='blue'>%s</a>"
+                          % (fileUrl, fileUrl))
             pageY = self.addParaWithThumb(figureLink, pageY, style=styleN)
 
         # Add Figure Legend
-        if 'legend' in self.figure_json and len(self.figure_json['legend']) > 0:
+        if ('legend' in self.figure_json and
+                len(self.figure_json['legend']) > 0):
             pageY = self.addParaWithThumb("Legend:", pageY, style=styleH3)
             print "\n--- Adding Figure Legend ---"
             legend = self.figure_json['legend']
@@ -1244,10 +1258,12 @@ class FigureExport(object):
                     p = "<p>" + p
                     pageY = self.addParaWithThumb(p, pageY, style=styleN)
             else:
-                print "Markdown not imported. See https://pythonhosted.org/Markdown/install.html"
+                print ("Markdown not imported. See"
+                       " https://pythonhosted.org/Markdown/install.html")
                 pageY = self.addParaWithThumb(legend, pageY, style=styleN)
 
-        pageY = self.addParaWithThumb("Figure contains the following images:", pageY, style=styleH3)
+        pageY = self.addParaWithThumb(
+            "Figure contains the following images:", pageY, style=styleH3)
 
         # Go through sorted panels, adding paragraph for each unique image
         for p in panels_json:
@@ -1268,16 +1284,19 @@ class FigureExport(object):
             lines = []
             lines.append(p['name'])
             img_url = "%s?show=image-%s" % (base_url, iid)
-            lines.append("<a href='%s' color='blue'>%s</a>" % (img_url, img_url))
+            lines.append(
+                "<a href='%s' color='blue'>%s</a>" % (img_url, img_url))
             # addPara([" ".join(line)])
             line = " ".join(lines)
-            pageY = self.addParaWithThumb(line, pageY, style=styleN, thumbSrc=thumbSrc)
+            pageY = self.addParaWithThumb(
+                line, pageY, style=styleN, thumbSrc=thumbSrc)
 
         if len(scalebars) > 0:
             scalebars = list(set(scalebars))
             pageY = self.addParaWithThumb("Scalebars:", pageY, style=styleH3)
-            pageY = self.addParaWithThumb("Scalebar Lengths: %s" % ", ".join(scalebars),
-                                          pageY, style=styleN)
+            pageY = self.addParaWithThumb(
+                "Scalebar Lengths: %s" % ", ".join(scalebars),
+                pageY, style=styleN)
 
     def panel_is_on_page(self, panel, page):
         """ Return true if panel overlaps with this page """
@@ -1289,7 +1308,7 @@ class FigureExport(object):
         cx2 = cx + self.pageWidth
         cy = page['y']
         cy2 = cy + self.pageHeight
-        #overlap needs overlap on x-axis...
+        # overlap needs overlap on x-axis...
         return px < cx2 and cx < px2 and py < cy2 and cy < py2
 
     def add_panels_to_page(self, panels_json, imageIds, page):
@@ -1325,9 +1344,11 @@ class FigureExport(object):
         Creates a PDF figure. This is overwritten by ExportTiff subclass.
         """
         if not reportlabInstalled:
-            raise ImportError("Need to install https://bitbucket.org/rptlab/reportlab")
+            raise ImportError(
+                "Need to install https://bitbucket.org/rptlab/reportlab")
         name = self.getFigureFileName()
-        self.figureCanvas = canvas.Canvas(name, pagesize=(self.pageWidth, self.pageHeight))
+        self.figureCanvas = canvas.Canvas(
+            name, pagesize=(self.pageWidth, self.pageHeight))
 
     def savePage(self):
         """ Called on completion of each page. Saves page of PDF """
@@ -1399,7 +1420,8 @@ class FigureExport(object):
             if target_w > curr_w:
                 if self.exportImages:
                     # Save image BEFORE resampling
-                    rsName = os.path.join(self.zip_folder_name, RESAMPLED_DIR, imgName)
+                    rsName = os.path.join(
+                        self.zip_folder_name, RESAMPLED_DIR, imgName)
                     print "Saving pre_resampled to: ", rsName
                     pilImg.save(rsName)
                 print "    Resample to target_w, target_h", target_w, target_h
@@ -1445,7 +1467,8 @@ class TiffExport(FigureExport):
         try:
             font = ImageFont.truetype(self.fontPath, fontsize)
         except:
-            font = ImageFont.load('%s/pilfonts/B%0.2d.pil' % (self.GATEWAYPATH, 24))
+            font = ImageFont.load(
+                '%s/pilfonts/B%0.2d.pil' % (self.GATEWAYPATH, 24))
         return font
 
     def scaleCoords(self, coord):
@@ -1466,7 +1489,8 @@ class TiffExport(FigureExport):
         tiffWidth = self.scaleCoords(self.pageWidth)
         tiffHeight = self.scaleCoords(self.pageHeight)
         print "TIFF: width, height", tiffWidth, tiffHeight
-        self.tiffFigure = Image.new("RGBA", (tiffWidth, tiffHeight), (255, 255, 255))
+        self.tiffFigure = Image.new(
+            "RGBA", (tiffWidth, tiffHeight), (255, 255, 255))
 
     def pasteImage(self, pilImg, imgName, panel, page, dpi=None):
         """ Add the PIL image to the current figure page """
@@ -1587,7 +1611,8 @@ class TiffExport(FigureExport):
         fullName = "info_page.pdf"
         if self.zip_folder_name is not None:
             fullName = os.path.join(self.zip_folder_name, fullName)
-        self.figureCanvas = canvas.Canvas(fullName, pagesize=(self.pageWidth, self.pageHeight))
+        self.figureCanvas = canvas.Canvas(
+            fullName, pagesize=(self.pageWidth, self.pageHeight))
 
         # Superclass method will call addParaWithThumb(),
         # to add lines to self.infoLines

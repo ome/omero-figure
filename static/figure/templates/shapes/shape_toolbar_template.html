@@ -78,26 +78,23 @@
 <div class="btn-group">
     <button type="button" class="btn btn-default" title="Delete, Copy, Paste etc"
         data-toggle="dropdown">
-        <span class="glyphicon glyphicon-wrench"></span>
+        <span>Edit</span>
         <span class="caret"></span>
     </button>
-    <ul class="dropdown-menu" role="menu" style="width:200px">
+    <ul class="dropdown-menu" role="menu">
         <li <% if (!sel) print('class="disabled"') %> >
             <a href="#" class="copyShape">
-                <span class="glyphicon" aria-hidden="true"></span>
-                Copy Shape <span class="pull-right"><%= cmdKey %>C</span>
+                Copy Shape   &nbsp&nbsp&nbsp <%= cmdKey %>C
             </a>
         </li>
         <li <% if (!toPaste) print('class="disabled"') %> >
             <a href="#" class="pasteShape">
-                <span class="glyphicon" aria-hidden="true"></span>
-                Paste Shape <span class="pull-right"><%= cmdKey %>V</span>
+                Paste Shape   &nbsp&nbsp&nbsp <%= cmdKey %>V
             </a>
         </li>
         <li <% if (!sel) print('class="disabled"') %> >
             <a href="#" class="deleteShape">
-                <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
-                Delete Shape <span class="pull-right">Del</span>
+                Delete Shape    &nbsp&nbsp&nbsp Del
             </a>
         </li>
     </ul>

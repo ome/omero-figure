@@ -1,5 +1,14 @@
-language: node_js
-node_js:
-  - 0.8
-before_script:
-  - npm install -g grunt-cli
+language: python
+
+python: 2.7
+
+# This (sudo: false) is needed to "run on container-based infrastructure" on
+# which cache: is available
+# http://docs.travis-ci.com/user/workers/container-based-infrastructure/
+sudo: false
+
+cache: pip
+
+before_install: pip install flake8
+
+script: flake8 -v .

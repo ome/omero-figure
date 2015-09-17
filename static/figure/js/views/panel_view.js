@@ -71,9 +71,13 @@
             var zoom = this.model.get('zoom'),
                 vp_css = this.model.get_vp_img_css(zoom, w, h),
                 panel_scale = vp_css.width / this.model.get('orig_width');
-            this.$imgContainer.css(vp_css);
-            this.$img_panel.css({'width': vp_css.width + 'px',
-                                 'height': vp_css.height + 'px'});
+
+            // These two elements are siblings under imgContainer and must
+            // maintain exactly on top of each other
+            this.$img_panel.css(vp_css);
+            this.$panel_canvas.css(vp_css);
+
+            // panel_canvas contains the shapeManager svg, which we zoom:
             if (this.shapeManager) {
                 this.shapeManager.setZoom(panel_scale * 100);
             }

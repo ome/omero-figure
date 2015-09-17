@@ -167,7 +167,7 @@ __p += ' >\n    <button type="submit" class="edit_rois btn btn-sm btn-success"\n
  if (disabled) { ;
 __p += ' disabled="disabled"';
  } ;
-__p += ' >\n        Edit ROIs\n    </button>\n</div>\n';
+__p += ' >\n        Draw ROIs\n    </button>\n</div>\n';
 
 }
 return __p
@@ -651,17 +651,17 @@ __p += '"\n            title="Ellipse" data-state="ELLIPSE">\n        <span clas
  _.each([1,2,3,4,5,7,10,15,20,30],function(p){
             print ("<li><a href='#'>"+p+"<span title='Line Width: "+p+"' data-line-width='"+p+"' class='linewidthOption' style='height:"+p+"px'></span></a></li>")
         }); ;
-__p += '\n\n    </ul>\n</div>\n\n\n<div class="btn-group">\n    <button type="button" class="btn btn-default" title="Delete, Copy, Paste etc"\n        data-toggle="dropdown">\n        <span class="glyphicon glyphicon-wrench"></span>\n        <span class="caret"></span>\n    </button>\n    <ul class="dropdown-menu" role="menu" style="width:200px">\n        <li ';
+__p += '\n\n    </ul>\n</div>\n\n\n<div class="btn-group">\n    <button type="button" class="btn btn-default" title="Delete, Copy, Paste etc"\n        data-toggle="dropdown">\n        <span>Edit</span>\n        <span class="caret"></span>\n    </button>\n    <ul class="dropdown-menu" role="menu">\n        <li ';
  if (!sel) print('class="disabled"') ;
-__p += ' >\n            <a href="#" class="copyShape">\n                <span class="glyphicon" aria-hidden="true"></span>\n                Copy Shape <span class="pull-right">' +
+__p += ' >\n            <a href="#" class="copyShape">\n                Copy Shape   &nbsp&nbsp&nbsp ' +
 ((__t = ( cmdKey )) == null ? '' : __t) +
-'C</span>\n            </a>\n        </li>\n        <li ';
+'C\n            </a>\n        </li>\n        <li ';
  if (!toPaste) print('class="disabled"') ;
-__p += ' >\n            <a href="#" class="pasteShape">\n                <span class="glyphicon" aria-hidden="true"></span>\n                Paste Shape <span class="pull-right">' +
+__p += ' >\n            <a href="#" class="pasteShape">\n                Paste Shape   &nbsp&nbsp&nbsp ' +
 ((__t = ( cmdKey )) == null ? '' : __t) +
-'V</span>\n            </a>\n        </li>\n        <li ';
+'V\n            </a>\n        </li>\n        <li ';
  if (!sel) print('class="disabled"') ;
-__p += ' >\n            <a href="#" class="deleteShape">\n                <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>\n                Delete Shape <span class="pull-right">Del</span>\n            </a>\n        </li>\n    </ul>\n</div>\n\n';
+__p += ' >\n            <a href="#" class="deleteShape">\n                Delete Shape    &nbsp&nbsp&nbsp Del\n            </a>\n        </li>\n    </ul>\n</div>\n\n';
 
 }
 return __p
