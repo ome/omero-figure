@@ -108,7 +108,7 @@ class ShapeToPdfExport(object):
         # The crop region on the original image coordinates...
         self.crop = crop
         self.pageHeight = pageHeight
-        # Get a mapping from original coordinates to the actual size of the panel
+        # Get a mapping from original coordinates to the actual size of panel
         self.scale = float(panel['width']) / crop['width']
 
         if "shapes" in panel:
@@ -184,13 +184,16 @@ class ShapeToPdfExport(object):
         topLeft = self.panelToPageCoords(shape['x'], shape['y'])
 
         # Don't draw if all corners are outside the panel
-        topRight = self.panelToPageCoords(shape['x'] + shape['width'], shape['y'])
+        topRight = self.panelToPageCoords(shape['x'] + shape['width'],
+                                          shape['y'])
         bottomLeft = self.panelToPageCoords(shape['x'],
                                             shape['y'] + shape['height'])
         bottomRight = self.panelToPageCoords(shape['x'] + shape['width'],
                                              shape['y'] + shape['height'])
-        if (topLeft['inPanel'] is False) and (topRight['inPanel'] is False) and (
-                bottomLeft['inPanel'] is False) and (bottomRight['inPanel'] is False):
+        if (topLeft['inPanel'] is False) and (
+                topRight['inPanel'] is False) and (
+                bottomLeft['inPanel'] is False) and (
+                bottomRight['inPanel'] is False):
             return
 
         width = shape['width'] * self.scale
@@ -485,8 +488,10 @@ class ShapeToPilExport(object):
         # Draw outer rectangle, then remove inner rect with full opacity
         rectDraw.rectangle((0, 0, width, height), fill=rgb)
         rgba = (255, 255, 255, 0)
-        rectDraw.rectangle((scaleW, scaleW, width-scaleW, height-scaleW), fill=rgba)
-        tempRect = tempRect.rotate(rotation, resample=Image.BICUBIC, expand=True)
+        rectDraw.rectangle((scaleW, scaleW, width-scaleW, height-scaleW),
+                           fill=rgba)
+        tempRect = tempRect.rotate(rotation, resample=Image.BICUBIC,
+                                   expand=True)
         # Use rect as mask, so transparent part is not pasted
         pasteX = cx - (tempRect.size[0]/2)
         pasteY = cy - (tempRect.size[1]/2)
@@ -505,17 +510,20 @@ class ShapeToPilExport(object):
 
         width = int((rx * 2) + w)
         height = int((ry * 2) + w)
-        tempEllipse = Image.new('RGBA', (width + 1, height + 1), (255, 255, 255, 0))
+        tempEllipse = Image.new('RGBA', (width + 1, height + 1),
+                                (255, 255, 255, 0))
         ellipseDraw = ImageDraw.Draw(tempEllipse)
         # Draw outer ellipse, then remove inner ellipse with full opacity
         ellipseDraw.ellipse((0, 0, width, height), fill=rgb)
         rgba = (255, 255, 255, 0)
         ellipseDraw.ellipse((w, w, width - w, height - w), fill=rgba)
-        tempEllipse = tempEllipse.rotate(rotation, resample=Image.BICUBIC, expand=True)
+        tempEllipse = tempEllipse.rotate(rotation, resample=Image.BICUBIC,
+                                         expand=True)
         # Use ellipse as mask, so transparent part is not pasted
         pasteX = cx - (tempEllipse.size[0]/2)
         pasteY = cy - (tempEllipse.size[1]/2)
-        self.pilImg.paste(tempEllipse, (int(pasteX), int(pasteY)), mask=tempEllipse)
+        self.pilImg.paste(tempEllipse, (int(pasteX), int(pasteY)),
+                          mask=tempEllipse)
 
 
 class FigureExport(object):
