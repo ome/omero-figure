@@ -210,8 +210,9 @@ var RoiModalView = Backbone.View.extend({
                 color = this.shapeManager.getStrokeColor().replace("#", ""),
                 scale = this.zoom,
                 sel = this.shapeManager.getSelected().length > 0,
-                toPaste = this.model.get('shapesClipboard'),
+                toPaste = this.model.get('clipboard'),
                 windows = navigator.platform.toUpperCase().indexOf('WIN') > -1;
+            toPaste = (toPaste && "SHAPES" in toPaste) ? toPaste.SHAPES : false;
             var json = {'state': state,
                         'lineWidth': lineW,
                         'color': color,
