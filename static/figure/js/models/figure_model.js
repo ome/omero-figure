@@ -15,8 +15,8 @@
             'canvas_width': 13000,
             'canvas_height': 8000,
             // w & h from reportlab.
-            'paper_width': 612,
-            'paper_height': 792,
+            'paper_width': 595,
+            'paper_height': 842,
             'page_count': 1,
             'page_col_count': 1,    // pages laid out in grid
             'paper_spacing': 50,    // between each page
