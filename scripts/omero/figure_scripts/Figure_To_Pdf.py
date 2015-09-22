@@ -1535,14 +1535,13 @@ class TiffExport(FigureExport):
         print "resize to: x, y, width, height", x, y, width, height
         pilImg = pilImg.resize((width, height), Image.BICUBIC)
 
-        # Now at full figure resolution - Good time to add shapes...
-        # self.addROIsToCroppedImage(pilImg, panel)
-        crop = self.getCropRegion(panel)
-        ShapeToPilExport(pilImg, panel, crop)
-
         if self.exportImages:
             imgName = os.path.join(self.zip_folder_name, FINAL_DIR, imgName)
             pilImg.save(imgName)
+
+        # Now at full figure resolution - Good time to add shapes...
+        crop = self.getCropRegion(panel)
+        ShapeToPilExport(pilImg, panel, crop)
 
         width, height = pilImg.size
         box = (x, y, x + width, y + height)
