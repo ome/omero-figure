@@ -51,6 +51,34 @@ module.exports = function (grunt) {
         dest: 'static/figure/js/figure.js',
       },
     },
+    replace: {
+      dist: {
+        options: {
+          patterns: [
+            {
+              json: {
+                '{% load url from future %}': '',
+                '{% include "webgateway/base/includes/script_src_jquery.html" %}':
+                    '<script type="text/javascript" src="//code.jquery.com/jquery-1.7.2.min.js"></script>',
+                '{% include "webgateway/base/includes/jquery-ui.html" %}':
+                    '<script type="text/javascript" src="//code.jquery.com/ui/1.8.19/jquery-ui.js"></script>' +
+                    '<link rel="stylesheet" href="//code.jquery.com/ui/1.8.19/themes/smoothness/jquery-ui.css" type="text/css" />',
+                "{% url 'figure_index' %}":
+                    "",
+                "{% url 'save_web_figure' %}":
+                    "/figure/save_web_figure/",
+                "{% url 'list_web_figures' %}":
+                    "static/json/list_web_figures.json"
+                }
+            }
+          ],
+          usePrefix: false,
+        },
+        files: [
+          {expand: true, flatten: true, src: ['templates/figure/index.html'], dest: 'demo/'}
+        ]
+      }
+    },
   })
 
   grunt.loadNpmTasks('grunt-contrib-jshint')
@@ -58,7 +86,13 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-contrib-jst');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-contrib-concat');
+  grunt.loadNpmTasks('grunt-replace');
 
   grunt.registerTask('test', ['jshint', 'jasmine'])
   grunt.registerTask('default', ['test'])
+
+  // create a static 'demo' version of app
+  grunt.registerTask('demo', [
+      'replace'
+  ]);
 };
