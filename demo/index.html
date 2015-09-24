@@ -30,9 +30,9 @@
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width">
 
-    <link rel="stylesheet" href="{% static 'figure/3rdparty/bootstrap3/css/bootstrap.css' %}">
-    <link rel="stylesheet" href="{% static 'figure/3rdparty/bootstrap-colorpicker/css/bootstrap-colorpicker.min.css' %}">
-    <link rel="stylesheet" href="{% static 'figure/css/figure.css' %}">
+    <link rel="stylesheet" href="static/figure/3rdparty/bootstrap3/css/bootstrap.css">
+    <link rel="stylesheet" href="static/figure/3rdparty/bootstrap-colorpicker/css/bootstrap-colorpicker.min.css">
+    <link rel="stylesheet" href="static/figure/css/figure.css">
 
     <script type="text/javascript" src="//code.jquery.com/jquery-1.7.2.min.js"></script>
     <script type="text/javascript" src="//code.jquery.com/ui/1.8.19/jquery-ui.js"></script><link rel="stylesheet" href="//code.jquery.com/ui/1.8.19/themes/smoothness/jquery-ui.css" type="text/css" />
@@ -44,11 +44,11 @@
     var BASE_WEBFIGURE_URL = "",
         SAVE_WEBFIGURE_URL = "/figure/save_web_figure/",
         LIST_WEBFIGURES_URL = "static/json/list_web_figures.json",
-        DELETE_WEBFIGURE_URL = "{% url 'delete_web_figure' %}",
-        MAKE_WEBFIGURE_URL = "{% url 'make_web_figure' %}",
-        ACTIVITIES_JSON_URL = "{% url 'activities_json' %}",
-        WEBGATEWAYINDEX = "{% url 'webgateway' %}",
-        WEBINDEX_URL = "{% url 'webindex' %}",
+        DELETE_WEBFIGURE_URL = "{% url 'delete_web_figure",
+        MAKE_WEBFIGURE_URL = "{% url 'make_web_figure",
+        ACTIVITIES_JSON_URL = "{% url 'activities_json",
+        WEBGATEWAYINDEX = "{% url 'webgateway",
+        WEBINDEX_URL = "{% url 'webindex",
         ROIS_JSON_URL = WEBGATEWAYINDEX + "get_rois_json/",
         USER_FULL_NAME = "{{ userFullName }}";
 
@@ -56,7 +56,7 @@
 
         // keep-alive ping every minute, so that OMERO session doesn't die
         setInterval(function (){
-            $.get("{% url 'keepalive_ping' %}");
+            $.get("{% url 'keepalive_ping");
         }, 60000);
 
         // load Panels from localStorage (if any)
@@ -510,7 +510,7 @@
     <div class="navbar navbar-inverse navbar-fixed-top">
         <div class="container">
             <div class="navbar-header" title="Back to OMERO.webclient">
-                <a class="navbar-brand" href="{% url 'webindex' %}">OMERO</a>
+                <a class="navbar-brand" href="{% url 'webindex">OMERO</a>
             </div>
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
@@ -838,41 +838,41 @@
     </div>
 
 
-    <script src="{% static 'figure/3rdparty/json2.js' %}"></script>
-    <script src="{% static 'figure/3rdparty/underscore.js' %}"></script>
-    <script src="{% static 'figure/3rdparty/backbone.js' %}"></script>
-    <!-- <script src="{% static 'figure/3rdparty/backbone-localstorage.js' %}"></script> -->
-    <script src="{% static 'figure/3rdparty/raphael/raphael-min.js' %}"></script>
-    <script src="{% static 'figure/3rdparty/mousetrap-1.5.3/mousetrap.min.js' %}"></script>
-    <script src="{% static 'figure/3rdparty/backbone.mousetrap/backbone.mousetrap.js' %}"></script>
-    <script src="{% static 'figure/3rdparty/bootstrap3/js/bootstrap.js' %}"></script>
-    <script src="{% static 'figure/3rdparty/bootstrap-colorpicker/js/bootstrap-colorpicker.min.js' %}"></script>
-    <script src="{% static 'figure/3rdparty/markdown-browser-0.6.0-beta1/markdown.min.js' %}"></script>
-    <script src="{% static 'figure/3rdparty/shape-editor.js' %}"></script>
-    <script src="{% static 'figure/js/templates.js' %}"></script>
+    <script src="static/figure/3rdparty/json2.js"></script>
+    <script src="static/figure/3rdparty/underscore.js"></script>
+    <script src="static/figure/3rdparty/backbone.js"></script>
+    <!-- <script src="static/figure/3rdparty/backbone-localstorage.js"></script> -->
+    <script src="static/figure/3rdparty/raphael/raphael-min.js"></script>
+    <script src="static/figure/3rdparty/mousetrap-1.5.3/mousetrap.min.js"></script>
+    <script src="static/figure/3rdparty/backbone.mousetrap/backbone.mousetrap.js"></script>
+    <script src="static/figure/3rdparty/bootstrap3/js/bootstrap.js"></script>
+    <script src="static/figure/3rdparty/bootstrap-colorpicker/js/bootstrap-colorpicker.min.js"></script>
+    <script src="static/figure/3rdparty/markdown-browser-0.6.0-beta1/markdown.min.js"></script>
+    <script src="static/figure/3rdparty/shape-editor.js"></script>
+    <script src="static/figure/js/templates.js"></script>
 
 
     <!-- All these can be concatenated with '$ grunt concat' into figure.js....-->
-    <script src="{% static 'figure/js/models/figure_model.js' %}"></script>
-    <script src="{% static 'figure/js/models/panel_model.js' %}"></script>
-    <script src="{% static 'figure/js/models/undo.js' %}"></script>
-    <script src="{% static 'figure/js/views/figure_view.js' %}"></script>
-    <script src="{% static 'figure/js/views/files.js' %}"></script>
-    <script src="{% static 'figure/js/views/modal_views.js' %}"></script>
-    <script src="{% static 'figure/js/views/crop_modal_view.js' %}"></script>
-    <script src="{% static 'figure/js/views/roi_modal_view.js' %}"></script>
-    <script src="{% static 'figure/js/views/panel_view.js' %}"></script>
-    <script src="{% static 'figure/js/views/raphael-rect.js' %}"></script>
-    <script src="{% static 'figure/js/views/right_panel_view.js' %}"></script>
-    <script src="{% static 'figure/js/views/svg_model_view.js' %}"></script>
-    <script src="{% static 'figure/js/views/util.js' %}"></script>
-    <script src="{% static 'figure/js/views/colorpicker.js' %}"></script>
-    <script src="{% static 'figure/js/views/legend_view.js' %}"></script>
-    <script src="{% static 'figure/js/app.js' %}"></script>
+    <script src="static/figure/js/models/figure_model.js"></script>
+    <script src="static/figure/js/models/panel_model.js"></script>
+    <script src="static/figure/js/models/undo.js"></script>
+    <script src="static/figure/js/views/figure_view.js"></script>
+    <script src="static/figure/js/views/files.js"></script>
+    <script src="static/figure/js/views/modal_views.js"></script>
+    <script src="static/figure/js/views/crop_modal_view.js"></script>
+    <script src="static/figure/js/views/roi_modal_view.js"></script>
+    <script src="static/figure/js/views/panel_view.js"></script>
+    <script src="static/figure/js/views/raphael-rect.js"></script>
+    <script src="static/figure/js/views/right_panel_view.js"></script>
+    <script src="static/figure/js/views/svg_model_view.js"></script>
+    <script src="static/figure/js/views/util.js"></script>
+    <script src="static/figure/js/views/colorpicker.js"></script>
+    <script src="static/figure/js/views/legend_view.js"></script>
+    <script src="static/figure/js/app.js"></script>
 
 
     <!-- ...for release build.
-    <script type="text/javascript" src="{% static 'figure/js/figure-1.1.1.js' %}"></script>
+    <script type="text/javascript" src="static/figure/js/figure-1.1.1.js"></script>
     -->
 
 </body>

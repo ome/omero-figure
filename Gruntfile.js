@@ -68,7 +68,11 @@ module.exports = function (grunt) {
                 "{% url 'save_web_figure' %}":
                     "/figure/save_web_figure/",
                 "{% url 'list_web_figures' %}":
-                    "static/json/list_web_figures.json"
+                    "static/json/list_web_figures.json",
+                "{% static '":
+                    "static/",
+                "' %}":
+                    "",
                 }
             }
           ],
@@ -79,6 +83,13 @@ module.exports = function (grunt) {
         ]
       }
     },
+    copy: {
+      main: {
+        files: [
+          {expand: true, src: ['static/**'], dest: 'demo/'},
+        ]
+      },
+    },
   })
 
   grunt.loadNpmTasks('grunt-contrib-jshint')
@@ -87,12 +98,13 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-replace');
+  grunt.loadNpmTasks('grunt-contrib-copy');
 
   grunt.registerTask('test', ['jshint', 'jasmine'])
   grunt.registerTask('default', ['test'])
 
   // create a static 'demo' version of app
   grunt.registerTask('demo', [
-      'replace'
+      'replace', 'copy'
   ]);
 };
