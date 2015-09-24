@@ -207,11 +207,12 @@ var RoiModalView = Backbone.View.extend({
             // render toolbar
             var state = this.shapeManager.getState(),
                 lineW = this.shapeManager.getStrokeWidth(),
-                color = this.shapeManager.getStrokeColor().replace("#", ""),
+                color = this.shapeManager.getStrokeColor(),
                 scale = this.zoom,
                 sel = this.shapeManager.getSelected().length > 0,
                 toPaste = this.model.get('shapesClipboard'),
                 windows = navigator.platform.toUpperCase().indexOf('WIN') > -1;
+            color = color ? color.replace("#", "") : 'FFFFFF';
             var json = {'state': state,
                         'lineWidth': lineW,
                         'color': color,
