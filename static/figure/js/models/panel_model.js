@@ -122,6 +122,21 @@
             this.save('scalebar', sb);
         },
 
+        // Adds list of shapes to panel (same logic as for labels below)
+        add_shapes: function(shapes) {
+            var old = this.get('shapes');
+            var shps = [];
+            if (old) {
+                old.forEach(function(sh){
+                    shps.push($.extend(true, {}, sh));
+                });
+            }
+            shapes.forEach(function(sh){
+                shps.push($.extend(true, {}, sh));
+            });
+            this.save('shapes', shps);
+        },
+
         // takes a list of labels, E.g [{'text':"t", 'size':10, 'color':'FF0000', 'position':"top"}]
         add_labels: function(labels) {
             var oldLabs = this.get("labels");

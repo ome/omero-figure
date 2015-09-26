@@ -462,6 +462,17 @@
                 clipboard_panels;
             if (clipboard_data && 'PANELS' in clipboard_data){
                 clipboard_panels = clipboard_data.PANELS;
+            } else if (clipboard_data && 'SHAPES' in clipboard_data) {
+
+                // If we've actually got SHAPES in the clipboard,
+                // paste them onto each selected panel...
+                clipboard_panels = clipboard_data.SHAPES;
+                var sel = this.model.getSelected();
+                sel.forEach(function(p){
+                    p.add_shapes(clipboard_panels);
+                });
+                // And we're done...
+                return;
             } else {
                 return;
             }
