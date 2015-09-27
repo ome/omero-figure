@@ -23,6 +23,7 @@ from datetime import datetime
 import os
 from os import path
 import zipfile
+from math import atan, sin, cos, sqrt, radians
 
 from omero.model import ImageAnnotationLinkI, ImageI
 import omero.scripts as scripts
@@ -95,6 +96,434 @@ def compress(target, base):
                 zip_file.write(fullpath, archive_name)
     finally:
         zip_file.close()
+
+
+class ShapeToPdfExport(object):
+
+    def __init__(self, canvas, panel, page, crop, pageHeight):
+
+        self.canvas = canvas
+        self.panel = panel
+        self.page = page
+        # The crop region on the original image coordinates...
+        self.crop = crop
+        self.pageHeight = pageHeight
+        # Get a mapping from original coordinates to the actual size of panel
+        self.scale = float(panel['width']) / crop['width']
+
+        if "shapes" in panel:
+            for shape in panel["shapes"]:
+                if shape['type'] == "Arrow":
+                    self.drawArrow(shape)
+                elif shape['type'] == "Line":
+                    self.drawLine(shape)
+                elif shape['type'] == "Rectangle":
+                    self.drawRectangle(shape)
+                elif shape['type'] == "Ellipse":
+                    self.drawEllipse(shape)
+
+    def getRGB(self, color):
+        # Convert from E.g. '#ff0000' to (255, 0, 0)
+        red = int(color[1:3], 16)
+        green = int(color[3:5], 16)
+        blue = int(color[5:7], 16)
+        return (red, green, blue)
+
+    def panelToPageCoords(self, shapeX, shapeY):
+        """
+        Convert coordinate from the image onto the PDF page.
+        Handles zoom, offset & rotation of panel, rotating the
+        x, y point around the centre of the cropped region
+        and scaling appropriately.
+        Also includes 'inPanel' key - True if point within
+        the cropped panel region
+        """
+        rotation = self.panel['rotation']
+        # img coords: centre of rotation
+        cx = self.crop['x'] + (self.crop['width']/2)
+        cy = self.crop['y'] + (self.crop['height']/2)
+        dx = cx - shapeX
+        dy = cy - shapeY
+        # distance of point from centre of rotation
+        h = sqrt(dx * dx + dy * dy)
+        # and the angle (avoid division by zero!)
+        if dy == 0:
+            angle1 = 90
+        else:
+            angle1 = atan(dx/dy)
+            if (dy < 0):
+                angle1 += radians(180)
+
+        # Add the rotation to the angle and calculate new
+        # opposite and adjacent lengths from centre of rotation
+        angle2 = angle1 - radians(rotation)
+        newO = sin(angle2) * h
+        newA = cos(angle2) * h
+        # to give correct x and y within cropped panel
+        shapeX = cx - newO
+        shapeY = cy - newA
+
+        # convert to coords within crop region
+        shapeX = shapeX - self.crop['x']
+        shapeY = shapeY - self.crop['y']
+        # check if points are within panel
+        inPanel = True
+        if shapeX < 0 or shapeX > self.crop['width']:
+            inPanel = False
+        if shapeY < 0 or shapeY > self.crop['height']:
+            inPanel = False
+        # Handle page offsets
+        x = self.panel['x'] - self.page['x']
+        y = self.panel['y'] - self.page['y']
+        # scale and position on page within panel
+        shapeX = (shapeX * self.scale) + x
+        shapeY = (shapeY * self.scale) + y
+        return {'x': shapeX, 'y': shapeY, 'inPanel': inPanel}
+
+    def drawRectangle(self, shape):
+        topLeft = self.panelToPageCoords(shape['x'], shape['y'])
+
+        # Don't draw if all corners are outside the panel
+        topRight = self.panelToPageCoords(shape['x'] + shape['width'],
+                                          shape['y'])
+        bottomLeft = self.panelToPageCoords(shape['x'],
+                                            shape['y'] + shape['height'])
+        bottomRight = self.panelToPageCoords(shape['x'] + shape['width'],
+                                             shape['y'] + shape['height'])
+        if (topLeft['inPanel'] is False) and (
+                topRight['inPanel'] is False) and (
+                bottomLeft['inPanel'] is False) and (
+                bottomRight['inPanel'] is False):
+            return
+
+        width = shape['width'] * self.scale
+        height = shape['height'] * self.scale
+        x = topLeft['x']
+        y = self.pageHeight - topLeft['y']    # - height
+
+        rgb = self.getRGB(shape['strokeColor'])
+        r = float(rgb[0])/255
+        g = float(rgb[1])/255
+        b = float(rgb[2])/255
+        self.canvas.setStrokeColorRGB(r, g, b)
+        strokeWidth = shape['strokeWidth'] * self.scale
+        self.canvas.setLineWidth(strokeWidth)
+
+        rotation = self.panel['rotation'] * -1
+        if rotation != 0:
+            self.canvas.saveState()
+            self.canvas.translate(x, y)
+            self.canvas.rotate(rotation)
+            # top-left is now at 0, 0
+            x = 0
+            y = 0
+
+        self.canvas.rect(x, y, width, height * -1, stroke=1)
+
+        if rotation != 0:
+            # Restore coordinates, rotation etc.
+            self.canvas.restoreState()
+
+    def drawLine(self, shape):
+        start = self.panelToPageCoords(shape['x1'], shape['y1'])
+        end = self.panelToPageCoords(shape['x2'], shape['y2'])
+        x1 = start['x']
+        y1 = self.pageHeight - start['y']
+        x2 = end['x']
+        y2 = self.pageHeight - end['y']
+        # Don't draw if both points outside panel
+        if (start['inPanel'] is False) and (end['inPanel'] is False):
+            return
+
+        rgb = self.getRGB(shape['strokeColor'])
+        r = float(rgb[0])/255
+        g = float(rgb[1])/255
+        b = float(rgb[2])/255
+        self.canvas.setStrokeColorRGB(r, g, b)
+        strokeWidth = shape['strokeWidth'] * self.scale
+        self.canvas.setLineWidth(strokeWidth)
+
+        p = self.canvas.beginPath()
+        p.moveTo(x1, y1)
+        p.lineTo(x2, y2)
+        self.canvas.drawPath(p, fill=1, stroke=1)
+
+    def drawArrow(self, shape):
+        start = self.panelToPageCoords(shape['x1'], shape['y1'])
+        end = self.panelToPageCoords(shape['x2'], shape['y2'])
+        x1 = start['x']
+        y1 = self.pageHeight - start['y']
+        x2 = end['x']
+        y2 = self.pageHeight - end['y']
+        strokeWidth = shape['strokeWidth']
+        # Don't draw if both points outside panel
+        if (start['inPanel'] is False) and (end['inPanel'] is False):
+            return
+
+        rgb = self.getRGB(shape['strokeColor'])
+        r = float(rgb[0])/255
+        g = float(rgb[1])/255
+        b = float(rgb[2])/255
+        self.canvas.setStrokeColorRGB(r, g, b)
+        self.canvas.setFillColorRGB(r, g, b)
+
+        headSize = (strokeWidth * 5) + 9
+        headSize = headSize * self.scale
+        dx = x2 - x1
+        dy = y2 - y1
+
+        strokeWidth = strokeWidth * self.scale
+        self.canvas.setLineWidth(strokeWidth)
+
+        p = self.canvas.beginPath()
+
+        lineAngle = atan(dx / dy)
+        f = -1
+        if dy < 0:
+            f = 1
+
+        # Angle of arrow head is 0.8 radians (0.4 either side of lineAngle)
+        arrowPoint1x = x2 + (f * sin(lineAngle - 0.4) * headSize)
+        arrowPoint1y = y2 + (f * cos(lineAngle - 0.4) * headSize)
+        arrowPoint2x = x2 + (f * sin(lineAngle + 0.4) * headSize)
+        arrowPoint2y = y2 + (f * cos(lineAngle + 0.4) * headSize)
+        arrowPointMidx = x2 + (f * sin(lineAngle) * headSize * 0.5)
+        arrowPointMidy = y2 + (f * cos(lineAngle) * headSize * 0.5)
+
+        # Draw the line (at lineWidth)
+        p.moveTo(x1, y1)
+        p.lineTo(arrowPointMidx, arrowPointMidy)
+        self.canvas.drawPath(p, fill=1, stroke=1)
+
+        # Draw the arrow head (at lineWidth: 0)
+        self.canvas.setLineWidth(0)
+        p.moveTo(arrowPoint1x, arrowPoint1y)
+        p.lineTo(arrowPoint2x, arrowPoint2y)
+        p.lineTo(x2, y2)
+        p.lineTo(arrowPoint1x, arrowPoint1y)
+        self.canvas.drawPath(p, fill=1, stroke=1)
+
+    def drawEllipse(self, shape):
+        strokeWidth = shape['strokeWidth'] * self.scale
+        c = self.panelToPageCoords(shape['cx'], shape['cy'])
+        cx = c['x']
+        cy = self.pageHeight - c['y']
+        rx = shape['rx'] * self.scale
+        ry = shape['ry'] * self.scale
+        rotation = (shape['rotation'] + self.panel['rotation']) * -1
+        rgb = self.getRGB(shape['strokeColor'])
+        r = float(rgb[0])/255
+        g = float(rgb[1])/255
+        b = float(rgb[2])/255
+        self.canvas.setStrokeColorRGB(r, g, b)
+        # Don't draw if centre outside panel
+        if c['inPanel'] is False:
+            return
+
+        # For rotation, we reset our coordinates around cx, cy
+        # so that rotation applies around cx, cy
+        self.canvas.saveState()
+        self.canvas.translate(cx, cy)
+        self.canvas.rotate(rotation)
+        # centre is now at 0, 0
+        cx = 0
+        cy = 0
+        height = ry * 2
+        width = rx * 2
+        left = cx - rx
+        bottom = cy - ry
+
+        # Draw ellipse...
+        p = self.canvas.beginPath()
+        self.canvas.setLineWidth(strokeWidth)
+        p.ellipse(left, bottom, width, height)
+        self.canvas.drawPath(p, stroke=1)
+
+        # Restore coordinates, rotation etc.
+        self.canvas.restoreState()
+
+
+class ShapeToPilExport(object):
+    """
+    Class for drawing panel shapes onto a PIL image.
+    We get a PIL image, the panel dict, and crop coordinates
+    """
+
+    def __init__(self, pilImg, panel, crop):
+
+        self.pilImg = pilImg
+        self.panel = panel
+        # The crop region on the original image coordinates...
+        self.crop = crop
+        self.scale = pilImg.size[0] / crop['width']
+        self.draw = ImageDraw.Draw(pilImg)
+
+        if "shapes" in panel:
+            for shape in panel["shapes"]:
+                if shape['type'] == "Arrow":
+                    self.drawArrow(shape)
+                elif shape['type'] == "Line":
+                    self.drawLine(shape)
+                elif shape['type'] == "Rectangle":
+                    self.drawRectangle(shape)
+                elif shape['type'] == "Ellipse":
+                    self.drawEllipse(shape)
+
+    def getPanelCoords(self, shapeX, shapeY):
+        """
+        Convert coordinate from the image onto the panel.
+        Handles zoom, offset & rotation of panel, rotating the
+        x, y point around the centre of the cropped region
+        and scaling appropriately
+        """
+        rotation = self.panel['rotation']
+        # img coords: centre of rotation
+        cx = self.crop['x'] + (self.crop['width']/2)
+        cy = self.crop['y'] + (self.crop['height']/2)
+        dx = cx - shapeX
+        dy = cy - shapeY
+        # distance of point from centre of rotation
+        h = sqrt(dx * dx + dy * dy)
+        # and the angle (avoid division by zero!)
+        if dy == 0:
+            angle1 = 90
+        else:
+            angle1 = atan(dx/dy)
+            if (dy < 0):
+                angle1 += radians(180)
+
+        # Add the rotation to the angle and calculate new
+        # opposite and adjacent lengths from centre of rotation
+        angle2 = angle1 - radians(rotation)
+        newO = sin(angle2) * h
+        newA = cos(angle2) * h
+        # to give correct x and y within cropped panel
+        shapeX = cx - newO
+        shapeY = cy - newA
+
+        # convert to coords within crop region
+        shapeX = (shapeX - self.crop['x']) * self.scale
+        shapeY = (shapeY - self.crop['y']) * self.scale
+
+        return {'x': shapeX, 'y': shapeY}
+
+    def getRGB(self, color):
+        # Convert from E.g. '#ff0000' to (255, 0, 0)
+        red = int(color[1:3], 16)
+        green = int(color[3:5], 16)
+        blue = int(color[5:7], 16)
+        return (red, green, blue)
+
+    def drawArrow(self, shape):
+
+        start = self.getPanelCoords(shape['x1'], shape['y1'])
+        end = self.getPanelCoords(shape['x2'], shape['y2'])
+        x1 = start['x']
+        y1 = start['y']
+        x2 = end['x']
+        y2 = end['y']
+        headSize = ((shape['strokeWidth'] * 5) + 9) * self.scale
+        strokeWidth = shape['strokeWidth'] * self.scale
+        rgb = self.getRGB(shape['strokeColor'])
+
+        # Do some trigonometry to get the line angle can calculate arrow points
+        dx = x2 - x1
+        dy = y2 - y1
+        lineAngle = atan(dx / dy)
+        f = -1
+        if dy < 0:
+            f = 1
+        # Angle of arrow head is 0.8 radians (0.4 either side of lineAngle)
+        arrowPoint1x = x2 + (f * sin(lineAngle - 0.4) * headSize)
+        arrowPoint1y = y2 + (f * cos(lineAngle - 0.4) * headSize)
+        arrowPoint2x = x2 + (f * sin(lineAngle + 0.4) * headSize)
+        arrowPoint2y = y2 + (f * cos(lineAngle + 0.4) * headSize)
+        arrowPointMidx = x2 + (f * sin(lineAngle) * headSize * 0.5)
+        arrowPointMidy = y2 + (f * cos(lineAngle) * headSize * 0.5)
+
+        points = ((x2, y2),
+                  (arrowPoint1x, arrowPoint1y),
+                  (arrowPoint2x, arrowPoint2y),
+                  (x2, y2)
+                  )
+
+        # Draw Line of arrow - to midpoint of head at full stroke width
+        self.draw.line([(x1, y1), (arrowPointMidx, arrowPointMidy)],
+                       fill=rgb, width=int(strokeWidth))
+        # Draw Arrow head, up to tip at x2, y2
+        self.draw.polygon(points, fill=rgb, outline=rgb)
+
+    def drawLine(self, shape):
+        start = self.getPanelCoords(shape['x1'], shape['y1'])
+        end = self.getPanelCoords(shape['x2'], shape['y2'])
+        x1 = start['x']
+        y1 = start['y']
+        x2 = end['x']
+        y2 = end['y']
+        strokeWidth = shape['strokeWidth'] * self.scale
+        rgb = self.getRGB(shape['strokeColor'])
+
+        self.draw.line([(x1, y1), (x2, y2)], fill=rgb, width=int(strokeWidth))
+
+    def drawRectangle(self, shape):
+        # clockwise list of corner points on the OUTSIDE of thick line
+        w = shape['strokeWidth']
+        cx = shape['x'] + (shape['width']/2)
+        cy = shape['y'] + (shape['height']/2)
+        rotation = self.panel['rotation'] * -1
+
+        # Centre of rect rotation in PIL image
+        centre = self.getPanelCoords(cx, cy)
+        cx = centre['x']
+        cy = centre['y']
+        scaleW = w * self.scale
+        rgb = self.getRGB(shape['strokeColor'])
+
+        # To support rotation, draw rect on temp canvas, rotate and paste
+        width = int((shape['width'] + w) * self.scale)
+        height = int((shape['height'] + w) * self.scale)
+        tempRect = Image.new('RGBA', (width, height), (255, 255, 255, 0))
+        rectDraw = ImageDraw.Draw(tempRect)
+
+        # Draw outer rectangle, then remove inner rect with full opacity
+        rectDraw.rectangle((0, 0, width, height), fill=rgb)
+        rgba = (255, 255, 255, 0)
+        rectDraw.rectangle((scaleW, scaleW, width-scaleW, height-scaleW),
+                           fill=rgba)
+        tempRect = tempRect.rotate(rotation, resample=Image.BICUBIC,
+                                   expand=True)
+        # Use rect as mask, so transparent part is not pasted
+        pasteX = cx - (tempRect.size[0]/2)
+        pasteY = cy - (tempRect.size[1]/2)
+        self.pilImg.paste(tempRect, (int(pasteX), int(pasteY)), mask=tempRect)
+
+    def drawEllipse(self, shape):
+
+        w = int(shape['strokeWidth'] * self.scale)
+        ctr = self.getPanelCoords(shape['cx'], shape['cy'])
+        cx = ctr['x']
+        cy = ctr['y']
+        rx = self.scale * shape['rx']
+        ry = self.scale * shape['ry']
+        rotation = (shape['rotation'] + self.panel['rotation']) * -1
+        rgb = self.getRGB(shape['strokeColor'])
+
+        width = int((rx * 2) + w)
+        height = int((ry * 2) + w)
+        tempEllipse = Image.new('RGBA', (width + 1, height + 1),
+                                (255, 255, 255, 0))
+        ellipseDraw = ImageDraw.Draw(tempEllipse)
+        # Draw outer ellipse, then remove inner ellipse with full opacity
+        ellipseDraw.ellipse((0, 0, width, height), fill=rgb)
+        rgba = (255, 255, 255, 0)
+        ellipseDraw.ellipse((w, w, width - w, height - w), fill=rgba)
+        tempEllipse = tempEllipse.rotate(rotation, resample=Image.BICUBIC,
+                                         expand=True)
+        # Use ellipse as mask, so transparent part is not pasted
+        pasteX = cx - (tempEllipse.size[0]/2)
+        pasteY = cy - (tempEllipse.size[1]/2)
+        self.pilImg.paste(tempEllipse, (int(pasteX), int(pasteY)),
+                          mask=tempEllipse)
 
 
 class FigureExport(object):
@@ -324,7 +753,7 @@ class FigureExport(object):
         print "setActiveChannels", cIdxs, windows, colors
         image.setActiveChannels(cIdxs, windows, colors)
 
-    def get_panel_size(self, panel):
+    def getCropRegion(self, panel):
         """
         Gets the width and height in points/pixels for a panel in the
         figure. This is at the 'original' figure / PDF coordinates
@@ -335,8 +764,6 @@ class FigureExport(object):
         frame_h = panel['height']
         dx = panel['dx']
         dy = panel['dy']
-        dx = dx * (zoom/100)
-        dy = dy * (zoom/100)
         orig_w = panel['orig_width']
         orig_h = panel['orig_height']
 
@@ -361,8 +788,12 @@ class FigureExport(object):
                 print "viewport longer"
                 tile_w = tile_h * wh
 
+        print 'dx', dx, '(orig_w - tile_w)/2', (orig_w - tile_w)/2
+        cropX = ((orig_w - tile_w)/2) - dx
+        cropY = ((orig_h - tile_h)/2) - dy
+
         print 'tile_w', tile_w, 'tile_h', tile_h
-        return {'width': tile_w, 'height': tile_h}
+        return {'x': cropX, 'y': cropY, 'width': tile_w, 'height': tile_h}
 
     def get_time_label_text(self, deltaT, format):
         """ Gets the text for 'live' time-stamp labels """
@@ -380,6 +811,16 @@ class FigureExport(object):
             s = deltaT % 60
             text = "%s:%02d:%02d" % (h, m, s)
         return text
+
+    def addROIs(self, panel, page):
+        """
+        Add any Shapes
+        """
+        if "shapes" not in panel:
+            return
+
+        crop = self.getCropRegion(panel)
+        ShapeToPdfExport(self.figureCanvas, panel, page, crop, self.pageHeight)
 
     def drawLabels(self, panel, page):
         """
@@ -619,6 +1060,8 @@ class FigureExport(object):
         if origName is not None:
             pilImg.save(origName)
 
+        # self.addROIsToImage(pilImg, panel)
+
         # Need to crop around centre before rotating...
         sizeX = image.getSizeX()
         sizeY = image.getSizeY()
@@ -658,7 +1101,7 @@ class FigureExport(object):
             pilImg = pilImg.rotate(rotation, Image.BICUBIC)
 
         # Final crop to size
-        panel_size = self.get_panel_size(panel)
+        panel_size = self.getCropRegion(panel)
 
         w, h = pilImg.size
         tile_w = panel_size['width']
@@ -687,8 +1130,6 @@ class FigureExport(object):
         channels = panel['channels']
         x = panel['x']
         y = panel['y']
-        width = panel['width']
-        height = panel['height']
 
         # Handle page offsets
         # pageHeight = self.pageHeight
@@ -710,17 +1151,14 @@ class FigureExport(object):
                 self.zip_folder_name, ORIGINAL_DIR, imgName)
             print "Saving original to: ", origName
         pilImg = self.getPanelImage(image, panel, origName)
-        tile_width = pilImg.size[0]
 
         # for PDF export, we might have a target dpi
         dpi = 'export_dpi' in panel and panel['export_dpi'] or None
 
         # Paste the panel to PDF or TIFF image
-        self.pasteImage(pilImg, imgName, x, y, width, height, dpi)
+        self.pasteImage(pilImg, imgName, panel, page, dpi)
 
-        self.drawScalebar(panel, tile_width, page)
-
-        return image
+        return image, pilImg
 
     def getThumbnail(self, imageId):
         """ Saves thumb as local jpg and returns name """
@@ -892,9 +1330,17 @@ class FigureExport(object):
             print "\n-------------------------------- "
             imageId = panel['imageId']
             print "Adding PANEL - Image ID:", imageId
-            image = self.drawPanel(panel, page, i)
+            # drawPanel() creates PIL image then applies it to the page.
+            # For TIFF export, drawPanel() also adds shapes to the
+            # PIL image before pasting onto the page...
+            image, pilImg = self.drawPanel(panel, page, i)
             if image.canAnnotate():
                 imageIds.add(imageId)
+            # ... but for PDF we have to add shapes to the whole PDF page
+            self.addROIs(panel, page)       # This does nothing for TIFF export
+
+            # Finally, add scale bar and labels to the page
+            self.drawScalebar(panel, pilImg.size[0], page)
             self.drawLabels(panel, page)
             print ""
 
@@ -957,8 +1403,16 @@ class FigureExport(object):
         c.setStrokeColorRGB(red, green, blue)
         c.line(x, y, x2, y2,)
 
-    def pasteImage(self, pilImg, imgName, x, y, width, height, dpi):
+    def pasteImage(self, pilImg, imgName, panel, page, dpi):
         """ Adds the PIL image to the PDF figure. Overwritten for TIFFs """
+
+        x = panel['x']
+        y = panel['y']
+        width = panel['width']
+        height = panel['height']
+        # Handle page offsets
+        x = x - page['x']
+        y = y - page['y']
 
         if dpi is not None:
             print "Resample panel to %s dpi..." % dpi
@@ -1012,6 +1466,10 @@ class TiffExport(FigureExport):
         self.ns = "omero.web.figure.tiff"
         self.mimetype = "image/tiff"
 
+    def addROIs(self, panel, page):
+        """ TIFF export doesn't add ROIs to page (does it to panel)"""
+        pass
+
     def getFont(self, fontsize):
         """ Try to load font from known location in OMERO """
         try:
@@ -1042,8 +1500,18 @@ class TiffExport(FigureExport):
         self.tiffFigure = Image.new(
             "RGBA", (tiffWidth, tiffHeight), (255, 255, 255))
 
-    def pasteImage(self, pilImg, imgName, x, y, width, height, dpi=None):
+    def pasteImage(self, pilImg, imgName, panel, page, dpi=None):
         """ Add the PIL image to the current figure page """
+
+        x = panel['x']
+        y = panel['y']
+        width = panel['width']
+        height = panel['height']
+
+        # Handle page offsets
+        # pageHeight = self.pageHeight
+        x = x - page['x']
+        y = y - page['y']
 
         print "pasteImage: x, y, width, height", x, y, width, height
         x = self.scaleCoords(x)
@@ -1063,12 +1531,17 @@ class TiffExport(FigureExport):
             print "Saving pre_resampled to: ", rsName
             pilImg.save(rsName)
 
+        # Resize to our target size to match DPI of figure
         print "resize to: x, y, width, height", x, y, width, height
         pilImg = pilImg.resize((width, height), Image.BICUBIC)
 
         if self.exportImages:
             imgName = os.path.join(self.zip_folder_name, FINAL_DIR, imgName)
             pilImg.save(imgName)
+
+        # Now at full figure resolution - Good time to add shapes...
+        crop = self.getCropRegion(panel)
+        ShapeToPilExport(pilImg, panel, crop)
 
         width, height = pilImg.size
         box = (x, y, x + width, y + height)
