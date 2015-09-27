@@ -36,6 +36,12 @@ var RoiModalView = Backbone.View.extend({
                 self.pasteShapes();
                 return false;
             });
+            Mousetrap(dialog).bind('mod+a', function(event, combo) {
+                if(!self.$el.is(":visible")) return true;
+                event.preventDefault();
+                self.selectAllShapes();
+                return false;
+            });
 
             // Here we handle init of the dialog when it's shown...
             $("#roiModal").bind("show.bs.modal", function(){
@@ -82,6 +88,7 @@ var RoiModalView = Backbone.View.extend({
             "click .copyShape": "copyShapes",
             "click .pasteShape": "pasteShapes",
             "click .deleteShape": "deleteShapes",
+            "click .selectAll": "selectAllShapes",
         },
 
         copyShapes: function(event) {
@@ -178,6 +185,11 @@ var RoiModalView = Backbone.View.extend({
                 }
                 $button.trigger('change');      // can listen for this if we want to 'submit' etc
             }
+        },
+
+        selectAllShapes: function(event) {
+            // manager triggers shapeSelected, which renders toolbar
+            this.shapeManager.selectAll();
         },
 
         selectState: function(event) {
