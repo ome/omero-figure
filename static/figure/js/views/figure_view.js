@@ -468,9 +468,14 @@
                 // paste them onto each selected panel...
                 clipboard_panels = clipboard_data.SHAPES;
                 var sel = this.model.getSelected();
+                var allOK = true;
                 sel.forEach(function(p){
-                    p.add_shapes(clipboard_panels);
+                    var ok = p.add_shapes(clipboard_panels);
+                    if (!ok) {allOK = false;}
                 });
+                if (!allOK) {
+                    alert("Some shapes may be outside 'viewport' of panels (not pasted)");
+                }
                 // And we're done...
                 return;
             } else {
