@@ -138,9 +138,9 @@
                 points = [[shape.cx, shape.cy]];
             } else if (shape.type === "Rectangle") {
                 points = [[shape.x, shape.y],
-                        [shape.x, shape.x + shape.width,],
+                        [shape.x, shape.y + shape.height,],
                         [shape.x + shape.width, shape.y],
-                        [shape.x + shape.width, shape.x + shape.width]];
+                        [shape.x + shape.width, shape.y + shape.height]];
             } else if (shape.type === "Line" || shape.type === "Arrow") {
                 points = [[shape.x1, shape.y1],
                         [shape.x2, shape.y2],

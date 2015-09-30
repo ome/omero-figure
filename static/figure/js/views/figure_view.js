@@ -473,8 +473,14 @@
                     var ok = p.add_shapes(clipboard_panels);
                     if (!ok) {allOK = false;}
                 });
+                // If any shapes were outside viewport, show message
+                var plural = sel.length > 1 ? "s" : "";
                 if (!allOK) {
-                    alert("Some shapes may be outside 'viewport' of panels (not pasted)");
+                    figureConfirmDialog("Paste Failure",
+                        "Some shapes may be outside the visible 'viewport' of panel" + plural + ". " +
+                        "Target image" + plural + " may too small or zoomed in too much. " +
+                        "Try zooming out before pasting again, or paste to a bigger image.",
+                        ["OK"]);
                 }
                 // And we're done...
                 return;
