@@ -661,7 +661,9 @@ __p += ' >\n            <a href="#" class="pasteShape">\n                Paste S
 ((__t = ( cmdKey )) == null ? '' : __t) +
 'V\n            </a>\n        </li>\n        <li ';
  if (!sel) print('class="disabled"') ;
-__p += ' >\n            <a href="#" class="deleteShape">\n                Delete Shape    &nbsp&nbsp&nbsp Del\n            </a>\n        </li>\n    </ul>\n</div>\n\n';
+__p += ' >\n            <a href="#" class="deleteShape">\n                Delete Shape    &nbsp&nbsp&nbsp Del\n            </a>\n        </li>\n        <li>\n            <a href="#" class="selectAll">\n                Select All Shapes    &nbsp&nbsp ' +
+((__t = ( cmdKey )) == null ? '' : __t) +
+'A\n            </a>\n        </li>\n    </ul>\n</div>\n\n';
 
 }
 return __p

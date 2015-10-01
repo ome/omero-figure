@@ -122,6 +122,64 @@
             this.save('scalebar', sb);
         },
 
+        // Simple checking whether shape is in viewport (x, y, width, height)
+        // Return true if any of the points in shape are within viewport.
+        is_shape_in_viewport: function(shape, viewport) {
+            var rect = viewport;
+            var isPointInRect = function(x, y) {
+                if (x < rect.x) return false;
+                if (y < rect.y) return false;
+                if (x > rect.x + rect.width) return false;
+                if (y > rect.y + rect.height) return false;
+                return true;
+            }
+            var points;
+            if (shape.type === "Ellipse") {
+                points = [[shape.cx, shape.cy]];
+            } else if (shape.type === "Rectangle") {
+                points = [[shape.x, shape.y],
+                        [shape.x, shape.y + shape.height,],
+                        [shape.x + shape.width, shape.y],
+                        [shape.x + shape.width, shape.y + shape.height]];
+            } else if (shape.type === "Line" || shape.type === "Arrow") {
+                points = [[shape.x1, shape.y1],
+                        [shape.x2, shape.y2],
+                        [(shape.x1 + shape.x2)/2, (shape.y1 + shape.y2)/ 2]];
+            }
+            if (points) {
+                for (var p=0; p<points.length; p++) {
+                    if (isPointInRect(points[p][0], points[p][1])) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        },
+
+        // Adds list of shapes to panel (same logic as for labels below)
+        add_shapes: function(shapes) {
+            var old = this.get('shapes'),
+                viewport = this.getViewportAsRect(),
+                self = this,
+                allAdded = true,
+                shps = [];
+            if (old) {
+                old.forEach(function(sh){
+                    shps.push($.extend(true, {}, sh));
+                });
+            }
+            shapes.forEach(function(sh){
+                // simple test if shape is in viewport
+                if (self.is_shape_in_viewport(sh, viewport)) {
+                    shps.push($.extend(true, {}, sh));
+                } else {
+                    allAdded = false;
+                }
+            });
+            this.save('shapes', shps);
+            return allAdded;
+        },
+
         // takes a list of labels, E.g [{'text':"t", 'size':10, 'color':'FF0000', 'position':"top"}]
         add_labels: function(labels) {
             var oldLabs = this.get("labels");
