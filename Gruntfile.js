@@ -58,6 +58,7 @@ module.exports = function (grunt) {
             {
               json: {
                 '{% load url from future %}': '',
+                '$.get("{% url \'keepalive_ping\' %}");': '',
                 '{% include "webgateway/base/includes/script_src_jquery.html" %}':
                     '<script type="text/javascript" src="//code.jquery.com/jquery-1.7.2.min.js"></script>',
                 '{% include "webgateway/base/includes/jquery-ui.html" %}':
@@ -73,13 +74,29 @@ module.exports = function (grunt) {
                     "static/",
                 "' %}":
                     "",
+                // figure.js (after concat) is in same folder...
+                // and need to uncomment links to it
+                '@@-->': '',
+                '@--': '@-->',
+                "{% static 'figure/js/figure.js' %}": 'figure.js',
+                // in figure.js
+                'if (figureModel.get("unsaved")) {':
+                    'if (false) {',
+                '{pushState: true, root: BASE_WEBFIGURE_URL}':
+                    '',
+                'BASE_WEBFIGURE_URL.length) === BASE_WEBFIGURE_URL':
+                    "8) === '/figure/'",
+                'href = href.replace(BASE_WEBFIGURE_URL, "/");':
+                    "href = href.replace('/figure', '');",
+                'json.url = BASE_WEBFIGURE_URL + "file/" + json.id;':
+                    'json.url = "#file/" + json.id;'
                 }
             }
           ],
           usePrefix: false,
         },
         files: [
-          {expand: true, flatten: true, src: ['templates/figure/index.html'], dest: 'demo/'}
+          {expand: true, flatten: true, src: ['templates/figure/index.html', 'static/figure/js/figure.js'], dest: 'demo/'}
         ]
       }
     },
@@ -105,6 +122,6 @@ module.exports = function (grunt) {
 
   // create a static 'demo' version of app
   grunt.registerTask('demo', [
-      'replace', 'copy'
+      'concat', 'replace', 'copy'
   ]);
 };
