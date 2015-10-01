@@ -74,6 +74,8 @@ module.exports = function (grunt) {
                     "static/",
                 "' %}":
                     "",
+                '{{ userFullName }}':
+                    'Will Moore',
                 // figure.js (after concat) is in same folder...
                 // and need to uncomment links to it
                 '@@-->': '',
