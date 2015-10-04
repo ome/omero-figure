@@ -91,7 +91,9 @@ module.exports = function (grunt) {
                 'href = href.replace(BASE_WEBFIGURE_URL, "/");':
                     "href = href.replace('/figure', '');",
                 'json.url = BASE_WEBFIGURE_URL + "file/" + json.id;':
-                    'json.url = "#file/" + json.id;'
+                    'json.url = "#file/" + json.id;',
+                'load_web_figure/" + fileId + "/"' :
+                    'static/json/load_web_figure/" + fileId + ".json"',
                 }
             }
           ],

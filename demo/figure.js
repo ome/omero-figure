@@ -43,7 +43,7 @@
 
         load_from_OMERO: function(fileId, success) {
 
-            var load_url = BASE_WEBFIGURE_URL + "load_web_figure/" + fileId + "/",
+            var load_url = BASE_WEBFIGURE_URL + "static/json/load_web_figure/" + fileId + ".json",
                 self = this;
 
 
@@ -2885,7 +2885,6 @@ var FigureFile = Backbone.Model.extend({
     },
 
     isVisible: function(filter) {
-        console.log('filter', filter);
         if (filter.owner) {
             if (this.get('ownerFullName') !== filter.owner) {
                 return false;
@@ -3035,7 +3034,6 @@ var FileListView = Backbone.View.extend({
             filter.name = filterVal.toLowerCase();
         }
         this.$tbody.empty();
-        console.log('this.model.models.length', this.model.models.length);
         if (this.model.models.length === 0) {
             var msg = "<tr><td colspan='3'>" +
                 "You have no figures. Start by <a href='" + BASE_WEBFIGURE_URL + "new'>creating a new figure</a>" +
@@ -3043,7 +3041,6 @@ var FileListView = Backbone.View.extend({
             self.$tbody.html(msg);
         }
         _.each(this.model.models, function (file) {
-            console.log("file", file, file.isVisible(filter));
             if (file.isVisible(filter)) {
                 var e = new FileListItemView({model:file}).render().el;
                 self.$tbody.prepend(e);
@@ -3107,7 +3104,6 @@ var FileListItemView = Backbone.View.extend({
         baseUrl = baseUrl || WEBGATEWAYINDEX.slice(0, -1);  // remove last /
         json.thumbSrc = baseUrl + "/render_thumbnail/" + json.imageId + "/";
         json.url = "#file/" + json.id;
-        console.log('render', json.thumbSrc, json.url);
         json.formatDate = this.formatDate;
         var h = this.template(json);
         $(this.el).html(h);
