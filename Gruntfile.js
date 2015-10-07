@@ -94,6 +94,8 @@ module.exports = function (grunt) {
                     'json.url = "#file/" + json.id;',
                 'load_web_figure/" + fileId + "/"' :
                     'static/json/load_web_figure/" + fileId + ".json"',
+                "'canEdit': true,":
+                    "'canEdit': false,"
                 }
             }
           ],
