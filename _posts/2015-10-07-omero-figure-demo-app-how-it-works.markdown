@@ -1,11 +1,11 @@
 ---
 layout: post
-title:  "OMERO.figure demo app: How it works and user guide"
+title:  "OMERO.figure demo app: How it works and how to use it"
 date:   2015-10-07
 ---
 
 If you want to try using OMERO.figure without installing the app or the OMERO server,
-you can simply visit the demo site at http://figure.openmicroscopy.org/demo/
+you can simply visit the demo site at [figure.openmicroscopy.org/demo/](http://figure.openmicroscopy.org/demo/)
 
 So how does the demo work, and what OMERO server does it use?
 
@@ -26,13 +26,8 @@ It can also use the OMERO server to save the figure file and export the figure a
   </div>
 </div>
 
-However, OMERO.figure doesn't **HAVE** to get data from it's "host" OMERO server. It
+However, OMERO.figure doesn't **have** to get data from it's own "host" OMERO server. It
 can get data from any OMERO server that it has access to.
-
-The demo app doesn't have a "host" OMERO server. The html and javascript are simply come from the 
-figure.openmicroscopy web site (which is hosted by github). The demo app 
-typically gets it's data from the JCB dataviewer, which is a public
-image repository built with OMERO.
 
 <div class="panel panel-default">
   <div class="panel-body" style="padding:0; text-align: center">
@@ -42,4 +37,30 @@ image repository built with OMERO.
     <h3 class="panel-title">The demo app reads image data from the OMERO-based JCB dataviewer</h3>
   </div>
 </div>
+
+The demo app doesn't have it's own OMERO server. The html and javascript simply come from the 
+figure.openmicroscopy web site (which is hosted by github). The demo app
+gets it's data from the [JCB dataviewer](http://jcb-dataviewer.rupress.org/), which is a public
+image repository built with OMERO.
+
+The JCB dataviewer provides public image data and image rendering, but doesn't support saving
+of figure files or export of figures to PDF / TIFF.
+
+<h2>Using OMERO.figure demo app</h2>
+
+The demo app works in exactly the same way as the regular OMERO.figure app, with a couple of differences:
+
+ - You can't save or export figures (as described above).
+ - File > Open uses a small number of example figures saved within the app itself.
+ - Images are added from JCB or other public OMERO repositories as shown below:
+
+<div class="panel panel-default">
+  <div class="panel-body" style="padding:0; text-align: center">
+    <img src="{{ site.baseurl }}/images/demo_add_images.png" style="width:600px"/>
+  </div>
+  <div class="panel-heading">
+    <h3 class="panel-title">Adding images from JCB dataviewer to OMERO.figure demo app</h3>
+  </div>
+</div>
+
 
