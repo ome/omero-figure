@@ -76,6 +76,8 @@ module.exports = function (grunt) {
                     "",
                 '{{ userFullName }}':
                     'Will Moore',
+                '{% if scriptMissing %}disabled="disabled"{% endif %}':
+                    'disabled="disabled"',
                 // figure.js (after concat) is in same folder...
                 // and need to uncomment links to it
                 '@@-->': '',
