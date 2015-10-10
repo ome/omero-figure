@@ -78,6 +78,10 @@ module.exports = function (grunt) {
                     'Will Moore',
                 '{% if scriptMissing %}disabled="disabled"{% endif %}':
                     'disabled="disabled"',
+                '<li class="save_as">':
+                    '<li class="save_as disabled">',
+                "if (this.model.get('fileId')) {":    // disables 'Delete'
+                    "if (false) {",
                 // figure.js (after concat) is in same folder...
                 // and need to uncomment links to it
                 '@@-->': '',

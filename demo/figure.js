@@ -2713,7 +2713,7 @@ var CropModalView = Backbone.View.extend({
                 this.$saveBtn.addClass('btn-default').removeClass('btn-success').attr('disabled', 'disabled');
                 this.$saveOption.addClass('disabled');
             }
-            if (this.model.get('fileId')) {
+            if (false) {
                 this.$deleteOption.removeClass('disabled');
             } else {
                 this.$deleteOption.addClass('disabled');
