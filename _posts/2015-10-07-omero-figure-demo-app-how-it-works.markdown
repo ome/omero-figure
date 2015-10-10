@@ -14,7 +14,7 @@ So how does the demo work, and what OMERO server does it use?
 OMERO.figure is basically a bunch of html and javascript that runs in your browser, getting
 data and images from an OMERO server.
 
-It can also use the OMERO server to save the figure file and export the figure as PDF.
+It can also use the OMERO server to save the figure file and export the figure as PDF or TIFF files.
 
 
 <div class="panel panel-default">
@@ -27,7 +27,7 @@ It can also use the OMERO server to save the figure file and export the figure a
 </div>
 
 However, OMERO.figure doesn't **have** to get data from it's own "host" OMERO server. It
-can get data from any OMERO server that it has access to.
+can get data from any OMERO server that is available on the internet.
 
 <div class="panel panel-default">
   <div class="panel-body" style="padding:0; text-align: center">
@@ -39,7 +39,7 @@ can get data from any OMERO server that it has access to.
 </div>
 
 The demo app doesn't have it's own OMERO server. The html and javascript simply come from the 
-figure.openmicroscopy web site (which is hosted by github). The demo app
+figure.openmicroscopy web site (which is hosted by github). The demo app instead
 gets it's data from the [JCB dataviewer](http://jcb-dataviewer.rupress.org/), which is a public
 image repository built with OMERO.
 
@@ -51,8 +51,8 @@ of figure files or export of figures to PDF / TIFF.
 The demo app works in exactly the same way as the regular OMERO.figure app, with a couple of differences:
 
  - You can't save or export figures (as described above).
- - File > Open uses a small number of example figures saved within the app itself.
- - Images are added from JCB or other public OMERO repositories as shown below:
+ - File > Open uses a [small number of example figures]({{ site.baseurl }}/#demo) saved within the app itself.
+ - Images are added from JCB dataviewer or other public OMERO repositories as shown below:
 
 <div class="panel panel-default">
   <div class="panel-body" style="padding:0; text-align: center">
