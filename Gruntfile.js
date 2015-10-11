@@ -82,6 +82,8 @@ module.exports = function (grunt) {
                     '<li class="save_as disabled">',
                 "if (this.model.get('fileId')) {":    // disables 'Delete'
                     "if (false) {",
+                '{% now "Y" %}':
+                    '<%= new Date().getFullYear() %>',
                 // figure.js (after concat) is in same folder...
                 // and need to uncomment links to it
                 '@@-->': '',
