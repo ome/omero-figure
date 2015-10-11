@@ -19,7 +19,7 @@ It can also use the OMERO server to save the figure file and export the figure a
 
 <div class="panel panel-default">
   <div class="panel-body" style="padding:0; text-align: center">
-    <img src="{{ site.baseurl }}/images/OMERO.figure_app.png" style="width:600px"/>
+    <img src="{{ site.baseurl }}/images/blog-omero-figure.png" style="width:600px"/>
   </div>
   <div class="panel-heading">
     <h3 class="panel-title">OMERO.figure reads image data from OMERO, and can save figure files and PDFs</h3>
@@ -31,7 +31,7 @@ can get data from any OMERO server that is available on the internet.
 
 <div class="panel panel-default">
   <div class="panel-body" style="padding:0; text-align: center">
-    <img src="{{ site.baseurl }}/images/OMERO.figure_demo.png" style="width:600px"/>
+    <img src="{{ site.baseurl }}/images/blog-demo-figure.png" style="width:600px"/>
   </div>
   <div class="panel-heading">
     <h3 class="panel-title">The demo app reads image data from the OMERO-based JCB dataviewer</h3>
