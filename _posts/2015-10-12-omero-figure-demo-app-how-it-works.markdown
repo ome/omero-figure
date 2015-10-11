@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "OMERO.figure demo app: How it works and how to use it"
-date:   2015-10-07
+date:   2015-10-12
 ---
 
 If you want to try using OMERO.figure without installing the app or the OMERO server,
