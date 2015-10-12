@@ -128,7 +128,7 @@ def imgData_json(request, imageId, conn=None, **kwargs):
     pixSizeX = str(px)  # As string E.g. "0.13262 MICROMETER"
     unitsSupport = " " in pixSizeX
 
-    rv = imageMarshal(image)
+    rv = imageMarshal(image, request=request)
 
     if unitsSupport:
         rv['pixel_size']['symbolX'] = px.getSymbol()
