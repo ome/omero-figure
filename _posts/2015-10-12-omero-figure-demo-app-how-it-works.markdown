@@ -26,7 +26,7 @@ It can also use the OMERO server to save the figure file and export the figure a
   </div>
 </div>
 
-However, OMERO.figure doesn't **have** to get data from it's own "host" OMERO server. It
+However, OMERO.figure doesn't **have** to get data from its own "host" OMERO server. It
 can get data from any OMERO server that is available on the internet.
 
 <div class="panel panel-default">
@@ -38,9 +38,9 @@ can get data from any OMERO server that is available on the internet.
   </div>
 </div>
 
-The demo app doesn't have it's own OMERO server. The html and javascript simply come from the 
+The demo app doesn't have its own OMERO server. The html and javascript simply come from the 
 figure.openmicroscopy web site (which is hosted by github). The demo app instead
-gets it's OMERO images and metadata from the [JCB dataviewer](http://jcb-dataviewer.rupress.org/), which is a public
+gets its OMERO images and metadata from the [JCB dataviewer](http://jcb-dataviewer.rupress.org/), which is a public
 image repository built with OMERO.
 
 The JCB dataviewer provides public image data and image rendering, but doesn't support saving
