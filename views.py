@@ -120,15 +120,15 @@ def shape_editor(request, conn=None, **kwargs):
 def imgData_json(request, imageId, conn=None, **kwargs):
 
     image = conn.getObject("Image", imageId)
+    if image is None:
+        raise Http404("Image not found")
 
     # Test if we have Units support (OMERO 5.1)
     px = image.getPrimaryPixels().getPhysicalSizeX()
     pixSizeX = str(px)  # As string E.g. "0.13262 MICROMETER"
     unitsSupport = " " in pixSizeX
 
-    if image is None:
-        raise Http404("Image not found")
-    rv = imageMarshal(image)
+    rv = imageMarshal(image, request=request)
 
     if unitsSupport:
         rv['pixel_size']['symbolX'] = px.getSymbol()
