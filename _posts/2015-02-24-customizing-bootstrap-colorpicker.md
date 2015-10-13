@@ -79,11 +79,7 @@ $(function(){
 
 
 
-
-<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
 <link rel="stylesheet" href="{{ site.baseurl }}/demo/static/figure/colorpicker/css/bootstrap-colorpicker.min.css">
-
-<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
 <script src="{{ site.baseurl }}/demo/static/figure/colorpicker/js/bootstrap-colorpicker.min.js"></script>
 
 <script>
