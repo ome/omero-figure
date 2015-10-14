@@ -2936,7 +2936,6 @@ var FileList = Backbone.Collection.extend({
     },
 
     url: function() {
-        console.log('LIST_WEBFIGURES_URL', LIST_WEBFIGURES_URL);
         return LIST_WEBFIGURES_URL;
     }
 });
