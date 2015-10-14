@@ -621,6 +621,64 @@
             this.save('scalebar', sb);
         },
 
+        // Simple checking whether shape is in viewport (x, y, width, height)
+        // Return true if any of the points in shape are within viewport.
+        is_shape_in_viewport: function(shape, viewport) {
+            var rect = viewport;
+            var isPointInRect = function(x, y) {
+                if (x < rect.x) return false;
+                if (y < rect.y) return false;
+                if (x > rect.x + rect.width) return false;
+                if (y > rect.y + rect.height) return false;
+                return true;
+            }
+            var points;
+            if (shape.type === "Ellipse") {
+                points = [[shape.cx, shape.cy]];
+            } else if (shape.type === "Rectangle") {
+                points = [[shape.x, shape.y],
+                        [shape.x, shape.y + shape.height,],
+                        [shape.x + shape.width, shape.y],
+                        [shape.x + shape.width, shape.y + shape.height]];
+            } else if (shape.type === "Line" || shape.type === "Arrow") {
+                points = [[shape.x1, shape.y1],
+                        [shape.x2, shape.y2],
+                        [(shape.x1 + shape.x2)/2, (shape.y1 + shape.y2)/ 2]];
+            }
+            if (points) {
+                for (var p=0; p<points.length; p++) {
+                    if (isPointInRect(points[p][0], points[p][1])) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        },
+
+        // Adds list of shapes to panel (same logic as for labels below)
+        add_shapes: function(shapes) {
+            var old = this.get('shapes'),
+                viewport = this.getViewportAsRect(),
+                self = this,
+                allAdded = true,
+                shps = [];
+            if (old) {
+                old.forEach(function(sh){
+                    shps.push($.extend(true, {}, sh));
+                });
+            }
+            shapes.forEach(function(sh){
+                // simple test if shape is in viewport
+                if (self.is_shape_in_viewport(sh, viewport)) {
+                    shps.push($.extend(true, {}, sh));
+                } else {
+                    allAdded = false;
+                }
+            });
+            this.save('shapes', shps);
+            return allAdded;
+        },
+
         // takes a list of labels, E.g [{'text':"t", 'size':10, 'color':'FF0000', 'position':"top"}]
         add_labels: function(labels) {
             var oldLabs = this.get("labels");
@@ -2510,6 +2568,28 @@ var CropModalView = Backbone.View.extend({
                 clipboard_panels;
             if (clipboard_data && 'PANELS' in clipboard_data){
                 clipboard_panels = clipboard_data.PANELS;
+            } else if (clipboard_data && 'SHAPES' in clipboard_data) {
+
+                // If we've actually got SHAPES in the clipboard,
+                // paste them onto each selected panel...
+                clipboard_panels = clipboard_data.SHAPES;
+                var sel = this.model.getSelected();
+                var allOK = true;
+                sel.forEach(function(p){
+                    var ok = p.add_shapes(clipboard_panels);
+                    if (!ok) {allOK = false;}
+                });
+                // If any shapes were outside viewport, show message
+                var plural = sel.length > 1 ? "s" : "";
+                if (!allOK) {
+                    figureConfirmDialog("Paste Failure",
+                        "Some shapes may be outside the visible 'viewport' of panel" + plural + ". " +
+                        "Target image" + plural + " may too small or zoomed in too much. " +
+                        "Try zooming out before pasting again, or paste to a bigger image.",
+                        ["OK"]);
+                }
+                // And we're done...
+                return;
             } else {
                 return;
             }
@@ -5755,6 +5835,12 @@ var RoiModalView = Backbone.View.extend({
                 self.pasteShapes();
                 return false;
             });
+            Mousetrap(dialog).bind('mod+a', function(event, combo) {
+                if(!self.$el.is(":visible")) return true;
+                event.preventDefault();
+                self.selectAllShapes();
+                return false;
+            });
 
             // Here we handle init of the dialog when it's shown...
             $("#roiModal").bind("show.bs.modal", function(){
@@ -5801,6 +5887,7 @@ var RoiModalView = Backbone.View.extend({
             "click .copyShape": "copyShapes",
             "click .pasteShape": "pasteShapes",
             "click .deleteShape": "deleteShapes",
+            "click .selectAll": "selectAllShapes",
         },
 
         copyShapes: function(event) {
@@ -5899,6 +5986,11 @@ var RoiModalView = Backbone.View.extend({
             }
         },
 
+        selectAllShapes: function(event) {
+            // manager triggers shapeSelected, which renders toolbar
+            this.shapeManager.selectAll();
+        },
+
         selectState: function(event) {
             var $target = $(event.target),
                 newState = $target.attr('data-state');
@@ -5926,11 +6018,13 @@ var RoiModalView = Backbone.View.extend({
             // render toolbar
             var state = this.shapeManager.getState(),
                 lineW = this.shapeManager.getStrokeWidth(),
-                color = this.shapeManager.getStrokeColor().replace("#", ""),
+                color = this.shapeManager.getStrokeColor(),
                 scale = this.zoom,
                 sel = this.shapeManager.getSelected().length > 0,
-                toPaste = this.model.get('shapesClipboard'),
+                toPaste = this.model.get('clipboard'),
                 windows = navigator.platform.toUpperCase().indexOf('WIN') > -1;
+            color = color ? color.replace("#", "") : 'FFFFFF';
+            toPaste = (toPaste && "SHAPES" in toPaste) ? toPaste.SHAPES : false;
             var json = {'state': state,
                         'lineWidth': lineW,
                         'color': color,

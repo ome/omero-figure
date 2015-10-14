@@ -36,6 +36,12 @@ var RoiModalView = Backbone.View.extend({
                 self.pasteShapes();
                 return false;
             });
+            Mousetrap(dialog).bind('mod+a', function(event, combo) {
+                if(!self.$el.is(":visible")) return true;
+                event.preventDefault();
+                self.selectAllShapes();
+                return false;
+            });
 
             // Here we handle init of the dialog when it's shown...
             $("#roiModal").bind("show.bs.modal", function(){
@@ -82,6 +88,7 @@ var RoiModalView = Backbone.View.extend({
             "click .copyShape": "copyShapes",
             "click .pasteShape": "pasteShapes",
             "click .deleteShape": "deleteShapes",
+            "click .selectAll": "selectAllShapes",
         },
 
         copyShapes: function(event) {
@@ -180,6 +187,11 @@ var RoiModalView = Backbone.View.extend({
             }
         },
 
+        selectAllShapes: function(event) {
+            // manager triggers shapeSelected, which renders toolbar
+            this.shapeManager.selectAll();
+        },
+
         selectState: function(event) {
             var $target = $(event.target),
                 newState = $target.attr('data-state');
@@ -207,11 +219,13 @@ var RoiModalView = Backbone.View.extend({
             // render toolbar
             var state = this.shapeManager.getState(),
                 lineW = this.shapeManager.getStrokeWidth(),
-                color = this.shapeManager.getStrokeColor().replace("#", ""),
+                color = this.shapeManager.getStrokeColor(),
                 scale = this.zoom,
                 sel = this.shapeManager.getSelected().length > 0,
-                toPaste = this.model.get('shapesClipboard'),
+                toPaste = this.model.get('clipboard'),
                 windows = navigator.platform.toUpperCase().indexOf('WIN') > -1;
+            color = color ? color.replace("#", "") : 'FFFFFF';
+            toPaste = (toPaste && "SHAPES" in toPaste) ? toPaste.SHAPES : false;
             var json = {'state': state,
                         'lineWidth': lineW,
                         'color': color,
