@@ -79,8 +79,8 @@ $(function(){
 
 
 
-<link rel="stylesheet" href="{{ site.baseurl }}/demo/static/figure/colorpicker/css/bootstrap-colorpicker.min.css">
-<script src="{{ site.baseurl }}/demo/static/figure/colorpicker/js/bootstrap-colorpicker.min.js"></script>
+<link rel="stylesheet" href="{{ site.baseurl }}/demo/static/figure/3rdparty/bootstrap-colorpicker/css/bootstrap-colorpicker.min.css">
+<script src="{{ site.baseurl }}/demo/static/figure/3rdparty/bootstrap-colorpicker/js/bootstrap-colorpicker.min.js"></script>
 
 <script>
   $(function(){
