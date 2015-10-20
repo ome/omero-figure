@@ -20,26 +20,22 @@ var RoiModalView = Backbone.View.extend({
             Mousetrap(dialog).bind(['backspace', 'del'], function(event, combo) {
                 // Need to ignore if the dialog isn't visible
                 if(!self.$el.is(":visible")) return true;
-                event.preventDefault();
-                self.deleteShapes();
+                self.deleteShapes(event);
                 return false;
             });
             Mousetrap(dialog).bind('mod+c', function(event, combo) {
                 if(!self.$el.is(":visible")) return true;
-                event.preventDefault();
-                self.copyShapes();
+                self.copyShapes(event);
                 return false;
             });
             Mousetrap(dialog).bind('mod+v', function(event, combo) {
                 if(!self.$el.is(":visible")) return true;
-                event.preventDefault();
-                self.pasteShapes();
+                self.pasteShapes(event);
                 return false;
             });
             Mousetrap(dialog).bind('mod+a', function(event, combo) {
                 if(!self.$el.is(":visible")) return true;
-                event.preventDefault();
-                self.selectAllShapes();
+                self.selectAllShapes(event);
                 return false;
             });
 
