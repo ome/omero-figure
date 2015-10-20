@@ -48,7 +48,7 @@
         MAKE_WEBFIGURE_URL = "{% url 'make_web_figure",
         ACTIVITIES_JSON_URL = "{% url 'activities_json",
         WEBGATEWAYINDEX = "{% url 'webgateway",
-        WEBINDEX_URL = "{% url 'webindex",
+        WEBINDEX_URL = "http://figure.openmicroscopy.org/",
         ROIS_JSON_URL = WEBGATEWAYINDEX + "get_rois_json/",
         USER_FULL_NAME = "Will Moore";
 
@@ -509,8 +509,8 @@
 
     <div class="navbar navbar-inverse navbar-fixed-top">
         <div class="container">
-            <div class="navbar-header" title="Back to OMERO.webclient">
-                <a class="navbar-brand" href="{% url 'webindex">OMERO</a>
+            <div class="navbar-header" title="Back to figure.openmicroscopy.org">
+                <a class="navbar-brand" href="http://figure.openmicroscopy.org/">OMERO</a>
             </div>
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
@@ -595,7 +595,7 @@
                     </button>
                 </form>
 
-                <div class="navbar-header figure-title" title="Back to OMERO.webclient">
+                <div class="navbar-header figure-title" title="Back to figure.openmicroscopy.org">
                     <!-- Figure Title will be added here -->
                 </div>
 

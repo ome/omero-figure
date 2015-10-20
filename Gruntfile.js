@@ -84,6 +84,10 @@ module.exports = function (grunt) {
                     "if (false) {",
                 '{% now "Y" %}':
                     '<%= new Date().getFullYear() %>',
+                "{% url 'webindex' %}":
+                    "http://figure.openmicroscopy.org/",
+                'title="Back to OMERO.webclient"':
+                    'title="Back to figure.openmicroscopy.org"',
                 // figure.js (after concat) is in same folder...
                 // and need to uncomment links to it
                 '@@-->': '',
