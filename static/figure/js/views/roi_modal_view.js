@@ -92,6 +92,7 @@ var RoiModalView = Backbone.View.extend({
         },
 
         copyShapes: function(event) {
+            event.preventDefault();
             var shapeJson = this.shapeManager.getSelectedShapesJson();
             if (shapeJson.length > 0) {
                 this.model.set('clipboard', {'SHAPES': shapeJson});
@@ -100,6 +101,7 @@ var RoiModalView = Backbone.View.extend({
         },
 
         pasteShapes: function(event) {
+            event.preventDefault();
             var clipboard_data = this.model.get('clipboard'),
                 shapeJson;
             if (clipboard_data && 'SHAPES' in clipboard_data){
@@ -116,6 +118,7 @@ var RoiModalView = Backbone.View.extend({
         },
 
         deleteShapes: function(event) {
+            event.preventDefault();
             this.shapeManager.deleteSelected();
         },
 
@@ -188,6 +191,7 @@ var RoiModalView = Backbone.View.extend({
         },
 
         selectAllShapes: function(event) {
+            event.preventDefault();
             // manager triggers shapeSelected, which renders toolbar
             this.shapeManager.selectAll();
         },
