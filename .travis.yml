@@ -11,4 +11,4 @@ before_script: npm install -g grunt-cli
 
 script:
  - flake8 -v .
- - grunt demo
+ - grunt jshint
