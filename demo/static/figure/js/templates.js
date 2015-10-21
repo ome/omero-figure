@@ -49,7 +49,9 @@ this["JST"]["static/figure/templates/figure_panel_template.html"] = function(obj
 obj || (obj = {});
 var __t, __p = '', __e = _.escape;
 with (obj) {
-__p += '    <!-- The content of <div class=\'imagePanel\'> for each panel -->\n    <div class="imgContainer">\n        <img class="img_panel" />\n    </div>\n';
+__p += '    <!-- The content of <div class=\'imagePanel\'> for each panel -->\n    <div class="imgContainer">\n        <img class="img_panel" />\n        <div id="' +
+((__t = ( randomId )) == null ? '' : __t) +
+'" class="panel_canvas"></div>\n    </div>\n';
 
 }
 return __p
@@ -152,6 +154,25 @@ __p += '\n        </div>\n';
 return __p
 };
 
+this["JST"]["static/figure/templates/rois_form_template.html"] = function(obj) {
+obj || (obj = {});
+var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
+function print() { __p += __j.call(arguments, '') }
+with (obj) {
+__p += '\n<!-- Add tooltip to div around the button since it doesn\'t show on disabled button -->\n<div class="pull-right"\n    ';
+ if (disabled) { ;
+__p += '\n        title="Cannot edit ROIs on multiple panels. Select a single panel"\n    ';
+ } ;
+__p += ' >\n    <button type="submit" class="edit_rois btn btn-sm btn-success"\n        ';
+ if (disabled) { ;
+__p += ' disabled="disabled"';
+ } ;
+__p += ' >\n        Draw ROIs\n    </button>\n</div>\n';
+
+}
+return __p
+};
+
 this["JST"]["static/figure/templates/scalebar_form_template.html"] = function(obj) {
 obj || (obj = {});
 var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
@@ -162,12 +183,12 @@ __p += '\n    <div class="pixel_size_form" style="position:relative">\n        <
 ')"\n                    style="width:100px; display:none" value="' +
 ((__t = ( pixel_size_x )) == null ? '' : __t) +
 '">\n            <span class="pixel_size_display">\n                ';
- if (pixel_size_x == 0)
+ if (!pixel_size_x)
                     {print('<span style="color:red">NOT SET</span>')}
                 else if (typeof pixel_size_x === 'number')
-                    {print(pixel_size_x.toFixed(3) + " &#181;m")}
+                    {print(pixel_size_x.toFixed(3) + " " + symbol)}
                 else
-                    {print(pixel_size_x + " &#181;m")} ;
+                    {print(pixel_size_x + " " + symbol)} ;
 __p += '\n            </span>\n        </div>\n\n    </div>\n\n    <form class="scalebar_form form-inline">\n\n    <div class="input-group pull-left">\n        <input type="text" class="scalebar-length form-control input-sm" \n                placeholder="Length" value="' +
 ((__t = ( length )) == null ? '' : __t) +
 '" />\n    </div>\n\n    <div class="form-group"><div class="checkbox checkbox-inline">\n        <label>' +
@@ -252,7 +273,11 @@ __p += '\n        <div id="vp_z_label">Z</div>\n        <div id="vp_z_value">' +
 ((__t = ( frame_h )) == null ? '' : __t) +
 'px">\n            ';
  _.each(imgs_css, function(css, i) { ;
-__p += '\n            <img class="vp_img"\n                style="opacity:' +
+__p += '\n            <img class="vp_img';
+ if (css.pixelated) {;
+__p += ' pixelated';
+ } ;
+__p += '"\n                style="opacity:' +
 ((__t = ( opacity )) == null ? '' : __t) +
 '; left:' +
 ((__t = ( css.left )) == null ? '' : __t) +
@@ -285,9 +310,15 @@ obj || (obj = {});
 var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
 function print() { __p += __j.call(arguments, '') }
 with (obj) {
-__p += '\n    <table id="xywh_table" class="table">\n        <tbody>\n            <tr><td>\n                Panel\n                <div class="pull-right">' +
+__p += '\n\n\n    <table id="xywh_table" class="table">\n        <tbody>\n            <tr><td>\n                Panel\n\n                <form class="form-inline pull-right">\n                    <div class="checkbox">\n                        ' +
 ((__t = ( dpi )) == null ? '' : __t) +
-' dpi</div>\n            </td></tr>\n            <tr><td>\n                <div class="col-sm-3" style="text-align: right"><small><strong>X</strong>:</small></div>\n                <div class="col-sm-3"><small>';
+' dpi\n\n                        ';
+ if (export_dpi) { ;
+__p += '\n                        (Export at ' +
+((__t = ( export_dpi )) == null ? '' : __t) +
+' dpi\n                        <button type="button" title="Delete Label" class="close clear_dpi"\n                            title="Remove (don\'t change dpi on export)"\n                            aria-hidden="true" style="float: none; left: 0; margin: 0; top: -2px;">×</button>\n                        <label>)</label>\n                        ';
+ } ;
+__p += '\n                    </div>\n                    <button class="btn btn-sm btn-success set_dpi"\n                        title="Resample to a higher dpi at export">Set dpi</button>\n                </form>\n                \n            </td></tr>\n            <tr><td>\n                <div class="col-sm-3" style="text-align: right"><small><strong>X</strong>:</small></div>\n                <div class="col-sm-3"><small>';
  print(x) ;
 __p += '</small></div>\n\n                <div class="col-sm-3" style="text-align: right"><small><strong>Width</strong>:</small></div>\n                <div class="col-sm-3"><small>';
  print(width) ;
@@ -563,6 +594,76 @@ __p += '\n    </td>\n    <td>\n        ' +
 '\n        ';
  if (tStart !== tEnd) print(" - " + tEnd); ;
 __p += '\n    </td>\n</tr>\n';
+
+}
+return __p
+};
+
+this["JST"]["static/figure/templates/shapes/shape_item_template.html"] = function(obj) {
+obj || (obj = {});
+var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
+function print() { __p += __j.call(arguments, '') }
+with (obj) {
+__p += '\n    <div ';
+ if (selected) print ("style='background:#ddf'") ;
+__p += ' >\n\n    \t' +
+((__t = ( type )) == null ? '' : __t) +
+'\n\n    \t';
+ if (type === 'RECT') print("x:" + x + " y:" + y + " width:"+ width + " height:" + height) ;
+__p += '\n\n    \t';
+ if (type === 'LINE' || type === 'ARROW') print("x1:" + (x1 >> 0) + " y1:" + (y1 >> 0) + " x2:" + (x2 >> 0) + " y2:" + (y2 >> 0)) ;
+__p += '\n\n    \t';
+ if (type === 'ELLIPSE') print("x:" + (cx >> 0) + " y:" + (cy >> 0) + " rx:" + (rx >> 0) + " ry:" + (ry >> 0)) ;
+__p += '\n\n    </div>\n';
+
+}
+return __p
+};
+
+this["JST"]["static/figure/templates/shapes/shape_toolbar_template.html"] = function(obj) {
+obj || (obj = {});
+var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
+function print() { __p += __j.call(arguments, '') }
+with (obj) {
+__p += '\n\n<div class="btn-group" role="group" aria-label="...">\n    <button type="button" data-state="SELECT"\n    \tclass="btn btn-default select-btn ';
+ if (state==='SELECT')print('pressed') ;
+__p += '">\n        <span class="glyphicon"></span></button>\n</div>\n\n\n<div class="btn-group shape-option" role="group" aria-label="...">\n    <button type="button" class="btn btn-default rect-btn ';
+ if (state==='RECT')print('pressed') ;
+__p += '"\n            title="Rectangle" data-state="RECT">\n        <span class="glyphicon"></span></button>\n    <button type="button" class="btn btn-default line-btn ';
+ if (state==='LINE')print('pressed') ;
+__p += '"\n            title="Line" data-state="LINE">\n        <span class="glyphicon"></span></button>\n    <button type="button" class="btn btn-default arrow-btn ';
+ if (state==='ARROW')print('pressed') ;
+__p += '"\n            title="Arrow" data-state="ARROW">\n        <span class="glyphicon"></span></button>\n    <button type="button" class="btn btn-default ellipse-btn ';
+ if (state==='ELLIPSE')print('pressed') ;
+__p += '"\n            title="Ellipse" data-state="ELLIPSE">\n        <span class="glyphicon"></span></button>\n</div>\n\n\n<div class="btn-group">\n    <button type="button" class="shape-color btn btn-default dropdown-toggle" title="Label Color"\n        data-toggle="dropdown">\n        <span data-color="' +
+((__t = ( color )) == null ? '' : __t) +
+'" style="background-color:#' +
+((__t = ( color )) == null ? '' : __t) +
+'">&nbsp &nbsp &nbsp</span>\n        <span class="caret"></span>\n    </button>\n    <ul class="dropdown-menu dropdownSelect colorpicker" role="menu">\n        <li><a href="#">\n            <span data-color="000000" style="background-color:#000">&nbsp &nbsp &nbsp</span>&nbsp Black\n        </a></li>\n        <li><a href="#">\n            <span data-color="0000FF" style="background-color:#00f">&nbsp &nbsp &nbsp</span>&nbsp Blue\n        </a></li>\n        <li><a href="#">\n            <span data-color="00FF00" style="background-color:#0f0">&nbsp &nbsp &nbsp</span>&nbsp Green\n        </a></li>\n        <li><a href="#">\n            <span data-color="FF0000" style="background-color:#f00">&nbsp &nbsp &nbsp</span>&nbsp Red\n        </a></li>\n        <li><a href="#">\n            <span data-color="FFFF00" style="background-color:#ff0">&nbsp &nbsp &nbsp</span>&nbsp Yellow\n        </a></li>\n        <li><a href="#">\n            <span data-color="FFFFFF" style="background-color:#fff">&nbsp &nbsp &nbsp</span>&nbsp White\n        </a></li>\n        <li><a href="#">\n            <span data-color="FF00FF" style="background-color:#f0f">&nbsp &nbsp &nbsp</span>&nbsp Magenta\n        </a></li>\n        <li class="divider"></li>\n        <li><a data-color="colorpicker" data-oldcolor="' +
+((__t = ( color )) == null ? '' : __t) +
+'" href="#">\n            <span class="colorpickerOption">&nbsp &nbsp &nbsp</span>&nbsp More Colors...\n        </a></li>\n    </ul>\n</div>\n\n\n<div class="btn-group">\n    <button type="button" class="line-width btn btn-default dropdown-toggle" title="Line Width: ' +
+((__t = ( lineWidth )) == null ? '' : __t) +
+'"\n        data-toggle="dropdown">\n        <span data-line-width="' +
+((__t = ( lineWidth )) == null ? '' : __t) +
+'" class=\'linewidthOption\' style=\'height:' +
+((__t = ( lineWidth )) == null ? '' : __t) +
+'px\'></span>\n        <span class="caret"></span>\n    </button>\n    <ul class="dropdown-menu dropdownSelect lineWidth" role="menu">\n\n        ';
+ _.each([1,2,3,4,5,7,10,15,20,30],function(p){
+            print ("<li><a href='#'>"+p+"<span title='Line Width: "+p+"' data-line-width='"+p+"' class='linewidthOption' style='height:"+p+"px'></span></a></li>")
+        }); ;
+__p += '\n\n    </ul>\n</div>\n\n\n<div class="btn-group">\n    <button type="button" class="btn btn-default" title="Delete, Copy, Paste etc"\n        data-toggle="dropdown">\n        <span>Edit</span>\n        <span class="caret"></span>\n    </button>\n    <ul class="dropdown-menu" role="menu">\n        <li ';
+ if (!sel) print('class="disabled"') ;
+__p += ' >\n            <a href="#" class="copyShape">\n                Copy Shape   &nbsp&nbsp&nbsp ' +
+((__t = ( cmdKey )) == null ? '' : __t) +
+'C\n            </a>\n        </li>\n        <li ';
+ if (!toPaste) print('class="disabled"') ;
+__p += ' >\n            <a href="#" class="pasteShape">\n                Paste Shape   &nbsp&nbsp&nbsp ' +
+((__t = ( cmdKey )) == null ? '' : __t) +
+'V\n            </a>\n        </li>\n        <li ';
+ if (!sel) print('class="disabled"') ;
+__p += ' >\n            <a href="#" class="deleteShape">\n                Delete Shape    &nbsp&nbsp&nbsp Del\n            </a>\n        </li>\n        <li>\n            <a href="#" class="selectAll">\n                Select All Shapes    &nbsp&nbsp ' +
+((__t = ( cmdKey )) == null ? '' : __t) +
+'A\n            </a>\n        </li>\n    </ul>\n</div>\n\n';
 
 }
 return __p
