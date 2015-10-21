@@ -31,7 +31,7 @@
     main {
         position: fixed;
         top: 47px;
-        bottom: 30px;
+        bottom: 36px;
         width: 100%;
         overflow: auto;
         background-color: #bbb;
@@ -51,12 +51,20 @@
         z-index: 1;
         background-color: #EFF1F4;
         position: absolute;
+    }
+
+    .pixelated {
         /* Try to show images in their original pixelated form Although 'pixelated' isn't 
-        supported yet: https://developer.mozilla.org/en-US/docs/Web/CSS/image-rendering */
-        image-rendering: -moz-crisp-edges;
-        image-rendering: -o-crisp-edges;
-        image-rendering: -webkit-optimize-contrast;
-        -ms-interpolation-mode: nearest-neighbor;
+        supported yet: https://developer.mozilla.org/en-US/docs/Web/CSS/image-rendering
+        Code from http://phrogz.net/tmp/canvas_image_zoom.html */
+        image-rendering:optimizeSpeed;             /* Legal fallback */
+        image-rendering:-moz-crisp-edges;          /* Firefox        */
+        image-rendering:-o-crisp-edges;            /* Opera          */
+        image-rendering:-webkit-optimize-contrast; /* Safari         */
+        image-rendering:optimize-contrast;         /* CSS3 Proposed  */
+        image-rendering:crisp-edges;               /* CSS4 Proposed  */
+        image-rendering:pixelated;                 /* CSS4 Proposed  */
+        -ms-interpolation-mode:nearest-neighbor;   /* IE8+           */
     }
 
     /* #figure is a container of .paper */
@@ -70,12 +78,12 @@
         background: white;
     }
 
-    #figure .imagePanel {
+    .imagePanel {
         position: absolute;
         background: #fff;
     }
 
-    #figure .dragging{
+    .dragging{
         background: none;
     }
 
@@ -84,6 +92,11 @@
         width: 100%;
         height: 100%;
         position: absolute;
+    }
+    .imgContainer img, .imgContainer div {
+        position: absolute;
+        top: 0;
+        left: 0;
     }
 
     .dragging .imgContainer {
@@ -114,18 +127,87 @@
         text-align: center;
     }
 
+    /* -- Legend -- */
+    .legend-container {
+        z-index: 100;
+        position:fixed;
+        bottom: 54px;
+        width: 60%;
+        min-width:400px;
+        left:20%;
+        right:20%;
+    }
+
+    .legend-container .panel {
+        background-color:white;
+        margin-bottom: 0;
+        padding-bottom: 0;
+        overflow-y: auto;
+    }
+
+    .legend-expanded {
+        max-height: 250px;
+    }
+
+    .legend-collapsed {
+        max-height: 25px;
+    }
+
+    .legend-collapsed .panel-body{
+        padding: 3px 15px;
+    }
+
+    .markdown-info {
+        padding: 3px 12px;
+        color: #aaa;
+        display: none;
+        text-align: right;
+        padding-left: 40px;
+        background: url(../images/markdown_light32x20.png) 0% center no-repeat;
+    }
+    .markdown-info:hover {
+        background: url(../images/markdown_dark32x20.png) 0% center no-repeat;
+    }
+    .editing .markdown-info {
+        display: block;
+    }
+
+    /* hide appropriate collapse/hide button */
+    .legend-collapsed .collapse-legend{
+        display: none;
+    }
+    .legend-expanded .expand-legend{
+        display: none;
+    }
+
+    .legend-collapsed textarea {
+        position: relative;
+        top: -12px;
+        width: 95%;
+    }
+
+    .legend-footer {
+        position: absolute;
+        right: 0;
+        bottom: -54px;
+    }
+
     footer {
-        background: gray;
-        height: 30px;
+        background: rgb(97, 97, 97);
+        height: 36px;
         width: 100%;
         position: fixed;
         bottom: 0;
     }
 
+    footer .btn-xs, .legend-footer .btn-xs {
+        padding: 5px 10px;
+    }
+
     footer input {
         position: absolute;
         left: 250px;
-        top: 3px;
+        top: 5px;
     }
 
     footer .ui-slider {
@@ -133,7 +215,7 @@
         height: 6px;
         left: 15px;
         position: absolute;
-        top: 11px;
+        top: 15px;
         width: 220px;
         background: #bbb;
     }
@@ -189,7 +271,7 @@
     }
 
     .scalebar {
-        height: 2px;
+        height: 3px;
         position: absolute;
         margin: 5% !important;
     }
@@ -619,17 +701,30 @@
         opacity: 0.4;
     }
 
-    #roiViewer {
+    #cropViewer {
         width: 500px;
         height: 450px;
         overflow: auto;
         position: relative;
     }
 
-    #roi_paper svg {
+    #crop_paper svg {
         cursor:  crosshair;
         cursor:  url("../images/crop20.png") 10 10, crosshair;
         z-index: 10;
+    }
+
+    .roiPickMe {
+        cursor: pointer;
+    }
+    /* On hover, use selected blue color */
+    .roiPickMe:hover {
+        background-color: rgb(190, 212, 253);
+    }
+
+    .roiViewer {
+        overflow: hidden;
+        position: relative;
     }
 
 
@@ -688,3 +783,72 @@
         height: 30px;
         width: 30px;
     }
+
+    /** ------------------- Shape Editor styles --------------------- **/
+
+    .shape_canvas {
+        position: absolute;
+        top: 0px;
+        left: 0px;
+    }
+    .image_wrapper img {
+        width: 100%;
+        height: 100%;
+    }
+    .new_shape_layer {
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        width: 100%;
+        height: 100%;
+    }
+
+    /** toolbar buttons **/
+
+    .btn-toolbar span.glyphicon {
+        width: 16px;
+        height: 16px;
+        position: relative;
+        top: 3px;
+        background-repeat: no-repeat;
+    }
+
+    .roiModalForm .modal-body {
+        max-height: 650px;
+        padding-top: 10px;
+    }
+
+    .roi_toolbar {
+        overflow: visible;
+        padding-bottom: 10px;
+    }
+
+    .roi_toolbar .pressed {
+        background: #ddd;
+    }
+
+    .select-btn span{
+        background-image: url("../images/cursor-icon-16.png");
+    }
+    .rect-btn span{
+        background-image: url("../images/square-outline-icon-16.png");
+    }
+    .line-btn span{
+        background-image: url("../images/line-icon-16.png");
+    }
+    .arrow-btn span{
+        background-image: url("../images/arrow-icon-16.png");
+    }
+    .ellipse-btn span{
+        background-image: url("../images/ellipse-icon-16.png");
+    }
+    .linewidthOption {
+        display: inline-block;
+        width: 25px;
+        background: black;
+        margin: 0 5px;
+    }
+    .line-width .linewidthOption {
+        max-height: 15px;
+    }
+

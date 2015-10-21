@@ -1,0 +1,40 @@
+
+
+
+    <table id="xywh_table" class="table">
+        <tbody>
+            <tr><td>
+                Panel
+
+                <form class="form-inline pull-right">
+                    <div class="checkbox">
+                        <%= dpi %> dpi
+
+                        <% if (export_dpi) { %>
+                        (Export at <%= export_dpi %> dpi
+                        <button type="button" title="Delete Label" class="close clear_dpi"
+                            title="Remove (don't change dpi on export)"
+                            aria-hidden="true" style="float: none; left: 0; margin: 0; top: -2px;">×</button>
+                        <label>)</label>
+                        <% } %>
+                    </div>
+                    <button class="btn btn-sm btn-success set_dpi"
+                        title="Resample to a higher dpi at export">Set dpi</button>
+                </form>
+                
+            </td></tr>
+            <tr><td>
+                <div class="col-sm-3" style="text-align: right"><small><strong>X</strong>:</small></div>
+                <div class="col-sm-3"><small><% print(x) %></small></div>
+
+                <div class="col-sm-3" style="text-align: right"><small><strong>Width</strong>:</small></div>
+                <div class="col-sm-3"><small><% print(width) %></small></div>
+
+                <div class="col-sm-3" style="text-align: right"><small><strong>Y</strong>:</small></div>
+                <div class="col-sm-3"><small><% print(y) %></small></div>
+
+                <div class="col-sm-3" style="text-align: right"><small><strong>Height</strong>:</small></div>
+                <div class="col-sm-3"><small><% print(height) %></small></div>
+            </td></tr>
+        </tbody>
+    </table>
