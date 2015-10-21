@@ -8,7 +8,9 @@ module.exports = function (grunt) {
     , jshint: {
         all: [
             "Gruntfile.js"
-          , "static/figure/js/*.js"
+          , "static/figure/js/models/*.js"
+          , "static/figure/js/views/*.js"
+          , "static/figure/js/app.js"
         ]
       , options: {
           jshintrc: '.jshintrc'
