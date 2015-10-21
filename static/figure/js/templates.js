@@ -159,15 +159,15 @@ obj || (obj = {});
 var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
 function print() { __p += __j.call(arguments, '') }
 with (obj) {
-__p += '\n<!-- Add tooltip to div around the button since it doesn\'t show on disabled button -->\n<div class="pull-right"\n    ';
+__p += '\n\n<h5>ROIs (3 selected)</h5>\n\n<form class="form-inline" role="form">\n\n    <div class="btn-group" style="margin-right:20px">\n        <button type="button" class="btn btn-sm btn-default" title="Copy All ROIs">\n            Copy\n        </button>\n        <button type="button" class="btn btn-sm btn-default" title="Paste ROIs">\n            Paste\n        </button>\n        <button type="button" class="btn btn-sm btn-default" title="Delete All ROIs">\n            Delete All\n        </button>\n    </div>\n\n    <div class="pull-right"\n        ';
  if (disabled) { ;
-__p += '\n        title="Cannot edit ROIs on multiple panels. Select a single panel"\n    ';
+__p += '\n            title="Cannot edit ROIs on multiple panels. Select a single panel"\n        ';
  } ;
-__p += ' >\n    <button type="submit" class="edit_rois btn btn-sm btn-success"\n        ';
+__p += ' >\n        <button class="edit_rois btn btn-sm btn-success"\n            ';
  if (disabled) { ;
 __p += ' disabled="disabled"';
  } ;
-__p += ' >\n        Draw ROIs\n    </button>\n</div>\n';
+__p += ' >\n            Draw ROIs\n        </button>\n    </div>\n\n</form>\n';
 
 }
 return __p

@@ -1,11 +1,29 @@
 
-<!-- Add tooltip to div around the button since it doesn't show on disabled button -->
-<div class="pull-right"
-    <% if (disabled) { %>
-        title="Cannot edit ROIs on multiple panels. Select a single panel"
-    <% } %> >
-    <button type="submit" class="edit_rois btn btn-sm btn-success"
-        <% if (disabled) { %> disabled="disabled"<% } %> >
-        Draw ROIs
-    </button>
-</div>
+
+<h5>ROIs (3 selected)</h5>
+
+<form class="form-inline" role="form">
+
+    <div class="btn-group" style="margin-right:20px">
+        <button type="button" class="btn btn-sm btn-default" title="Copy All ROIs">
+            Copy
+        </button>
+        <button type="button" class="btn btn-sm btn-default" title="Paste ROIs">
+            Paste
+        </button>
+        <button type="button" class="btn btn-sm btn-default" title="Delete All ROIs">
+            Delete All
+        </button>
+    </div>
+
+    <div class="pull-right"
+        <% if (disabled) { %>
+            title="Cannot edit ROIs on multiple panels. Select a single panel"
+        <% } %> >
+        <button class="edit_rois btn btn-sm btn-success"
+            <% if (disabled) { %> disabled="disabled"<% } %> >
+            Draw ROIs
+        </button>
+    </div>
+
+</form>

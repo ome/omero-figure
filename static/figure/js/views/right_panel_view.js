@@ -83,6 +83,7 @@
 
         editRois: function(event) {
             $("#roiModal").modal("show");
+            return false;
         },
 
         // Handles all the various drop-down menus in the 'New' AND 'Edit Label' forms
