@@ -12,6 +12,7 @@
             // this.render();
             new LabelsPanelView({model: this.model});
             new SliderButtonsView({model: this.model});
+            new RoisFormView({model: this.model});
         },
 
         render: function() {
@@ -55,12 +56,51 @@
     });
 
 
+    var RoisFormView = Backbone.View.extend({
+
+        model: FigureModel,
+
+        roisTemplate: JST["static/figure/templates/rois_form_template.html"],
+
+        el: $("#labelsTab"),
+
+        initialize: function(opts) {
+            this.listenTo(this.model, 'change:selection', this.render);
+            this.render();
+        },
+
+        events: {
+            "click .edit_rois": "editRois",
+        },
+
+        editRois: function(event) {
+            $("#roiModal").modal("show");
+            return false;
+        },
+
+        render: function() {
+
+            var selectionCount = this.model.getSelected().length,
+                disableEdit = selectionCount > 1;
+
+            if (selectionCount === 0) {
+                $('#edit_rois_form').empty();
+            } else {
+                var json = {
+                    'disabled': disableEdit
+                }
+                $('#edit_rois_form').html(this.roisTemplate(json));
+            }
+        },
+
+    });
+
+
     var LabelsPanelView = Backbone.View.extend({
 
         model: FigureModel,
 
         template: JST["static/figure/templates/labels_form_inner_template.html"],
-        roisTemplate: JST["static/figure/templates/rois_form_template.html"],
 
         el: $("#labelsTab"),
 
@@ -78,12 +118,7 @@
         events: {
             "submit .new-label-form": "handle_new_label",
             "click .dropdown-menu a": "select_dropdown_option",
-            "click .edit_rois": "editRois",
-        },
-
-        editRois: function(event) {
-            $("#roiModal").modal("show");
-            return false;
+            // "click .edit_rois": "editRois",
         },
 
         // Handles all the various drop-down menus in the 'New' AND 'Edit Label' forms
@@ -174,24 +209,7 @@
             return false;
         },
 
-        renderRois: function() {
-
-            var selectionCount = this.model.getSelected().length,
-                disableEdit = selectionCount > 1;
-
-            if (selectionCount === 0) {
-                $('#edit_rois_form').empty();
-            } else {
-                var json = {
-                    'disabled': disableEdit
-                }
-                $('#edit_rois_form').html(this.roisTemplate(json));
-            }
-        },
-
         render: function() {
-
-            this.renderRois();
 
             var selected = this.model.getSelected();
 
