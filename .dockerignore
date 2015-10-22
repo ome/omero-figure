@@ -1,0 +1,4 @@
+.*un~
+*.pyc
+.DS_Store
+demo/static/figure/
