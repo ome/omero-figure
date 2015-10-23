@@ -80,17 +80,21 @@
 
         render: function() {
 
-            var selectionCount = this.model.getSelected().length,
-                disableEdit = selectionCount > 1;
+            var sel = this.model.getSelected(),
+                panelCount = this.model.getSelected().length,
+                roiCount = 0;
 
-            if (selectionCount === 0) {
-                $('#edit_rois_form').empty();
-            } else {
-                var json = {
-                    'disabled': disableEdit
-                }
-                $('#edit_rois_form').html(this.roisTemplate(json));
+            sel.forEach(function(s){
+                roiCount += s.get('shapes') ? s.get('shapes').length : 0;
+            });
+
+            var json = {
+                'panelCount': panelCount,
+                'color': '#FF0000',
+                'lineWidth': 2,
+                'roiCount': roiCount,
             }
+            $('#edit_rois_form').html(this.roisTemplate(json));
         },
 
     });
