@@ -71,6 +71,63 @@
 
         events: {
             "click .edit_rois": "editRois",
+            "click .copyROIs": "copyROIs",
+            "click .pasteROIs": "pasteROIs",
+            "click .deleteROIs": "deleteROIs",
+        },
+
+        copyROIs: function(event) {
+            event.preventDefault();
+            var sel = this.model.getSelected(),
+                roiJson = [];
+
+            sel.forEach(function(s){
+                var rois = s.get('shapes');
+                if (rois) {
+                    rois.forEach(function(r){
+                        roiJson.push($.extend(true, {}, r));
+                    });
+                }
+            });
+            if (roiJson.length > 0) {
+                this.model.set('clipboard', {'SHAPES': roiJson});
+            }
+            this.render();
+        },
+
+        pasteROIs: function(event) {
+            event.preventDefault();
+            var sel = this.model.getSelected(),
+                roiJson = this.model.get('clipboard'),
+                allOK = true;
+            if (!roiJson || !roiJson.SHAPES) {
+                return;
+            }
+            // Paste ROIs onto each selected panel...
+            roiJson = roiJson.SHAPES;
+            sel.forEach(function(p){
+                var ok = p.add_shapes(roiJson);
+                if (!ok) {allOK = false;}
+            });
+            // If any shapes were outside viewport, show message
+            var plural = sel.length > 1 ? "s" : "";
+            if (!allOK) {
+                figureConfirmDialog("Paste Failure",
+                    "Some shapes may be outside the visible 'viewport' of panel" + plural + ". " +
+                    "Target image" + plural + " may too small or zoomed in too much. " +
+                    "Try zooming out before pasting again, or paste to a bigger image.",
+                    ["OK"]);
+            }
+            this.render();
+        },
+
+        deleteROIs: function(event) {
+            event.preventDefault();
+            var sel = this.model.getSelected();
+            sel.forEach(function(p){
+                var ok = p.unset('shapes');
+            });
+            this.render();
         },
 
         editRois: function(event) {
@@ -82,7 +139,9 @@
 
             var sel = this.model.getSelected(),
                 panelCount = this.model.getSelected().length,
-                roiCount = 0;
+                roiCount = 0,
+                clipboard_data = this.model.get('clipboard'),
+                canPaste = clipboard_data && 'SHAPES' in clipboard_data;
 
             sel.forEach(function(s){
                 roiCount += s.get('shapes') ? s.get('shapes').length : 0;
@@ -93,6 +152,7 @@
                 'color': '#FF0000',
                 'lineWidth': 2,
                 'roiCount': roiCount,
+                'canPaste': canPaste,
             }
             $('#edit_rois_form').html(this.roisTemplate(json));
         },

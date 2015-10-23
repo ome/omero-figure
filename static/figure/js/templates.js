@@ -179,9 +179,11 @@ __p += '\n\n<form class="form-inline" role="form">\n\n    <div class="btn-group"
  _.each([1,2,3,4,5,7,10,15,20,30],function(p){
                 print ("<li><a href='#'>"+p+"<span title='Line Width: "+p+"' data-line-width='"+p+"' class='linewidthOption' style='height:"+p+"px; width:20px'></span></a></li>")
             }); ;
-__p += '\n\n        </ul>\n    </div>\n\n    <div class="btn-group">\n        <button type="button" class="btn btn-sm btn-default" title="Copy All ROIs"\n                ';
+__p += '\n\n        </ul>\n    </div>\n\n    <div class="btn-group">\n        <button type="button" class="btn btn-sm btn-default copyROIs" title="Copy All ROIs"\n                ';
  if (roiCount === 0) print('disabled') ;
-__p += ' >\n            Copy\n        </button>\n        <button type="button" class="btn btn-sm btn-default" title="Paste ROIs">\n            Paste\n        </button>\n        <button type="button" class="btn btn-sm btn-default" title="Delete All ROIs"\n                ';
+__p += ' >\n            Copy\n        </button>\n        <button type="button" class="btn btn-sm btn-default pasteROIs" title="Paste ROIs"\n                ';
+ if (!canPaste) print('disabled') ;
+__p += ' >\n            Paste\n        </button>\n        <button type="button" class="btn btn-sm btn-default deleteROIs" title="Delete All ROIs"\n                ';
  if (roiCount === 0) print('disabled') ;
 __p += ' >\n            Delete\n        </button>\n    </div>\n\n    <div class="pull-right"\n        ';
  if (panelCount > 1) { ;
