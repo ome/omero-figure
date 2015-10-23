@@ -20,26 +20,22 @@ var RoiModalView = Backbone.View.extend({
             Mousetrap(dialog).bind(['backspace', 'del'], function(event, combo) {
                 // Need to ignore if the dialog isn't visible
                 if(!self.$el.is(":visible")) return true;
-                event.preventDefault();
-                self.deleteShapes();
+                self.deleteShapes(event);
                 return false;
             });
             Mousetrap(dialog).bind('mod+c', function(event, combo) {
                 if(!self.$el.is(":visible")) return true;
-                event.preventDefault();
-                self.copyShapes();
+                self.copyShapes(event);
                 return false;
             });
             Mousetrap(dialog).bind('mod+v', function(event, combo) {
                 if(!self.$el.is(":visible")) return true;
-                event.preventDefault();
-                self.pasteShapes();
+                self.pasteShapes(event);
                 return false;
             });
             Mousetrap(dialog).bind('mod+a', function(event, combo) {
                 if(!self.$el.is(":visible")) return true;
-                event.preventDefault();
-                self.selectAllShapes();
+                self.selectAllShapes(event);
                 return false;
             });
 
@@ -92,6 +88,7 @@ var RoiModalView = Backbone.View.extend({
         },
 
         copyShapes: function(event) {
+            event.preventDefault();
             var shapeJson = this.shapeManager.getSelectedShapesJson();
             if (shapeJson.length > 0) {
                 this.model.set('clipboard', {'SHAPES': shapeJson});
@@ -100,6 +97,7 @@ var RoiModalView = Backbone.View.extend({
         },
 
         pasteShapes: function(event) {
+            event.preventDefault();
             var clipboard_data = this.model.get('clipboard'),
                 shapeJson;
             if (clipboard_data && 'SHAPES' in clipboard_data){
@@ -116,6 +114,7 @@ var RoiModalView = Backbone.View.extend({
         },
 
         deleteShapes: function(event) {
+            event.preventDefault();
             this.shapeManager.deleteSelected();
         },
 
@@ -188,6 +187,7 @@ var RoiModalView = Backbone.View.extend({
         },
 
         selectAllShapes: function(event) {
+            event.preventDefault();
             // manager triggers shapeSelected, which renders toolbar
             this.shapeManager.selectAll();
         },
