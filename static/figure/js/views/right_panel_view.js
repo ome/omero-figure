@@ -186,6 +186,7 @@
         },
 
         // Handles all the various drop-down menus in the 'New' AND 'Edit Label' forms
+        // AND for ROI form (since this is also under the #labelsTab)
         select_dropdown_option: function(event) {
             event.preventDefault();
             var $a = $(event.target),

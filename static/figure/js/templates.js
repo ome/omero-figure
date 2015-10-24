@@ -159,11 +159,17 @@ obj || (obj = {});
 var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
 function print() { __p += __j.call(arguments, '') }
 with (obj) {
-__p += '\n\n<h5>ROIs (' +
-((__t = ( roiCount )) == null ? '' : __t) +
-' selected)</h5>\n\n';
+__p += '\n\n<h5>ROIs\n    ';
  if (panelCount > 0) { ;
-__p += '\n\n<form class="form-inline" role="form">\n\n    <div class="btn-group">\n        <button type="button" class="shape-color btn btn-default btn-sm dropdown-toggle" title="Label Color"\n            data-toggle="dropdown">\n            <span data-color="' +
+__p += '\n        <span style="font-weight:normal; padding-left:64px">' +
+((__t = ( roiCount )) == null ? '' : __t) +
+' ROIs selected</span>\n    ';
+ } ;
+__p += '\n</h5>\n\n';
+ if (panelCount > 0) { ;
+__p += '\n\n<form class="form-inline" role="form">\n\n    <div class="btn-group">\n        <button type="button" class="shape-color btn btn-default btn-sm dropdown-toggle" title="ROI Color"\n            ';
+ if (roiCount === 0) print('disabled') ;
+__p += '\n            data-toggle="dropdown">\n            <span data-color="' +
 ((__t = ( color )) == null ? '' : __t) +
 '" style="background-color:#' +
 ((__t = ( color )) == null ? '' : __t) +
@@ -171,7 +177,9 @@ __p += '\n\n<form class="form-inline" role="form">\n\n    <div class="btn-group"
 ((__t = ( color )) == null ? '' : __t) +
 '" href="#">\n                <span class="colorpickerOption">&nbsp &nbsp &nbsp</span>&nbsp More Colors...\n            </a></li>\n        </ul>\n    </div>\n\n    <div class="btn-group">\n        <button type="button" class="line-width btn btn-default btn-sm dropdown-toggle" title="Line Width: ' +
 ((__t = ( lineWidth )) == null ? '' : __t) +
-'"\n            data-toggle="dropdown">\n            <span data-line-width="' +
+'"\n            ';
+ if (roiCount === 0) print('disabled') ;
+__p += '\n            data-toggle="dropdown">\n            <span data-line-width="' +
 ((__t = ( lineWidth )) == null ? '' : __t) +
 '" class=\'linewidthOption\' style=\'height:' +
 ((__t = ( lineWidth )) == null ? '' : __t) +
