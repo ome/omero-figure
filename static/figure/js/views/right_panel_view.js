@@ -74,6 +74,17 @@
             "click .copyROIs": "copyROIs",
             "click .pasteROIs": "pasteROIs",
             "click .deleteROIs": "deleteROIs",
+            // triggered by select_dropdown_option below
+            "change .shape-color": "changeROIColor",
+        },
+
+        changeROIColor: function() {
+            var color = $('button.shape-color span:first', this.$el).attr('data-color'),
+                sel = this.model.getSelected();
+
+            sel.forEach(function(panel){
+                panel.setROIColor(color);
+            });
         },
 
         copyROIs: function(event) {
@@ -141,15 +152,29 @@
                 panelCount = this.model.getSelected().length,
                 roiCount = 0,
                 clipboard_data = this.model.get('clipboard'),
-                canPaste = clipboard_data && 'SHAPES' in clipboard_data;
+                canPaste = clipboard_data && 'SHAPES' in clipboard_data,
+                color;
 
-            sel.forEach(function(s){
-                roiCount += s.get('shapes') ? s.get('shapes').length : 0;
+            sel.forEach(function(panel){
+                var rois = panel.get('shapes');
+                if (rois) {
+                    roiCount += rois.length;
+                    // color is false unless all rois have same color
+                    rois.forEach(function(r){
+                        if (color === undefined) {
+                            color = r.strokeColor;
+                        } else {
+                            if (color != r.strokeColor) {
+                                color = false;
+                            }
+                        }
+                    });
+                }
             });
 
             var json = {
                 'panelCount': panelCount,
-                'color': '#FF0000',
+                'color': color ? color.replace('#', '') : 'FFFFFF',
                 'lineWidth': 2,
                 'roiCount': roiCount,
                 'canPaste': canPaste,

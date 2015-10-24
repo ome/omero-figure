@@ -156,6 +156,18 @@
             return false;
         },
 
+        setROIColor: function(color) {
+            var old = this.get('shapes');
+            if (!old || old.length === 0) {
+                return;
+            }
+            var rois = [];
+            old.forEach(function(roi){
+                rois.push($.extend(true, {}, roi, {'strokeColor': '#' + color}));
+            });
+            this.save('shapes', rois);
+        },
+
         // Adds list of shapes to panel (same logic as for labels below)
         add_shapes: function(shapes) {
             var old = this.get('shapes'),

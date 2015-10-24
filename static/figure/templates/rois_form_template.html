@@ -1,13 +1,18 @@
 
 
-<h5>ROIs (<%= roiCount %> selected)</h5>
+<h5>ROIs
+    <% if (panelCount > 0) { %>
+        <span style="font-weight:normal; padding-left:64px"><%= roiCount %> ROIs selected</span>
+    <% } %>
+</h5>
 
 <% if (panelCount > 0) { %>
 
 <form class="form-inline" role="form">
 
     <div class="btn-group">
-        <button type="button" class="shape-color btn btn-default btn-sm dropdown-toggle" title="Label Color"
+        <button type="button" class="shape-color btn btn-default btn-sm dropdown-toggle" title="ROI Color"
+            <% if (roiCount === 0) print('disabled') %>
             data-toggle="dropdown">
             <span data-color="<%= color %>" style="background-color:#<%= color %>">&nbsp &nbsp &nbsp</span>
             <span class="caret"></span>
