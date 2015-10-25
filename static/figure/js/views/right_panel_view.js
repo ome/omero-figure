@@ -76,6 +76,16 @@
             "click .deleteROIs": "deleteROIs",
             // triggered by select_dropdown_option below
             "change .shape-color": "changeROIColor",
+            "change .line-width": "changeLineWidth",
+        },
+
+        changeLineWidth: function() {
+            var width = $('button.line-width span:first', this.$el).attr('data-line-width'),
+                sel = this.model.getSelected();
+
+            sel.forEach(function(panel){
+                panel.setROIStrokeWidth(width);
+            });
         },
 
         changeROIColor: function() {
@@ -153,19 +163,27 @@
                 roiCount = 0,
                 clipboard_data = this.model.get('clipboard'),
                 canPaste = clipboard_data && 'SHAPES' in clipboard_data,
-                color;
+                color,
+                width;
 
             sel.forEach(function(panel){
                 var rois = panel.get('shapes');
                 if (rois) {
                     roiCount += rois.length;
-                    // color is false unless all rois have same color
+                    // color & width are false unless all rois are same
                     rois.forEach(function(r){
                         if (color === undefined) {
                             color = r.strokeColor;
                         } else {
                             if (color != r.strokeColor) {
                                 color = false;
+                            }
+                        }
+                        if (width === undefined) {
+                            width = r.strokeWidth;
+                        } else {
+                            if (width != r.strokeWidth) {
+                                width = false;
                             }
                         }
                     });
@@ -175,7 +193,7 @@
             var json = {
                 'panelCount': panelCount,
                 'color': color ? color.replace('#', '') : 'FFFFFF',
-                'lineWidth': 2,
+                'lineWidth': width || 2,
                 'roiCount': roiCount,
                 'canPaste': canPaste,
             }

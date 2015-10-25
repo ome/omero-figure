@@ -156,14 +156,24 @@
             return false;
         },
 
+        setROIStrokeWidth: function(width) {
+            this.setROIAttr('strokeWidth', width);
+        },
+
         setROIColor: function(color) {
+            this.setROIAttr('strokeColor', '#' + color);
+        },
+
+        setROIAttr: function(attr, value) {
             var old = this.get('shapes');
             if (!old || old.length === 0) {
                 return;
             }
             var rois = [];
             old.forEach(function(roi){
-                rois.push($.extend(true, {}, roi, {'strokeColor': '#' + color}));
+                var xtra = {};
+                xtra['' + attr] = value;
+                rois.push($.extend(true, {}, roi, xtra));
             });
             this.save('shapes', rois);
         },
