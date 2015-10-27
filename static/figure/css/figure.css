@@ -471,6 +471,7 @@
     .tab-footer {
         border-top: solid #dddddd 1px;
         margin-top:15px;
+        padding-top: 4px;
     }
     .tab-pane .ui-slider {
         margin: 13px 5px 6px;
@@ -485,7 +486,7 @@
     }
     .tab-pane .ui-slider-horizontal {
         height: 10px;
-        width: 150px;
+        width: 215 px;
     }
     .tab-pane .ui-slider-horizontal .ui-slider-handle {
         top: -6px;

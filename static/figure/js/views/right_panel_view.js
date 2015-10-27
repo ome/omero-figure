@@ -26,14 +26,6 @@
                 this.vp = new ImageViewerView({models: selected}); // auto-renders on init
                 $("#viewportContainer").append(this.vp.el);
             }
-            if (this.zmp) {
-                this.zmp.remove();
-                delete this.zmp;
-            }
-            if (selected.length > 0) {
-                this.zmp = new ZoomView({models: selected}); // auto-renders on init
-                $("#reset-zoom-view").append(this.zmp.el);
-            }
 
             if (this.ipv) {
                 this.ipv.remove();
@@ -892,6 +884,10 @@
             });
             this.$vp_zoom_value = $("#vp_zoom_value");
 
+            // We nest the ZoomView so we can update it on update_img_css
+            this.zmView = new ZoomView({models: this.models}); // auto-renders on init
+            $("#reset-zoom-view").append(this.zmView.el);
+
             this.render();
         },
 
@@ -961,6 +957,11 @@
             $("#vp_z_slider").slider("destroy");
             $("#vp_t_slider").slider("destroy");
             this.$vp_zoom_value.text('');
+
+            if (this.zmView) {
+                this.zmView.remove();
+                delete this.zmView;
+            }
             return this;
         },
 
@@ -997,6 +998,8 @@
                     });
                 }
             }
+
+            this.zmView.renderXYWH(zoom, dx, dy);
         },
 
         formatTime: function(seconds) {
@@ -1222,9 +1225,34 @@
             });
         },
 
-        render: function() {
+        renderXYWH: function(zoom, dx, dy) {
 
-            this.$el.html(this.template({}));
+            var x, y, w, h;
+            this.models.forEach(function(m, i){
+                var r = m.getViewportAsRect(zoom, dx, dy);
+                if (i === 0) {
+                    x = r.x;
+                    y = r.y;
+                    w = r.width;
+                    h = r.height;
+                } else {
+                    if (x !== r.x) x = "-";
+                    if (y !== r.y) y = "-";
+                    if (w !== r.width) w = "-";
+                    if (h !== r.height) h = "-";
+                }
+            });
+            var json = {
+                x: parseInt(x, 10),
+                y: parseInt(y, 10),
+                width: parseInt(w, 10),
+                height: parseInt(h, 10)
+            }
+            this.$el.html(this.template(json));
+        },
+
+        render: function() {
+            this.renderXYWH();
         }
     });
 

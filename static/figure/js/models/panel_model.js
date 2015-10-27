@@ -437,11 +437,12 @@
         },
 
         // returns the current viewport as a Rect {x, y, width, height}
-        getViewportAsRect: function() {
-            var zoom = this.get('zoom'),
-                dx = this.get('dx'),
-                dy = this.get('dy'),
-                width = this.get('width'),
+        getViewportAsRect: function(zoom, dx, dy) {
+            zoom = zoom !== undefined ? zoom : this.get('zoom');
+            dx = dx !== undefined ? dx : this.get('dx');
+            dy = dy !== undefined ? dy : this.get('dy');
+
+            var width = this.get('width'),
                 height = this.get('height'),
                 orig_width = this.get('orig_width'),
                 orig_height = this.get('orig_height');
