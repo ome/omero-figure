@@ -1191,6 +1191,8 @@
 
     var ZoomView = Backbone.View.extend({
 
+        template: JST["static/figure/templates/zoom_crop_template.html"],
+
         initialize: function(opts) {
 
             this.models = opts.models;
@@ -1222,13 +1224,7 @@
 
         render: function() {
 
-            this.$el.html('<div class="btn-group">'+
-                '<button type="button" title="Crop panel" class="btn btn-default btn-sm crop-btn">' +
-                    '<span class="glyphicon"></span>' +
-                '</button>'+
-                '<button type="button" class="btn btn-default btn-sm reset-zoom-shape" title="Reset Zoom and Shape">'+
-                    '<span class="glyphicon glyphicon-resize-full"></span>'+
-                '</button></div>');
+            this.$el.html(this.template({}));
         }
     });
 

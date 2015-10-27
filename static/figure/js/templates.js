@@ -370,6 +370,16 @@ __p += '</small></div>\n            </td></tr>\n        </tbody>\n    </table>\n
 return __p
 };
 
+this["JST"]["static/figure/templates/zoom_crop_template.html"] = function(obj) {
+obj || (obj = {});
+var __t, __p = '', __e = _.escape;
+with (obj) {
+__p += '\n<h5>Crop</h5>\n\n<div class="btn-group">\n    <button type="button" class="btn btn-sm btn-default copyCropRegion" title="Copy crop region">\n        Copy\n    </button>\n    <button type="button" class="btn btn-sm btn-default pasteCropRegion" title="Paste crop region">\n        Paste\n    </button>\n    <button type="button" class="btn btn-sm btn-default reset-zoom-shape" title="Reset crop">\n        Reset\n    </button>\n</div>\n\n<button class="pull-right crop-btn btn btn-sm btn-success">\n    Crop\n</button>\n';
+
+}
+return __p
+};
+
 this["JST"]["static/figure/templates/files/figure_file_item.html"] = function(obj) {
 obj || (obj = {});
 var __t, __p = '', __e = _.escape, __j = Array.prototype.join;

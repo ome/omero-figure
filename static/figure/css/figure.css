@@ -472,16 +472,6 @@
         border-top: solid #dddddd 1px;
         margin-top:15px;
     }
-    .tab-footer .btn-group {
-        position: absolute;
-        right: 5px;
-        bottom: 5px;
-    }
-    .tab-footer .btn-group .btn {
-        font-size: 16px;
-        border-color: transparent;
-        padding: 0 4px;
-    }
     .tab-pane .ui-slider {
         margin: 13px 5px 6px;
         background: none repeat scroll 0 0 #BBBBBB;
