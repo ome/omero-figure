@@ -1024,6 +1024,9 @@
 
         render: function() {
 
+            // render child view
+            this.zmView.render();
+
             // only show viewport if original w / h ratio is same for all models
             var model = this.models.head(),
                 self = this;
@@ -1225,6 +1228,7 @@
             });
         },
 
+        // called from the parent view during zoom slider update
         renderXYWH: function(zoom, dx, dy) {
 
             var x, y, w, h;
