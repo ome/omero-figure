@@ -58,7 +58,16 @@
 
         initialize: function(opts) {
             this.listenTo(this.model, 'change:selection', this.render);
+            this.listenTo(this.model, 'change:selection', this.addListeners);
             this.render();
+        },
+
+        addListeners: function() {
+            // when selection changes, we need to listen to selected panels
+            var self = this;
+            this.model.getSelected().forEach(function(m){
+                self.listenTo(m, 'change:shapes', self.render);
+            });
         },
 
         events: {
