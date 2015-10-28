@@ -375,15 +375,15 @@ obj || (obj = {});
 var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
 function print() { __p += __j.call(arguments, '') }
 with (obj) {
-__p += '\n<h5 style="margin-top:6px">\n    View\n    <span style="font-weight:normal; float:right">\n        x: ' +
+__p += '\n<h5 style="margin-top:6px">\n    View\n    <span style="font-weight:normal; float:right">\n        x: <span style="color: #bbb">' +
 ((__t = ( x )) == null ? '' : __t) +
-', y: ' +
+'</span>\n        y: <span style="color: #bbb">' +
 ((__t = ( y )) == null ? '' : __t) +
-', width: ' +
+'</span>\n        width: <span style="color: #bbb">' +
 ((__t = ( width )) == null ? '' : __t) +
-', height: ' +
+'</span>\n        height: <span style="color: #bbb">' +
 ((__t = ( height )) == null ? '' : __t) +
-'\n    </span>\n</h5>\n\n<div class="btn-group">\n    <button type="button" class="btn btn-sm btn-default copyCropRegion" title="Copy crop region"\n        ';
+'</span>\n    </span>\n</h5>\n\n<div class="btn-group">\n    <button type="button" class="btn btn-sm btn-default copyCropRegion" title="Copy crop region"\n        ';
  if (!canCopyRect) print('disabled') ;
 __p += ' >\n        Copy\n    </button>\n    <button type="button" class="btn btn-sm btn-default pasteCropRegion" title="Paste crop region"\n        ';
  if (!canPasteRect) print('disabled') ;
