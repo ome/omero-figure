@@ -11,7 +11,8 @@
         <% if (!canCopyRect) print('disabled') %> >
         Copy
     </button>
-    <button type="button" class="btn btn-sm btn-default pasteCropRegion" title="Paste crop region">
+    <button type="button" class="btn btn-sm btn-default pasteCropRegion" title="Paste crop region"
+        <% if (!canPasteRect) print('disabled') %> >
         Paste
     </button>
     <button type="button" class="btn btn-sm btn-default reset-zoom-shape" title="Reset crop">

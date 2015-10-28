@@ -113,11 +113,27 @@
             var sel = this.model.getSelected(),
                 roiJson = this.model.get('clipboard'),
                 allOK = true;
-            if (!roiJson || !roiJson.SHAPES) {
+            if (!roiJson) {
                 return;
             }
             // Paste ROIs onto each selected panel...
-            roiJson = roiJson.SHAPES;
+            if (roiJson.SHAPES) {
+                roiJson = roiJson.SHAPES;
+            } else if (roiJson.CROP) {
+                // Need to create Rectangle with current color & line width
+                var color = $('button.shape-color span:first', this.$el).attr('data-color'),
+                    width = $('button.line-width span:first', this.$el).attr('data-line-width'),
+                    rect = roiJson.CROP;
+                roiJson = [{type: "Rectangle",
+                            x: rect.x,
+                            y: rect.y,
+                            width: rect.width,
+                            height: rect.height,
+                            strokeColor: "#" + color,
+                            lineWidth: width}];
+            } else {
+                return;
+            }
             sel.forEach(function(p){
                 var ok = p.add_shapes(roiJson);
                 if (!ok) {allOK = false;}
@@ -154,7 +170,7 @@
                 panelCount = this.model.getSelected().length,
                 roiCount = 0,
                 clipboard_data = this.model.get('clipboard'),
-                canPaste = clipboard_data && 'SHAPES' in clipboard_data,
+                canPaste = clipboard_data && ('SHAPES' in clipboard_data || 'CROP' in clipboard_data),
                 color,
                 width;
 
@@ -1243,13 +1259,15 @@
                         rect = {x: shape.x, y: shape.y, width: shape.width, height: shape.height};
                     }
                 });
+                if (!rect) {
+                    alert("No Rectangle found in shapes copied to clipboard");
+                    return;
+                }
             }
 
-            if (rect) {
-                this.models.forEach(function(m){
-                    m.cropToRoi(rect);
-                });
-            }
+            this.models.forEach(function(m){
+                m.cropToRoi(rect);
+            });
         },
 
         show_crop_dialog: function(event) {
@@ -1292,10 +1310,6 @@
                 y: (y !== "-" ? parseInt(y, 10) : y),
                 width: (w !== "-" ? parseInt(w, 10) : w),
                 height: (h !== "-" ? parseInt(h, 10) : h),
-                canCopyRect: true,
-            }
-            if ([x, y, w, h].indexOf("-") > -1) {
-                json.canCopyRect = false;
             }
             return json;
         },
@@ -1303,7 +1317,14 @@
         // called from the parent view during zoom slider update
         renderXYWH: function(zoom, dx, dy) {
 
-            var json = this.getXYWH(zoom, dx, dy);
+            var json = this.getXYWH(zoom, dx, dy),
+                clipboard = this.figureModel.get('clipboard');
+            json.canCopyRect = true;
+            json.canPasteRect = (clipboard && ('CROP' in clipboard || 'SHAPES' in clipboard));
+
+            if ([json.x, json.y, json.w, json.h].indexOf("-") > -1) {
+                json.canCopyRect = false;
+            }
             this.$el.html(this.template(json));
         },
 
