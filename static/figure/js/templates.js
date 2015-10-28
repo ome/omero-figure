@@ -372,7 +372,8 @@ return __p
 
 this["JST"]["static/figure/templates/zoom_crop_template.html"] = function(obj) {
 obj || (obj = {});
-var __t, __p = '', __e = _.escape;
+var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
+function print() { __p += __j.call(arguments, '') }
 with (obj) {
 __p += '\n<h5 style="margin-top:6px">\n    View\n    <span style="font-weight:normal; float:right">\n        x: ' +
 ((__t = ( x )) == null ? '' : __t) +
@@ -382,7 +383,9 @@ __p += '\n<h5 style="margin-top:6px">\n    View\n    <span style="font-weight:no
 ((__t = ( width )) == null ? '' : __t) +
 ', height: ' +
 ((__t = ( height )) == null ? '' : __t) +
-'\n    </span>\n</h5>\n\n<div class="btn-group">\n    <button type="button" class="btn btn-sm btn-default copyCropRegion" title="Copy crop region">\n        Copy\n    </button>\n    <button type="button" class="btn btn-sm btn-default pasteCropRegion" title="Paste crop region">\n        Paste\n    </button>\n    <button type="button" class="btn btn-sm btn-default reset-zoom-shape" title="Reset crop">\n        Reset\n    </button>\n</div>\n\n<button class="pull-right crop-btn btn btn-sm btn-success">\n    Crop\n</button>\n';
+'\n    </span>\n</h5>\n\n<div class="btn-group">\n    <button type="button" class="btn btn-sm btn-default copyCropRegion" title="Copy crop region"\n        ';
+ if (!canCopyRect) print('disabled') ;
+__p += ' >\n        Copy\n    </button>\n    <button type="button" class="btn btn-sm btn-default pasteCropRegion" title="Paste crop region">\n        Paste\n    </button>\n    <button type="button" class="btn btn-sm btn-default reset-zoom-shape" title="Reset crop">\n        Reset\n    </button>\n</div>\n\n<button class="pull-right crop-btn btn btn-sm btn-success">\n    Crop\n</button>\n';
 
 }
 return __p

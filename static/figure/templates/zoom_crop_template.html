@@ -7,7 +7,8 @@
 </h5>
 
 <div class="btn-group">
-    <button type="button" class="btn btn-sm btn-default copyCropRegion" title="Copy crop region">
+    <button type="button" class="btn btn-sm btn-default copyCropRegion" title="Copy crop region"
+        <% if (!canCopyRect) print('disabled') %> >
         Copy
     </button>
     <button type="button" class="btn btn-sm btn-default pasteCropRegion" title="Paste crop region">

@@ -23,7 +23,7 @@
                 delete this.vp;     // so we don't call clear() on it again.
             }
             if (selected.length > 0) {
-                this.vp = new ImageViewerView({models: selected}); // auto-renders on init
+                this.vp = new ImageViewerView({models: selected, figureModel: this.model}); // auto-renders on init
                 $("#viewportContainer").append(this.vp.el);
             }
 
@@ -845,6 +845,7 @@
 
             // prevent rapid repetative rendering, when listening to multiple panels
             this.render = _.debounce(this.render);
+            this.figureModel = opts.figureModel;
 
             this.full_size = 250;
 
@@ -885,7 +886,8 @@
             this.$vp_zoom_value = $("#vp_zoom_value");
 
             // We nest the ZoomView so we can update it on update_img_css
-            this.zmView = new ZoomView({models: this.models}); // auto-renders on init
+            this.zmView = new ZoomView({models: this.models,
+                                        figureModel: this.figureModel}); // auto-renders on init
             $("#reset-zoom-view").append(this.zmView.el);
 
             this.render();
@@ -1202,12 +1204,52 @@
         initialize: function(opts) {
 
             this.models = opts.models;
+            this.figureModel = opts.figureModel;
             this.render();
         },
 
         events: {
             "click .reset-zoom-shape": "resetZoomShape",
             "click .crop-btn": "show_crop_dialog",
+            "click .copyCropRegion": "copyCropRegion",
+            "click .pasteCropRegion": "pasteCropRegion",
+        },
+
+        copyCropRegion: function(event) {
+            event.preventDefault();
+            var rect = this.getXYWH();
+            // Shouldn't happen, but just in case...
+            if ([rect.x, rect.y, rect.width, rect.height].indexOf("-") > -1) {
+                alert("Failed to copy region");
+                return;
+            }
+            this.figureModel.set('clipboard', {'CROP': rect});
+        },
+
+        pasteCropRegion: function(event) {
+            event.preventDefault();
+            var clipboard_data = this.figureModel.get('clipboard'),
+                rect;
+            if (!clipboard_data) return;
+
+            // First check clipboard for CROP
+            if ('CROP' in clipboard_data){
+                rect = clipboard_data.CROP;
+            } else if ('SHAPES' in clipboard_data){
+                // Look for first Rectangle in SHAPES
+                shapeJson = clipboard_data.SHAPES;
+                shapeJson.forEach(function(shape) {
+                    if (!rect && shape.type === "Rectangle") {
+                        rect = {x: shape.x, y: shape.y, width: shape.width, height: shape.height};
+                    }
+                });
+            }
+
+            if (rect) {
+                this.models.forEach(function(m){
+                    m.cropToRoi(rect);
+                });
+            }
         },
 
         show_crop_dialog: function(event) {
@@ -1228,8 +1270,7 @@
             });
         },
 
-        // called from the parent view during zoom slider update
-        renderXYWH: function(zoom, dx, dy) {
+        getXYWH: function(zoom, dx, dy) {
 
             var x, y, w, h;
             this.models.forEach(function(m, i){
@@ -1247,11 +1288,22 @@
                 }
             });
             var json = {
-                x: parseInt(x, 10),
-                y: parseInt(y, 10),
-                width: parseInt(w, 10),
-                height: parseInt(h, 10)
+                x: (x !== "-" ? parseInt(x, 10) : x),
+                y: (y !== "-" ? parseInt(y, 10) : y),
+                width: (w !== "-" ? parseInt(w, 10) : w),
+                height: (h !== "-" ? parseInt(h, 10) : h),
+                canCopyRect: true,
             }
+            if ([x, y, w, h].indexOf("-") > -1) {
+                json.canCopyRect = false;
+            }
+            return json;
+        },
+
+        // called from the parent view during zoom slider update
+        renderXYWH: function(zoom, dx, dy) {
+
+            var json = this.getXYWH(zoom, dx, dy);
             this.$el.html(this.template(json));
         },
 
