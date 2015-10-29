@@ -12,6 +12,7 @@
             // this.render();
             new LabelsPanelView({model: this.model});
             new SliderButtonsView({model: this.model});
+            new RoisFormView({model: this.model});
         },
 
         render: function() {
@@ -22,16 +23,8 @@
                 delete this.vp;     // so we don't call clear() on it again.
             }
             if (selected.length > 0) {
-                this.vp = new ImageViewerView({models: selected}); // auto-renders on init
+                this.vp = new ImageViewerView({models: selected, figureModel: this.model}); // auto-renders on init
                 $("#viewportContainer").append(this.vp.el);
-            }
-            if (this.zmp) {
-                this.zmp.remove();
-                delete this.zmp;
-            }
-            if (selected.length > 0) {
-                this.zmp = new ZoomView({models: selected}); // auto-renders on init
-                $("#reset-zoom-view").append(this.zmp.el);
             }
 
             if (this.ipv) {
@@ -55,12 +48,183 @@
     });
 
 
+    var RoisFormView = Backbone.View.extend({
+
+        model: FigureModel,
+
+        roisTemplate: JST["static/figure/templates/rois_form_template.html"],
+
+        el: $("#labelsTab"),
+
+        initialize: function(opts) {
+            this.listenTo(this.model, 'change:selection', this.render);
+            this.listenTo(this.model, 'change:selection', this.addListeners);
+            this.render();
+        },
+
+        addListeners: function() {
+            // when selection changes, we need to listen to selected panels
+            var self = this;
+            this.model.getSelected().forEach(function(m){
+                self.listenTo(m, 'change:shapes', self.render);
+            });
+        },
+
+        events: {
+            "click .edit_rois": "editRois",
+            "click .copyROIs": "copyROIs",
+            "click .pasteROIs": "pasteROIs",
+            "click .deleteROIs": "deleteROIs",
+            // triggered by select_dropdown_option below
+            "change .shape-color": "changeROIColor",
+            "change .line-width": "changeLineWidth",
+        },
+
+        changeLineWidth: function() {
+            var width = $('button.line-width span:first', this.$el).attr('data-line-width'),
+                sel = this.model.getSelected();
+
+            sel.forEach(function(panel){
+                panel.setROIStrokeWidth(width);
+            });
+        },
+
+        changeROIColor: function() {
+            var color = $('button.shape-color span:first', this.$el).attr('data-color'),
+                sel = this.model.getSelected();
+
+            sel.forEach(function(panel){
+                panel.setROIColor(color);
+            });
+        },
+
+        copyROIs: function(event) {
+            event.preventDefault();
+            var sel = this.model.getSelected(),
+                roiJson = [];
+
+            sel.forEach(function(s){
+                var rois = s.get('shapes');
+                if (rois) {
+                    rois.forEach(function(r){
+                        roiJson.push($.extend(true, {}, r));
+                    });
+                }
+            });
+            if (roiJson.length > 0) {
+                this.model.set('clipboard', {'SHAPES': roiJson});
+            }
+            this.render();
+        },
+
+        pasteROIs: function(event) {
+            event.preventDefault();
+            var sel = this.model.getSelected(),
+                roiJson = this.model.get('clipboard'),
+                allOK = true;
+            if (!roiJson) {
+                return;
+            }
+            // Paste ROIs onto each selected panel...
+            if (roiJson.SHAPES) {
+                roiJson = roiJson.SHAPES;
+            } else if (roiJson.CROP) {
+                // Need to create Rectangle with current color & line width
+                var color = $('button.shape-color span:first', this.$el).attr('data-color'),
+                    width = $('button.line-width span:first', this.$el).attr('data-line-width'),
+                    rect = roiJson.CROP;
+                roiJson = [{type: "Rectangle",
+                            x: rect.x,
+                            y: rect.y,
+                            width: rect.width,
+                            height: rect.height,
+                            strokeColor: "#" + color,
+                            lineWidth: width}];
+            } else {
+                return;
+            }
+            sel.forEach(function(p){
+                var ok = p.add_shapes(roiJson);
+                if (!ok) {allOK = false;}
+            });
+            // If any shapes were outside viewport, show message
+            var plural = sel.length > 1 ? "s" : "";
+            if (!allOK) {
+                figureConfirmDialog("Paste Failure",
+                    "Some shapes may be outside the visible 'viewport' of panel" + plural + ". " +
+                    "Target image" + plural + " may too small or zoomed in too much. " +
+                    "Try zooming out before pasting again, or paste to a bigger image.",
+                    ["OK"]);
+            }
+            this.render();
+        },
+
+        deleteROIs: function(event) {
+            event.preventDefault();
+            var sel = this.model.getSelected();
+            sel.forEach(function(p){
+                var ok = p.unset('shapes');
+            });
+            this.render();
+        },
+
+        editRois: function(event) {
+            $("#roiModal").modal("show");
+            return false;
+        },
+
+        render: function() {
+
+            var sel = this.model.getSelected(),
+                panelCount = this.model.getSelected().length,
+                roiCount = 0,
+                clipboard_data = this.model.get('clipboard'),
+                canPaste = clipboard_data && ('SHAPES' in clipboard_data || 'CROP' in clipboard_data),
+                color,
+                width;
+
+            sel.forEach(function(panel){
+                var rois = panel.get('shapes');
+                if (rois) {
+                    roiCount += rois.length;
+                    // color & width are false unless all rois are same
+                    rois.forEach(function(r){
+                        if (color === undefined) {
+                            color = r.strokeColor;
+                        } else {
+                            if (color != r.strokeColor) {
+                                color = false;
+                            }
+                        }
+                        if (width === undefined) {
+                            width = r.strokeWidth;
+                        } else {
+                            if (width != r.strokeWidth) {
+                                width = false;
+                            }
+                        }
+                    });
+                }
+            });
+
+            var json = {
+                'panelCount': panelCount,
+                'color': color ? color.replace('#', '') : 'FFFFFF',
+                'lineWidth': width || 2,
+                'roiCount': roiCount,
+                'canPaste': canPaste,
+            }
+            $('#edit_rois_form').html(this.roisTemplate(json));
+        },
+
+    });
+
+
     var LabelsPanelView = Backbone.View.extend({
 
         model: FigureModel,
 
         template: JST["static/figure/templates/labels_form_inner_template.html"],
-        roisTemplate: JST["static/figure/templates/rois_form_template.html"],
 
         el: $("#labelsTab"),
 
@@ -78,14 +242,11 @@
         events: {
             "submit .new-label-form": "handle_new_label",
             "click .dropdown-menu a": "select_dropdown_option",
-            "click .edit_rois": "editRois",
-        },
-
-        editRois: function(event) {
-            $("#roiModal").modal("show");
+            // "click .edit_rois": "editRois",
         },
 
         // Handles all the various drop-down menus in the 'New' AND 'Edit Label' forms
+        // AND for ROI form (since this is also under the #labelsTab)
         select_dropdown_option: function(event) {
             event.preventDefault();
             var $a = $(event.target),
@@ -173,24 +334,7 @@
             return false;
         },
 
-        renderRois: function() {
-
-            var selectionCount = this.model.getSelected().length,
-                disableEdit = selectionCount > 1;
-
-            if (selectionCount === 0) {
-                $('#edit_rois_form').empty();
-            } else {
-                var json = {
-                    'disabled': disableEdit
-                }
-                $('#edit_rois_form').html(this.roisTemplate(json));
-            }
-        },
-
         render: function() {
-
-            this.renderRois();
 
             var selected = this.model.getSelected();
 
@@ -726,6 +870,7 @@
 
             // prevent rapid repetative rendering, when listening to multiple panels
             this.render = _.debounce(this.render);
+            this.figureModel = opts.figureModel;
 
             this.full_size = 250;
 
@@ -764,6 +909,11 @@
                 }
             });
             this.$vp_zoom_value = $("#vp_zoom_value");
+
+            // We nest the ZoomView so we can update it on update_img_css
+            this.zmView = new ZoomView({models: this.models,
+                                        figureModel: this.figureModel}); // auto-renders on init
+            $("#reset-zoom-view").append(this.zmView.el);
 
             this.render();
         },
@@ -834,6 +984,11 @@
             $("#vp_z_slider").slider("destroy");
             $("#vp_t_slider").slider("destroy");
             this.$vp_zoom_value.text('');
+
+            if (this.zmView) {
+                this.zmView.remove();
+                delete this.zmView;
+            }
             return this;
         },
 
@@ -870,6 +1025,8 @@
                     });
                 }
             }
+
+            this.zmView.renderXYWH(zoom, dx, dy);
         },
 
         formatTime: function(seconds) {
@@ -893,6 +1050,9 @@
         },
 
         render: function() {
+
+            // render child view
+            this.zmView.render();
 
             // only show viewport if original w / h ratio is same for all models
             var model = this.models.head(),
@@ -1064,15 +1224,59 @@
 
     var ZoomView = Backbone.View.extend({
 
+        template: JST["static/figure/templates/zoom_crop_template.html"],
+
         initialize: function(opts) {
 
             this.models = opts.models;
+            this.figureModel = opts.figureModel;
             this.render();
         },
 
         events: {
             "click .reset-zoom-shape": "resetZoomShape",
             "click .crop-btn": "show_crop_dialog",
+            "click .copyCropRegion": "copyCropRegion",
+            "click .pasteCropRegion": "pasteCropRegion",
+        },
+
+        copyCropRegion: function(event) {
+            event.preventDefault();
+            var rect = this.getXYWH();
+            // Shouldn't happen, but just in case...
+            if ([rect.x, rect.y, rect.width, rect.height].indexOf("-") > -1) {
+                alert("Failed to copy region");
+                return;
+            }
+            this.figureModel.set('clipboard', {'CROP': rect});
+        },
+
+        pasteCropRegion: function(event) {
+            event.preventDefault();
+            var clipboard_data = this.figureModel.get('clipboard'),
+                rect;
+            if (!clipboard_data) return;
+
+            // First check clipboard for CROP
+            if ('CROP' in clipboard_data){
+                rect = clipboard_data.CROP;
+            } else if ('SHAPES' in clipboard_data){
+                // Look for first Rectangle in SHAPES
+                shapeJson = clipboard_data.SHAPES;
+                shapeJson.forEach(function(shape) {
+                    if (!rect && shape.type === "Rectangle") {
+                        rect = {x: shape.x, y: shape.y, width: shape.width, height: shape.height};
+                    }
+                });
+                if (!rect) {
+                    alert("No Rectangle found in shapes copied to clipboard");
+                    return;
+                }
+            }
+
+            this.models.forEach(function(m){
+                m.cropToRoi(rect);
+            });
         },
 
         show_crop_dialog: function(event) {
@@ -1093,15 +1297,48 @@
             });
         },
 
-        render: function() {
+        getXYWH: function(zoom, dx, dy) {
 
-            this.$el.html('<div class="btn-group">'+
-                '<button type="button" title="Crop panel" class="btn btn-default btn-sm crop-btn">' +
-                    '<span class="glyphicon"></span>' +
-                '</button>'+
-                '<button type="button" class="btn btn-default btn-sm reset-zoom-shape" title="Reset Zoom and Shape">'+
-                    '<span class="glyphicon glyphicon-resize-full"></span>'+
-                '</button></div>');
+            var x, y, w, h;
+            this.models.forEach(function(m, i){
+                var r = m.getViewportAsRect(zoom, dx, dy);
+                if (i === 0) {
+                    x = r.x;
+                    y = r.y;
+                    w = r.width;
+                    h = r.height;
+                } else {
+                    if (x !== r.x) x = "-";
+                    if (y !== r.y) y = "-";
+                    if (w !== r.width) w = "-";
+                    if (h !== r.height) h = "-";
+                }
+            });
+            var json = {
+                x: (x !== "-" ? parseInt(x, 10) : x),
+                y: (y !== "-" ? parseInt(y, 10) : y),
+                width: (w !== "-" ? parseInt(w, 10) : w),
+                height: (h !== "-" ? parseInt(h, 10) : h),
+            }
+            return json;
+        },
+
+        // called from the parent view during zoom slider update
+        renderXYWH: function(zoom, dx, dy) {
+
+            var json = this.getXYWH(zoom, dx, dy),
+                clipboard = this.figureModel.get('clipboard');
+            json.canCopyRect = true;
+            json.canPasteRect = (clipboard && ('CROP' in clipboard || 'SHAPES' in clipboard));
+
+            if ([json.x, json.y, json.w, json.h].indexOf("-") > -1) {
+                json.canCopyRect = false;
+            }
+            this.$el.html(this.template(json));
+        },
+
+        render: function() {
+            this.renderXYWH();
         }
     });
 
