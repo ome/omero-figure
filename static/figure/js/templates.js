@@ -375,13 +375,13 @@ obj || (obj = {});
 var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
 function print() { __p += __j.call(arguments, '') }
 with (obj) {
-__p += '\n<h5 style="margin-top:6px">\n    View\n    <span style="font-weight:normal; float:right">\n        x: <span style="color: #bbb">' +
+__p += '\n<h5 style="margin-top:6px">\n    View\n    <span style="font-weight:normal; float:right">\n        x: <span style="color: #aaa">' +
 ((__t = ( x )) == null ? '' : __t) +
-'</span>\n        y: <span style="color: #bbb">' +
+'</span>\n        y: <span style="color: #aaa">' +
 ((__t = ( y )) == null ? '' : __t) +
-'</span>\n        width: <span style="color: #bbb">' +
+'</span>\n        width: <span style="color: #aaa">' +
 ((__t = ( width )) == null ? '' : __t) +
-'</span>\n        height: <span style="color: #bbb">' +
+'</span>\n        height: <span style="color: #aaa">' +
 ((__t = ( height )) == null ? '' : __t) +
 '</span>\n    </span>\n</h5>\n\n<div class="btn-group">\n    <button type="button" class="btn btn-sm btn-default copyCropRegion" title="Copy crop region"\n        ';
  if (!canCopyRect) print('disabled') ;
