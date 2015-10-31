@@ -646,15 +646,23 @@ __p += '\n<tr class="roiPickMe">\n    <td>\n        <div class="roi_wrapper" sty
 ((__t = ( img_h )) == null ? '' : __t) +
 'px" src="' +
 ((__t = ( src )) == null ? '' : __t) +
-'" />\n        </div>\n    </td>\n    <td>\n        ' +
+'" />\n        </div>\n    </td>\n    ';
+ if (zStart) { ;
+__p += '\n    <td>\n        ' +
 ((__t = ( zStart )) == null ? '' : __t) +
 '\n        ';
  if (zStart !== zEnd) print(" - " + zEnd); ;
-__p += '\n    </td>\n    <td>\n        ' +
+__p += '\n    </td>\n    ';
+ } ;
+__p += '\n    ';
+ if (tStart) { ;
+__p += '\n    <td>\n        ' +
 ((__t = ( tStart )) == null ? '' : __t) +
 '\n        ';
  if (tStart !== tEnd) print(" - " + tEnd); ;
-__p += '\n    </td>\n</tr>\n';
+__p += '\n    </td>\n    ';
+ } ;
+__p += '\n</tr>\n';
 
 }
 return __p

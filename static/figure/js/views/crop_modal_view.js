@@ -277,13 +277,7 @@ var CropModalView = Backbone.View.extend({
                     roi, shape, theT, theZ, z, t, rect, tkeys, zkeys,
                     minT, maxT,
                     shapes; // dict of all shapes by z & t index
-                if (data.length === 0) {
-                    $("#cropRoiMessage").text("[No rectangular ROIs found on this image in OMERO]").show();
-                    $(".roiPicker").hide();
-                } else {
-                    $("#cropRoiMessage").text("").hide();
-                    $(".roiPicker").show();
-                }
+
                 for (var r=0; r<data.length; r++) {
                     roi = data[r];
                     shapes = {};
@@ -341,16 +335,44 @@ var CropModalView = Backbone.View.extend({
                                 'zStart': zkeys[0],
                                 'zEnd': zkeys[zkeys.length-1]});
                 }
-                // Show ROIS...
-                self.renderRois(rects);
+                // Show ROIS from OMERO...
+                var msg = "[No rectangular ROIs found on this image in OMERO]";
+                self.renderRois(rects, ".roisFromOMERO", msg);
+
+                // Show Rectangles from clipboard
+                var imageRects = [],
+                    clipboardRects = [],
+                    clipboard = this.model.get('clipboard');
+                if (clipboard && clipboard.CROP) {
+                    roi = clipboard.CROP;
+                    clipboardRects.push({
+                        x: roi.x, y: roi.y, width: roi.width, height: roi.height,
+                        theT: origT, theZ: origZ
+                    });
+                } else if (clipboard && clipboard.SHAPES) {
+                    clipboard.SHAPES.forEach(function(roi){
+                        if (roi.type === "Rectangle") {
+                            clipboardRects.push({
+                                x: roi.x, y: roi.y, width: roi.width, height: roi.height,
+                                theT: origT, theZ: origZ
+                            });
+                        }
+                    });
+                }
+                msg = "[No Regions copied to clipboard]";
+                self.renderRois(clipboardRects, ".roisFromClipboard", msg);
+
+
                 self.cachedRois = cachedRois;
             });
         },
 
-        renderRois: function(rects) {
+        renderRois: function(rects, target, msg) {
 
             var orig_width = this.m.get('orig_width'),
-                orig_height = this.m.get('orig_height');
+                orig_height = this.m.get('orig_height'),
+                origT = this.m.get('theT'),
+                origZ = this.m.get('theZ');
 
             var html = "",
                 size = 50,
@@ -360,8 +382,7 @@ var CropModalView = Backbone.View.extend({
             // loop through ROIs, using our cloned model to generate src urls
             // first, get the current Z and T of cloned model...
             this.m.set('z_projection', false);      // in case z_projection is true
-            var origT = this.m.get('theT'),
-                origZ = this.m.get('theZ');
+
             for (var r=0; r<rects.length; r++) {
                 rect = rects[r];
                 if (rect.theT > -1) this.m.set('theT', rect.theT, {'silent': true});
@@ -379,8 +400,13 @@ var CropModalView = Backbone.View.extend({
                 img_h = orig_height * zoom;
                 top = -(zoom * rect.y);
                 left = -(zoom * rect.x);
+                rect.tStart = rect.tStart !== undefined ? rect.tStart : rect.theT;
+                rect.tEnd = rect.tEnd !== undefined ? rect.tEnd : rect.theT;
+                rect.zStart = rect.zStart !== undefined ? rect.zStart : rect.theZ;
+                rect.zEnd = rect.zEnd !== undefined ? rect.zEnd : rect.theZ;
 
                 var json = {
+                    'msg': msg,
                     'src': src,
                     'rect': rect,
                     'w': div_w,
@@ -391,15 +417,20 @@ var CropModalView = Backbone.View.extend({
                     'img_h': img_h,
                     'theZ': rect.theZ + 1,
                     'theT': rect.theT + 1,
-                    'zStart': (+rect.zStart) + 1,
-                    'zEnd': (+rect.zEnd) + 1,
-                    'tStart': (+rect.tStart) + 1,
-                    'tEnd': (+rect.tEnd) + 1,
                     'roiId': rect.roiId,
+                    'tStart': false,
+                    'zStart': false,
                 }
+                if (rect.tStart) {json.tStart = (+rect.tStart) + 1}
+                if (rect.tEnd) {json.tEnd = (+rect.tEnd) + 1}
+                if (rect.zStart) {json.zStart = (+rect.zStart) + 1}
+                if (rect.zEnd) {json.zEnd = (+rect.zEnd) + 1}
                 html += this.roiTemplate(json);
             }
-            $(".roiPicker tbody").html(html);
+            if (html.length === 0) {
+                html = "<tr><td colspan='3'>" + msg + "</td></tr>";
+            }
+            $(target + " tbody", this.$el).html(html);
 
             // reset Z/T as before
             this.m.set({'theT': origT, 'theZ': origZ});

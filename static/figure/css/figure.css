@@ -720,6 +720,10 @@
         position: relative;
     }
 
+    table.roiPicker {
+        margin-bottom: 5px;
+    }
+
 
     /*  color-picker  */
 
