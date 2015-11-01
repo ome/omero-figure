@@ -342,25 +342,41 @@ var CropModalView = Backbone.View.extend({
                 // Show Rectangles from clipboard
                 var imageRects = [],
                     clipboardRects = [],
-                    clipboard = this.model.get('clipboard');
+                    clipboard = self.model.get('clipboard');
                 if (clipboard && clipboard.CROP) {
                     roi = clipboard.CROP;
                     clipboardRects.push({
-                        x: roi.x, y: roi.y, width: roi.width, height: roi.height,
-                        theT: origT, theZ: origZ
+                        x: roi.x, y: roi.y, width: roi.width, height: roi.height
                     });
                 } else if (clipboard && clipboard.SHAPES) {
                     clipboard.SHAPES.forEach(function(roi){
                         if (roi.type === "Rectangle") {
                             clipboardRects.push({
-                                x: roi.x, y: roi.y, width: roi.width, height: roi.height,
-                                theT: origT, theZ: origZ
+                                x: roi.x, y: roi.y, width: roi.width, height: roi.height
                             });
                         }
                     });
                 }
                 msg = "[No Regions copied to clipboard]";
                 self.renderRois(clipboardRects, ".roisFromClipboard", msg);
+
+                // Show Rectangles from panels in figure
+                var figureRois = [];
+                var sel = self.model.getSelected();
+                sel.forEach(function(panel) {
+                    var panelRois = panel.get('shapes');
+                    if (panelRois) {
+                        panelRois.forEach(function(roi){
+                            if (roi.type === "Rectangle") {
+                                figureRois.push({
+                                    x: roi.x, y: roi.y, width: roi.width, height: roi.height
+                                });
+                            }
+                        });
+                    }
+                });
+                msg = "[No Rectangular ROIs on selected panel in figure]";
+                self.renderRois(figureRois, ".roisFromFigure", msg);
 
 
                 self.cachedRois = cachedRois;
@@ -400,6 +416,8 @@ var CropModalView = Backbone.View.extend({
                 img_h = orig_height * zoom;
                 top = -(zoom * rect.y);
                 left = -(zoom * rect.x);
+                rect.theT = rect.theT !== undefined ? rect.theT : origT;
+                rect.theZ = rect.theZ !== undefined ? rect.theZ : origZ;
                 rect.tStart = rect.tStart !== undefined ? rect.tStart : rect.theT;
                 rect.tEnd = rect.tEnd !== undefined ? rect.tEnd : rect.theT;
                 rect.zStart = rect.zStart !== undefined ? rect.zStart : rect.theZ;
