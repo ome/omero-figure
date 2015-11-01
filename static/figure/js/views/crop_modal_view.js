@@ -418,10 +418,6 @@ var CropModalView = Backbone.View.extend({
                 left = -(zoom * rect.x);
                 rect.theT = rect.theT !== undefined ? rect.theT : origT;
                 rect.theZ = rect.theZ !== undefined ? rect.theZ : origZ;
-                rect.tStart = rect.tStart !== undefined ? rect.tStart : rect.theT;
-                rect.tEnd = rect.tEnd !== undefined ? rect.tEnd : rect.theT;
-                rect.zStart = rect.zStart !== undefined ? rect.zStart : rect.theZ;
-                rect.zEnd = rect.zEnd !== undefined ? rect.zEnd : rect.theZ;
 
                 var json = {
                     'msg': msg,
@@ -439,10 +435,11 @@ var CropModalView = Backbone.View.extend({
                     'tStart': false,
                     'zStart': false,
                 }
-                if (rect.tStart) {json.tStart = (+rect.tStart) + 1}
-                if (rect.tEnd) {json.tEnd = (+rect.tEnd) + 1}
-                if (rect.zStart) {json.zStart = (+rect.zStart) + 1}
-                if (rect.zEnd) {json.zEnd = (+rect.zEnd) + 1}
+                // set start/end indices (1-based) if we have them
+                if (rect.tStart !== undefined) {json.tStart = (+rect.tStart) + 1}
+                if (rect.tEnd !== undefined) {json.tEnd = (+rect.tEnd) + 1}
+                if (rect.zStart !== undefined) {json.zStart = (+rect.zStart) + 1}
+                if (rect.zEnd !== undefined) {json.zEnd = (+rect.zEnd) + 1}
                 html += this.roiTemplate(json);
             }
             if (html.length === 0) {
