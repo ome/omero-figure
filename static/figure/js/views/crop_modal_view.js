@@ -266,7 +266,7 @@ var CropModalView = Backbone.View.extend({
         loadRois: function() {
             var self = this,
                 iid = self.m.get('imageId');
-            $.getJSON(ROIS_JSON_URL + iid, function(data){
+            $.getJSON(ROIS_JSON_URL + iid + "/", function(data){
 
                 // get a representative Rect from each ROI.
                 // Include a z and t index, trying to pick current z/t if ROI includes a shape there
