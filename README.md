@@ -54,5 +54,5 @@ This can be tested locally via:
 Go to http://localhost:8000/ to test it.
 To update the figure.openmicroscopy.org site:
 
- - Copy the demo directory and replace the demo directory in gh-pages-staging branch.
- - Commit changes and open PR against ome/gh-pages-staging as described https://github.com/ome/figure/tree/gh-pages-staging
+    - Copy the demo directory and replace the demo directory in gh-pages-staging branch.
+    - Commit changes and open PR against ome/gh-pages-staging as described https://github.com/ome/figure/tree/gh-pages-staging
