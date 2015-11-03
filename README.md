@@ -56,3 +56,16 @@ To update the figure.openmicroscopy.org site:
 
     - Copy the demo directory and replace the demo directory in gh-pages-staging branch.
     - Commit changes and open PR against ome/gh-pages-staging as described https://github.com/ome/figure/tree/gh-pages-staging
+
+It is also possible to run the demo in docker without installing anything locally:
+
+    $ docker build -t figure-demo .
+    $ docker run -ti --rm -p 8000:8000 figure-demo
+
+If you are using docker-machine (e.g. on Mac OS X or Windows), you can find the URL of your demo with:
+
+    # get the ip address of your docker machine (named default)
+    $ docker-machine ip default
+    192.168.99.100
+    # Now check the result in your browser at:
+    http://192.168.99.100:8000/

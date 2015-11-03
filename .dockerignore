@@ -1,0 +1,5 @@
+.*un~
+*.pyc
+.DS_Store
+demo/static/figure/
+node_modules/
