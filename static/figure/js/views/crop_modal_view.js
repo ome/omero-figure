@@ -416,6 +416,9 @@ var CropModalView = Backbone.View.extend({
                 self.renderRois(rects, ".roisFromOMERO", msg);
 
                 self.cachedRois = cachedRois;
+            }).error(function(){
+                var msg = "[No rectangular ROIs found on this image in OMERO]";
+                self.renderRois([], ".roisFromOMERO", msg);
             });
         },
 
