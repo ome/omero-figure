@@ -37,7 +37,11 @@ var CropModalView = Backbone.View.extend({
                 self.zoomToFit();   // includes render()
                 // disable submit until user chooses a region/ROI
                 self.enableSubmit(false);
+
+                // Load ROIs from OMERO...
                 self.loadRois();
+                // ...along with ROIs from clipboard or on this image in the figure
+                self.showClipboardFigureRois();
             });
 
             // keep track of currently selected ROI
@@ -263,6 +267,48 @@ var CropModalView = Backbone.View.extend({
             }
         },
 
+        showClipboardFigureRois: function() {
+            // Show Rectangles from clipboard
+            var imageRects = [],
+                clipboardRects = [],
+                clipboard = this.model.get('clipboard');
+            if (clipboard && clipboard.CROP) {
+                roi = clipboard.CROP;
+                clipboardRects.push({
+                    x: roi.x, y: roi.y, width: roi.width, height: roi.height
+                });
+            } else if (clipboard && clipboard.SHAPES) {
+                clipboard.SHAPES.forEach(function(roi){
+                    if (roi.type === "Rectangle") {
+                        clipboardRects.push({
+                            x: roi.x, y: roi.y, width: roi.width, height: roi.height
+                        });
+                    }
+                });
+            }
+            var msg = "[No Regions copied to clipboard]";
+            this.renderRois(clipboardRects, ".roisFromClipboard", msg);
+
+            // Show Rectangles from panels in figure
+            var figureRois = [];
+            var sel = this.model.getSelected();
+            sel.forEach(function(panel) {
+                var panelRois = panel.get('shapes');
+                if (panelRois) {
+                    panelRois.forEach(function(roi){
+                        if (roi.type === "Rectangle") {
+                            figureRois.push({
+                                x: roi.x, y: roi.y, width: roi.width, height: roi.height
+                            });
+                        }
+                    });
+                }
+            });
+            msg = "[No Rectangular ROIs on selected panel in figure]";
+            this.renderRois(figureRois, ".roisFromFigure", msg);
+        },
+
+        // Load Rectangles from OMERO and render them
         loadRois: function() {
             var self = this,
                 iid = self.m.get('imageId');
@@ -338,46 +384,6 @@ var CropModalView = Backbone.View.extend({
                 // Show ROIS from OMERO...
                 var msg = "[No rectangular ROIs found on this image in OMERO]";
                 self.renderRois(rects, ".roisFromOMERO", msg);
-
-                // Show Rectangles from clipboard
-                var imageRects = [],
-                    clipboardRects = [],
-                    clipboard = self.model.get('clipboard');
-                if (clipboard && clipboard.CROP) {
-                    roi = clipboard.CROP;
-                    clipboardRects.push({
-                        x: roi.x, y: roi.y, width: roi.width, height: roi.height
-                    });
-                } else if (clipboard && clipboard.SHAPES) {
-                    clipboard.SHAPES.forEach(function(roi){
-                        if (roi.type === "Rectangle") {
-                            clipboardRects.push({
-                                x: roi.x, y: roi.y, width: roi.width, height: roi.height
-                            });
-                        }
-                    });
-                }
-                msg = "[No Regions copied to clipboard]";
-                self.renderRois(clipboardRects, ".roisFromClipboard", msg);
-
-                // Show Rectangles from panels in figure
-                var figureRois = [];
-                var sel = self.model.getSelected();
-                sel.forEach(function(panel) {
-                    var panelRois = panel.get('shapes');
-                    if (panelRois) {
-                        panelRois.forEach(function(roi){
-                            if (roi.type === "Rectangle") {
-                                figureRois.push({
-                                    x: roi.x, y: roi.y, width: roi.width, height: roi.height
-                                });
-                            }
-                        });
-                    }
-                });
-                msg = "[No Rectangular ROIs on selected panel in figure]";
-                self.renderRois(figureRois, ".roisFromFigure", msg);
-
 
                 self.cachedRois = cachedRois;
             });
