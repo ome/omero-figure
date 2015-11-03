@@ -213,17 +213,47 @@ var CropModalView = Backbone.View.extend({
                 };
             }
 
-            // Don't set Z/T if we already have different Z/T indecies.
-            sel.each(function(m){
-                var sh = getShape(m.get('theZ'), m.get('theT')),
-                    newZ = Math.min(parseInt(sh.theZ, 10), m.get('sizeZ') - 1),
-                    newT = Math.min(parseInt(sh.theT, 10), m.get('sizeT') - 1);
-
-                m.cropToRoi({'x': sh.x, 'y': sh.y, 'width': sh.width, 'height': sh.height});
-                // 'save' to trigger 'unsaved': true
-                m.save({'theZ': newZ, 'theT': newT});
-            });
             $("#cropModal").modal('hide');
+
+            // prepare callback for below
+            function cropAndClose(deleteROIs) {
+                // Don't set Z/T if we already have different Z/T indecies.
+                sel.each(function(m){
+                    var sh = getShape(m.get('theZ'), m.get('theT')),
+                        newZ = Math.min(parseInt(sh.theZ, 10), m.get('sizeZ') - 1),
+                        newT = Math.min(parseInt(sh.theT, 10), m.get('sizeT') - 1);
+
+                    m.cropToRoi({'x': sh.x, 'y': sh.y, 'width': sh.width, 'height': sh.height});
+                    if (deleteROIs) {
+                        m.unset('shapes');
+                    }
+                    // 'save' to trigger 'unsaved': true
+                    m.save({'theZ': newZ, 'theT': newT});
+                });
+            }
+
+            // If we have ROIs on the image, ask if we want to delete them
+            var haveROIs = false,
+                plural = sel.length > 0 ? "s" : "";
+            sel.each(function(p){
+                if (p.get('shapes')) haveROIs = true;
+            });
+            if (haveROIs) {
+                figureConfirmDialog("Delete ROIs?",
+                                    "Delete ROIs on the image" + plural + " you are cropping?",
+                                    ["Yes", "No", "Cancel"],
+                                    function(btnText){
+                                        if (btnText == "Cancel") return;
+                                        if (btnText == "Yes") {
+                                            cropAndClose(true);
+                                        } else {
+                                            cropAndClose();
+                                        }
+                                    }
+                );
+            } else {
+                cropAndClose();
+            }
         },
 
         mousedown: function(event) {
