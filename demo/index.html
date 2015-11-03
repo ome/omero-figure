@@ -234,15 +234,33 @@
                     <h4 class="modal-title">Crop to Region</h4>
                 </div>
                 <form class="cropModalForm" role="form">
-                    <div class="modal-body" style="height: 500px; max-height: 500px">
-                        <div class="col-xs-4" style="height: 500px; overflow: auto">
+                    <div class="modal-body" style="height: 500px; max-height: 500px; padding-bottom:0">
+                        <div class="col-xs-4" style="height: 485px; overflow: auto">
                             <p>
                                 Click and drag on the image to choose a crop region or
                                 pick an ROI from the list below.
                             </p>
-                            <h4>ROIs</h4>
-                            <table class="roiPicker table table-condensed">
-                                <thead><td></td><td>Z-index</td><td>T-index</td></thead>
+                            <h4>ROIs:</h4>
+                            <table class="roiPicker roisFromFigure table table-condensed">
+                                <thead><td>
+                                    <strong title="Crop to rectangles on this image in the figure">from Figure</strong>
+                                </td><td></td><td></td></thead>
+                                <tbody>
+                                <!-- ROIs loaded here... -->
+                                </tbody>
+                            </table>
+                            <table class="roiPicker roisFromClipboard table table-condensed">
+                                <thead><td>
+                                    <strong title="Crop to rectangles copied to clipboard">from Clipboard</strong>
+                                </td><td></td><td></td></thead>
+                                <tbody>
+                                <!-- ROIs loaded here... -->
+                                </tbody>
+                            </table>
+                            <table class="roiPicker roisFromOMERO table table-condensed">
+                                <thead><td>
+                                    <strong title="Crop to rectangles saved on this image on the OMERO server">from OMERO</strong>
+                                </td><td>Z-index</td><td>T-index</td></thead>
                                 <tbody>
                                 <!-- ROIs loaded here... -->
                                 </tbody>
