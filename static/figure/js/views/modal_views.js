@@ -437,10 +437,22 @@
             // The first one to return will set all the coords
             // and subsequent ones will update coords to position
             // new image panels appropriately in a grid.
+            var invalidIds = [];
             for (var i=0; i<iIds.length; i++) {
-                var imgId = iIds[i],
-                    imgDataUrl = BASE_WEBFIGURE_URL + 'imgData/' + parseInt(imgId, 10) + '/';
-                this.importImage(imgDataUrl, coords);
+                var imgId = iIds[i].replace("|", ""),
+                    validId = parseInt(imgId, 10) + "",
+                    imgDataUrl = BASE_WEBFIGURE_URL + 'imgData/' + validId + '/';
+                if (validId == "NaN") {
+                    invalidIds.push(imgId);
+                } else {
+                    this.importImage(imgDataUrl, coords);
+                }
+            }
+            if (invalidIds.length > 0) {
+                var plural = invalidIds.length > 1 ? "s" : "";
+                figureConfirmDialog("Invalid ID" + plural,
+                                    "Could not add image with invalid ID" + plural + ": " + invalidIds.join(", "),
+                                    ["OK"]);
             }
         },
 
@@ -448,7 +460,7 @@
             var iid = parseInt(img_detail_url.split('img_detail/')[1], 10),
                 baseUrl = img_detail_url.split('/img_detail')[0],
                 // http://jcb-dataviewer.rupress.org/jcb/imgData/25069/
-                imgDataUrl = baseUrl + '/imgData/' + iid;
+                imgDataUrl = baseUrl + '/imgData/' + iid + "/";
 
             var colCount = 1,
                 rowCount = 1,
