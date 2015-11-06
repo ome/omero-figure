@@ -1,7 +1,7 @@
 ---
 layout: post
-title:  "Try the latest ROI features on the demo app"
-date:   2015-11-02
+title:  "Try new ROI features on the demo app"
+date:   2015-11-06
 ---
 
 As you may have heard, we are currently adding ROI support to OMERO.figure, allowing
@@ -10,6 +10,9 @@ This post describes the new features, invites you to try them out on the demo ap
 and provide feedback ahead of their inclusion in the next release. 
 
 <h2>Adding ROIs to image panels</h2>
+
+<img src="https://cloud.githubusercontent.com/assets/900055/9478881/5894a230-4b72-11e5-91c7-6ac2237a0a67.png" 
+  style="width:600px"/>
 
 To add ROIs to panels in the figure, select a single panel, click on the "Labels" tab
 and then click on the "Draw" button under the ROIs header.
@@ -28,6 +31,8 @@ Click "OK" at the bottom of the viewer to save changes to ROIs and close the vie
 
 <h2>Copy, paste & edit ROIs without opening the viewer</h2>
 
+<img src="https://cloud.githubusercontent.com/assets/900055/10795887/a4121e06-7d93-11e5-9955-97aa4adf2592.png"/>
+
 In the "Labels" tab, you can Copy, Paste and Delete all the ROIs on the selected
 image panels using the relevant buttons, without having to open the ROI viewer.
 
@@ -39,8 +44,13 @@ are editing.
 
 <h2>Enhanced cropping features</h2>
 
+<img src="https://cloud.githubusercontent.com/assets/900055/10805078/2d8bdec2-7dc3-11e5-9eb1-04bbef95817b.png"/>
+
 You can now copy and paste the crop region from one image to another,
 using the buttons at the bottom of the "Preview" tab.
+
+<img src="https://cloud.githubusercontent.com/assets/900055/10986059/8bee2720-841e-11e5-8616-081cf40ad4da.png"
+  style="width:600px"/>
 
 The pop-up crop dialog has also been improved to allow you to crop an image based on
 various regions. If the image in the figure has any Rectangular ROIs on it then you
@@ -61,7 +71,7 @@ Conversely, you can also Copy a crop region from one panel, and Paste this to cr
 a new Rectangle ROI on another panel.
 
 
-<h2>Try the ROI features on the demo app, before their relesae</h2>
+<h2>Try the ROI features on the demo app, before their release</h2>
 
 The ROI functionality described here will be in the next release of OMERO.figure 1.2.0.
 However, if you'd like to try this now you can use the demo app at
