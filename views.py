@@ -408,13 +408,6 @@ def list_web_figures(request, conn=None, **kwargs):
     query = "select i.id from Image i where i.id in (:ids)"
     rslt = conn.getQueryService().projection(query, params, conn.SERVICE_OPTS)
     ids = [unwrap(r)[0] for r in rslt]
-    print ids
-
-    print len(thumbIds)
-    print len(ids)
-
-    # {"thumbIds": len(thumbIds), "ids": len(ids)}
-
     for fig in rsp:
         if 'description' in fig:
             desc = fig['description']
