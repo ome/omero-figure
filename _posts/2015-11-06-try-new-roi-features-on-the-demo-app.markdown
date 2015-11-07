@@ -21,7 +21,7 @@ types; currently we support rectangles, lines, arrows and ellipses.
 
 Drawing and editing of ROIs should "just work" as you expect it to: select the type
 of ROI in the toolbar, as well as the line width and colour. Then draw the ROI on the image.
-You can also use the "select" arrow to select and edit existing ROIs.
+You can also use the select arrow to select and edit existing ROIs.
 
 Selected ROIs can be copied, pasted and deleted using the Edit menu options or keyboard shortcuts.
 Copying and pasting can be used to duplicate ROIs on a single image, but also to
@@ -46,6 +46,7 @@ are editing.
 
 <img src="https://cloud.githubusercontent.com/assets/900055/10805078/2d8bdec2-7dc3-11e5-9eb1-04bbef95817b.png"/>
 
+OMERO.figure allows you to crop an image panel by zooming and panning or by using the Crop button.
 You can now copy and paste the crop region from one image to another,
 using the buttons at the bottom of the "Preview" tab.
 
