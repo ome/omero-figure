@@ -340,7 +340,8 @@ with (obj) {
 __p += '\n    ';
  if (disabled) { ;
 __p += '\n        <td>\n            ';
- if(imageId > 0) { print("<img class='small-thumb' src='" + thumbSrc + "' />") } ;
+ if(imageId > 0) { print("<img class='small-thumb' src='" + thumbSrc + "' />") }
+               else { print ("<div class='missingThumb small-thumb'></div>")} ;
 __p += '\n        </td>\n        <td title="This figure is currently open">\n            <div style="width:400px; word-wrap:break-word;">\n                ' +
 ((__t = ( name )) == null ? '' : __t) +
 '\n            </div>\n        </td>\n    ';
@@ -348,7 +349,8 @@ __p += '\n        </td>\n        <td title="This figure is currently open">\n   
 __p += '\n        <td>\n            <a href="' +
 ((__t = ( url )) == null ? '' : __t) +
 '">\n                ';
- if(imageId > 0) { print("<img class='small-thumb' src='" + thumbSrc + "' />") } ;
+ if(imageId > 0) { print("<img class='small-thumb' src='" + thumbSrc + "' />") } 
+                    else { print ("<div class='missingThumb small-thumb'></div>")} ;
 __p += '\n            </a>\n        </td>\n        <td>\n            <div style="width:400px; word-wrap:break-word;">\n                <a href="' +
 ((__t = ( url )) == null ? '' : __t) +
 '">' +
