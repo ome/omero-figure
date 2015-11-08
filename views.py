@@ -402,7 +402,7 @@ def list_web_figures(request, conn=None, **kwargs):
 
         rsp.append(figFile)
 
-    # remove image Ids if images no longer exist (to prevent 404 for thumbnails)
+    # remove image Ids if images deleted (to prevent 404 for thumbnails)
     params = omero.sys.ParametersI()
     params.addIds(list(thumbIds))
     query = "select i.id from Image i where i.id in (:ids)"
