@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Try new ROI features on the demo app"
-date:   2015-11-06
+date:   2015-11-09
 ---
 
 As you may have heard, we are currently adding ROI support to OMERO.figure, allowing
