@@ -26,7 +26,7 @@ import time
 from omeroweb.webgateway.marshal import imageMarshal
 from omeroweb.webclient.views import run_script
 from django.core.urlresolvers import reverse
-from omero.rtypes import wrap, rlong, rstring
+from omero.rtypes import wrap, rlong, rstring, unwrap
 import omero
 from omero.gateway import OriginalFileWrapper
 
@@ -374,6 +374,7 @@ def list_web_figures(request, conn=None, **kwargs):
     # fileAnns.sort(key=lambda x: x.creationEventDate(), reverse=True)
 
     rsp = []
+    thumbIds = set()
     for fa in fileAnns:
         owner = fa.getDetails().getOwner()
         cd = fa.creationEventDate()
@@ -394,12 +395,25 @@ def list_web_figures(request, conn=None, **kwargs):
             # Overwrite the file name. (json supports unicode file name)
             if 'name' in description:
                 figFile['name'] = description['name']
+            if 'imageId' in description:
+                thumbIds.add(description['imageId'])
         except:
             pass
 
         rsp.append(figFile)
 
-    rsp.sort(key=lambda x: x['name'].lower())
+    # remove image Ids if images deleted (to prevent 404 for thumbnails)
+    params = omero.sys.ParametersI()
+    params.addIds(list(thumbIds))
+    query = "select i.id from Image i where i.id in (:ids)"
+    rslt = conn.getQueryService().projection(query, params, conn.SERVICE_OPTS)
+    ids = [unwrap(r)[0] for r in rslt]
+    for fig in rsp:
+        if 'description' in fig:
+            desc = fig['description']
+            if 'imageId' in desc:
+                if desc['imageId'] not in ids and 'baseUrl' not in desc:
+                    desc['imageId'] = -1
 
     return HttpResponse(json.dumps(rsp), content_type='json')
 

@@ -679,6 +679,10 @@
         height: 40px;
     }
 
+    .missingThumb {
+        background: #eeeeee;
+    }
+
     .table-sort-btn {
         padding-left: 3px;
         padding-right: 3px;
