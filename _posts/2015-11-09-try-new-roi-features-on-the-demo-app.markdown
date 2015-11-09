@@ -7,7 +7,10 @@ date:   2015-11-09
 As you may have heard, we are currently adding ROI support to OMERO.figure, allowing
 you to draw ROIs on image panels and copy & paste these between images.
 This post describes the new features and invites you to try them out on the demo app
-and provide feedback ahead of their inclusion in the next release. 
+and provide feedback ahead of their inclusion in the next release.
+**NB**: It should be noted that ROIs created in OMERO.figure are saved within the figure
+itself in the same way as labels & scalebars. They can't yet be saved back to the
+OMERO server, although we may add this functionality in due course.
 
 <h2>Adding, editing and deleting ROIs on image panels</h2>
 
