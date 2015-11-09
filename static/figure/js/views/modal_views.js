@@ -450,9 +450,7 @@
             }
             if (invalidIds.length > 0) {
                 var plural = invalidIds.length > 1 ? "s" : "";
-                figureConfirmDialog("Invalid ID" + plural,
-                                    "Could not add image with invalid ID" + plural + ": " + invalidIds.join(", "),
-                                    ["OK"]);
+                alert("Could not add image with invalid ID" + plural + ": " + invalidIds.join(", "));
             }
         },
 
