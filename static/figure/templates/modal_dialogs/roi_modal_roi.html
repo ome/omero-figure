@@ -10,12 +10,16 @@
                 style="position: absolute; top: <%= top %>px; left: <%= left %>px; width: <%= img_w %>px; height: <%= img_h %>px" src="<%= src %>" />
         </div>
     </td>
+    <% if (zStart) { %>
     <td>
         <%= zStart %>
         <% if (zStart !== zEnd) print(" - " + zEnd); %>
     </td>
+    <% } %>
+    <% if (tStart) { %>
     <td>
         <%= tStart %>
         <% if (tStart !== tEnd) print(" - " + tEnd); %>
     </td>
+    <% } %>
 </tr>

@@ -234,15 +234,33 @@
                     <h4 class="modal-title">Crop to Region</h4>
                 </div>
                 <form class="cropModalForm" role="form">
-                    <div class="modal-body" style="height: 500px; max-height: 500px">
-                        <div class="col-xs-4" style="height: 500px; overflow: auto">
+                    <div class="modal-body" style="height: 500px; max-height: 500px; padding-bottom:0">
+                        <div class="col-xs-4" style="height: 485px; overflow: auto">
                             <p>
                                 Click and drag on the image to choose a crop region or
                                 pick an ROI from the list below.
                             </p>
-                            <h4>ROIs</h4>
-                            <table class="roiPicker table table-condensed">
-                                <thead><td></td><td>Z-index</td><td>T-index</td></thead>
+                            <h4>ROIs:</h4>
+                            <table class="roiPicker roisFromFigure table table-condensed">
+                                <thead><td>
+                                    <strong title="Crop to rectangles on this image in the figure">from Figure</strong>
+                                </td><td></td><td></td></thead>
+                                <tbody>
+                                <!-- ROIs loaded here... -->
+                                </tbody>
+                            </table>
+                            <table class="roiPicker roisFromClipboard table table-condensed">
+                                <thead><td>
+                                    <strong title="Crop to rectangles copied to clipboard">from Clipboard</strong>
+                                </td><td></td><td></td></thead>
+                                <tbody>
+                                <!-- ROIs loaded here... -->
+                                </tbody>
+                            </table>
+                            <table class="roiPicker roisFromOMERO table table-condensed">
+                                <thead><td>
+                                    <strong title="Crop to rectangles saved on this image on the OMERO server">from OMERO</strong>
+                                </td><td>Z-index</td><td>T-index</td></thead>
                                 <tbody>
                                 <!-- ROIs loaded here... -->
                                 </tbody>
@@ -794,15 +812,17 @@
                     <div id="channel_sliders"></div>
                     <div class='clearfix'></div>
                     <div class='tab-footer'>
-                        <div class="col-sm-2" style="padding: 8px 5px 2px">Zoom:</div>
-                        <div class="col-sm-6 no-padding">
+                        <div class="col-sm-2 no-padding">
+                            <h5>Zoom</h5>
+                        </div>
+                        <div class="col-sm-8 no-padding">
                             <div id="vp_zoom_slider"></div>
                         </div>
-                        <div id="vp_zoom_value" class="col-sm-4" style="padding: 8px 5px 2px"></div>
+                        <div id="vp_zoom_value" class="col-sm-2" style="padding: 8px 0 0; text-align:right"></div>
+                        <div class='clearfix'></div>
                         <div id="reset-zoom-view">
                             <!-- button added by ZoomView render() -->
                         </div>
-                        <div class='clearfix'></div>
                     </div>
                 </div>
 
@@ -810,12 +830,11 @@
                 <!-- events for this pane handled by LabelsPanelView -->
                 <div class="tab-pane" id="labelsTab">
 
-                    <h5 class="pull-left">ROIs</h5>
                     <div id="edit_rois_form"></div>
 
                     <div class="clearfix">
                     </div>
-                    <hr style="margin-top: 6px"/>
+                    <hr/>
 
                     <h5>Scalebar</h5>
                     <div id="scalebar_form"></div>
@@ -826,8 +845,6 @@
                     <form class="new-label-form form-inline" role="form">
 
                     </form>
-
-                    <hr />
 
                     <h5>Edit Labels</h5>
                     <div id="selected_panels_labels"></div>

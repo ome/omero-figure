@@ -156,6 +156,28 @@
             return false;
         },
 
+        setROIStrokeWidth: function(width) {
+            this.setROIAttr('strokeWidth', width);
+        },
+
+        setROIColor: function(color) {
+            this.setROIAttr('strokeColor', '#' + color);
+        },
+
+        setROIAttr: function(attr, value) {
+            var old = this.get('shapes');
+            if (!old || old.length === 0) {
+                return;
+            }
+            var rois = [];
+            old.forEach(function(roi){
+                var xtra = {};
+                xtra['' + attr] = value;
+                rois.push($.extend(true, {}, roi, xtra));
+            });
+            this.save('shapes', rois);
+        },
+
         // Adds list of shapes to panel (same logic as for labels below)
         add_shapes: function(shapes) {
             var old = this.get('shapes'),
@@ -415,11 +437,12 @@
         },
 
         // returns the current viewport as a Rect {x, y, width, height}
-        getViewportAsRect: function() {
-            var zoom = this.get('zoom'),
-                dx = this.get('dx'),
-                dy = this.get('dy'),
-                width = this.get('width'),
+        getViewportAsRect: function(zoom, dx, dy) {
+            zoom = zoom !== undefined ? zoom : this.get('zoom');
+            dx = dx !== undefined ? dx : this.get('dx');
+            dy = dy !== undefined ? dy : this.get('dy');
+
+            var width = this.get('width'),
                 height = this.get('height'),
                 orig_width = this.get('orig_width'),
                 orig_height = this.get('orig_height');
