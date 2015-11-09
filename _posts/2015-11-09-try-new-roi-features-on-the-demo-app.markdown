@@ -51,7 +51,7 @@ are editing.
 
 OMERO.figure allows you to crop an image panel by zooming and panning or by using the Crop button.
 You can now copy and paste the crop region from one image to another,
-using the buttons at the bottom of the "Preview" tab.
+using the buttons at the bottom of the Preview tab.
 
 <img src="https://cloud.githubusercontent.com/assets/900055/10986059/8bee2720-841e-11e5-8616-081cf40ad4da.png"
   style="width:600px"/>
