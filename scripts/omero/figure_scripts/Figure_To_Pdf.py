@@ -277,7 +277,10 @@ class ShapeToPdfExport(object):
 
         p = self.canvas.beginPath()
 
-        lineAngle = atan(dx / dy)
+        if dy == 0:
+            lineAngle = radians(90)
+        else:
+            lineAngle = atan(dx / dy)
         f = -1
         if dy < 0:
             f = 1
@@ -429,7 +432,10 @@ class ShapeToPilExport(object):
         # Do some trigonometry to get the line angle can calculate arrow points
         dx = x2 - x1
         dy = y2 - y1
-        lineAngle = atan(dx / dy)
+        if dy == 0:
+            lineAngle = radians(90)
+        else:
+            lineAngle = atan(dx / dy)
         f = -1
         if dy < 0:
             f = 1
