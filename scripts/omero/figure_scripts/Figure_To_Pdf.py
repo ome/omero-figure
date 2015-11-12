@@ -276,11 +276,15 @@ class ShapeToPdfExport(object):
         self.canvas.setLineWidth(strokeWidth)
 
         p = self.canvas.beginPath()
-
-        lineAngle = atan(dx / dy)
         f = -1
-        if dy < 0:
-            f = 1
+        if dy == 0:
+            lineAngle = radians(90)
+            if dx < 0:
+                f = 1
+        else:
+            lineAngle = atan(dx / dy)
+            if dy < 0:
+                f = 1
 
         # Angle of arrow head is 0.8 radians (0.4 either side of lineAngle)
         arrowPoint1x = x2 + (f * sin(lineAngle - 0.4) * headSize)
@@ -429,7 +433,10 @@ class ShapeToPilExport(object):
         # Do some trigonometry to get the line angle can calculate arrow points
         dx = x2 - x1
         dy = y2 - y1
-        lineAngle = atan(dx / dy)
+        if dy == 0:
+            lineAngle = radians(90)
+        else:
+            lineAngle = atan(dx / dy)
         f = -1
         if dy < 0:
             f = 1
