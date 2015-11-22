@@ -407,7 +407,8 @@ def list_web_figures(request, conn=None, **kwargs):
         params = omero.sys.ParametersI()
         params.addIds(list(thumbIds))
         query = "select i.id from Image i where i.id in (:ids)"
-        rslt = conn.getQueryService().projection(query, params, conn.SERVICE_OPTS)
+        qs = conn.getQueryService()
+        rslt = qs.projection(query, params, conn.SERVICE_OPTS)
         ids = [unwrap(r)[0] for r in rslt]
         for fig in rsp:
             if 'description' in fig:
