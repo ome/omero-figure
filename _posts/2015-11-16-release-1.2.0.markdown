@@ -25,7 +25,9 @@ Many of the new ROI features and workflows are described in the [previous blog p
 
 <h3>Known Issues</h3>
 
- - The ROI viewer for drawing and editing ROIs does not support rotated image panels. Therefore, rotated panels are displayed without rotation in the ROI viewer.
+ - The ROI viewer for drawing and editing ROIs does not support rotated image panels. Therefore, rotated panels are displayed without rotation while adding ROIs in the ROI viewer.
+
+ - Rectangle ROIs cannot be rotated. Therefore, crop regions from rotated images will lose their rotation when pasted to create ROI rectangles.
 
  - ROIs extending outside of panels are not cropped to the panel when exported to PDF.
 
