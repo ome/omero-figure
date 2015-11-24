@@ -10,13 +10,9 @@ This release introduces support for ROIs on figure panels.
 <h3>Key features</h3>
 
  - ROIs can be drawn on individual panels
-
  - Currently supports rectangle, line, arrow and ellipse
-
  - ROIs can be copied and pasted between panels
-
  - Rectangles can be pasted as a crop region on another panel
-
  - **NB:** ROIs drawn in OMERO.figure cannot be saved as new ROIs on the OMERO server and it is not yet possible to load ROIs from OMERO to use in OMERO.figure.
 
 Many of the new ROI features and workflows are described in the [previous blog post]({{ site.baseurl }}/2015/11/09/try-new-roi-features-on-the-demo-app.html) and a full demonstration of these new features can be viewed below:
@@ -26,11 +22,8 @@ Many of the new ROI features and workflows are described in the [previous blog p
 <h3>Known Issues</h3>
 
  - The ROI viewer for drawing and editing ROIs does not support rotated image panels. Therefore, rotated panels are displayed without rotation while adding ROIs in the ROI viewer.
-
  - Rectangle ROIs cannot be rotated. Therefore, crop regions from rotated images will lose their rotation when pasted to create ROI rectangles.
-
  - ROIs extending outside of panels are not cropped to the panel when exported to PDF.
-
  - Both of these issues are demonstrated in the video above.
 
 
