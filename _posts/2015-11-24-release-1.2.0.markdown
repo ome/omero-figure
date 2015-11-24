@@ -25,7 +25,7 @@ Many of the new ROI features and workflows are described in the [previous blog p
  - The ROI viewer for drawing and editing ROIs does not support rotated image panels. Therefore, rotated panels are displayed without rotation while adding ROIs in the ROI viewer.
  - Rectangle ROIs cannot be rotated. Therefore, crop regions from rotated images will lose their rotation when pasted to create ROI rectangles.
  - ROIs extending outside of panels are not cropped to the panel when exported to PDF.
- - Both of these issues are demonstrated in the video above.
+ - Some of these issues are demonstrated in the video above.
 
 
 Grab the release from the OMERO.figure [1.2.0 download page](http://downloads.openmicroscopy.org/figure/1.2.0/).
