@@ -32,14 +32,14 @@
 
     <link rel="stylesheet" href="{% static 'figure/3rdparty/bootstrap3/css/bootstrap.css' %}">
     <link rel="stylesheet" href="{% static 'figure/3rdparty/bootstrap-colorpicker/css/bootstrap-colorpicker.min.css' %}">
-    <link rel="stylesheet" href="{% static 'figure/css/figure.css' %}">
+    <link rel="stylesheet" href="{% static 'figure/css/figure.css' %}?version=1.2.0">
 
     {% include "webgateway/base/includes/script_src_jquery.html" %}
     {% include "webgateway/base/includes/jquery-ui.html" %}
 
     <script>
 
-    var RELEASE_VERSION = "v1.2.0-rc3";
+    var RELEASE_VERSION = "v1.2.0";
 
     var BASE_WEBFIGURE_URL = "{% url 'figure_index' %}",
         SAVE_WEBFIGURE_URL = "{% url 'save_web_figure' %}",
@@ -866,7 +866,7 @@
     <script src="{% static 'figure/3rdparty/bootstrap-colorpicker/js/bootstrap-colorpicker.min.js' %}"></script>
     <script src="{% static 'figure/3rdparty/markdown-browser-0.6.0-beta1/markdown.min.js' %}"></script>
     <script src="{% static 'figure/3rdparty/shape-editor.js' %}"></script>
-    <script src="{% static 'figure/js/templates.js' %}"></script>
+    <script src="{% static 'figure/js/templates.js' %}?version=1.2.0"></script>
 
 
     <!-- All these can be concatenated with '$ grunt concat' into figure.js....-->
