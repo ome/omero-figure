@@ -5,7 +5,7 @@ date:   2015-11-24
 ---
 
 We are pleased to announce the release of OMERO.figure 1.2.0.
-This release introduces support for lightweight ROIs on figure panels.
+This release introduces support for illustrative ROIs on figure panels.
 
 **NB:** ROIs drawn in OMERO.figure cannot yet be saved as new ROIs on the OMERO server and it is not yet possible to load ROIs from OMERO to use in OMERO.figure.
 
