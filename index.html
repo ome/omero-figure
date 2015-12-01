@@ -166,6 +166,20 @@ title: OMERO.figure
                 $ path/to/bin/omero script upload omero/figure_scripts/Figure_To_Pdf.py --official
               </code>
             </li>
+            <li><strong>Warning: Pillow 3.0.0 bug breaks figure export. </strong><br>
+              PIL (or Pillow) is required for exporting figures and should already be installed as an OMERO.web
+              dependency.
+              We have found that a
+              <a href="https://github.com/python-pillow/Pillow/issues/1524">bug in Pillow 3.0.0</a>
+              causes OMERO.figure export to fail.
+              If you have Pillow 3.0.0 you can fix this by downgrading to Pillow 2.9.0.
+              For example, if you have installed with pip you can downgrade with:
+                <code style="width:700px"><pre>
+$ python -c "import PIL; print PIL.PILLOW_VERSION"
+3.0.0
+$ pip uninstall pillow
+$ pip install pillow==2.9.0</pre></code>
+            </li>
           </ul>
         </p>
 
