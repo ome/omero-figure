@@ -37,6 +37,8 @@ from omeroweb.webclient.decorators import login_required
 JSON_FILEANN_NS = "omero.web.figure.json"
 SCRIPT_PATH = "/omero/figure_scripts/Figure_To_Pdf.py"
 
+from figure import settings
+
 
 def createOriginalFileFromFileObj(
         conn, fo, path, name, fileSize, mimetype=None, ns=None):
@@ -99,13 +101,16 @@ def index(request, fileId=None, conn=None, **kwargs):
     and lay them out in canvas by dragging & resizing etc
     """
 
+    version = settings.OMERO_FIGURE_VERSION
+
     scriptService = conn.getScriptService()
     sId = scriptService.getScriptID(SCRIPT_PATH)
     scriptMissing = sId <= 0
     userFullName = conn.getUser().getFullName()
 
     context = {'scriptMissing': scriptMissing,
-               'userFullName': userFullName}
+               'userFullName': userFullName,
+               'version': version}
     return render(request, "figure/index.html", context)
 
 
