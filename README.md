@@ -29,12 +29,18 @@ Install Node from https://nodejs.org, then:
     $ cd figure
     $ npm install
 
+Install Grunt CLI as described on http://gruntjs.com/using-the-cli.
 
 To compile jst templates:
 
 	$ grunt jst
 
-And to have this run whenever templates are edited:
+To concatenate js files into a single figure.js file that is used in the app:
+
+    $ grunt concat
+
+During development, you'll want to have both of these run whenever the relevant are edited.
+This can be achieved with:
 
 	$ grunt watch
 
