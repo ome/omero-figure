@@ -39,12 +39,15 @@ module.exports = function (grunt) {
       }
     },
     watch: {
-      scripts: {
+      src: {
+        // we compile html templates with 'jst'
         files: ['static/figure/templates/*.html', 'static/figure/templates/**/*.html'],
-        tasks: ['jst'],
-        // options: {
-        //   spawn: false,
-        // },
+        tasks: ['jst']
+      },
+      scripts: {
+        // and concatonate js files into a single figure.js
+        files: ['static/figure/js/models/*.js', 'static/figure/js/views/*.js', 'static/figure/js/app.js'],
+        tasks: ['concat']
       },
     },
     concat: {
