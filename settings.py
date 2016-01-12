@@ -1,14 +1,17 @@
 
 # This settings.py file will be imported by omero.settings file AFTER it has
 # initialised custom settings.
-# from django.conf import settings
+# See "App Settings" on
+# https://www.openmicroscopy.org/
+#   site/support/omero5.2/developers/Web/CreateApp.html
 
-# ********* WARNING! ***********
-# We can directly manipulate the settings here,
-# but this is a hack and not a robust technique.
-# The recommended way of installing web apps is to use manual
-# configuration as described at
-# https://www.openmicroscopy.org/site/support/omero4/developers/Web/WebclientPlugin.html#plugin-installation
 
-# Don't want this script to show up in the webclient scripts menu
-# settings.SCRIPTS_TO_IGNORE.append("/omero/figure_scripts/Figure_To_Pdf.py")
+def identity(x):
+    return x
+
+
+# import json
+CUSTOM_SETTINGS_MAPPINGS = {
+    "omero.web.figure.version":
+    ["OMERO_FIGURE_VERSION", "1.2.1-dev", identity, None]
+}
