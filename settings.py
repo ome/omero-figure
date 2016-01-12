@@ -13,5 +13,5 @@ def identity(x):
 # import json
 CUSTOM_SETTINGS_MAPPINGS = {
     "omero.web.figure.version":
-    ["OMERO_FIGURE_VERSION", "1.2.0-dev", identity, None]
+    ["OMERO_FIGURE_VERSION", "1.2.1-dev", identity, None]
 }
