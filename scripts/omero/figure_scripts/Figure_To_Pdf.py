@@ -970,8 +970,8 @@ class FigureExport(object):
         x = x - page['x']
         y = y - page['y']
 
-        if not ('scalebar' in panel and 'show' in panel['scalebar']
-                and panel['scalebar']['show']):
+        if not ('scalebar' in panel and 'show' in panel['scalebar'] and
+                panel['scalebar']['show']):
             return
 
         if not ('pixel_size_x' in panel and panel['pixel_size_x'] > 0):

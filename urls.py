@@ -17,12 +17,12 @@
 #
 
 import django
+from figure import views
 if django.VERSION < (1, 6):
     from django.conf.urls.defaults import url, patterns
 else:
     from django.conf.urls import url, patterns
 
-from figure import views
 
 urlpatterns = patterns(
 
