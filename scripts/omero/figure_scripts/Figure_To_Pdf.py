@@ -1587,7 +1587,7 @@ class TiffExport(FigureExport):
             tempLabel = Image.new('RGBA', (txt_w, txt_h), (255, 255, 255, 0))
             textdraw = ImageDraw.Draw(tempLabel)
             textdraw.text((0, 0), text, font=font, fill=rgb)
-            w = tempLabel.rotate(90)
+            w = tempLabel.rotate(90, expand=True)
             # Use label as mask, so transparent part is not pasted
             y = y - (w.size[1]/2)
             self.tiffFigure.paste(w, (x, y), mask=w)
