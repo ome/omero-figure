@@ -1,5 +1,4 @@
 *.pyc
 .DS_Store
 demo/static/figure/
-demo/static/figure.js
 node_modules/
