@@ -58,7 +58,7 @@ module.exports = function (grunt) {
       },
       js: {
         src: ["<banner>", 'static/figure/js/models/*.js', 'static/figure/js/views/*.js', 'static/figure/js/app.js'],
-        dest: 'static/figure.js',
+        dest: 'static/figure/figure.js',
       },
     },
     replace: {
@@ -67,6 +67,7 @@ module.exports = function (grunt) {
           patterns: [
             {
               json: {
+                '{{ version }}': '<%= pkg.version %>',
                 '{% load url from future %}': '',
                 '$.get("{% url \'keepalive_ping\' %}");': '',
                 '{% include "webgateway/base/includes/script_src_jquery.html" %}':
@@ -98,11 +99,7 @@ module.exports = function (grunt) {
                     "http://figure.openmicroscopy.org/",
                 'title="Back to OMERO.webclient"':
                     'title="Back to figure.openmicroscopy.org"',
-                // figure.js (after concat) is in same folder...
-                // and need to uncomment links to it
-                '@@-->': '',
-                '@--': '@-->',
-                "{% static 'figure/js/figure.js' %}": 'figure.js',
+                "{% static 'figure/figure.js' %}": 'figure.js',
                 // in figure.js
                 'if (figureModel.get("unsaved")) {':
                     'if (false) {',
@@ -124,14 +121,19 @@ module.exports = function (grunt) {
           usePrefix: false,
         },
         files: [
-          {expand: true, flatten: true, src: ['templates/figure/index.html', 'static/figure.js'], dest: 'demo/'}
+          {expand: true, flatten: true, src: ['templates/figure/index.html', 'static/figure/figure.js'], dest: 'demo/'}
         ]
       }
     },
     copy: {
       main: {
         files: [
-          {expand: true, src: ['static/**'], dest: 'demo/'},
+          {
+            expand: true,
+            src: ['static/figure/3rdparty/**',
+                  'static/figure/css/**',
+                  'static/figure/images/**',
+                  'static/figure/js/templates.js'], dest: 'demo/'},
         ]
       },
     },
@@ -149,6 +151,8 @@ module.exports = function (grunt) {
   grunt.registerTask('default', ['test'])
 
   // create a static 'demo' version of app
+  // creates demo/index.html and demo/figure.js via 'replace' command
+  // then copies over other static js, css and images to demo/static/figure/..
   grunt.registerTask('demo', [
       'concat', 'replace', 'copy'
   ]);
