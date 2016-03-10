@@ -34,10 +34,10 @@ from cStringIO import StringIO
 
 from omeroweb.webclient.decorators import login_required
 
+from figure import settings
+
 JSON_FILEANN_NS = "omero.web.figure.json"
 SCRIPT_PATH = "/omero/figure_scripts/Figure_To_Pdf.py"
-
-from figure import settings
 
 
 def createOriginalFileFromFileObj(
