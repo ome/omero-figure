@@ -378,6 +378,8 @@ def list_web_figures(request, conn=None, **kwargs):
         "FileAnnotation", attributes={'ns': JSON_FILEANN_NS}))
     # fileAnns.sort(key=lambda x: x.creationEventDate(), reverse=True)
 
+    start = time.time()
+
     rsp = []
     thumbIds = set()
     for fa in fileAnns:
@@ -406,6 +408,43 @@ def list_web_figures(request, conn=None, **kwargs):
             pass
 
         rsp.append(figFile)
+    print len(rsp)
+    print time.time() - start
+
+    start = time.time()
+    params = omero.sys.ParametersI()
+    params.addString('ns', rstring(JSON_FILEANN_NS))
+    q = """select new map(obj.id as id,
+                obj.description as desc,
+                o.firstName as firstName,
+                o.lastName as lastName,
+                e.time as time,
+                f.name as name,
+                obj as obj_details_permissions)
+            from FileAnnotation obj
+            join obj.details.owner as o
+            join obj.details.creationEvent as e
+            join obj.file.details as p
+            join obj.file as f where obj.ns=:ns"""
+
+    qs = conn.getQueryService()
+    fileAnns = qs.projection(q, params, conn.SERVICE_OPTS)
+    t = []
+    for fileAnn in fileAnns:
+        fa = unwrap(fileAnn[0])
+        date = datetime.fromtimestamp(unwrap(fa['time'])/1000)
+
+        figFile = {
+            'id': unwrap(fa['id']),
+            'name': unwrap(fa['name']),
+            'description': unwrap(fa['desc']),
+            'ownerFullName': "%s %s" % (unwrap(fa['firstName']), unwrap(fa['lastName'])),
+            'creationDate': time.mktime(date.timetuple()),
+            'canEdit': fa['obj_details_permissions'].get('canEdit')
+        }
+        t.append(figFile)
+    print len(t)
+    print time.time() - start
 
     if len(thumbIds) > 0:
         # remove image Ids if images deleted (to prevent 404 for thumbnails)
