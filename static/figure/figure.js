@@ -3163,6 +3163,8 @@ var FileListView = Backbone.View.extend({
 
     refresh_files: function(event) {
         // will trigger sort & render()
+        var loadingHtml = "<tr><td colspan='4' style='text-align:center'><h1><small>Loading Files...</small></h1></td></tr>"
+        this.$tbody.html(loadingHtml);
         this.model.fetch();
     },
 
