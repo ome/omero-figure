@@ -3144,16 +3144,9 @@ var FileListView = Backbone.View.extend({
             // When the dialog opens, we load files...
             var currentFileId = self.figureModel.get('fileId');
             if (self.model.length === 0) {
-                self.model.fetch({success: function(fileList){
-                    // Don't allow opening of current figure
-                    if (currentFileId) {
-                        self.model.disable(currentFileId);
-                    }
-                }});
+                self.refresh_files();
             } else {
-                if (currentFileId) {
-                    self.model.disable(currentFileId);
-                }
+                self.render();
             }
         });
     },
@@ -3229,7 +3222,8 @@ var FileListView = Backbone.View.extend({
     render:function () {
         var self = this,
             filter = {},
-            filterVal = this.$fileFilter.val();
+            filterVal = this.$fileFilter.val(),
+            currentFileId = this.figureModel.get('fileId');
         if (this.owner && this.owner.length > 0) {
             filter.owner = this.owner;
         }
@@ -3245,6 +3239,8 @@ var FileListView = Backbone.View.extend({
         }
         _.each(this.model.models, function (file) {
             if (file.isVisible(filter)) {
+                var disabled = currentFileId === file.get('id') ? true: false;
+                file.set('disabled', disabled);
                 var e = new FileListItemView({model:file}).render().el;
                 self.$tbody.prepend(e);
             }
@@ -3304,18 +3300,23 @@ var FileListItemView = Backbone.View.extend({
     render:function () {
         var json = this.model.toJSON(),
             baseUrl = json.baseUrl;
-        // Description may be json encoded...
-        try {
-            var d = JSON.parse(json.description);
-            // ...with imageId and name (unicode supported)
-            if (d.imageId) {
-                json.imageId = d.imageId;
+        if (!json.imageId){
+            // Description may be json encoded...
+            try {
+                var d = JSON.parse(json.description);
+                // ...with imageId and name (unicode supported)
+                if (d.imageId) {
+                    json.imageId = d.imageId;
+                    // we cache this so we don't have to parse() on each render()
+                    this.model.set('imageId', d.imageId);
+                }
+                if (d.name) {
+                    json.name = d.name;
+                    this.model.set('name', d.name);
+                }
+            } catch (err) {
+                console.log('failed to parse json', json.description);
             }
-            if (d.name) {
-                json.name = d.name;
-            }
-        } catch (err) {
-            console.log('failed to parse json', json.description);
         }
         baseUrl = baseUrl || BASE_WEBFIGURE_URL.slice(0, -1);  // remove last /
         json.thumbSrc = baseUrl + "/render_thumbnail/" + json.imageId + "/";
