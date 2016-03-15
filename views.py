@@ -374,44 +374,6 @@ def make_web_figure(request, conn=None, **kwargs):
 @login_required()
 def list_web_figures(request, conn=None, **kwargs):
 
-    fileAnns = list(conn.getObjects(
-        "FileAnnotation", attributes={'ns': JSON_FILEANN_NS}))
-    # fileAnns.sort(key=lambda x: x.creationEventDate(), reverse=True)
-
-    start = time.time()
-
-    rsp = []
-    thumbIds = set()
-    for fa in fileAnns:
-        owner = fa.getDetails().getOwner()
-        cd = fa.creationEventDate()
-
-        figFile = {
-            'id': fa.id,
-            'name': fa.getFile().getName(),
-            'creationDate': time.mktime(cd.timetuple()),
-            'ownerFullName': owner.getFullName(),
-            'canEdit': fa.getFile().canEdit()
-        }
-
-        # We use the 'description' field to store json - try to validate...
-        try:
-            desc = fa.getDescription()
-            description = json.loads(desc)
-            figFile['description'] = description
-            # Overwrite the file name. (json supports unicode file name)
-            if 'name' in description:
-                figFile['name'] = description['name']
-            if 'imageId' in description:
-                thumbIds.add(description['imageId'])
-        except:
-            pass
-
-        rsp.append(figFile)
-    print len(rsp)
-    print time.time() - start
-
-    start = time.time()
     params = omero.sys.ParametersI()
     params.addString('ns', rstring(JSON_FILEANN_NS))
     q = """select new map(obj.id as id,
@@ -429,37 +391,21 @@ def list_web_figures(request, conn=None, **kwargs):
 
     qs = conn.getQueryService()
     fileAnns = qs.projection(q, params, conn.SERVICE_OPTS)
-    t = []
+    rsp = []
     for fileAnn in fileAnns:
         fa = unwrap(fileAnn[0])
         date = datetime.fromtimestamp(unwrap(fa['time'])/1000)
-
+        firstName = unwrap(fa['firstName'])
+        lastName = unwrap(fa['lastName'])
         figFile = {
             'id': unwrap(fa['id']),
             'name': unwrap(fa['name']),
             'description': unwrap(fa['desc']),
-            'ownerFullName': "%s %s" % (unwrap(fa['firstName']), unwrap(fa['lastName'])),
+            'ownerFullName': "%s %s" % (firstName, lastName),
             'creationDate': time.mktime(date.timetuple()),
             'canEdit': fa['obj_details_permissions'].get('canEdit')
         }
-        t.append(figFile)
-    print len(t)
-    print time.time() - start
-
-    if len(thumbIds) > 0:
-        # remove image Ids if images deleted (to prevent 404 for thumbnails)
-        params = omero.sys.ParametersI()
-        params.addIds(list(thumbIds))
-        query = "select i.id from Image i where i.id in (:ids)"
-        qs = conn.getQueryService()
-        rslt = qs.projection(query, params, conn.SERVICE_OPTS)
-        ids = [unwrap(r)[0] for r in rslt]
-        for fig in rsp:
-            if 'description' in fig:
-                desc = fig['description']
-                if 'imageId' in desc:
-                    if desc['imageId'] not in ids and 'baseUrl' not in desc:
-                        desc['imageId'] = -1
+        rsp.append(figFile)
 
     return HttpResponse(json.dumps(rsp), content_type='json')
 
