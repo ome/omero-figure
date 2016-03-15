@@ -36,6 +36,14 @@ from omeroweb.webclient.decorators import login_required
 
 from figure import settings
 
+try:
+    from PIL import Image
+except:
+    try:
+        import Image
+    except:
+        pass
+
 JSON_FILEANN_NS = "omero.web.figure.json"
 SCRIPT_PATH = "/omero/figure_scripts/Figure_To_Pdf.py"
 
@@ -408,6 +416,19 @@ def list_web_figures(request, conn=None, **kwargs):
         rsp.append(figFile)
 
     return HttpResponse(json.dumps(rsp), content_type='json')
+
+
+def defaultThumbnail(size=(120, 120)):
+    """ Provide a placeholder thumbnail. Used in urls.py"""
+    if isinstance(size, int):
+        size = (size, size)
+    if len(size) == 1:
+        size = (size[0], size[0])
+    img = Image.new("RGBA", size, (238, 238, 238))
+    f = StringIO()
+    img.save(f, "PNG")
+    f.seek(0)
+    return f.read()
 
 
 @login_required()

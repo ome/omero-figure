@@ -97,7 +97,7 @@ var FileListView = Backbone.View.extend({
 
     el: $("#openFigureModal"),
 
-    initialize:function () {
+    initialize:function (options) {
         this.$tbody = $('tbody', this.$el);
         this.$fileFilter = $('#file-filter');
         this.owner = USER_FULL_NAME;
@@ -105,6 +105,26 @@ var FileListView = Backbone.View.extend({
         // we automatically 'sort' on fetch, add etc.
         this.model.bind("sync remove sort", this.render, this);
         this.$fileFilter.val("");
+
+        // we only need this to know the currently opened file
+        this.figureModel = options.figureModel;
+
+        $("#openFigureModal").bind("show.bs.modal", function(){
+            // When the dialog opens, we load files...
+            var currentFileId = self.figureModel.get('fileId');
+            if (self.model.length === 0) {
+                self.model.fetch({success: function(fileList){
+                    // Don't allow opening of current figure
+                    if (currentFileId) {
+                        self.model.disable(currentFileId);
+                    }
+                }});
+            } else {
+                if (currentFileId) {
+                    self.model.disable(currentFileId);
+                }
+            }
+        });
     },
 
     events: {
@@ -253,7 +273,20 @@ var FileListItemView = Backbone.View.extend({
     render:function () {
         var json = this.model.toJSON(),
             baseUrl = json.baseUrl;
-        baseUrl = baseUrl || WEBGATEWAYINDEX.slice(0, -1);  // remove last /
+        // Description may be json encoded...
+        try {
+            var d = JSON.parse(json.description);
+            // ...with imageId and name (unicode supported)
+            if (d.imageId) {
+                json.imageId = d.imageId;
+            }
+            if (d.name) {
+                json.name = d.name;
+            }
+        } catch (err) {
+            console.log('failed to parse json', json.description);
+        }
+        baseUrl = baseUrl || BASE_WEBFIGURE_URL.slice(0, -1);  // remove last /
         json.thumbSrc = baseUrl + "/render_thumbnail/" + json.imageId + "/";
         json.url = BASE_WEBFIGURE_URL + "file/" + json.id;
         json.formatDate = this.formatDate;

@@ -12,8 +12,7 @@
     <% } else { %>
         <td>
             <a href="<%= url %>">
-                <% if(imageId > 0) { print("<img class='small-thumb' src='" + thumbSrc + "' />") } 
-                    else { print ("<div class='missingThumb small-thumb'></div>")} %>
+                <img class='small-thumb' src='<%= thumbSrc %>' />
             </a>
         </td>
         <td>
