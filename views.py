@@ -136,9 +136,14 @@ def imgData_json(request, imageId, conn=None, **kwargs):
     rv = imageMarshal(image, request=request)
 
     if unitsSupport:
+        # Add extra parameters with units data
+        # NB ['pixel_size']['x'] will have size in MICROMETER
+        px = image.getPrimaryPixels().getPhysicalSizeX()
+        rv['pixel_size']['valueX'] = px.getValue()
         rv['pixel_size']['symbolX'] = px.getSymbol()
         rv['pixel_size']['unitX'] = str(px.getUnit())
         py = image.getPrimaryPixels().getPhysicalSizeY()
+        rv['pixel_size']['valueY'] = py.getValue()
         rv['pixel_size']['symbolY'] = py.getSymbol()
         rv['pixel_size']['unitY'] = str(py.getUnit())
     sizeT = image.getSizeT()
