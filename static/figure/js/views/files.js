@@ -282,8 +282,8 @@ var FileListItemView = Backbone.View.extend({
                     this.model.set('imageId', d.imageId);
                 }
                 if (d.name) {
-                    json.name = d.name;
-                    this.model.set('name', d.name);
+                    json.name = _.escape(d.name);
+                    this.model.set('name', json.name);
                 }
             } catch (err) {
                 console.log('failed to parse json', json.description);
