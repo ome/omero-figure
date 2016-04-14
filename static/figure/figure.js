@@ -3074,9 +3074,13 @@ var FigureFile = Backbone.Model.extend({
             }
         }
         if (filter.name) {
-            if (this.get('name').toLowerCase().indexOf(filter.name) < 0) {
-                return false;
-            }
+            // Search for files that have all words in
+            var name = this.get('name').toLowerCase();
+            var words = $.trim(filter.name).split(" ");
+            var visible = words.reduce(function(prev, t){
+                return prev && name.indexOf(t) > -1
+            }, true);
+            return visible;
         }
         return true;
     }

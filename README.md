@@ -39,7 +39,7 @@ To concatenate js files into a single figure.js file that is used in the app:
 
     $ grunt concat
 
-During development, you'll want to have both of these run whenever the relevant are edited.
+During development, you'll want to have both of these run whenever the relevant files are edited.
 This can be achieved with:
 
 	$ grunt watch
