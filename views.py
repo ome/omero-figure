@@ -36,6 +36,14 @@ from omeroweb.webclient.decorators import login_required
 
 from figure import settings
 
+try:
+    from PIL import Image
+except:
+    try:
+        import Image
+    except:
+        pass
+
 JSON_FILEANN_NS = "omero.web.figure.json"
 SCRIPT_PATH = "/omero/figure_scripts/Figure_To_Pdf.py"
 
@@ -379,55 +387,53 @@ def make_web_figure(request, conn=None, **kwargs):
 @login_required()
 def list_web_figures(request, conn=None, **kwargs):
 
-    fileAnns = list(conn.getObjects(
-        "FileAnnotation", attributes={'ns': JSON_FILEANN_NS}))
-    # fileAnns.sort(key=lambda x: x.creationEventDate(), reverse=True)
+    params = omero.sys.ParametersI()
+    params.addString('ns', rstring(JSON_FILEANN_NS))
+    q = """select new map(obj.id as id,
+                obj.description as desc,
+                o.firstName as firstName,
+                o.lastName as lastName,
+                e.time as time,
+                f.name as name,
+                obj as obj_details_permissions)
+            from FileAnnotation obj
+            join obj.details.owner as o
+            join obj.details.creationEvent as e
+            join obj.file.details as p
+            join obj.file as f where obj.ns=:ns"""
 
+    qs = conn.getQueryService()
+    fileAnns = qs.projection(q, params, conn.SERVICE_OPTS)
     rsp = []
-    thumbIds = set()
-    for fa in fileAnns:
-        owner = fa.getDetails().getOwner()
-        cd = fa.creationEventDate()
-
+    for fileAnn in fileAnns:
+        fa = unwrap(fileAnn[0])
+        date = datetime.fromtimestamp(unwrap(fa['time'])/1000)
+        firstName = unwrap(fa['firstName'])
+        lastName = unwrap(fa['lastName'])
         figFile = {
-            'id': fa.id,
-            'name': fa.getFile().getName(),
-            'creationDate': time.mktime(cd.timetuple()),
-            'ownerFullName': owner.getFullName(),
-            'canEdit': fa.getFile().canEdit()
+            'id': unwrap(fa['id']),
+            'name': unwrap(fa['name']),
+            'description': unwrap(fa['desc']),
+            'ownerFullName': "%s %s" % (firstName, lastName),
+            'creationDate': time.mktime(date.timetuple()),
+            'canEdit': fa['obj_details_permissions'].get('canEdit')
         }
-
-        # We use the 'description' field to store json - try to validate...
-        try:
-            desc = fa.getDescription()
-            description = json.loads(desc)
-            figFile['description'] = description
-            # Overwrite the file name. (json supports unicode file name)
-            if 'name' in description:
-                figFile['name'] = description['name']
-            if 'imageId' in description:
-                thumbIds.add(description['imageId'])
-        except:
-            pass
-
         rsp.append(figFile)
 
-    if len(thumbIds) > 0:
-        # remove image Ids if images deleted (to prevent 404 for thumbnails)
-        params = omero.sys.ParametersI()
-        params.addIds(list(thumbIds))
-        query = "select i.id from Image i where i.id in (:ids)"
-        qs = conn.getQueryService()
-        rslt = qs.projection(query, params, conn.SERVICE_OPTS)
-        ids = [unwrap(r)[0] for r in rslt]
-        for fig in rsp:
-            if 'description' in fig:
-                desc = fig['description']
-                if 'imageId' in desc:
-                    if desc['imageId'] not in ids and 'baseUrl' not in desc:
-                        desc['imageId'] = -1
-
     return HttpResponse(json.dumps(rsp), content_type='json')
+
+
+def defaultThumbnail(size=(120, 120)):
+    """ Provide a placeholder thumbnail. Used in urls.py"""
+    if isinstance(size, int):
+        size = (size, size)
+    if len(size) == 1:
+        size = (size[0], size[0])
+    img = Image.new("RGBA", size, (238, 238, 238))
+    f = StringIO()
+    img.save(f, "PNG")
+    f.seek(0)
+    return f.read()
 
 
 @login_required()

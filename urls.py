@@ -17,6 +17,7 @@
 #
 
 import django
+from omeroweb.webgateway import views as webgateway_views
 from figure import views
 if django.VERSION < (1, 6):
     from django.conf.urls.defaults import url, patterns
@@ -51,6 +52,11 @@ urlpatterns = patterns(
     # List file annotations of saved Figures
     url(r'^list_web_figures/', views.list_web_figures,
         name='list_web_figures'),
+
+    url(r'^render_thumbnail/(?P<iid>[0-9]+)/$',
+        webgateway_views.render_thumbnail,
+        {'_defcb': views.defaultThumbnail},
+        name="figure_render_thumbnail"),
 
     # Delete file annotations of saved Figures - 'POST' with 'fileId' of file
     # annotation

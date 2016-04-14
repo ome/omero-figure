@@ -97,7 +97,7 @@ var FileListView = Backbone.View.extend({
 
     el: $("#openFigureModal"),
 
-    initialize:function () {
+    initialize:function (options) {
         this.$tbody = $('tbody', this.$el);
         this.$fileFilter = $('#file-filter');
         this.owner = USER_FULL_NAME;
@@ -105,6 +105,19 @@ var FileListView = Backbone.View.extend({
         // we automatically 'sort' on fetch, add etc.
         this.model.bind("sync remove sort", this.render, this);
         this.$fileFilter.val("");
+
+        // we only need this to know the currently opened file
+        this.figureModel = options.figureModel;
+
+        $("#openFigureModal").bind("show.bs.modal", function(){
+            // When the dialog opens, we load files...
+            var currentFileId = self.figureModel.get('fileId');
+            if (self.model.length === 0) {
+                self.refresh_files();
+            } else {
+                self.render();
+            }
+        });
     },
 
     events: {
@@ -119,6 +132,8 @@ var FileListView = Backbone.View.extend({
 
     refresh_files: function(event) {
         // will trigger sort & render()
+        var loadingHtml = "<tr><td colspan='4' style='text-align:center'><h1><small>Loading Files...</small></h1></td></tr>"
+        this.$tbody.html(loadingHtml);
         this.model.fetch();
     },
 
@@ -178,7 +193,8 @@ var FileListView = Backbone.View.extend({
     render:function () {
         var self = this,
             filter = {},
-            filterVal = this.$fileFilter.val();
+            filterVal = this.$fileFilter.val(),
+            currentFileId = this.figureModel.get('fileId');
         if (this.owner && this.owner.length > 0) {
             filter.owner = this.owner;
         }
@@ -194,6 +210,8 @@ var FileListView = Backbone.View.extend({
         }
         _.each(this.model.models, function (file) {
             if (file.isVisible(filter)) {
+                var disabled = currentFileId === file.get('id') ? true: false;
+                file.set('disabled', disabled);
                 var e = new FileListItemView({model:file}).render().el;
                 self.$tbody.prepend(e);
             }
@@ -253,7 +271,25 @@ var FileListItemView = Backbone.View.extend({
     render:function () {
         var json = this.model.toJSON(),
             baseUrl = json.baseUrl;
-        baseUrl = baseUrl || WEBGATEWAYINDEX.slice(0, -1);  // remove last /
+        if (!json.imageId){
+            // Description may be json encoded...
+            try {
+                var d = JSON.parse(json.description);
+                // ...with imageId and name (unicode supported)
+                if (d.imageId) {
+                    json.imageId = d.imageId;
+                    // we cache this so we don't have to parse() on each render()
+                    this.model.set('imageId', d.imageId);
+                }
+                if (d.name) {
+                    json.name = _.escape(d.name);
+                    this.model.set('name', json.name);
+                }
+            } catch (err) {
+                console.log('failed to parse json', json.description);
+            }
+        }
+        baseUrl = baseUrl || BASE_WEBFIGURE_URL.slice(0, -1);  // remove last /
         json.thumbSrc = baseUrl + "/render_thumbnail/" + json.imageId + "/";
         json.url = BASE_WEBFIGURE_URL + "file/" + json.id;
         json.formatDate = this.formatDate;

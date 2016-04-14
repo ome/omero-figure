@@ -20,7 +20,7 @@
             new LegendView({model: this.model});
 
             this.figureFiles = new FileList();
-            new FileListView({model:this.figureFiles});
+            new FileListView({model:this.figureFiles, figureModel: this.model});
 
             // set up various elements and we need repeatedly
             this.$main = $('main');
@@ -335,19 +335,9 @@
             var self = this,
                 currentFileId = self.model.get('fileId');
             var callback = function() {
+                // Opening modal will trigger fetch of files
+                // Handled in FileListView
                 $("#openFigureModal").modal();
-                if (self.figureFiles.length === 0) {
-                    self.figureFiles.fetch({success: function(fileList){
-                        // Don't allow opening of current figure
-                        if (currentFileId) {
-                            fileList.disable(currentFileId);
-                        }
-                    }});
-                } else {
-                    if (currentFileId) {
-                        self.figureFiles.disable(currentFileId);
-                    }
-                }
             };
 
             if (this.model.get("unsaved")) {
