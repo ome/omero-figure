@@ -4,8 +4,7 @@ var CropModalView = Backbone.View.extend({
 
         el: $("#cropModal"),
 
-        // template: JST["static/figure/templates/paper_setup_modal_template.html"],
-        roiTemplate: JST["static/figure/templates/modal_dialogs/roi_modal_roi.html"],
+        roiTemplate: JST["static/figure/templates/modal_dialogs/crop_modal_roi.html"],
 
         model:FigureModel,
 

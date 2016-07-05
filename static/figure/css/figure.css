@@ -828,19 +828,24 @@
         background: #ddd;
     }
 
-    .select-btn span{
+    .roiModalRoiItem .glyphicon {
+        width: 16px;
+        height: 16px;
+    }
+
+    .select-icon {
         background-image: url("../images/cursor-icon-16.png");
     }
-    .rect-btn span{
+    .rect-icon {
         background-image: url("../images/square-outline-icon-16.png");
     }
-    .line-btn span{
+    .line-icon {
         background-image: url("../images/line-icon-16.png");
     }
-    .arrow-btn span{
+    .arrow-icon {
         background-image: url("../images/arrow-icon-16.png");
     }
-    .ellipse-btn span{
+    .ellipse-icon {
         background-image: url("../images/ellipse-icon-16.png");
     }
     .linewidthOption {

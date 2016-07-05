@@ -1,25 +1,48 @@
 
-<tr class="roiPickMe">
+<table>
+<tr><th colspan="3">ROIs from OMERO</th></tr>
+
+<% _.each(rois, function(roi) { if (roi.shapes.length > 0) { %>
+
+<tr class="roiModalRoiItem">
     <td>
-        <div class="roi_wrapper" style="position: relative; overflow: hidden; margin: 5px; height: <%= h %>px; width: <%= w %>px">
+        <% if (roi.type === 'Rectangle') { %>
+            <span class="glyphicon rect-icon"></span>
+        <% } %>
+    </td>
+
+    <td>
+        Z:
+        <% if (roi.minZ !== undefined) { %>
+            <%= roi.minZ + 1 %>
+            <% if (roi.maxZ !== roi.minZ) print(" - " + (roi.maxZ + 1)); %>
+        <% } %>
+    </td>
+    <td>
+        T:
+        <% if (roi.minT !== undefined) { %>
+            <%= roi.minT + 1 %>
+            <% if (roi.maxT !== roi.minT) print(" - " + (roi.maxT + 1)); %>
+        <% } %>
+    </td>
+    <td>
+        <div class="roi_wrapper" style="position: relative; overflow: hidden; margin: 5px; height: <%= roi.bbox.h %>px; width: <%= roi.bbox.w %>px">
             <img class="roi_content"
-                data-roiId="<%= roiId %>"
-                data-x="<%= rect.x %>" data-y="<%= rect.y %>" 
-                data-width="<%= rect.width %>" data-height="<%= rect.height %>"
-                data-theT="<%= rect.theT %>" data-theZ="<%= rect.theZ %>"
-                style="position: absolute; top: <%= top %>px; left: <%= left %>px; width: <%= img_w %>px; height: <%= img_h %>px" src="<%= src %>" />
+                style="position: absolute; top: <%= roi.bbox.top %>px; left: <%= roi.bbox.left %>px; width: <%= roi.bbox.img_w %>px; height: <%= roi.bbox.img_h %>px" src="<%= roi.bbox.src %>" />
         </div>
     </td>
-    <% if (zStart) { %>
-    <td>
-        <%= zStart %>
-        <% if (zStart !== zEnd) print(" - " + zEnd); %>
-    </td>
-    <% } %>
-    <% if (tStart) { %>
-    <td>
-        <%= tStart %>
-        <% if (tStart !== tEnd) print(" - " + tEnd); %>
-    </td>
-    <% } %>
 </tr>
+
+<% if (roi.shapes.length > 1) { %>
+    <% _.each(roi.shapes, function(shape) { %>
+    <tr>
+        <td><%= shape.type %> </td>
+        <td><%= shape.theZ + 1 %> </td>
+        <td><%= shape.theT + 1 %> </td>
+    </tr>
+    <% }) %>
+<% } %>
+
+<% } }) %>
+
+</table>

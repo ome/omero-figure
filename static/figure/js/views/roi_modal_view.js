@@ -2,6 +2,7 @@
 
 var RoiModalView = Backbone.View.extend({
 
+        roiTemplate: JST["static/figure/templates/modal_dialogs/roi_modal_roi.html"],
         template: JST["static/figure/templates/shapes/shape_toolbar_template.html"],
 
         el: $("#roiModal"),
@@ -59,8 +60,8 @@ var RoiModalView = Backbone.View.extend({
 
                 self.render();
 
-                // disable submit until user chooses a region/ROI
-                // self.enableSubmit(false);
+                // Load ROIs from OMERO...
+                self.loadRois();
             });
 
             this.shapeManager = new ShapeManager("roi_paper", 1, 1);
@@ -85,6 +86,17 @@ var RoiModalView = Backbone.View.extend({
             "click .pasteShape": "pasteShapes",
             "click .deleteShape": "deleteShapes",
             "click .selectAll": "selectAllShapes",
+        },
+
+        // Load Rectangles from OMERO and render them
+        loadRois: function() {
+            var self = this,
+                iid = self.m.get('imageId');
+            $.getJSON(ROIS_JSON_URL + iid + "/", function(data){
+                self.renderRois(data);
+            }).error(function(){
+                self.renderRois([]);
+            });
         },
 
         copyShapes: function(event) {
@@ -270,6 +282,92 @@ var RoiModalView = Backbone.View.extend({
                 tip = "<span class='label label-primary'>Tip</span> " + tips[parseInt(Math.random() * tips.length, 10)];
             }
             $("#roiModalTip").show().html(tip);
+        },
+
+        // for rendering bounding-box viewports for shapes
+        getBboxJson: function(bbox, theZ, theT) {
+            var size = 50;   // longest side
+            var orig_width = this.m.get('orig_width'),
+                orig_height = this.m.get('orig_height');
+                // origT = this.m.get('theT'),
+                // origZ = this.m.get('theZ');
+            // theT = (theT !== undefined ? theT : this.m.get('theT'))
+            var div_w, div_h;
+            // get src for image by temp setting Z & T
+            if (theT !== undefined) this.m.set('theT', bbox.theT, {'silent': true});
+            if (theZ !== undefined) this.m.set('theZ', bbox.theZ, {'silent': true});
+            var src = this.m.get_img_src();
+            if (bbox.width > bbox.height) {
+                div_w = size;
+                div_h = (bbox.height/bbox.width) * div_w;
+            } else {
+                div_h = size;
+                div_w = (bbox.width/bbox.height) * div_h;
+            }
+            var zoom = div_w/bbox.width;
+            var img_w = orig_width * zoom;
+            var img_h = orig_height * zoom;
+            var top = -(zoom * bbox.y);
+            var left = -(zoom * bbox.x);
+            // bbox.theT = bbox.theT !== undefined ? bbox.theT : origT;
+            // bbox.theZ = bbox.theZ !== undefined ? bbox.theZ : origZ;
+
+            return {
+                'src': src,
+                'w': div_w,
+                'h': div_h,
+                'top': top,
+                'left': left,
+                'img_w': img_w,
+                'img_h': img_h
+            };
+        },
+
+        renderRois: function(roiData){
+
+            // var msg = "[No ROIs found on this image in OMERO]";
+
+            console.log(roiData);
+            var currT = this.m.get('theT'),
+                currZ = this.m.get('theZ');
+
+            var json = roiData.map(function(roi){
+                var r = {'id': roi.id, 'type': '-'}
+                var minT, maxT = 0,
+                    minZ, maxZ = 0;
+                if (roi.shapes) {
+                    r.shapes = roi.shapes;
+                    roi.shapes.forEach(function(s){
+                        if (s.theZ !== undefined) {
+                            if (minZ === undefined) {
+                                minZ = s.theZ
+                            } else {
+                                minZ = Math.min(minZ, s.theZ);
+                            }
+                            maxZ = Math.max(maxZ, s.theZ);
+                        }
+                        if (s.theT !== undefined) {
+                            if (minT === undefined) {
+                                minT = s.theT
+                            } else {
+                                minT = Math.min(minT, s.theT);
+                            }
+                            maxT = Math.max(maxT, s.theT);
+                        }
+                    });
+                    roi.type = roi.shapes[0].type;
+                    roi.minZ = minZ;
+                    roi.maxZ = maxZ;
+                    roi.minT = minT;
+                    roi.maxT = maxT;
+                    roi.bbox = this.getBboxJson(roi.shapes[0], roi.shapes[0].theZ, roi.shapes[0].theT);
+                }
+                return r;
+            }.bind(this));
+
+            var html = this.roiTemplate({'rois': roiData, 'currZ': currZ, 'currT': currT});
+
+            $("#roiModalRoiList").html(html);
         },
 
         render: function() {
