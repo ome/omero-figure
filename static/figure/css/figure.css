@@ -857,4 +857,11 @@
     .line-width .linewidthOption {
         max-height: 15px;
     }
+    .roiModalRoiItem {
+        cursor: pointer;
+    }
+    /* On hover, use selected blue color */
+    .roiModalRoiItem:hover {
+        background-color: rgb(190, 212, 253);
+    }
 

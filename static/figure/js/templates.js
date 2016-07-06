@@ -674,13 +674,13 @@ obj || (obj = {});
 var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
 function print() { __p += __j.call(arguments, '') }
 with (obj) {
-__p += '\n<table>\n<tr><th colspan="3">ROIs from OMERO</th></tr>\n\n';
+__p += '\n<table style="width: 100%">\n<tr><th colspan="3">ROIs from OMERO</th></tr>\n\n';
  _.each(rois, function(roi) { if (roi.shapes.length > 0) { ;
-__p += '\n\n<tr class="roiModalRoiItem">\n    <td>\n        ';
- if (roi.type === 'Rectangle') { ;
-__p += '\n            <span class="glyphicon rect-icon"></span>\n        ';
- } ;
-__p += '\n    </td>\n\n    <td>\n        Z:\n        ';
+__p += '\n\n<tr class="roiModalRoiItem" data-shapeid="' +
+((__t = ( roi.shapes[0].id )) == null ? '' : __t) +
+'" >\n    <td>\n        <span class="glyphicon ' +
+((__t = ( roi.icon )) == null ? '' : __t) +
+'"></span>\n    </td>\n\n    <td>\n        Z:\n        ';
  if (roi.minZ !== undefined) { ;
 __p += '\n            ' +
 ((__t = ( roi.minZ + 1 )) == null ? '' : __t) +
@@ -714,13 +714,15 @@ __p += '\n    </td>\n    <td>\n        <div class="roi_wrapper" style="position:
  if (roi.shapes.length > 1) { ;
 __p += '\n    ';
  _.each(roi.shapes, function(shape) { ;
-__p += '\n    <tr>\n        <td>' +
-((__t = ( shape.type )) == null ? '' : __t) +
-' </td>\n        <td>' +
+__p += '\n    <tr class="roiModalRoiItem" data-shapeid="' +
+((__t = ( shape.id )) == null ? '' : __t) +
+'" >\n        <td><span class="glyphicon ' +
+((__t = ( shape.icon )) == null ? '' : __t) +
+'"></span> </td>\n        <td>Z: ' +
 ((__t = ( shape.theZ + 1 )) == null ? '' : __t) +
-' </td>\n        <td>' +
+' </td>\n        <td>T: ' +
 ((__t = ( shape.theT + 1 )) == null ? '' : __t) +
-' </td>\n    </tr>\n    ';
+' </td>\n        <td> </td>\n    </tr>\n    ';
  }) ;
 __p += '\n';
  } ;
@@ -758,7 +760,7 @@ obj || (obj = {});
 var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
 function print() { __p += __j.call(arguments, '') }
 with (obj) {
-__p += '\n\n<div class="btn-group" role="group" aria-label="...">\n    <button type="button" data-state="SELECT"\n    \tclass="btn btn-default';
+__p += '\n\n<div class="btn-group" role="group" aria-label="...">\n    <button type="button" data-state="SELECT"\n        class="btn btn-default';
  if (state==='SELECT')print('pressed') ;
 __p += '">\n        <span class="glyphicon select-icon"></span></button>\n</div>\n\n\n<div class="btn-group shape-option" role="group" aria-label="...">\n    <button type="button" class="btn btn-default ';
  if (state==='RECT')print('pressed') ;

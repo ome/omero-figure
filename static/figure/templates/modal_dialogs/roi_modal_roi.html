@@ -1,14 +1,12 @@
 
-<table>
+<table style="width: 100%">
 <tr><th colspan="3">ROIs from OMERO</th></tr>
 
 <% _.each(rois, function(roi) { if (roi.shapes.length > 0) { %>
 
-<tr class="roiModalRoiItem">
+<tr class="roiModalRoiItem" data-shapeid="<%= roi.shapes[0].id %>" >
     <td>
-        <% if (roi.type === 'Rectangle') { %>
-            <span class="glyphicon rect-icon"></span>
-        <% } %>
+        <span class="glyphicon <%= roi.icon %>"></span>
     </td>
 
     <td>
@@ -35,10 +33,11 @@
 
 <% if (roi.shapes.length > 1) { %>
     <% _.each(roi.shapes, function(shape) { %>
-    <tr>
-        <td><%= shape.type %> </td>
-        <td><%= shape.theZ + 1 %> </td>
-        <td><%= shape.theT + 1 %> </td>
+    <tr class="roiModalRoiItem" data-shapeid="<%= shape.id %>" >
+        <td><span class="glyphicon <%= shape.icon %>"></span> </td>
+        <td>Z: <%= shape.theZ + 1 %> </td>
+        <td>T: <%= shape.theT + 1 %> </td>
+        <td> </td>
     </tr>
     <% }) %>
 <% } %>
