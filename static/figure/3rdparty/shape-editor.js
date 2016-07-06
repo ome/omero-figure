@@ -1549,7 +1549,7 @@ var ShapeManager = function ShapeManager(elementId, width, height, options) {
 
 ShapeManager.prototype.startDrag = function startDrag(x, y, event){
     // clear any existing selected shapes
-    this.clearSelected();
+    this.clearSelectedShapes();
 
     var offset = this.$el.offset(),
         startX = x - offset.left,
@@ -1636,7 +1636,7 @@ ShapeManager.prototype.setState = function setState(state) {
         this.newShapeBg.toFront();
         this.newShapeBg.attr({'cursor': 'crosshair'});
         // clear selected shapes
-        this.clearSelected();
+        this.clearSelectedShapes();
 
         if (this.shapeFactories[state]) {
             this.createShape = this.shapeFactories[state];
@@ -1696,7 +1696,7 @@ ShapeManager.prototype.getZoom = function getZoom(zoomPercent) {
 
 ShapeManager.prototype.setStrokeColor = function setStrokeColor(strokeColor) {
     this._strokeColor = strokeColor;
-    var selected = this.getSelected();
+    var selected = this.getSelectedShapes();
     for (var s=0; s<selected.length; s++) {
         selected[s].setStrokeColor(strokeColor);
     }
@@ -1709,7 +1709,7 @@ ShapeManager.prototype.getStrokeColor = function getStrokeColor() {
 ShapeManager.prototype.setStrokeWidth = function setStrokeWidth(strokeWidth) {
     strokeWidth = parseInt(strokeWidth, 10);
     this._strokeWidth = strokeWidth;
-    var selected = this.getSelected();
+    var selected = this.getSelectedShapes();
     for (var s=0; s<selected.length; s++) {
         selected[s].setStrokeWidth(strokeWidth);
     }
@@ -1728,7 +1728,7 @@ ShapeManager.prototype.getShapesJson = function getShapesJson() {
 };
 
 ShapeManager.prototype.setShapesJson = function setShapesJson(jsonShapes) {
-    this.deleteAll();
+    this.deleteAllShapes();
     var self = this;
     jsonShapes.forEach(function(s){
         self.addShapeJson(s);
@@ -1886,7 +1886,7 @@ ShapeManager.prototype.getShape = function getShape(shapeId) {
     }
 };
 
-ShapeManager.prototype.getSelected = function getSelected() {
+ShapeManager.prototype.getSelectedShapes = function getSelectedShapes() {
     var selected = [],
         shapes = this.getShapes();
     for (var i=0; i<shapes.length; i++) {
@@ -1910,12 +1910,12 @@ ShapeManager.prototype.getSelectedShapesJson = function getShapesJson() {
 // Shift all selected shapes by x and y
 // E.g. while dragging multiple shapes
 ShapeManager.prototype.moveSelectedShapes = function moveSelectedShapes(dx, dy, silent) {
-    this.getSelected().forEach(function(shape){
+    this.getSelectedShapes().forEach(function(shape){
         shape.offsetShape(dx, dy);
     });
 };
 
-ShapeManager.prototype.deleteAll = function deleteAll() {
+ShapeManager.prototype.deleteAllShapes = function deleteAllShapes() {
     this.getShapes().forEach(function(s) {
         s.destroy();
     });
@@ -1923,10 +1923,10 @@ ShapeManager.prototype.deleteAll = function deleteAll() {
     this.$el.trigger("change:selected");
 };
 
-ShapeManager.prototype.deleteById = function deleteById(shapeId) {
+ShapeManager.prototype.deleteShapesByIds = function deleteShapesByIds(shapeIds) {
     var notSelected = [];
     this.getShapes().forEach(function(s) {
-        if (s._id === shapeId) {
+        if (shapeIds.indexOf(s._id) > -1) {
             s.destroy();
         } else {
             notSelected.push(s);
@@ -1936,7 +1936,7 @@ ShapeManager.prototype.deleteById = function deleteById(shapeId) {
     this.$el.trigger("change:selected");
 };
 
-ShapeManager.prototype.deleteSelected = function getSelected() {
+ShapeManager.prototype.deleteSelectedShapes = function deleteSelectedShapes() {
     var notSelected = [];
     this.getShapes().forEach(function(s) {
         if (s.isSelected()) {
@@ -1952,7 +1952,7 @@ ShapeManager.prototype.deleteSelected = function getSelected() {
 ShapeManager.prototype.selectShapesById = function selectShapesById(shapeId) {
 
     // Clear selected with silent:true, since we notify again below
-    this.clearSelected(true);
+    this.clearSelectedShapes(true);
     var toSelect = [];
     this.getShapes().forEach(function(shape){
         if (shape.toJson().id === shapeId) {
@@ -1962,7 +1962,7 @@ ShapeManager.prototype.selectShapesById = function selectShapesById(shapeId) {
     this.selectShapes(toSelect);
 };
 
-ShapeManager.prototype.clearSelected = function clearSelected(silent) {
+ShapeManager.prototype.clearSelectedShapes = function clearSelectedShapes(silent) {
     for (var i=0; i<this._shapes.length; i++) {
         this._shapes[i].setSelected(false);
     }
@@ -1974,7 +1974,7 @@ ShapeManager.prototype.clearSelected = function clearSelected(silent) {
 ShapeManager.prototype.selectShapesByRegion = function selectShapesByRegion(region) {
 
     // Clear selected with silent:true, since we notify again below
-    this.clearSelected(true);
+    this.clearSelectedShapes(true);
 
     var toSelect = [];
     this.getShapes().forEach(function(shape){
@@ -1985,7 +1985,7 @@ ShapeManager.prototype.selectShapesByRegion = function selectShapesByRegion(regi
     this.selectShapes(toSelect);
 };
 
-ShapeManager.prototype.selectAll = function selectAll(region) {
+ShapeManager.prototype.selectAllShapes = function selectAllShapes(region) {
     this.selectShapes(this.getShapes());
 };
 
@@ -1996,7 +1996,7 @@ ShapeManager.prototype.selectShapes = function selectShapes(shapes) {
         strokeWidth;
 
     // Clear selected with silent:true, since we notify again below
-    this.clearSelected(true);
+    this.clearSelectedShapes(true);
 
     // Each shape, set selected and get color & stroke width...
     shapes.forEach(function(shape, i){
@@ -2035,7 +2035,7 @@ ShapeManager.prototype.selectShapes = function selectShapes(shapes) {
 };
 
 ShapeManager.prototype.notifySelectedShapesChanged = function notifySelectedShapesChanged() {
-    this.notifyShapesChanged(this.getSelected());
+    this.notifyShapesChanged(this.getSelectedShapes());
 };
 
 ShapeManager.prototype.notifyShapesChanged = function notifyShapesChanged(shapes) {

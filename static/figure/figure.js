@@ -6238,7 +6238,7 @@ var RoiModalView = Backbone.View.extend({
                 self.m.set('rotation', 0);
 
                 self.shapeManager.setState("SELECT");
-                self.shapeManager.deleteAll();
+                self.shapeManager.deleteAllShapes();
 
                 // Load any existing shapes on panel
                 var shapesJson = self.m.get('shapes');
@@ -6263,7 +6263,6 @@ var RoiModalView = Backbone.View.extend({
         events: {
             "submit .roiModalForm": "handleRoiForm",
             "click .shape-option .btn": "selectState",
-            "click .select-btn": "selectState",
             "click .dropdownSelect a": "select_dropdown_option",
             "change .line-width": "changeLineWidth",
             "change .shape-color": "changeColor",
@@ -6327,7 +6326,7 @@ var RoiModalView = Backbone.View.extend({
             if (shapeId) {
                 var shape = this.shapeManager.getShape(shapeId);
                 if (!shape.isSelected()) {
-                    this.shapeManager.deleteById(shapeId);
+                    this.shapeManager.deleteShapesByIds([shapeId]);
                 }
             }
         },
@@ -6400,7 +6399,7 @@ var RoiModalView = Backbone.View.extend({
 
         deleteShapes: function(event) {
             event.preventDefault();
-            this.shapeManager.deleteSelected();
+            this.shapeManager.deleteSelectedShapes();
         },
 
         handleRoiForm: function(event) {
@@ -6474,7 +6473,7 @@ var RoiModalView = Backbone.View.extend({
         selectAllShapes: function(event) {
             event.preventDefault();
             // manager triggers shapeSelected, which renders toolbar
-            this.shapeManager.selectAll();
+            this.shapeManager.selectAllShapes();
         },
 
         selectState: function(event) {
@@ -6506,7 +6505,7 @@ var RoiModalView = Backbone.View.extend({
                 lineW = this.shapeManager.getStrokeWidth(),
                 color = this.shapeManager.getStrokeColor(),
                 scale = this.zoom,
-                sel = this.shapeManager.getSelected().length > 0,
+                sel = this.shapeManager.getSelectedShapes().length > 0,
                 toPaste = this.model.get('clipboard'),
                 windows = navigator.platform.toUpperCase().indexOf('WIN') > -1;
             color = color ? color.replace("#", "") : 'FFFFFF';

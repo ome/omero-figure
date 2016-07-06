@@ -760,7 +760,7 @@ obj || (obj = {});
 var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
 function print() { __p += __j.call(arguments, '') }
 with (obj) {
-__p += '\n\n<div class="btn-group" role="group" aria-label="...">\n    <button type="button" data-state="SELECT"\n        class="btn btn-default';
+__p += '\n\n<div class="btn-group shape-option" role="group" aria-label="...">\n    <button type="button" data-state="SELECT"\n        class="btn btn-default';
  if (state==='SELECT')print('pressed') ;
 __p += '">\n        <span class="glyphicon select-icon"></span></button>\n</div>\n\n\n<div class="btn-group shape-option" role="group" aria-label="...">\n    <button type="button" class="btn btn-default ';
  if (state==='RECT')print('pressed') ;
