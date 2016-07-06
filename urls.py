@@ -34,8 +34,6 @@ urlpatterns = patterns(
     url(r'^new/$', views.index, name='new_figure'),
     url(r'^file/(?P<fileId>[0-9]+)/$', views.index, name='load_figure'),
 
-    url(r'^shape_editor/$', views.shape_editor, name='shape_editor'),
-
     url(r'^imgData/(?P<imageId>[0-9]+)/$', views.imgData_json,
         name='figure_imgData'),
 

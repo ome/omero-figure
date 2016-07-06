@@ -123,13 +123,6 @@ def index(request, fileId=None, conn=None, **kwargs):
 
 
 @login_required()
-def shape_editor(request, conn=None, **kwargs):
-
-    context = {}
-    return render(request, "figure/shapes.html", context)
-
-
-@login_required()
 def imgData_json(request, imageId, conn=None, **kwargs):
 
     image = conn.getObject("Image", imageId)
