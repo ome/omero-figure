@@ -365,8 +365,8 @@ var RoiModalView = Backbone.View.extend({
                     var tmp = {'x1': s.x1, 'y1': s.y1, 'x2': s.x2, 'y2': s.y2};
                     s.x1 = tmp.x2;
                     s.y1 = tmp.y2;
-                    x.x2 = tmp.x1;
-                    x.y2 = tmp.y1;
+                    s.x2 = tmp.x1;
+                    s.y2 = tmp.y1;
                 }
             }
             if (s.type === 'Ellipse') {
@@ -437,6 +437,7 @@ var RoiModalView = Backbone.View.extend({
                 if (roi.shapes) {
                     r.shapes = roi.shapes;
                     roi.shapes = roi.shapes.map(function(s){
+                        s = this.convertOMEROShape(s);
                         s.icon = roiIcons[s.type];
                         if (s.theZ !== undefined) {
                             if (minZ === undefined) {
@@ -454,7 +455,7 @@ var RoiModalView = Backbone.View.extend({
                             }
                             maxT = Math.max(maxT, s.theT);
                         }
-                        return this.convertOMEROShape(s);
+                        return s;
                     }.bind(this));
 
                     roi.type = roi.shapes[0].type;
