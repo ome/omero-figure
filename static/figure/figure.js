@@ -4839,6 +4839,7 @@ var RectView = Backbone.View.extend({
         events: {
             "submit .new-label-form": "handle_new_label",
             "click .dropdown-menu a": "select_dropdown_option",
+            "click .btn-markdown": "show_markdown"
         },
 
         // Handles all the various drop-down menus in the 'New' AND 'Edit Label' forms
@@ -4930,6 +4931,11 @@ var RectView = Backbone.View.extend({
             return false;
         },
 
+        show_markdown: function(event) {
+            event.preventDefault();
+            $("#markdownInfoModal").modal('show');
+        },
+        
         render: function() {
 
             var selected = this.model.getSelected();
