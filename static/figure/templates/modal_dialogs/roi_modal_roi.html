@@ -1,8 +1,4 @@
 
-<table style="width: 100%">
-<tr><th colspan="3">ROIs from OMERO</th></tr>
-
-<% _.each(rois, function(roi) { if (roi.shapes.length > 0) { %>
 
 <tr class="roiModalRoiItem" data-shapeid="<%= roi.shapes[0].id %>" >
     <td>
@@ -23,12 +19,7 @@
             <% if (roi.maxT !== roi.minT) print(" - " + (roi.maxT + 1)); %>
         <% } %>
     </td>
-    <td>
-        <div class="roi_wrapper" style="position: relative; overflow: hidden; margin: 5px; height: <%= roi.bbox.h %>px; width: <%= roi.bbox.w %>px">
-            <img class="roi_content"
-                style="position: absolute; top: <%= roi.bbox.top %>px; left: <%= roi.bbox.left %>px; width: <%= roi.bbox.img_w %>px; height: <%= roi.bbox.img_h %>px" src="<%= roi.bbox.src %>" />
-        </div>
-    </td>
+    <td class="roiViewport" style="position:relative; width:75px; height:55px"></td>
 </tr>
 
 <% if (roi.shapes.length > 1) { %>
@@ -41,7 +32,3 @@
     </tr>
     <% }) %>
 <% } %>
-
-<% } }) %>
-
-</table>

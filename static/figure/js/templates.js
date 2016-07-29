@@ -674,8 +674,6 @@ obj || (obj = {});
 var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
 function print() { __p += __j.call(arguments, '') }
 with (obj) {
-__p += '\n<table style="width: 100%">\n<tr><th colspan="3">ROIs from OMERO</th></tr>\n\n';
- _.each(rois, function(roi) { if (roi.shapes.length > 0) { ;
 __p += '\n\n<tr class="roiModalRoiItem" data-shapeid="' +
 ((__t = ( roi.shapes[0].id )) == null ? '' : __t) +
 '" >\n    <td>\n        <span class="glyphicon ' +
@@ -696,21 +694,7 @@ __p += '\n            ' +
  if (roi.maxT !== roi.minT) print(" - " + (roi.maxT + 1)); ;
 __p += '\n        ';
  } ;
-__p += '\n    </td>\n    <td>\n        <div class="roi_wrapper" style="position: relative; overflow: hidden; margin: 5px; height: ' +
-((__t = ( roi.bbox.h )) == null ? '' : __t) +
-'px; width: ' +
-((__t = ( roi.bbox.w )) == null ? '' : __t) +
-'px">\n            <img class="roi_content"\n                style="position: absolute; top: ' +
-((__t = ( roi.bbox.top )) == null ? '' : __t) +
-'px; left: ' +
-((__t = ( roi.bbox.left )) == null ? '' : __t) +
-'px; width: ' +
-((__t = ( roi.bbox.img_w )) == null ? '' : __t) +
-'px; height: ' +
-((__t = ( roi.bbox.img_h )) == null ? '' : __t) +
-'px" src="' +
-((__t = ( roi.bbox.src )) == null ? '' : __t) +
-'" />\n        </div>\n    </td>\n</tr>\n\n';
+__p += '\n    </td>\n    <td class="roiViewport" style="position:relative; width:75px; height:55px"></td>\n</tr>\n\n';
  if (roi.shapes.length > 1) { ;
 __p += '\n    ';
  _.each(roi.shapes, function(shape) { ;
@@ -726,9 +710,7 @@ __p += '\n    <tr class="roiModalRoiItem" data-shapeid="' +
  }) ;
 __p += '\n';
  } ;
-__p += '\n\n';
- } }) ;
-__p += '\n\n</table>\n';
+__p += '\n';
 
 }
 return __p

@@ -430,12 +430,12 @@ var RoiModalView = Backbone.View.extend({
             var currT = this.m.get('theT'),
                 currZ = this.m.get('theZ');
 
-            var json = roiData.map(function(roi){
-                var r = {'id': roi.id, 'type': '-'}
+            var json = roiData.forEach(function(roi){
+                // var r = {'id': roi.id, 'type': '-'}
                 var minT, maxT = 0,
                     minZ, maxZ = 0;
                 if (roi.shapes) {
-                    r.shapes = roi.shapes;
+                    // r.shapes = roi.shapes;
                     roi.shapes = roi.shapes.map(function(s){
                         s = this.convertOMEROShape(s);
                         s.icon = roiIcons[s.type];
@@ -467,12 +467,26 @@ var RoiModalView = Backbone.View.extend({
                     roi.bbox = this.getBboxJson(roi.shapes[0], roi.shapes[0].theZ, roi.shapes[0].theT);
                 }
 
-                return r;
+                // return r;
+                var html = this.roiTemplate({'roi': roi, 'currZ': currZ, 'currT': currT});
+
+                $("#roiModalRoiList table").append(html);
+
+                var panelJson = this.m.toJSON();
+                panelJson.width = 50;
+                panelJson.height = 50;
+                panelJson.x = 0;
+                panelJson.y = 0;
+                panelJson.shapes = [roi.shapes[0]];
+                var panelModel = new Panel(panelJson);
+                panelModel.cropToRoi(roi.shapes[0]);
+                var view = new PanelView({model:panelModel});
+                $("#roiModalRoiList .roiViewport").last().append(view.render().el);
             }.bind(this));
 
-            var html = this.roiTemplate({'rois': roiData, 'currZ': currZ, 'currT': currT});
+            // var html = this.roiTemplate({'rois': roiData, 'currZ': currZ, 'currT': currT});
 
-            $("#roiModalRoiList").html(html);
+            // $("#roiModalRoiList").html(html);
         },
 
         render: function() {

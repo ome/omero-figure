@@ -114,6 +114,12 @@
             }
         },
 
+        // crop the viewport to the bounding box of first shape
+        // Used when panel-views are used to show shapes in ROI dialog
+        crop_to_shape_bbox: function() {
+            // Need to get bbox from shapeManager...
+        },
+
         render_image: function() {
             var src = this.model.get_img_src();
             this.$img_panel.attr('src', src);
