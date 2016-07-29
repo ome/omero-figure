@@ -441,7 +441,7 @@ __p += '\n                    <div style=\'color:#' +
 '; font-size:' +
 ((__t = ( l.size )) == null ? '' : __t) +
 'px\'>' +
-((__t = ( l.text )) == null ? '' : __t) +
+((__t = ( markdown.toHTML(l.text) )) == null ? '' : __t) +
 '</div>\n                ';
  }); ;
 __p += '\n            </td></tr>\n        </table>\n    </div>\n';
@@ -484,7 +484,7 @@ __p += '\n                <div style=\'color:#' +
 ((__t = ( l.color )) == null ? '' : __t) +
 '; font-size:' +
 ((__t = ( l.size )) == null ? '' : __t) +
-'px\'> ' +
+'px\'>' +
 ((__t = ( markdown.toHTML(l.text) )) == null ? '' : __t) +
 '</div>\n            ';
  }); ;
