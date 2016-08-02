@@ -183,7 +183,6 @@
         },
 
         addImages: function(iIds) {
-            console.log(iIds, this.get('paper_width'), this.get('paper_height'));
             this.clearSelected();
 
             // approx work out number of columns to layout new panels
