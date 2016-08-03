@@ -674,6 +674,18 @@
         border: solid 1px #bbb;
     }
 
+    .lutOption {
+        text-align: left;
+    }
+
+    .lutOption span {
+        background-image: url('../images/luts_10.png');   /* each lut is 10px high */
+        display: inline-block;
+        width: 150px;
+        background-size: 100% 960px;  /* height is stretched 3x (30px per LUT) */
+        background-repeat: no-repeat;
+    }
+
     .small-thumb {
         width: 40px;
         height: 40px;

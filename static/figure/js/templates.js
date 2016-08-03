@@ -161,9 +161,11 @@ function print() { __p += __j.call(arguments, '') }
 with (obj) {
 __p += '\n\n<div class="btn-group-vertical" role="group">\n\n\t';
  _.each(luts, function(lut, i) { ;
-__p += '\n\n\t\t<button type="button" class="btn btn-default lutOption" data-lut="' +
+__p += '\n\n\t\t<button type="button" class="btn btn-default lutOption"data-lut="' +
 ((__t = ( lut.name )) == null ? '' : __t) +
-'">\n\t\t\t' +
+'">\n\t\t\t<span style="background-position: ' +
+((__t = ( lut.bgPos )) == null ? '' : __t) +
+'">&nbsp</span>\n\t\t\t' +
 ((__t = ( lut.name )) == null ? '' : __t) +
 ' </button>\n\n\t';
  }) ;

@@ -25,6 +25,39 @@ var LutPickerView = Backbone.View.extend({
 
     template: JST["static/figure/templates/lut_picker.html"],
 
+    LUT_NAMES: ["16_colors.lut",
+                "3-3-2_rgb.lut",
+                "5_ramps.lut",
+                "6_shades.lut",
+                "blue_orange_icb.lut",
+                "brgbcmyw.lut",
+                "cool.lut",
+                "cyan_hot.lut",
+                "edges.lut",
+                "fire.lut",
+                "gem.lut",
+                "grays.lut",
+                "green_fire_blue.lut",
+                "hilo.lut",
+                "ica.lut",
+                "ica2.lut",
+                "ica3.lut",
+                "ice.lut",
+                "magenta_hot.lut",
+                "orange_hot.lut",
+                "phase.lut",
+                "rainbow_rgb.lut",
+                "red-green.lut",
+                "red_hot.lut",
+                "royal.lut",
+                "sepia.lut",
+                "smart.lut",
+                "spectrum.lut",
+                "thal.lut",
+                "thallium.lut",
+                "unionjack.lut",
+                "yellow_hot.lut"],
+
     initialize:function () {
     },
 
@@ -45,10 +78,20 @@ var LutPickerView = Backbone.View.extend({
         this.pickedLut = lutName;
     },
 
-    loadLuts: function () {
+    loadLuts: function() {
         var url = WEBGATEWAYINDEX + 'luts/';
         var promise = $.getJSON(url);
         return promise;
+    },
+
+    getLutBackgroundPosition: function(lutName) {
+        var lutIndex = this.LUT_NAMES.indexOf(lutName);
+        var css = {};
+        if (lutIndex > -1) {
+            return '0px -' + (lutIndex * 30) + 'px';
+        } else {
+            return '0px 50px';  // hides background
+        }
     },
 
     show: function(options) {
@@ -62,17 +105,20 @@ var LutPickerView = Backbone.View.extend({
 
         this.loadLuts().done(function(data){
             console.log(data);
-            this.luts = data;
+            this.luts = data.luts;
             this.render();
         }.bind(this));
-
-        // this.render();
     },
 
-    render:function () {
+    render:function() {
         
-        var data = this.luts;
-        var html = this.template(data);
+        var luts = this.luts.map(function(lut) {
+            // Add css background-position to each lut to offset luts_10.png
+            var bgPos = this.getLutBackgroundPosition(lut.name);
+            lut.bgPos = bgPos;
+            return lut;
+        }.bind(this));
+        var html = this.template({'luts': luts});
 
         $(".modal-body", this.el).html(html);
     }

@@ -1422,9 +1422,9 @@
                     }
                 });
             } else if (color == 'lutpicker') {
-                // console.log("lutpicker");
                 FigureLutPicker.show({
                     success: function(lutName){
+                        // LUT names are handled same as color strings
                         self.set_color(idx, lutName);
                     }
                 });

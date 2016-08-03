@@ -4,7 +4,8 @@
 
 	<% _.each(luts, function(lut, i) { %>
 
-		<button type="button" class="btn btn-default lutOption" data-lut="<%= lut.name %>">
+		<button type="button" class="btn btn-default lutOption"data-lut="<%= lut.name %>">
+			<span style="background-position: <%= lut.bgPos %>">&nbsp</span>
 			<%= lut.name %> </button>
 
 	<% }) %>
