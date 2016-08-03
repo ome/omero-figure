@@ -3577,6 +3577,9 @@ var LutPickerView = Backbone.View.extend({
         var lutName = event.currentTarget.getAttribute('data-lut');
         console.log(lutName);
         this.pickedLut = lutName;
+
+        var bgPos = this.getLutBackgroundPosition(lutName);
+        $(".lutPreview", this.el).css('background-position', bgPos);
     },
 
     loadLuts: function() {
@@ -3589,9 +3592,9 @@ var LutPickerView = Backbone.View.extend({
         var lutIndex = this.LUT_NAMES.indexOf(lutName);
         var css = {};
         if (lutIndex > -1) {
-            return '0px -' + (lutIndex * 30) + 'px';
+            return '0px -' + ((lutIndex * 50) +2) + 'px';
         } else {
-            return '0px 50px';  // hides background
+            return '0px 100px';  // hides background
         }
     },
 
@@ -3605,7 +3608,6 @@ var LutPickerView = Backbone.View.extend({
         }
 
         this.loadLuts().done(function(data){
-            console.log(data);
             this.luts = data.luts;
             this.render();
         }.bind(this));

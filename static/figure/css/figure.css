@@ -685,8 +685,14 @@
     .lutBg {
         background-image: url('../images/luts_10.png');   /* each lut is 10px high */
         display: inline-block;
-        background-size: 100% 960px;  /* height is stretched 3x (30px per LUT) */
+        background-size: 100% 1600px;  /* height is stretched 5x (50px per LUT) */
         background-repeat: no-repeat;
+    }
+
+    .lutPreview {
+        width: 100%;
+        height: 45px;
+        border-top: 1px solid #e5e5e5;
     }
 
     .small-thumb {
