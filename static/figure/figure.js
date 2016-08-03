@@ -3575,10 +3575,14 @@ var LutPickerView = Backbone.View.extend({
 
     pickLut: function(event) {
         var lutName = event.currentTarget.getAttribute('data-lut');
+        // Save the name - used in handleSubmit();
         this.pickedLut = lutName;
 
+        // Update preview to show LUT
         var bgPos = this.getLutBackgroundPosition(lutName);
         $(".lutPreview", this.el).css('background-position', bgPos);
+        // Enable OK button
+        $("button[type='submit']", this.el).removeAttr('disabled');
     },
 
     loadLuts: function() {
