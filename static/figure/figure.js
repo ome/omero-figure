@@ -3575,7 +3575,6 @@ var LutPickerView = Backbone.View.extend({
 
     pickLut: function(event) {
         var lutName = event.currentTarget.getAttribute('data-lut');
-        console.log(lutName);
         this.pickedLut = lutName;
 
         var bgPos = this.getLutBackgroundPosition(lutName);
@@ -3610,19 +3609,27 @@ var LutPickerView = Backbone.View.extend({
         this.loadLuts().done(function(data){
             this.luts = data.luts;
             this.render();
+        }.bind(this)).fail(function(){
+            // E.g. 404 with Older OMERO (pre 5.3.0)
+            this.render();
         }.bind(this));
     },
 
     render:function() {
         
-        var luts = this.luts.map(function(lut) {
-            // Add css background-position to each lut to offset luts_10.png
-            var bgPos = this.getLutBackgroundPosition(lut.name);
-            lut.bgPos = bgPos;
-            return lut;
-        }.bind(this));
-        var html = this.template({'luts': luts});
-
+        var html = "",
+            luts;
+        if (!this.luts) {
+            html = "<p>Loading Lookup Tables failed.</p>";
+            html += "<p>Your OMERO version does not support LUTs. Please upgrade.</p>";
+        } else {
+            luts = this.luts.map(function(lut) {
+                // Add css background-position to each lut to offset luts_10.png
+                lut.bgPos = this.getLutBackgroundPosition(lut.name);
+                return lut;
+            }.bind(this));
+            html = this.template({'luts': luts});
+        }
         $(".modal-body", this.el).html(html);
     }
 });
