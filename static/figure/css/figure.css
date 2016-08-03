@@ -245,6 +245,13 @@
     .ch-btn-flat {
         background-image: url("../images/button-flat.png")
     }
+    .ch-btn-down, .ch-btn-up, .ch-btn-flat {
+        position: absolute;
+        left: 0;
+        top: 0;
+        right: 0;
+        bottom: 0;
+    }
 
     .zp-btn-down {
         background-image: url("../images/button-down-grey.png")

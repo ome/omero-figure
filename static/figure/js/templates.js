@@ -7,7 +7,13 @@ function print() { __p += __j.call(arguments, '') }
 with (obj) {
 __p += '\n\n    ';
  _.each(channels, function(c, i) { ;
-__p += '\n        <div class="btn-group" style="padding:2px">\n            <button type="button"\n            title="Turn channel on/off"\nclass="btn btn-default channel-btn ';
+__p += '\n        <div class="btn-group" style="padding:2px">\n            <button type="button"\n            title="Turn channel on/off"\nclass="btn btn-default channel-btn lutBg"\n                    data-index="' +
+((__t = ( i )) == null ? '' : __t) +
+'"\n                    style="background-color:#' +
+((__t = ( c.color )) == null ? '' : __t) +
+'; background-position: ' +
+((__t = ( c.lutBgPos )) == null ? '' : __t) +
+'">\n                <div class="';
  if(c.active) { ;
 __p += 'ch-btn-down';
  } else if (typeof c.active == 'boolean') { ;
@@ -15,11 +21,7 @@ __p += 'ch-btn-up';
  } else { ;
 __p += 'ch-btn-flat';
  };
-__p += '"\n                    data-index="' +
-((__t = ( i )) == null ? '' : __t) +
-'"\n                    style="background-color:#' +
-((__t = ( c.color )) == null ? '' : __t) +
-'">\n                &nbsp\n            </button>\n            <button type="button" class="btn btn-default dropdown-toggle"\n                    data-toggle="dropdown" title="Pick channel color">\n                <span class="caret"></span>\n            </button>\n            <ul class="dropdown-menu colorpicker" data-index="' +
+__p += '">&nbsp</div>&nbsp\n            </button>\n            <button type="button" class="btn btn-default dropdown-toggle"\n                    data-toggle="dropdown" title="Pick channel color">\n                <span class="caret"></span>\n            </button>\n            <ul class="dropdown-menu colorpicker" data-index="' +
 ((__t = ( i )) == null ? '' : __t) +
 '">\n                <li class="dropdown-header">Channel Color</li>\n                <li class="divider"></li>\n                <li><a data-color="0000FF" href="#">\n                    <span style="background-color:#00f">&nbsp &nbsp &nbsp</span>&nbsp Blue\n                </a></li>\n                <li><a data-color="00FF00" href="#">\n                    <span style="background-color:#0f0">&nbsp &nbsp &nbsp</span>&nbsp Green\n                </a></li>\n                <li><a data-color="FF0000" href="#">\n                    <span style="background-color:#f00">&nbsp &nbsp &nbsp</span>&nbsp Red\n                </a></li>\n                <li><a data-color="FFFF00" href="#">\n                    <span style="background-color:#ff0">&nbsp &nbsp &nbsp</span>&nbsp Yellow\n                </a></li>\n                <li><a data-color="FFFFFF" href="#">\n                    <span style="background-color:#fff">&nbsp &nbsp &nbsp</span>&nbsp White\n                </a></li>\n                <li><a data-color="FF00FF" href="#">\n                    <span style="background-color:#f0f">&nbsp &nbsp &nbsp</span>&nbsp Magenta\n                </a></li>\n                <li class="divider"></li>\n                <li><a data-color="lutpicker" href="#">\n                    <span class="lutBg">&nbsp &nbsp &nbsp</span>&nbsp Lookup Tables\n                </a></li>\n                <li><a data-color="colorpicker" data-oldcolor="' +
 ((__t = ( c.color )) == null ? '' : __t) +

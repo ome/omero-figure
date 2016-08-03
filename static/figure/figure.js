@@ -6287,6 +6287,11 @@ var RectView = Backbone.View.extend({
                 if (!compatible) {
                     json = [];
                 }
+                // Add LUT offsets
+                json = json.map(function(ch){
+                    ch.lutBgPos = FigureLutPicker.getLutBackgroundPosition(ch.color);
+                    return ch;
+                });
                 html = this.template({'channels':json,
                     'z_projection_disabled': z_projection_disabled,
                     'rotation': rotation,
