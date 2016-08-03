@@ -22,6 +22,7 @@ $(function(){
     var figureModel = new FigureModel();
 
     window.FigureColorPicker = new ColorPickerView();
+    window.FigureLutPicker = new LutPickerView();
 
     // Override 'Backbone.sync'...
     Backbone.ajaxSync = Backbone.sync;

@@ -1,0 +1,11 @@
+
+
+<div class="btn-group-vertical" role="group">
+
+	<% _.each(luts, function(lut, i) { %>
+
+		<button type="button" class="btn btn-default lutOption" data-lut="<%= lut.name %>">
+			<%= lut.name %> </button>
+
+	<% }) %>
+</div>
