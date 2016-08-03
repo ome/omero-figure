@@ -1577,8 +1577,8 @@
                             color = ch.color;
                         if (color == "FFFFFF") color = "ccc";  // white slider would be invisible
                         var $div = $("<div><span class='ch_start'>" + start_label +
-                                "</span><div class='ch_slider' style='background-color:#" + color +
-                                "'></div><span class='ch_end'>" + end_label + "</span></div>")
+                                "</span><div class='ch_slider lutBg' style='background-color:#" + color +
+                                "; background-position: " + ch.lutBgPos + "'></div><span class='ch_end'>" + end_label + "</span></div>")
                             .appendTo($channel_sliders);
 
                         $div.find('.ch_slider').slider({

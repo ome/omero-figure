@@ -482,9 +482,11 @@
     }
     .tab-pane .ui-slider {
         margin: 13px 5px 6px;
-        background: none repeat scroll 0 0 #BBBBBB;
         border: 4px solid #fff;
         cursor: pointer;
+    }
+    #vp_z_slider, #vp_t_slider {
+        background: none repeat scroll 0 0 #BBBBBB;
     }
     .tab-pane .ui-slider-handle {
         background: none repeat scroll 0 0 #DDDDDD;
