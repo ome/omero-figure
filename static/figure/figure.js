@@ -2314,6 +2314,7 @@ var CropModalView = Backbone.View.extend({
             "click .new_figure": "goto_newfigure",
             "click .open_figure": "open_figure",
             "click .export_json": "export_json",
+            "click .import_json": "import_json",
             "click .delete_figure": "delete_figure",
             "click .paper_setup": "paper_setup",
             "click .export-options a": "select_export_option",
@@ -2648,6 +2649,12 @@ var CropModalView = Backbone.View.extend({
                 figureText = JSON.stringify(figureJSON);
             $('#exportJsonModal').modal('show');
             $('#exportJsonModal textarea').text(figureText);
+        },
+        
+        import_json: function(event) {
+            event.preventDefault();
+
+            console.log("import_json");
         },
 
         copy_selected_panels: function(event) {
