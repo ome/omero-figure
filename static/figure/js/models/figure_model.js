@@ -136,6 +136,42 @@
             }
             return figureJSON;
         },
+        
+        figure_fromJSON: function(data) {
+            data = this.version_transform(JSON.parse(data));
+            
+            var n = {'figureName': data.figureName,
+                    'canEdit': data.canEdit,
+                    'paper_width': data.paper_width,
+                    'paper_height': data.paper_height,
+                    'page_size': data.page_size || 'letter',
+                    'page_count': data.page_count,
+                    'paper_spacing': data.paper_spacing,
+                    'page_col_count': data.page_col_count,
+                    'orientation': data.orientation,
+                    'legend': data.legend,
+                    'legend_collapsed': data.legend_collapsed,
+                };
+
+            // For missing attributes, we fill in with defaults
+            // so as to clear everything from previous figure.
+            n = $.extend({}, this.defaults, n);
+            
+            this.clearFigure();
+            this.set(n);
+            
+            _.each(data.panels, function(p){
+                p.selected = false;
+                this.panels.create(p);
+            }.bind(this));
+
+            this.set('unsaved', true);
+            
+            // wait for undo/redo to handle above, then...
+            setTimeout(function() {
+                this.trigger("reset_undo_redo");
+            }.bind(this), 50);
+        },
 
         save_to_OMERO: function(options) {
 
@@ -495,4 +531,3 @@
         }
 
     });
-

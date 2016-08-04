@@ -141,6 +141,42 @@
             }
             return figureJSON;
         },
+        
+        figure_fromJSON: function(data) {
+            data = this.version_transform(JSON.parse(data));
+            
+            var n = {'figureName': data.figureName,
+                    'canEdit': data.canEdit,
+                    'paper_width': data.paper_width,
+                    'paper_height': data.paper_height,
+                    'page_size': data.page_size || 'letter',
+                    'page_count': data.page_count,
+                    'paper_spacing': data.paper_spacing,
+                    'page_col_count': data.page_col_count,
+                    'orientation': data.orientation,
+                    'legend': data.legend,
+                    'legend_collapsed': data.legend_collapsed,
+                };
+
+            // For missing attributes, we fill in with defaults
+            // so as to clear everything from previous figure.
+            n = $.extend({}, this.defaults, n);
+            
+            this.clearFigure();
+            this.set(n);
+            
+            _.each(data.panels, function(p){
+                p.selected = false;
+                this.panels.create(p);
+            }.bind(this));
+
+            this.set('unsaved', true);
+            
+            // wait for undo/redo to handle above, then...
+            setTimeout(function() {
+                this.trigger("reset_undo_redo");
+            }.bind(this), 50);
+        },
 
         save_to_OMERO: function(options) {
 
@@ -500,7 +536,6 @@
         }
 
     });
-
 
 
     // ------------------------ Panel -----------------------------------------
@@ -2320,6 +2355,7 @@ var CropModalView = Backbone.View.extend({
             "click .export-options a": "select_export_option",
             "click .zoom-paper-to-fit": "zoom_paper_to_fit",
             "click .about_figure": "show_about_dialog",
+            "submit .importJsonForm": "import_json_form"
         },
 
         keyboardEvents: {
@@ -2654,9 +2690,25 @@ var CropModalView = Backbone.View.extend({
         import_json: function(event) {
             event.preventDefault();
 
-            console.log("import_json");
+            var showImport = function() {
+              $('#importJsonModal').modal('show');
+            };
+            
+            app.checkSaveAndClear(function() { showImport()} );
         },
 
+        import_json_form: function(event) {
+          event.preventDefault();
+          
+          var $form = $('.importJsonForm'),
+              figureJSON = $('.form-control', $form).val();
+          this.model.figure_fromJSON(figureJSON);
+            
+          $('#importJsonModal').modal('hide');
+          $('#importJsonModal textarea').val('');
+          this.render();
+        },
+        
         copy_selected_panels: function(event) {
             event.preventDefault();
             if (this.modal_visible()) return true;

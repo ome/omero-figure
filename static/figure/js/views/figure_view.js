@@ -101,6 +101,7 @@
             "click .export-options a": "select_export_option",
             "click .zoom-paper-to-fit": "zoom_paper_to_fit",
             "click .about_figure": "show_about_dialog",
+            "submit .importJsonForm": "import_json_form"
         },
 
         keyboardEvents: {
@@ -435,9 +436,25 @@
         import_json: function(event) {
             event.preventDefault();
 
-            console.log("import_json");
+            var showImport = function() {
+              $('#importJsonModal').modal('show');
+            };
+            
+            app.checkSaveAndClear(function() { showImport()} );
         },
 
+        import_json_form: function(event) {
+          event.preventDefault();
+          
+          var $form = $('.importJsonForm'),
+              figureJSON = $('.form-control', $form).val();
+          this.model.figure_fromJSON(figureJSON);
+            
+          $('#importJsonModal').modal('hide');
+          $('#importJsonModal textarea').val('');
+          this.render();
+        },
+        
         copy_selected_panels: function(event) {
             event.preventDefault();
             if (this.modal_visible()) return true;
