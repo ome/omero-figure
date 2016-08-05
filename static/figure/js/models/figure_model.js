@@ -45,47 +45,53 @@
 
             var load_url = BASE_WEBFIGURE_URL + "load_web_figure/" + fileId + "/",
                 self = this;
-
-
+            
             $.getJSON(load_url, function(data){
-
-                // bring older files up-to-date
-                data = self.version_transform(data);
-
-                var name = data.figureName || "UN-NAMED",
-                    n = {'fileId': fileId,
-                        'figureName': name,
-                        'canEdit': data.canEdit,
-                        'paper_width': data.paper_width,
-                        'paper_height': data.paper_height,
-                        'page_size': data.page_size || 'letter',
-                        'page_count': data.page_count,
-                        'paper_spacing': data.paper_spacing,
-                        'page_col_count': data.page_col_count,
-                        'orientation': data.orientation,
-                        'legend': data.legend,
-                        'legend_collapsed': data.legend_collapsed,
-                    };
-
-                // For missing attributes, we fill in with defaults
-                // so as to clear everything from previous figure.
-                n = $.extend({}, self.defaults, n);
-
-                self.set(n);
-
-                _.each(data.panels, function(p){
-                    p.selected = false;
-                    self.panels.create(p);
-                });
-
-                self.set('unsaved', false);
-                // wait for undo/redo to handle above, then...
-                setTimeout(function() {
-                    self.trigger("reset_undo_redo");
-                }, 50);
+              data.fileId = fileId;
+              self.load_from_JSON(data);
             });
+            
+            self.set('unsaved', false);
         },
+        
+        load_from_JSON: function(data) {
+          self = this;
+          
+          // bring older files up-to-date
+          data = self.version_transform(data);
 
+          var name = data.figureName || "UN-NAMED",
+              n = {'fileId': data.fileId,
+                  'figureName': name,
+                  'canEdit': data.canEdit,
+                  'paper_width': data.paper_width,
+                  'paper_height': data.paper_height,
+                  'page_size': data.page_size || 'letter',
+                  'page_count': data.page_count,
+                  'paper_spacing': data.paper_spacing,
+                  'page_col_count': data.page_col_count,
+                  'orientation': data.orientation,
+                  'legend': data.legend,
+                  'legend_collapsed': data.legend_collapsed,
+              };
+
+          // For missing attributes, we fill in with defaults
+          // so as to clear everything from previous figure.
+          n = $.extend({}, self.defaults, n);
+
+          self.set(n);
+
+          _.each(data.panels, function(p){
+              p.selected = false;
+              self.panels.create(p);
+          });
+
+          // wait for undo/redo to handle above, then...
+          setTimeout(function() {
+              self.trigger("reset_undo_redo");
+          }, 50);
+        },
+        
         // take Figure_JSON from a previous version,
         // and transform it to latest version
         version_transform: function(json) {
@@ -104,7 +110,7 @@
 
             return json;
         },
-
+        
         figure_toJSON: function() {
             // Turn panels into json
             var p_json = [],
@@ -138,39 +144,10 @@
         },
         
         figure_fromJSON: function(data) {
-            data = this.version_transform(JSON.parse(data));
-            
-            var n = {'figureName': data.figureName,
-                    'canEdit': data.canEdit,
-                    'paper_width': data.paper_width,
-                    'paper_height': data.paper_height,
-                    'page_size': data.page_size || 'letter',
-                    'page_count': data.page_count,
-                    'paper_spacing': data.paper_spacing,
-                    'page_col_count': data.page_col_count,
-                    'orientation': data.orientation,
-                    'legend': data.legend,
-                    'legend_collapsed': data.legend_collapsed,
-                };
-
-            // For missing attributes, we fill in with defaults
-            // so as to clear everything from previous figure.
-            n = $.extend({}, this.defaults, n);
-            
-            this.clearFigure();
-            this.set(n);
-            
-            _.each(data.panels, function(p){
-                p.selected = false;
-                this.panels.create(p);
-            }.bind(this));
-
-            this.set('unsaved', true);
-            
-            // wait for undo/redo to handle above, then...
-            setTimeout(function() {
-                this.trigger("reset_undo_redo");
-            }.bind(this), 50);
+          var parsed = JSON.parse(data);
+          delete parsed.fileId;
+          this.load_from_JSON(parsed);
+          this.set('unsaved', true);
         },
 
         save_to_OMERO: function(options) {
