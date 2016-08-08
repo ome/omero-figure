@@ -515,15 +515,7 @@
                     coords.scale = Math.min(coords.scale, 1);    // only scale down
                     coords.px = coords.px || coords.c.x - (full_width * coords.scale)/2;
                     coords.py = coords.py || coords.c.y - (full_height * coords.scale)/2;
-                    var channels = data.channels;
-                    if (data.rdefs.model === "greyscale") {
-                        // we don't support greyscale, but instead set active channel grey
-                        _.each(channels, function(ch){
-                            if (ch.active) {
-                                ch.color = "FFFFFF";
-                            }
-                        });
-                    }
+
                     // ****** This is the Data Model ******
                     //-------------------------------------
                     // Any changes here will create a new version
@@ -540,7 +532,8 @@
                         'theZ': data.rdefs.defaultZ,
                         'sizeT': data.size.t,
                         'theT': data.rdefs.defaultT,
-                        'channels': channels,
+                        'rdefs': {'model': data.rdefs.model},
+                        'channels': data.channels,
                         'orig_width': data.size.width,
                         'orig_height': data.size.height,
                         'x': coords.px,
