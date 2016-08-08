@@ -4191,7 +4191,7 @@ var LegendView = Backbone.View.extend({
             } else {
                 // delete shapes
                 if (this.shapeManager) {
-                    this.shapeManager.deleteAll();
+                    this.shapeManager.deleteAllShapes();
                 }
             }
         },
