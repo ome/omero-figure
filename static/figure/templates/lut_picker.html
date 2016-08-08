@@ -4,9 +4,9 @@
 
 	<% _.each(luts, function(lut, i) { %>
 
-		<button type="button" class="btn btn-default lutOption"data-lut="<%= lut.name %>">
+		<button type="button" class="btn btn-default lutOption" data-lut="<%= lut.name %>">
 			<span class="lutBg" style="background-position: <%= lut.bgPos %>">&nbsp</span>
-			<%= lut.name %> </button>
+			<%= lut.displayName %> </button>
 
 		<% if (i === parseInt(luts.length/2)) { %>
 			</div>

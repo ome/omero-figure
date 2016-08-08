@@ -3659,7 +3659,8 @@ var LutPickerView = Backbone.View.extend({
             luts = this.luts.map(function(lut) {
                 // Add css background-position to each lut to offset luts_10.png
                 return {'bgPos': this.getLutBackgroundPosition(lut.name),
-                        'name': this.formatLutName(lut.name)};
+                        'name': lut.name,
+                        'displayName': this.formatLutName(lut.name)};
             }.bind(this));
             html = this.template({'luts': luts});
         }
