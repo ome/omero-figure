@@ -5,4 +5,4 @@
 # https://www.openmicroscopy.org/
 #   site/support/omero5.2/developers/Web/CreateApp.html
 
-OMERO_FIGURE_VERSION = "1.2.1_dev"
+OMERO_FIGURE_VERSION = "1.2.1-dev"
