@@ -533,6 +533,21 @@
 
         },
 
+        // When we're creating a Panel, we process the data a little here:
+        parse: function(data, options) {
+            // channels: use 'lut' for color if set. Don't save 'lut'
+            data.channels = data.channels.map(function(ch){
+                if (ch.lut) {
+                    if (ch.lut.length > 0) {
+                        ch.color = ch.lut;
+                    }
+                    delete ch.lut;
+                }
+                return ch;
+            });
+            return data;
+        },
+
         syncOverride: true,
 
         validate: function(attrs, options) {
@@ -4205,7 +4220,8 @@ var LutPickerView = Backbone.View.extend({
                         n.baseUrl = baseUrl;
                     }
                     // create Panel (and select it)
-                    self.model.panels.create(n).set('selected', true);
+                    // We do some additional processing in Panel.parse()
+                    self.model.panels.create(n, {'parse': true}).set('selected', true);
                     self.model.notifySelectionChange();
 
                     // update px, py for next panel

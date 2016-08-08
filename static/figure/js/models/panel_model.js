@@ -29,6 +29,21 @@
 
         },
 
+        // When we're creating a Panel, we process the data a little here:
+        parse: function(data, options) {
+            // channels: use 'lut' for color if set. Don't save 'lut'
+            data.channels = data.channels.map(function(ch){
+                if (ch.lut) {
+                    if (ch.lut.length > 0) {
+                        ch.color = ch.lut;
+                    }
+                    delete ch.lut;
+                }
+                return ch;
+            });
+            return data;
+        },
+
         syncOverride: true,
 
         validate: function(attrs, options) {

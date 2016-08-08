@@ -557,7 +557,8 @@
                         n.baseUrl = baseUrl;
                     }
                     // create Panel (and select it)
-                    self.model.panels.create(n).set('selected', true);
+                    // We do some additional processing in Panel.parse()
+                    self.model.panels.create(n, {'parse': true}).set('selected', true);
                     self.model.notifySelectionChange();
 
                     // update px, py for next panel
