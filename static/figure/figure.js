@@ -3601,6 +3601,14 @@ var LutPickerView = Backbone.View.extend({
         }
     },
 
+    formatLutName: function(lutName) {
+        lutName = lutName.replace(".lut", "");
+        lutName = lutName.replace(/_/g, " ");
+        // Title case
+        lutName = lutName[0].toUpperCase() + lutName.slice(1);
+        return lutName;
+    },
+
     show: function(options) {
 
         $("#lutpickerModal").modal('show');
@@ -3629,8 +3637,8 @@ var LutPickerView = Backbone.View.extend({
         } else {
             luts = this.luts.map(function(lut) {
                 // Add css background-position to each lut to offset luts_10.png
-                lut.bgPos = this.getLutBackgroundPosition(lut.name);
-                return lut;
+                return {'bgPos': this.getLutBackgroundPosition(lut.name),
+                        'name': this.formatLutName(lut.name)};
             }.bind(this));
             html = this.template({'luts': luts});
         }
