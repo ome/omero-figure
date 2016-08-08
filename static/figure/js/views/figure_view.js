@@ -367,6 +367,7 @@
                 event.preventDefault();
             }
             this.$saveBtn.tooltip('hide');
+            this.$saveBtn.attr('disabled', 'disabled');
             this.save_figure();
         },
 
