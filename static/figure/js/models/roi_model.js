@@ -43,7 +43,7 @@ var RoiList = Backbone.Collection.extend({
         this.forEach(function(roi){
             var s = roi.shapes.get(shapeId);
             if (s) {
-                shape = $.extend({}, s);
+                shape = s;
             }
         });
         return shape;

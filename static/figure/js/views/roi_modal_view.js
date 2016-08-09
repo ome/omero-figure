@@ -94,6 +94,7 @@ var RoiModalView = Backbone.View.extend({
             var iid = this.m.get('imageId');
             var Rois = new RoiList();
             this.listenTo(Rois, "change:selection", this.showTempShape);
+            this.listenTo(Rois, "shape_click", this.addShapeFromOmero);
             Rois.url = ROIS_JSON_URL + iid + "/",
             Rois.fetch({success: function(model, response, options){
                 var roiLoaderView = new RoiLoaderView({collection: model, panel: this.m});
@@ -101,6 +102,21 @@ var RoiModalView = Backbone.View.extend({
                 $("#roiModalRoiList").append(roiLoaderView.el);
                 roiLoaderView.render();
             }.bind(this)});
+        },
+
+        addShapeFromOmero: function(args) {
+
+            var shapeJson = args[0],
+                shape;
+            if (shapeJson) {
+                var viewport = this.m.getViewportAsRect();
+                shape = this.shapeManager.addShapeJson(shapeJson, viewport);
+            }
+            if (!shape) {
+                alert("Couldn't add shape outside of current viewport");
+            } else {
+                this.shapeManager.selectShapes([shape]);
+            }
         },
 
         showTempShape: function(args) {

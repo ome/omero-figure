@@ -1239,7 +1239,7 @@ var RoiList = Backbone.Collection.extend({
         this.forEach(function(roi){
             var s = roi.shapes.get(shapeId);
             if (s) {
-                shape = $.extend({}, s);
+                shape = s;
             }
         });
         return shape;
@@ -6257,7 +6257,7 @@ var RoiLoaderView = Backbone.View.extend({
 
     events: {
         "mouseover .roiModalRoiItem": "mouseoverRoiItem",
-        "mouseout .roiModalRoiItem": "mouseoutRoiItem",
+        // "mouseout .roiModalRoiItem": "mouseoutRoiItem",
         "click .roiModalRoiItem": "clickRoiItem",
     },
 
@@ -6269,18 +6269,9 @@ var RoiLoaderView = Backbone.View.extend({
             $tr = $tr.parent();
         }
         var shapeId = parseInt($tr.attr('data-shapeid'), 10);
-        // Shape probably already added to view
-        var shape = this.shapeManager.getShape(shapeId);
-        if (!shape) {
-            shape = this.collection.get(shapeId);
-            var viewport = this.m.getViewportAsRect();
-            shape = this.shapeManager.addShapeJson(shape, viewport);
-        }
-        if (!shape) {
-            alert("Couldn't add shape outside of current viewport");
-        } else {
-            this.shapeManager.selectShapes([shape]);
-        }
+        var shape = this.collection.getShape(shapeId);
+        var shapeJson = shape.toJSON();
+        this.collection.trigger('shape_click', [shapeJson]);
     },
 
     mouseoverRoiItem: function(event) {
@@ -6290,24 +6281,6 @@ var RoiLoaderView = Backbone.View.extend({
         }
         var shapeId = parseInt($tr.attr('data-shapeid'), 10);
         this.collection.selectShape(shapeId);
-        // if (shape) {
-        //     var viewport = this.m.getViewportAsRect();
-        //     var ok = this.shapeManager.addShapeJson(shape, viewport);
-        // }
-    },
-
-    mouseoutRoiItem: function(event) {
-        var $tr = $(event.target);
-        while (!$tr.hasClass("roiModalRoiItem")) {
-            $tr = $tr.parent();
-        }
-        var shapeId = parseInt($tr.attr('data-shapeid'), 10);
-        // if (shapeId) {
-        //     var shape = this.shapeManager.getShape(shapeId);
-        //     if (!shape.isSelected()) {
-        //         this.shapeManager.deleteShapesByIds([shapeId]);
-        //     }
-        // }
     },
 
     convertOMEROShape: function(s) {
@@ -6506,6 +6479,7 @@ var RoiModalView = Backbone.View.extend({
             var iid = this.m.get('imageId');
             var Rois = new RoiList();
             this.listenTo(Rois, "change:selection", this.showTempShape);
+            this.listenTo(Rois, "shape_click", this.addShapeFromOmero);
             Rois.url = ROIS_JSON_URL + iid + "/",
             Rois.fetch({success: function(model, response, options){
                 var roiLoaderView = new RoiLoaderView({collection: model, panel: this.m});
@@ -6513,6 +6487,21 @@ var RoiModalView = Backbone.View.extend({
                 $("#roiModalRoiList").append(roiLoaderView.el);
                 roiLoaderView.render();
             }.bind(this)});
+        },
+
+        addShapeFromOmero: function(args) {
+
+            var shapeJson = args[0],
+                shape;
+            if (shapeJson) {
+                var viewport = this.m.getViewportAsRect();
+                shape = this.shapeManager.addShapeJson(shapeJson, viewport);
+            }
+            if (!shape) {
+                alert("Couldn't add shape outside of current viewport");
+            } else {
+                this.shapeManager.selectShapes([shape]);
+            }
         },
 
         showTempShape: function(args) {
