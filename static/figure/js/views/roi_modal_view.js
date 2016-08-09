@@ -2,12 +2,14 @@
 
 var RoiModalView = Backbone.View.extend({
 
-        roiTemplate: JST["static/figure/templates/modal_dialogs/roi_modal_roi.html"],
         template: JST["static/figure/templates/shapes/shape_toolbar_template.html"],
 
         el: $("#roiModal"),
 
         model:FigureModel,
+
+        // ID for temp shape that we add & remove from shapeManager
+        TEMP_SHAPE_ID: -1234,
 
         initialize: function() {
 
@@ -85,89 +87,30 @@ var RoiModalView = Backbone.View.extend({
             "click .pasteShape": "pasteShapes",
             "click .deleteShape": "deleteShapes",
             "click .selectAll": "selectAllShapes",
-            "mouseover .roiModalRoiItem": "mouseoverRoiItem",
-            "mouseout .roiModalRoiItem": "mouseoutRoiItem",
-            "click .roiModalRoiItem": "clickRoiItem",
-        },
-
-        clickRoiItem: function(event) {
-            var $tr = $(event.target);
-            // $tr.parentsUntil(".roiModalRoiItem")  DIDN'T work!
-            // Do it manually...
-            while (!$tr.hasClass("roiModalRoiItem")) {
-                $tr = $tr.parent();
-            }
-            var shapeId = parseInt($tr.attr('data-shapeid'), 10);
-            // Shape probably already added to view
-            var shape = this.shapeManager.getShape(shapeId);
-            if (!shape) {
-                shape = this.getOmeroShape(shapeId);
-                var viewport = this.m.getViewportAsRect();
-                shape = this.shapeManager.addShapeJson(shape, viewport);
-            }
-            console.log('CLICK', shape);
-            if (!shape) {
-                alert("Couldn't add shape outside of current viewport");
-            } else {
-                this.shapeManager.selectShapes([shape]);
-            }
-        },
-
-        mouseoverRoiItem: function(event) {
-            var $tr = $(event.target);
-            while (!$tr.hasClass("roiModalRoiItem")) {
-                $tr = $tr.parent();
-            }
-            var shapeId = parseInt($tr.attr('data-shapeid'), 10),
-                shape = this.getOmeroShape(shapeId);
-            console.log('OVER', shapeId, shape);
-            if (shape) {
-                var viewport = this.m.getViewportAsRect();
-                var ok = this.shapeManager.addShapeJson(shape, viewport);
-                console.log('ok?', ok);
-            }
-        },
-
-        mouseoutRoiItem: function(event) {
-            var $tr = $(event.target);
-            while (!$tr.hasClass("roiModalRoiItem")) {
-                $tr = $tr.parent();
-            }
-            var shapeId = parseInt($tr.attr('data-shapeid'), 10);
-            console.log('OUT', shapeId);
-            if (shapeId) {
-                var shape = this.shapeManager.getShape(shapeId);
-                if (!shape.isSelected()) {
-                    this.shapeManager.deleteShapesByIds([shapeId]);
-                }
-            }
         },
 
         // Load Rectangles from OMERO and render them
         loadRois: function() {
-            var self = this,
-                iid = self.m.get('imageId');
-            $.getJSON(ROIS_JSON_URL + iid + "/", function(data){
-                // cache data...
-                self.roiJson = data;
-                // and render it...
-                self.renderRois(data);
-            }).error(function(){
-                self.renderRois([]);
-            });
+            var iid = this.m.get('imageId');
+            var Rois = new RoiList();
+            this.listenTo(Rois, "change:selection", this.showTempShape);
+            Rois.url = ROIS_JSON_URL + iid + "/",
+            Rois.fetch({success: function(model, response, options){
+                var roiLoaderView = new RoiLoaderView({collection: model, panel: this.m});
+                // We append el first, then render
+                $("#roiModalRoiList").append(roiLoaderView.el);
+                roiLoaderView.render();
+            }.bind(this)});
         },
 
-        getOmeroShape: function(shapeId) {
-            if (!this.roiJson) return;
-            var s;
-            this.roiJson.forEach(function(roi){
-                roi.shapes.forEach(function(shape){
-                    if (shapeId === shape.id) {
-                        s = shape;
-                    }
-                });
-            });
-            return s;
+        showTempShape: function(args) {
+            shape = args[0];
+            this.shapeManager.deleteShapesByIds([this.TEMP_SHAPE_ID]);
+            if (shape) {
+                var viewport = this.m.getViewportAsRect();
+                shape.id = this.TEMP_SHAPE_ID;
+                var ok = this.shapeManager.addShapeJson(shape, viewport);
+            }
         },
 
         copyShapes: function(event) {
@@ -355,32 +298,6 @@ var RoiModalView = Backbone.View.extend({
             $("#roiModalTip").show().html(tip);
         },
 
-        convertOMEROShape: function(s) {
-            // Converts a shape json from OMERO into format taken by Shape-editor
-            // if shape has Arrow head, shape.type = Arrow
-            if (s.markerEnd === 'Arrow' || s.markerStart === 'Arrow') {
-                s.type = 'Arrow';
-                if (s.markerEnd !== 'Arrow') {
-                    // Only marker start is arrow - reverse direction!
-                    var tmp = {'x1': s.x1, 'y1': s.y1, 'x2': s.x2, 'y2': s.y2};
-                    s.x1 = tmp.x2;
-                    s.y1 = tmp.y2;
-                    s.x2 = tmp.x1;
-                    s.y2 = tmp.y1;
-                }
-            }
-            if (s.type === 'Ellipse') {
-                // If we have OMERO 5.3, Ellipse has x, y, radiusX, radiusY
-                if (s.radiusX !== undefined) {
-                    s.cx = s.x;
-                    s.cy = s.y;
-                    s.rx = s.radiusX;
-                    s.ry = s.radiusY;
-                }
-            }
-            return s;
-        },
-
         // for rendering bounding-box viewports for shapes
         getBboxJson: function(bbox, theZ, theT) {
             var size = 50;   // longest side
@@ -420,74 +337,6 @@ var RoiModalView = Backbone.View.extend({
             };
         },
 
-        renderRois: function(roiData){
-
-            // var msg = "[No ROIs found on this image in OMERO]";
-            var roiIcons = {'Rectangle': 'rect-icon', 'Ellipse': 'ellipse-icon',
-                            'Line': 'line-icon', 'Arrow': 'arrow-icon'};
-
-            console.log(roiData);
-            var currT = this.m.get('theT'),
-                currZ = this.m.get('theZ');
-
-            var json = roiData.forEach(function(roi){
-                // var r = {'id': roi.id, 'type': '-'}
-                var minT, maxT = 0,
-                    minZ, maxZ = 0;
-                if (roi.shapes) {
-                    // r.shapes = roi.shapes;
-                    roi.shapes = roi.shapes.map(function(s){
-                        s = this.convertOMEROShape(s);
-                        s.icon = roiIcons[s.type];
-                        if (s.theZ !== undefined) {
-                            if (minZ === undefined) {
-                                minZ = s.theZ
-                            } else {
-                                minZ = Math.min(minZ, s.theZ);
-                            }
-                            maxZ = Math.max(maxZ, s.theZ);
-                        }
-                        if (s.theT !== undefined) {
-                            if (minT === undefined) {
-                                minT = s.theT
-                            } else {
-                                minT = Math.min(minT, s.theT);
-                            }
-                            maxT = Math.max(maxT, s.theT);
-                        }
-                        return s;
-                    }.bind(this));
-
-                    roi.type = roi.shapes[0].type;
-                    roi.icon = roi.shapes[0].icon;
-                    roi.minZ = minZ;
-                    roi.maxZ = maxZ;
-                    roi.minT = minT;
-                    roi.maxT = maxT;
-                    roi.bbox = this.getBboxJson(roi.shapes[0], roi.shapes[0].theZ, roi.shapes[0].theT);
-                }
-
-                // return r;
-                var html = this.roiTemplate({'roi': roi, 'currZ': currZ, 'currT': currT});
-
-                $("#roiModalRoiList table").append(html);
-
-                var panelJson = this.m.toJSON();
-                panelJson.width = 50;
-                panelJson.height = 50;
-                panelJson.x = 0;
-                panelJson.y = 0;
-                panelJson.shapes = [roi.shapes[0]];
-                var panelModel = new Panel(panelJson);
-                panelModel.cropToRoi(roi.shapes[0]);
-                var view = new PanelView({model:panelModel});
-                $("#roiModalRoiList .roiViewport").last().append(view.render().el);
-            }.bind(this));
-
-            // var html = this.roiTemplate({'rois': roiData, 'currZ': currZ, 'currT': currT});
-
-            // $("#roiModalRoiList").html(html);
-        },
 
         render: function() {
 
