@@ -34,6 +34,8 @@ from cStringIO import StringIO
 
 from omeroweb.webclient.decorators import login_required
 
+from figure import settings
+
 try:
     from PIL import Image
 except:
@@ -42,7 +44,6 @@ except:
     except:
         pass
 
-RELEASE_VERSION = "1.2.2-dev"
 JSON_FILEANN_NS = "omero.web.figure.json"
 SCRIPT_PATH = "/omero/figure_scripts/Figure_To_Pdf.py"
 
@@ -108,6 +109,8 @@ def index(request, fileId=None, conn=None, **kwargs):
     and lay them out in canvas by dragging & resizing etc
     """
 
+    version = settings.OMERO_FIGURE_VERSION
+
     scriptService = conn.getScriptService()
     sId = scriptService.getScriptID(SCRIPT_PATH)
     scriptMissing = sId <= 0
@@ -115,7 +118,7 @@ def index(request, fileId=None, conn=None, **kwargs):
 
     context = {'scriptMissing': scriptMissing,
                'userFullName': userFullName,
-               'version': RELEASE_VERSION}
+               'version': version}
     return render(request, "figure/index.html", context)
 
 
