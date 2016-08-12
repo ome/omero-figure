@@ -6309,6 +6309,28 @@ var RoiLoaderView = Backbone.View.extend({
         return s;
     },
 
+    // We display a shape on an image Panel using the Panel model and PanelView.
+    appendShape: function($element, shape) {
+
+        var panelJson = this.panel.toJSON();
+        panelJson.width = 50;
+        panelJson.height = 50;
+        panelJson.x = 0;
+        panelJson.y = 0;
+        panelJson.shapes = [shape];
+        var panelModel = new Panel(panelJson);
+        if (shape.theT !== undefined) {
+            panelModel.set('theT', shape.theT);
+        }
+        if (shape.theZ !== undefined) {
+            panelModel.set('theZ', shape.theZ);
+        }
+        panelModel.cropToRoi(shape);
+        var view = new PanelView({model:panelModel});
+        var el = view.render().el;
+        $element.append(el);
+    },
+
     render: function() {
 
         var roiData = this.collection.toJSON();
@@ -6360,23 +6382,9 @@ var RoiLoaderView = Backbone.View.extend({
 
             this.$el.append(html);
 
-            var panelJson = this.panel.toJSON();
-            panelJson.width = 50;
-            panelJson.height = 50;
-            panelJson.x = 0;
-            panelJson.y = 0;
-            panelJson.shapes = [roi.shapes[0]];
-            var panelModel = new Panel(panelJson);
-            if (roi.shapes[0].theT !== undefined) {
-                panelModel.set('theT', roi.shapes[0].theT);
-            }
-            if (roi.shapes[0].theZ !== undefined) {
-                panelModel.set('theZ', roi.shapes[0].theZ);
-            }
-            panelModel.cropToRoi(roi.shapes[0]);
-            var view = new PanelView({model:panelModel});
-            var el = view.render().el;
-            $("#roiModalRoiList .roiViewport").last().append(el);
+            var $element = $("#roiModalRoiList .roiViewport").last();
+            this.appendShape($element, roi.shapes[0]);
+
         }.bind(this));
 
         return this;
