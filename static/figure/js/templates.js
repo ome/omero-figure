@@ -674,9 +674,19 @@ obj || (obj = {});
 var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
 function print() { __p += __j.call(arguments, '') }
 with (obj) {
-__p += '\n\n<tr class="roiModalRoiItem" data-shapeid="' +
+__p += '\n\n<tr class="roiModalRoiItem"\n        data-roiId="' +
+((__t = ( roi.id )) == null ? '' : __t) +
+'"\n        ';
+ if (roi.shapes.length === 1) { ;
+__p += '\n            data-shapeId="' +
 ((__t = ( roi.shapes[0].id )) == null ? '' : __t) +
-'" >\n    <td>\n        <span class="glyphicon ' +
+'"\n        ';
+ } ;
+__p += '\n        >\n    <td>\n        ';
+ if (roi.shapes.length > 1) { ;
+__p += '\n            <span class="toggleRoi glyphicon glyphicon-play"></span>\n        ';
+ } ;
+__p += '\n    </td>\n    <td>\n        <span class="glyphicon ' +
 ((__t = ( roi.icon )) == null ? '' : __t) +
 '"></span>\n    </td>\n\n    <td>\n        Z:\n        ';
  if (roi.minZ !== undefined) { ;
@@ -694,13 +704,24 @@ __p += '\n            ' +
  if (roi.maxT !== roi.minT) print(" - " + (roi.maxT + 1)); ;
 __p += '\n        ';
  } ;
-__p += '\n    </td>\n    <td class="roiViewport" style="position:relative; width:75px; height:55px"></td>\n</tr>\n\n';
- if (roi.shapes.length > 1) { ;
+__p += '\n    </td>\n    <td class="roiViewport" style="position:relative; width:75px; height:55px"></td>\n</tr>\n';
+
+}
+return __p
+};
+
+this["JST"]["static/figure/templates/modal_dialogs/roi_modal_shape.html"] = function(obj) {
+obj || (obj = {});
+var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
+function print() { __p += __j.call(arguments, '') }
+with (obj) {
+__p += '\n\n';
+ if (shapes.length > 1) { ;
 __p += '\n    ';
- _.each(roi.shapes, function(shape) { ;
+ _.each(shapes, function(shape) { ;
 __p += '\n    <tr class="roiModalRoiItem" data-shapeid="' +
 ((__t = ( shape.id )) == null ? '' : __t) +
-'" >\n        <td><span class="glyphicon ' +
+'" >\n    \t<td></td>\n        <td><span class="glyphicon ' +
 ((__t = ( shape.icon )) == null ? '' : __t) +
 '"></span> </td>\n        <td>Z: ' +
 ((__t = ( shape.theZ + 1 )) == null ? '' : __t) +
@@ -710,7 +731,7 @@ __p += '\n    <tr class="roiModalRoiItem" data-shapeid="' +
  }) ;
 __p += '\n';
  } ;
-__p += '\n';
+
 
 }
 return __p

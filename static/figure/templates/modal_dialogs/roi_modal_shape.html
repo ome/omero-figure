@@ -1,0 +1,13 @@
+
+
+<% if (shapes.length > 1) { %>
+    <% _.each(shapes, function(shape) { %>
+    <tr class="roiModalRoiItem" data-shapeid="<%= shape.id %>" >
+    	<td></td>
+        <td><span class="glyphicon <%= shape.icon %>"></span> </td>
+        <td>Z: <%= shape.theZ + 1 %> </td>
+        <td>T: <%= shape.theT + 1 %> </td>
+        <td> </td>
+    </tr>
+    <% }) %>
+<% } %>

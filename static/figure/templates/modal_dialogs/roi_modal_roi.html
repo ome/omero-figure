@@ -1,6 +1,16 @@
 
 
-<tr class="roiModalRoiItem" data-shapeid="<%= roi.shapes[0].id %>" >
+<tr class="roiModalRoiItem"
+        data-roiId="<%= roi.id %>"
+        <% if (roi.shapes.length === 1) { %>
+            data-shapeId="<%= roi.shapes[0].id %>"
+        <% } %>
+        >
+    <td>
+        <% if (roi.shapes.length > 1) { %>
+            <span class="toggleRoi glyphicon glyphicon-play"></span>
+        <% } %>
+    </td>
     <td>
         <span class="glyphicon <%= roi.icon %>"></span>
     </td>
@@ -21,14 +31,3 @@
     </td>
     <td class="roiViewport" style="position:relative; width:75px; height:55px"></td>
 </tr>
-
-<% if (roi.shapes.length > 1) { %>
-    <% _.each(roi.shapes, function(shape) { %>
-    <tr class="roiModalRoiItem" data-shapeid="<%= shape.id %>" >
-        <td><span class="glyphicon <%= shape.icon %>"></span> </td>
-        <td>Z: <%= shape.theZ + 1 %> </td>
-        <td>T: <%= shape.theT + 1 %> </td>
-        <td> </td>
-    </tr>
-    <% }) %>
-<% } %>

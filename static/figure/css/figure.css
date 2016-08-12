@@ -668,6 +668,14 @@
         padding: 4px 8px;
     }
 
+    .toggleRoi {
+        transition: transform 300ms ease;
+        transform-origin: 30% 75%;
+    }
+    .rotate90 {
+        transform: rotate(90deg);
+    }
+
     .colorpicker span,
     .label-color span:first-child,
     .shape-color span:first-child {

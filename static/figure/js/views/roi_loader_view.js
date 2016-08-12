@@ -4,6 +4,7 @@ var RoiLoaderView = Backbone.View.extend({
     tagName: 'table',
 
     template: JST["static/figure/templates/modal_dialogs/roi_modal_roi.html"],
+    shapeTemplate: JST["static/figure/templates/modal_dialogs/roi_modal_shape.html"],
 
     initialize: function(options) {
         this.panel = options.panel;
@@ -13,6 +14,26 @@ var RoiLoaderView = Backbone.View.extend({
         "mouseover .roiModalRoiItem": "mouseoverRoiItem",
         // "mouseout .roiModalRoiItem": "mouseoutRoiItem",
         "click .roiModalRoiItem": "clickRoiItem",
+        // "click .toggleRoi": "toggleRoi",
+    },
+
+    toggleRoi: function(event) {
+        var roiId = event.target.getAttribute('data-RoiId');
+        var $span = $(event.target).toggleClass('rotate90');
+        if ($span.hasClass('.rotate90')) {
+            this.renderShapes(roiId);
+        }
+        return false;
+    },
+
+    renderShapes: function(roiId) {
+
+        var roiData = this.collection.get(roiId).toJSON();
+        console.log(roiData);
+
+        var html = this.shapeTemplate({'shapes': roiData.shapes});
+        console.log(html, $(".roiModalRoiItem[data-roiId='" + roiId + "']", this.$el).length);
+        $(".roiModalRoiItem[data-roiId='" + roiId + "']", this.$el).after(html);
     },
 
     clickRoiItem: function(event) {
@@ -22,10 +43,21 @@ var RoiLoaderView = Backbone.View.extend({
         while (!$tr.hasClass("roiModalRoiItem")) {
             $tr = $tr.parent();
         }
-        var shapeId = parseInt($tr.attr('data-shapeid'), 10);
-        var shape = this.collection.getShape(shapeId);
-        var shapeJson = shape.toJSON();
-        this.collection.trigger('shape_click', [shapeJson]);
+        // If ROI has a single shape, add it
+        // debugger;
+        if ($tr.attr('data-shapeId')) {
+            var shapeId = parseInt($tr.attr('data-shapeId'), 10);
+            var shape = this.collection.getShape(shapeId);
+            var shapeJson = shape.toJSON();
+            this.collection.trigger('shape_click', [shapeJson]);
+        } else {
+            // Otherwise toggle ROI (show/hide shapes)
+            var roiId = parseInt($tr.attr('data-roiId'), 10);
+            var $span = $('.toggleRoi', $tr).toggleClass('rotate90');
+            if ($span.hasClass('rotate90')) {
+                this.renderShapes(roiId);
+            }
+        }
     },
 
     mouseoverRoiItem: function(event) {
