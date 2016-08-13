@@ -182,6 +182,146 @@
             figureModel.trigger('reset_undo_redo');
         },
 
+        addImages: function(iIds) {
+            this.clearSelected();
+
+            // approx work out number of columns to layout new panels
+            var paper_width = this.get('paper_width'),
+                paper_height = this.get('paper_height'),
+                colCount = Math.ceil(Math.sqrt(iIds.length)),
+                rowCount = Math.ceil(iIds.length/colCount),
+                centre = {x: paper_width/2, y: paper_height/2},
+                col = 0,
+                row = 0,
+                px, py, spacer, scale,
+                coords = {'px': px,
+                          'py': py,
+                          'c': centre,
+                          'spacer': spacer,
+                          'colCount': colCount,
+                          'rowCount': rowCount,
+                          'col': col,
+                          'row': row,
+                          'paper_width': paper_width};
+
+            // This loop sets up a load of async imports.
+            // The first one to return will set all the coords
+            // and subsequent ones will update coords to position
+            // new image panels appropriately in a grid.
+            var invalidIds = [];
+            for (var i=0; i<iIds.length; i++) {
+                var imgId = iIds[i].replace("|", ""),
+                    validId = parseInt(imgId, 10) + "",
+                    imgDataUrl = BASE_WEBFIGURE_URL + 'imgData/' + validId + '/';
+                if (validId == "NaN") {
+                    invalidIds.push(imgId);
+                } else {
+                    this.importImage(imgDataUrl, coords);
+                }
+            }
+            if (invalidIds.length > 0) {
+                var plural = invalidIds.length > 1 ? "s" : "";
+                alert("Could not add image with invalid ID" + plural + ": " + invalidIds.join(", "));
+            }
+        },
+
+        importImage: function(imgDataUrl, coords, baseUrl) {
+
+            var self = this,
+                callback,
+                dataType = "json";
+
+            if (baseUrl) {
+                callback = "callback";
+                dataType = "jsonp";
+            }
+
+            // Get the json data for the image...
+            $.ajax({
+                url: imgDataUrl,
+                jsonp: callback, // 'callback'
+                dataType: dataType,
+                // work with the response
+                success: function( data ) {
+
+                    if (data.size.width * data.size.height > 5000 * 5000) {
+                        alert("Image '" + data.meta.imageName + "' is too big for OMERO.figure");
+                        return;
+                    }
+
+                    coords.spacer = coords.spacer || data.size.width/20;
+                    var full_width = (coords.colCount * (data.size.width + coords.spacer)) - coords.spacer,
+                        full_height = (coords.rowCount * (data.size.height + coords.spacer)) - coords.spacer;
+                    coords.scale = coords.paper_width / (full_width + (2 * coords.spacer));
+                    coords.scale = Math.min(coords.scale, 1);    // only scale down
+                    // For the FIRST IMAGE ONLY (coords.px etc undefined), we
+                    // need to work out where to start (px,py) now that we know size of panel
+                    // (assume all panels are same size)
+                    coords.px = coords.px || coords.c.x - (full_width * coords.scale)/2;
+                    coords.py = coords.py || coords.c.y - (full_height * coords.scale)/2;
+                    var channels = data.channels;
+                    if (data.rdefs.model === "greyscale") {
+                        // we don't support greyscale, but instead set active channel grey
+                        _.each(channels, function(ch){
+                            if (ch.active) {
+                                ch.color = "FFFFFF";
+                            }
+                        });
+                    }
+                    // ****** This is the Data Model ******
+                    //-------------------------------------
+                    // Any changes here will create a new version
+                    // of the model and will also have to be applied
+                    // to the 'version_transform()' function so that
+                    // older files can be brought up to date.
+                    // Also check 'previewSetId()' for changes.
+                    var n = {
+                        'imageId': data.id,
+                        'name': data.meta.imageName,
+                        'width': data.size.width * coords.scale,
+                        'height': data.size.height * coords.scale,
+                        'sizeZ': data.size.z,
+                        'theZ': data.rdefs.defaultZ,
+                        'sizeT': data.size.t,
+                        'theT': data.rdefs.defaultT,
+                        'channels': channels,
+                        'orig_width': data.size.width,
+                        'orig_height': data.size.height,
+                        'x': coords.px,
+                        'y': coords.py,
+                        'datasetName': data.meta.datasetName,
+                        'datasetId': data.meta.datasetId,
+                        'pixel_size_x': data.pixel_size.valueX,
+                        'pixel_size_y': data.pixel_size.valueY,
+                        'pixel_size_x_symbol': data.pixel_size.symbolX,
+                        'pixel_size_x_unit': data.pixel_size.unitX,
+                        'deltaT': data.deltaT,
+                    };
+                    if (baseUrl) {
+                        n.baseUrl = baseUrl;
+                    }
+                    // create Panel (and select it)
+                    self.panels.create(n).set('selected', true);
+                    self.notifySelectionChange();
+
+                    // update px, py for next panel
+                    coords.col += 1;
+                    coords.px += (data.size.width + coords.spacer) * coords.scale;
+                    if (coords.col == coords.colCount) {
+                        coords.row += 1;
+                        coords.col = 0;
+                        coords.py += (data.size.height + coords.spacer) * coords.scale;
+                        coords.px = undefined; // recalculate next time
+                    }
+                },
+
+                error: function(event) {
+                    alert("Image not found on the server, " +
+                        "or you don't have permission to access it at " + imgDataUrl);
+                },
+            });
+        },
+
         // Used to position the #figure within canvas and also to coordinate svg layout.
         getFigureSize: function() {
             var pc = this.get('page_count'),
