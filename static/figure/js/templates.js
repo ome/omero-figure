@@ -719,7 +719,7 @@ __p += '\n\n';
  if (shapes.length > 1) { ;
 __p += '\n    ';
  _.each(shapes, function(shape) { ;
-__p += '\n    <tr class="roiModalRoiItem" data-shapeid="' +
+__p += '\n    <tr class="roiModalRoiItem shape" data-shapeid="' +
 ((__t = ( shape.id )) == null ? '' : __t) +
 '" >\n    \t<td></td>\n        <td><span class="glyphicon ' +
 ((__t = ( shape.icon )) == null ? '' : __t) +

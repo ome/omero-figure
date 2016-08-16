@@ -6247,7 +6247,7 @@ var RectView = Backbone.View.extend({
 
 var RoiLoaderView = Backbone.View.extend({
 
-    tagName: 'table',
+    tagName: 'tbody',
 
     template: JST["static/figure/templates/modal_dialogs/roi_modal_roi.html"],
     shapeTemplate: JST["static/figure/templates/modal_dialogs/roi_modal_shape.html"],
@@ -6370,8 +6370,6 @@ var RoiLoaderView = Backbone.View.extend({
         // var msg = "[No ROIs found on this image in OMERO]";
         var roiIcons = {'Rectangle': 'rect-icon', 'Ellipse': 'ellipse-icon',
                         'Line': 'line-icon', 'Arrow': 'arrow-icon'};
-
-        this.$el.css('width', '100%');
 
         var json = roiData.forEach(function(roi){
             // var r = {'id': roi.id, 'type': '-'}
@@ -6524,7 +6522,7 @@ var RoiModalView = Backbone.View.extend({
             Rois.fetch({success: function(model, response, options){
                 var roiLoaderView = new RoiLoaderView({collection: model, panel: this.m});
                 // We append el first, then render
-                $("#roiModalRoiList").append(roiLoaderView.el);
+                $("#roiModalRoiList table").append(roiLoaderView.el);
                 roiLoaderView.render();
             }.bind(this)});
         },

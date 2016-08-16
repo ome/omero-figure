@@ -99,7 +99,7 @@ var RoiModalView = Backbone.View.extend({
             Rois.fetch({success: function(model, response, options){
                 var roiLoaderView = new RoiLoaderView({collection: model, panel: this.m});
                 // We append el first, then render
-                $("#roiModalRoiList").append(roiLoaderView.el);
+                $("#roiModalRoiList table").append(roiLoaderView.el);
                 roiLoaderView.render();
             }.bind(this)});
         },

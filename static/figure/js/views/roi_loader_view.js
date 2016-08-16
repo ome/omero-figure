@@ -1,7 +1,7 @@
 
 var RoiLoaderView = Backbone.View.extend({
 
-    tagName: 'table',
+    tagName: 'tbody',
 
     template: JST["static/figure/templates/modal_dialogs/roi_modal_roi.html"],
     shapeTemplate: JST["static/figure/templates/modal_dialogs/roi_modal_shape.html"],
@@ -124,8 +124,6 @@ var RoiLoaderView = Backbone.View.extend({
         // var msg = "[No ROIs found on this image in OMERO]";
         var roiIcons = {'Rectangle': 'rect-icon', 'Ellipse': 'ellipse-icon',
                         'Line': 'line-icon', 'Arrow': 'arrow-icon'};
-
-        this.$el.css('width', '100%');
 
         var json = roiData.forEach(function(roi){
             // var r = {'id': roi.id, 'type': '-'}
