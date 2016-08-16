@@ -871,4 +871,9 @@
     .roiModalRoiItem.shape td {
         border-top: 0 solid transparent;
     }
+    .roiViewport {
+        position:relative;
+        width:55px;
+        height:55px;
+    }
 

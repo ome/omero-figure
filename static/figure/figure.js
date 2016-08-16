@@ -6265,7 +6265,6 @@ var RoiLoaderView = Backbone.View.extend({
     removeShapes: function(roiId) {
         var roiData = this.collection.get(roiId).toJSON();
         roiData.shapes.forEach(function(s){
-            console.log(s.id);
             $(".roiModalRoiItem[data-shapeId='" + s.id + "']", this.$el).remove();
         });
     },
@@ -6274,6 +6273,10 @@ var RoiLoaderView = Backbone.View.extend({
         var roiData = this.collection.get(roiId).toJSON();
         var html = this.shapeTemplate({'shapes': roiData.shapes});
         $(".roiModalRoiItem[data-roiId='" + roiId + "']", this.$el).after(html);
+        roiData.shapes.forEach(function(s){
+            var $td = $(".roiModalRoiItem[data-shapeId='" + s.id + "'] td.roiViewport", this.$el);
+            this.appendShape($td, s);
+        }.bind(this));
     },
 
     clickRoiItem: function(event) {

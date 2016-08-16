@@ -704,7 +704,7 @@ __p += '\n            ' +
  if (roi.maxT !== roi.minT) print(" - " + (roi.maxT + 1)); ;
 __p += '\n        ';
  } ;
-__p += '\n    </td>\n    <td class="roiViewport" style="position:relative; width:75px; height:55px"></td>\n</tr>\n';
+__p += '\n    </td>\n    <td class="roiViewport"></td>\n</tr>\n';
 
 }
 return __p
@@ -719,7 +719,7 @@ __p += '\n\n';
  if (shapes.length > 1) { ;
 __p += '\n    ';
  _.each(shapes, function(shape) { ;
-__p += '\n    <tr class="roiModalRoiItem shape" data-shapeid="' +
+__p += '\n    <tr class="roiModalRoiItem shape" data-shapeId="' +
 ((__t = ( shape.id )) == null ? '' : __t) +
 '" >\n    \t<td></td>\n        <td><span class="glyphicon ' +
 ((__t = ( shape.icon )) == null ? '' : __t) +
@@ -727,7 +727,7 @@ __p += '\n    <tr class="roiModalRoiItem shape" data-shapeid="' +
 ((__t = ( shape.theZ + 1 )) == null ? '' : __t) +
 ' </td>\n        <td>T: ' +
 ((__t = ( shape.theT + 1 )) == null ? '' : __t) +
-' </td>\n        <td> </td>\n    </tr>\n    ';
+' </td>\n        <td class="roiViewport"></td>\n    </tr>\n    ';
  }) ;
 __p += '\n';
  } ;
