@@ -876,4 +876,11 @@
         width:55px;
         height:55px;
     }
+    .roiModalRoiItem .btn-sm {
+        padding: 3px 6px;
+        visibility: hidden;
+    }
+    .roiModalRoiItem:hover .btn-sm {
+        visibility: visible;
+    }
 

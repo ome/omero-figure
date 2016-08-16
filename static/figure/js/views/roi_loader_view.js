@@ -14,6 +14,23 @@ var RoiLoaderView = Backbone.View.extend({
         "mouseover .roiModalRoiItem": "mouseoverRoiItem",
         // "mouseout .roiModalRoiItem": "mouseoutRoiItem",
         "click .roiModalRoiItem": "clickRoiItem",
+        "click .addOmeroShape": "addOmeroShape",
+    },
+
+    addOmeroShape: function(event) {
+        var $tr = $(event.target);
+        // $tr.parentsUntil(".roiModalRoiItem")  DIDN'T work!
+        // Do it manually...
+        while (!$tr.hasClass("roiModalRoiItem")) {
+            $tr = $tr.parent();
+        }
+        // If ROI has a single shape, add it
+        if ($tr.attr('data-shapeId')) {
+            var shapeId = parseInt($tr.attr('data-shapeId'), 10);
+            var shape = this.collection.getShape(shapeId);
+            var shapeJson = shape.toJSON();
+            this.collection.trigger('shape_add', [shapeJson]);
+        }
     },
 
     removeShapes: function(roiId) {
@@ -41,7 +58,6 @@ var RoiLoaderView = Backbone.View.extend({
             $tr = $tr.parent();
         }
         // If ROI has a single shape, add it
-        // debugger;
         if ($tr.attr('data-shapeId')) {
             var shapeId = parseInt($tr.attr('data-shapeId'), 10);
             var shape = this.collection.getShape(shapeId);

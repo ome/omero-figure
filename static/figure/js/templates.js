@@ -704,7 +704,11 @@ __p += '\n            ' +
  if (roi.maxT !== roi.minT) print(" - " + (roi.maxT + 1)); ;
 __p += '\n        ';
  } ;
-__p += '\n    </td>\n    <td class="roiViewport"></td>\n</tr>\n';
+__p += '\n    </td>\n    <td class="roiViewport"></td>\n    <td>\n        ';
+ if (roi.shapes.length === 1) { ;
+__p += '\n        <button type="button" class="btn btn-success btn-sm">Add</button>\n        ';
+ } ;
+__p += '\n    </td>\n</tr>\n';
 
 }
 return __p
@@ -721,13 +725,13 @@ __p += '\n    ';
  _.each(shapes, function(shape) { ;
 __p += '\n    <tr class="roiModalRoiItem shape" data-shapeId="' +
 ((__t = ( shape.id )) == null ? '' : __t) +
-'" >\n    \t<td></td>\n        <td><span class="glyphicon ' +
+'" >\n        <td></td>\n        <td><span class="glyphicon ' +
 ((__t = ( shape.icon )) == null ? '' : __t) +
 '"></span> </td>\n        <td>Z: ' +
 ((__t = ( shape.theZ + 1 )) == null ? '' : __t) +
 ' </td>\n        <td>T: ' +
 ((__t = ( shape.theT + 1 )) == null ? '' : __t) +
-' </td>\n        <td class="roiViewport"></td>\n    </tr>\n    ';
+' </td>\n        <td class="roiViewport"></td>\n        <td>\n            <button type="button" class="addOmeroShape btn btn-success btn-sm">Add</button>\n        </td>\n    </tr>\n    ';
  }) ;
 __p += '\n';
  } ;

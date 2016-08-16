@@ -94,7 +94,8 @@ var RoiModalView = Backbone.View.extend({
             var iid = this.m.get('imageId');
             var Rois = new RoiList();
             this.listenTo(Rois, "change:selection", this.showTempShape);
-            this.listenTo(Rois, "shape_click", this.addShapeFromOmero);
+            this.listenTo(Rois, "shape_add", this.addShapeFromOmero);
+            this.listenTo(Rois, "shape_click", this.showShapePlane);
             Rois.url = ROIS_JSON_URL + iid + "/",
             Rois.fetch({success: function(model, response, options){
                 var roiLoaderView = new RoiLoaderView({collection: model, panel: this.m});
@@ -102,6 +103,21 @@ var RoiModalView = Backbone.View.extend({
                 $("#roiModalRoiList table").append(roiLoaderView.el);
                 roiLoaderView.render();
             }.bind(this)});
+        },
+
+        showShapePlane: function(args) {
+            var shapeJson = args[0];
+            if (shapeJson) {
+                var newPlane = {};
+                if (shapeJson.theZ !== undefined) {
+                    newPlane.theZ = shapeJson.theZ;
+                }
+                if (shapeJson.theT !== undefined) {
+                    newPlane.theT = shapeJson.theT;
+                }
+                this.m.set(newPlane);
+                this.render();
+            }
         },
 
         addShapeFromOmero: function(args) {

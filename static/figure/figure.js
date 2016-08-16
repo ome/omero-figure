@@ -6260,6 +6260,23 @@ var RoiLoaderView = Backbone.View.extend({
         "mouseover .roiModalRoiItem": "mouseoverRoiItem",
         // "mouseout .roiModalRoiItem": "mouseoutRoiItem",
         "click .roiModalRoiItem": "clickRoiItem",
+        "click .addOmeroShape": "addOmeroShape",
+    },
+
+    addOmeroShape: function(event) {
+        var $tr = $(event.target);
+        // $tr.parentsUntil(".roiModalRoiItem")  DIDN'T work!
+        // Do it manually...
+        while (!$tr.hasClass("roiModalRoiItem")) {
+            $tr = $tr.parent();
+        }
+        // If ROI has a single shape, add it
+        if ($tr.attr('data-shapeId')) {
+            var shapeId = parseInt($tr.attr('data-shapeId'), 10);
+            var shape = this.collection.getShape(shapeId);
+            var shapeJson = shape.toJSON();
+            this.collection.trigger('shape_add', [shapeJson]);
+        }
     },
 
     removeShapes: function(roiId) {
@@ -6287,7 +6304,6 @@ var RoiLoaderView = Backbone.View.extend({
             $tr = $tr.parent();
         }
         // If ROI has a single shape, add it
-        // debugger;
         if ($tr.attr('data-shapeId')) {
             var shapeId = parseInt($tr.attr('data-shapeId'), 10);
             var shape = this.collection.getShape(shapeId);
@@ -6516,7 +6532,8 @@ var RoiModalView = Backbone.View.extend({
             var iid = this.m.get('imageId');
             var Rois = new RoiList();
             this.listenTo(Rois, "change:selection", this.showTempShape);
-            this.listenTo(Rois, "shape_click", this.addShapeFromOmero);
+            this.listenTo(Rois, "shape_add", this.addShapeFromOmero);
+            this.listenTo(Rois, "shape_click", this.showShapePlane);
             Rois.url = ROIS_JSON_URL + iid + "/",
             Rois.fetch({success: function(model, response, options){
                 var roiLoaderView = new RoiLoaderView({collection: model, panel: this.m});
@@ -6524,6 +6541,21 @@ var RoiModalView = Backbone.View.extend({
                 $("#roiModalRoiList table").append(roiLoaderView.el);
                 roiLoaderView.render();
             }.bind(this)});
+        },
+
+        showShapePlane: function(args) {
+            var shapeJson = args[0];
+            if (shapeJson) {
+                var newPlane = {};
+                if (shapeJson.theZ !== undefined) {
+                    newPlane.theZ = shapeJson.theZ;
+                }
+                if (shapeJson.theT !== undefined) {
+                    newPlane.theT = shapeJson.theT;
+                }
+                this.m.set(newPlane);
+                this.render();
+            }
         },
 
         addShapeFromOmero: function(args) {
