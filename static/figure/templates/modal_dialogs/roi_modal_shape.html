@@ -2,7 +2,7 @@
 
 <% if (shapes.length > 1) { %>
     <% _.each(shapes, function(shape) { %>
-    <tr class="roiModalRoiItem shape" data-shapeid="<%= shape.id %>" >
+    <tr class="roiModalRoiItem shape" data-shapeId="<%= shape.id %>" >
     	<td></td>
         <td><span class="glyphicon <%= shape.icon %>"></span> </td>
         <td>Z: <%= shape.theZ + 1 %> </td>

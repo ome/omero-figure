@@ -6260,25 +6260,19 @@ var RoiLoaderView = Backbone.View.extend({
         "mouseover .roiModalRoiItem": "mouseoverRoiItem",
         // "mouseout .roiModalRoiItem": "mouseoutRoiItem",
         "click .roiModalRoiItem": "clickRoiItem",
-        // "click .toggleRoi": "toggleRoi",
     },
 
-    toggleRoi: function(event) {
-        var roiId = event.target.getAttribute('data-RoiId');
-        var $span = $(event.target).toggleClass('rotate90');
-        if ($span.hasClass('.rotate90')) {
-            this.renderShapes(roiId);
-        }
-        return false;
+    removeShapes: function(roiId) {
+        var roiData = this.collection.get(roiId).toJSON();
+        roiData.shapes.forEach(function(s){
+            console.log(s.id);
+            $(".roiModalRoiItem[data-shapeId='" + s.id + "']", this.$el).remove();
+        });
     },
 
     renderShapes: function(roiId) {
-
         var roiData = this.collection.get(roiId).toJSON();
-        console.log(roiData);
-
         var html = this.shapeTemplate({'shapes': roiData.shapes});
-        console.log(html, $(".roiModalRoiItem[data-roiId='" + roiId + "']", this.$el).length);
         $(".roiModalRoiItem[data-roiId='" + roiId + "']", this.$el).after(html);
     },
 
@@ -6302,6 +6296,8 @@ var RoiLoaderView = Backbone.View.extend({
             var $span = $('.toggleRoi', $tr).toggleClass('rotate90');
             if ($span.hasClass('rotate90')) {
                 this.renderShapes(roiId);
+            } else {
+                this.removeShapes(roiId);
             }
         }
     },
@@ -6311,7 +6307,7 @@ var RoiLoaderView = Backbone.View.extend({
         while (!$tr.hasClass("roiModalRoiItem")) {
             $tr = $tr.parent();
         }
-        var shapeId = parseInt($tr.attr('data-shapeid'), 10);
+        var shapeId = parseInt($tr.attr('data-shapeId'), 10);
         this.collection.selectShape(shapeId);
     },
 
