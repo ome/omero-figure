@@ -92,14 +92,18 @@ var RoiModalView = Backbone.View.extend({
         // Load Rectangles from OMERO and render them
         loadRois: function() {
             var iid = this.m.get('imageId');
+            // remove any previous view
+            $("#roiModalRoiList table").empty();
+            // We create a new Model and RoiLoaderView.
+            // Then listen for selection events etc coming from RoiLoaderView
             var Rois = new RoiList();
-            this.listenTo(Rois, "change:selection", this.showTempShape);
+            this.listenTo(Rois, "change:selection", this.showTempShape);  // mouseover shape
             this.listenTo(Rois, "shape_add", this.addShapeFromOmero);
             this.listenTo(Rois, "shape_click", this.showShapePlane);
             Rois.url = ROIS_JSON_URL + iid + "/",
             Rois.fetch({success: function(model, response, options){
                 var roiLoaderView = new RoiLoaderView({collection: model, panel: this.m});
-                // We append el first, then render
+                // We append el first, then render so that ROI panels & shapes render correctly
                 $("#roiModalRoiList table").append(roiLoaderView.el);
                 roiLoaderView.render();
             }.bind(this)});

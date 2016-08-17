@@ -706,7 +706,7 @@ __p += '\n        ';
  } ;
 __p += '\n    </td>\n    <td class="roiViewport"></td>\n    <td>\n        ';
  if (roi.shapes.length === 1) { ;
-__p += '\n        <button type="button" class="btn btn-success btn-sm">Add</button>\n        ';
+__p += '\n        <button type="button" class="addOmeroShape btn btn-success btn-sm"\n                title="Add Shape to image">\n            Add\n        </button>\n        ';
  } ;
 __p += '\n    </td>\n</tr>\n';
 
@@ -731,7 +731,7 @@ __p += '\n    <tr class="roiModalRoiItem shape" data-shapeId="' +
 ((__t = ( shape.theZ + 1 )) == null ? '' : __t) +
 ' </td>\n        <td>T: ' +
 ((__t = ( shape.theT + 1 )) == null ? '' : __t) +
-' </td>\n        <td class="roiViewport"></td>\n        <td>\n            <button type="button" class="addOmeroShape btn btn-success btn-sm">Add</button>\n        </td>\n    </tr>\n    ';
+' </td>\n        <td class="roiViewport"></td>\n        <td>\n            <button type="button" class="addOmeroShape btn btn-success btn-sm"\n                    title="Add Shape to image">\n                Add\n            </button>\n        </td>\n    </tr>\n    ';
  }) ;
 __p += '\n';
  } ;

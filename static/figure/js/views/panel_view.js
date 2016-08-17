@@ -118,6 +118,13 @@
         // Used when panel-views are used to show shapes in ROI dialog
         crop_to_shape_bbox: function() {
             // Need to get bbox from shapeManager...
+            if (this.shapeManager) {
+                var shapes = this.shapeManager.getShapesJson();
+                if (shapes.length > 0) {
+                    var bbox = this.shapeManager.getShapeBoundingBox(shapes[0].id);
+                    this.model.cropToRoi(bbox);
+                }
+            }
         },
 
         render_image: function() {

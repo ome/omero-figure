@@ -1194,7 +1194,40 @@
         // localStorage: new Backbone.LocalStorage("figureShop-backbone")
     });
 
-var ShapeList = Backbone.Collection;
+
+var ShapeModel = Backbone.Model.extend({
+
+    convertOMEROShape: function() {
+        // Converts a shape json from OMERO into format taken by Shape-editor
+        // if shape has Arrow head, shape.type = Arrow
+        var s = this.toJSON();
+        if (s.markerEnd === 'Arrow' || s.markerStart === 'Arrow') {
+            s.type = 'Arrow';
+            if (s.markerEnd !== 'Arrow') {
+                // Only marker start is arrow - reverse direction!
+                var tmp = {'x1': s.x1, 'y1': s.y1, 'x2': s.x2, 'y2': s.y2};
+                s.x1 = tmp.x2;
+                s.y1 = tmp.y2;
+                s.x2 = tmp.x1;
+                s.y2 = tmp.y1;
+            }
+        }
+        if (s.type === 'Ellipse') {
+            // If we have OMERO 5.3, Ellipse has x, y, radiusX, radiusY
+            if (s.radiusX !== undefined) {
+                s.cx = s.x;
+                s.cy = s.y;
+                s.rx = s.radiusX;
+                s.ry = s.radiusY;
+            }
+        }
+        return s;
+    },
+});
+
+var ShapeList = Backbone.Collection.extend({
+    model: ShapeModel
+});
 
 var RoiModel = Backbone.Model.extend({
 
@@ -1229,7 +1262,7 @@ var RoiList = Backbone.Collection.extend({
         });
         shape = this.getShape(shapeId);
         if (shape) {
-            shapeJson = shape.toJSON();
+            shapeJson = shape.convertOMEROShape();
         }
         this.trigger('change:selection', [shapeJson]);
     },
@@ -4252,6 +4285,13 @@ var LegendView = Backbone.View.extend({
         // Used when panel-views are used to show shapes in ROI dialog
         crop_to_shape_bbox: function() {
             // Need to get bbox from shapeManager...
+            if (this.shapeManager) {
+                var shapes = this.shapeManager.getShapesJson();
+                if (shapes.length > 0) {
+                    var bbox = this.shapeManager.getShapeBoundingBox(shapes[0].id);
+                    this.model.cropToRoi(bbox);
+                }
+            }
         },
 
         render_image: function() {
@@ -6274,7 +6314,7 @@ var RoiLoaderView = Backbone.View.extend({
         if ($tr.attr('data-shapeId')) {
             var shapeId = parseInt($tr.attr('data-shapeId'), 10);
             var shape = this.collection.getShape(shapeId);
-            var shapeJson = shape.toJSON();
+            var shapeJson = shape.convertOMEROShape();
             this.collection.trigger('shape_add', [shapeJson]);
         }
     },
@@ -6330,32 +6370,6 @@ var RoiLoaderView = Backbone.View.extend({
         this.collection.selectShape(shapeId);
     },
 
-    convertOMEROShape: function(s) {
-        // Converts a shape json from OMERO into format taken by Shape-editor
-        // if shape has Arrow head, shape.type = Arrow
-        if (s.markerEnd === 'Arrow' || s.markerStart === 'Arrow') {
-            s.type = 'Arrow';
-            if (s.markerEnd !== 'Arrow') {
-                // Only marker start is arrow - reverse direction!
-                var tmp = {'x1': s.x1, 'y1': s.y1, 'x2': s.x2, 'y2': s.y2};
-                s.x1 = tmp.x2;
-                s.y1 = tmp.y2;
-                s.x2 = tmp.x1;
-                s.y2 = tmp.y1;
-            }
-        }
-        if (s.type === 'Ellipse') {
-            // If we have OMERO 5.3, Ellipse has x, y, radiusX, radiusY
-            if (s.radiusX !== undefined) {
-                s.cx = s.x;
-                s.cy = s.y;
-                s.rx = s.radiusX;
-                s.ry = s.radiusY;
-            }
-        }
-        return s;
-    },
-
     // We display a shape on an image Panel using the Panel model and PanelView.
     appendShape: function($element, shape) {
 
@@ -6372,28 +6386,38 @@ var RoiLoaderView = Backbone.View.extend({
         if (shape.theZ !== undefined) {
             panelModel.set('theZ', shape.theZ);
         }
-        panelModel.cropToRoi(shape);
+        // panelModel.cropToRoi(shape);
         var view = new PanelView({model:panelModel});
         var el = view.render().el;
         $element.append(el);
+        // This is kinda painful but...
+        // We can't crop_to_shape_bbox until we have the view.shapeManager
+        // created and populated, since we need Raphael to give us the
+        // bounding box. BUT render_shapes() which creates the shapeManager
+        // is called after a setTimeout of 10 millisecs, because it needs
+        // DOM layout to work. So, we have to crop AFTER that (need a longer timeout!)
+        setTimeout(function(){
+            view.crop_to_shape_bbox();
+        }, 50);
     },
 
     render: function() {
 
-        var roiData = this.collection.toJSON();
+        var roiData = this.collection;  //.toJSON();
 
         // var msg = "[No ROIs found on this image in OMERO]";
         var roiIcons = {'Rectangle': 'rect-icon', 'Ellipse': 'ellipse-icon',
                         'Line': 'line-icon', 'Arrow': 'arrow-icon'};
 
-        var json = roiData.forEach(function(roi){
+        roiData.forEach(function(roi){
             // var r = {'id': roi.id, 'type': '-'}
-            var minT, maxT = 0,
+            var roiJson = {'id': roi.get('id')},
+                minT, maxT = 0,
                 minZ, maxZ = 0;
             if (roi.shapes) {
                 // r.shapes = roi.shapes;
-                roi.shapes = roi.shapes.map(function(s){
-                    s = this.convertOMEROShape(s);
+                roiJson.shapes = roi.shapes.map(function(shapeModel){
+                    var s = shapeModel.convertOMEROShape();
                     s.icon = roiIcons[s.type];
                     if (s.theZ !== undefined) {
                         if (minZ === undefined) {
@@ -6414,21 +6438,21 @@ var RoiLoaderView = Backbone.View.extend({
                     return s;
                 }.bind(this));
 
-                roi.type = roi.shapes[0].type;
-                roi.icon = roi.shapes[0].icon;
-                roi.minZ = minZ;
-                roi.maxZ = maxZ;
-                roi.minT = minT;
-                roi.maxT = maxT;
+                roiJson.type = roiJson.shapes[0].type;
+                roiJson.icon = roiJson.shapes[0].icon;
+                roiJson.minZ = minZ;
+                roiJson.maxZ = maxZ;
+                roiJson.minT = minT;
+                roiJson.maxT = maxT;
             }
 
             // return r;
-            var html = this.template({'roi': roi});
+            var html = this.template({'roi': roiJson});
 
             this.$el.append(html);
 
             var $element = $("#roiModalRoiList .roiViewport").last();
-            this.appendShape($element, roi.shapes[0]);
+            this.appendShape($element, roiJson.shapes[0]);
 
         }.bind(this));
 
@@ -6530,14 +6554,18 @@ var RoiModalView = Backbone.View.extend({
         // Load Rectangles from OMERO and render them
         loadRois: function() {
             var iid = this.m.get('imageId');
+            // remove any previous view
+            $("#roiModalRoiList table").empty();
+            // We create a new Model and RoiLoaderView.
+            // Then listen for selection events etc coming from RoiLoaderView
             var Rois = new RoiList();
-            this.listenTo(Rois, "change:selection", this.showTempShape);
+            this.listenTo(Rois, "change:selection", this.showTempShape);  // mouseover shape
             this.listenTo(Rois, "shape_add", this.addShapeFromOmero);
             this.listenTo(Rois, "shape_click", this.showShapePlane);
             Rois.url = ROIS_JSON_URL + iid + "/",
             Rois.fetch({success: function(model, response, options){
                 var roiLoaderView = new RoiLoaderView({collection: model, panel: this.m});
-                // We append el first, then render
+                // We append el first, then render so that ROI panels & shapes render correctly
                 $("#roiModalRoiList table").append(roiLoaderView.el);
                 roiLoaderView.render();
             }.bind(this)});

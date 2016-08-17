@@ -1,4 +1,37 @@
-var ShapeList = Backbone.Collection;
+
+var ShapeModel = Backbone.Model.extend({
+
+    convertOMEROShape: function() {
+        // Converts a shape json from OMERO into format taken by Shape-editor
+        // if shape has Arrow head, shape.type = Arrow
+        var s = this.toJSON();
+        if (s.markerEnd === 'Arrow' || s.markerStart === 'Arrow') {
+            s.type = 'Arrow';
+            if (s.markerEnd !== 'Arrow') {
+                // Only marker start is arrow - reverse direction!
+                var tmp = {'x1': s.x1, 'y1': s.y1, 'x2': s.x2, 'y2': s.y2};
+                s.x1 = tmp.x2;
+                s.y1 = tmp.y2;
+                s.x2 = tmp.x1;
+                s.y2 = tmp.y1;
+            }
+        }
+        if (s.type === 'Ellipse') {
+            // If we have OMERO 5.3, Ellipse has x, y, radiusX, radiusY
+            if (s.radiusX !== undefined) {
+                s.cx = s.x;
+                s.cy = s.y;
+                s.rx = s.radiusX;
+                s.ry = s.radiusY;
+            }
+        }
+        return s;
+    },
+});
+
+var ShapeList = Backbone.Collection.extend({
+    model: ShapeModel
+});
 
 var RoiModel = Backbone.Model.extend({
 
@@ -33,7 +66,7 @@ var RoiList = Backbone.Collection.extend({
         });
         shape = this.getShape(shapeId);
         if (shape) {
-            shapeJson = shape.toJSON();
+            shapeJson = shape.convertOMEROShape();
         }
         this.trigger('change:selection', [shapeJson]);
     },
