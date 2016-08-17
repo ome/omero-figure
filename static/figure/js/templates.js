@@ -356,15 +356,15 @@ __p += '\n                        (Export at ' +
 ((__t = ( export_dpi )) == null ? '' : __t) +
 ' dpi\n                        <button type="button" title="Delete Label" class="close clear_dpi"\n                            title="Remove (don\'t change dpi on export)"\n                            aria-hidden="true" style="float: none; left: 0; margin: 0; top: -2px;">×</button>\n                        <label>)</label>\n                        ';
  } ;
-__p += '\n                    </div>\n                    <button class="btn btn-sm btn-success set_dpi"\n                        title="Resample to a higher dpi at export">Set dpi</button>\n                </form>\n                \n            </td></tr>\n            <tr><td>\n                <div class="col-sm-3" style="text-align: right"><small><strong>X</strong>:</small></div>\n                <div class="col-sm-3"><small>';
- print(x) ;
-__p += '</small></div>\n\n                <div class="col-sm-3" style="text-align: right"><small><strong>Width</strong>:</small></div>\n                <div class="col-sm-3"><small>';
- print(width) ;
-__p += '</small></div>\n\n                <div class="col-sm-3" style="text-align: right"><small><strong>Y</strong>:</small></div>\n                <div class="col-sm-3"><small>';
- print(y) ;
-__p += '</small></div>\n\n                <div class="col-sm-3" style="text-align: right"><small><strong>Height</strong>:</small></div>\n                <div class="col-sm-3"><small>';
- print(height) ;
-__p += '</small></div>\n            </td></tr>\n        </tbody>\n    </table>\n';
+__p += '\n                    </div>\n                    <button class="btn btn-sm btn-success set_dpi"\n                        title="Resample to a higher dpi at export">Set dpi</button>\n                </form>\n                \n            </td></tr>\n            <tr><td>\n                <form class="form-horizontal xywh_form" role="form">\n                    <div class="form-group col-sm-6">\n                        <label class="col-lg-2 control-label">X</label>\n                        <div class="col-lg-8">\n                            <input name="x" class="form-control" value="' +
+((__t = ( x )) == null ? '' : __t) +
+'">\n                        </div>\n                    </div>\n                    <div class="form-group col-sm-6" style="float:right">\n                        <label for="inputPassword" class="col-lg-2 control-label">Y</label>\n                        <div class="col-lg-8">\n                            <input name="y" class="form-control" value="' +
+((__t = ( y )) == null ? '' : __t) +
+'">\n                        </div>\n                    </div>\n                    <div class="form-group col-sm-6">\n                        <label class="col-lg-2 control-label">Width</label>\n                        <div class="col-lg-8">\n                            <input name="width" class="form-control" value="' +
+((__t = ( width )) == null ? '' : __t) +
+'">\n                        </div>\n                    </div>\n                    <div class="form-group col-sm-6" style="float:right">\n                        <label for="inputPassword" class="col-lg-2 control-label">Height</label>\n                        <div class="col-lg-8">\n                            <input name="height" class="form-control" value="' +
+((__t = ( height )) == null ? '' : __t) +
+'">\n                        </div>\n                    </div>\n                </form>\n            </td></tr>\n        </tbody>\n    </table>\n';
 
 }
 return __p

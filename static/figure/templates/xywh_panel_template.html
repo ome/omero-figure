@@ -24,17 +24,32 @@
                 
             </td></tr>
             <tr><td>
-                <div class="col-sm-3" style="text-align: right"><small><strong>X</strong>:</small></div>
-                <div class="col-sm-3"><small><% print(x) %></small></div>
-
-                <div class="col-sm-3" style="text-align: right"><small><strong>Width</strong>:</small></div>
-                <div class="col-sm-3"><small><% print(width) %></small></div>
-
-                <div class="col-sm-3" style="text-align: right"><small><strong>Y</strong>:</small></div>
-                <div class="col-sm-3"><small><% print(y) %></small></div>
-
-                <div class="col-sm-3" style="text-align: right"><small><strong>Height</strong>:</small></div>
-                <div class="col-sm-3"><small><% print(height) %></small></div>
+                <form class="form-horizontal xywh_form" role="form">
+                    <div class="form-group col-sm-6">
+                        <label class="col-lg-2 control-label">X</label>
+                        <div class="col-lg-8">
+                            <input name="x" class="form-control" value="<%= x %>">
+                        </div>
+                    </div>
+                    <div class="form-group col-sm-6" style="float:right">
+                        <label for="inputPassword" class="col-lg-2 control-label">Y</label>
+                        <div class="col-lg-8">
+                            <input name="y" class="form-control" value="<%= y %>">
+                        </div>
+                    </div>
+                    <div class="form-group col-sm-6">
+                        <label class="col-lg-2 control-label">Width</label>
+                        <div class="col-lg-8">
+                            <input name="width" class="form-control" value="<%= width %>">
+                        </div>
+                    </div>
+                    <div class="form-group col-sm-6" style="float:right">
+                        <label for="inputPassword" class="col-lg-2 control-label">Height</label>
+                        <div class="col-lg-8">
+                            <input name="height" class="form-control" value="<%= height %>">
+                        </div>
+                    </div>
+                </form>
             </td></tr>
         </tbody>
     </table>

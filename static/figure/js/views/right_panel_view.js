@@ -692,6 +692,18 @@
             "click .setId": "setImageId",
             "click .set_dpi": "set_dpi",
             "click .clear_dpi": "clear_dpi",
+            "blur .xywh_form input": "handle_xywh",
+        },
+
+        handle_xywh: function(event) {
+            var attr = event.target.getAttribute("name");
+            var value = parseInt(event.target.value, 10);
+            if (isNaN(value)) {
+                return;
+            }
+            this.models.forEach(function(m) {
+                m.set(attr, value);
+            });
         },
 
         set_dpi: function(event) {
