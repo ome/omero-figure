@@ -125,6 +125,21 @@ $(function(){
             var cb = function() {
                 $('#addImagesModal').modal();
             };
+            // Check for ?image=1&image=2
+            if (window.location.search.length > 1) {
+                var params = window.location.search.substring(1).split('&');
+                var iids = params.reduce(function(prev, param){
+                    if (param.split('=')[0] === 'image') {
+                        prev.push(param.split('=')[1]);
+                    }
+                    return prev;
+                },[]);
+                if (iids.length > 0) {
+                    cb = function() {
+                        figureModel.addImages(iids);
+                    }
+                }
+            }
             this.checkSaveAndClear(cb);
          },
 
