@@ -6416,12 +6416,15 @@ var RoiLoaderView = Backbone.View.extend({
 
         roiData.forEach(function(roi){
             // var r = {'id': roi.id, 'type': '-'}
-            var roiJson = {'id': roi.get('id')},
+            var roiJson = {id: roi.get('id'),
+                           shapes: []},
                 minT, maxT = 0,
                 minZ, maxZ = 0;
             if (roi.shapes) {
-                // r.shapes = roi.shapes;
                 roiJson.shapes = roi.shapes.map(function(shapeModel){
+                    if (["Rectangle", "Ellipse", "Line"].indexOf(shapeModel.get('type')) < 0) {
+                        return;
+                    }
                     var s = shapeModel.convertOMEROShape();
                     s.icon = roiIcons[s.type];
                     if (s.theZ !== undefined) {
@@ -6443,13 +6446,22 @@ var RoiLoaderView = Backbone.View.extend({
                     return s;
                 }.bind(this));
 
-                roiJson.type = roiJson.shapes[0].type;
-                roiJson.icon = roiJson.shapes[0].icon;
-                roiJson.minZ = minZ;
-                roiJson.maxZ = maxZ;
-                roiJson.minT = minT;
-                roiJson.maxT = maxT;
+                // filter any undefined shapes
+                roiJson.shapes = roiJson.shapes.filter(function(s) {
+                    return s !== undefined;
+                });
             }
+            // If we have NO supported shapes, ignore ROI
+            if (roiJson.shapes.length === 0) {
+                return;
+            }
+
+            roiJson.type = roiJson.shapes[0].type;
+            roiJson.icon = roiJson.shapes[0].icon;
+            roiJson.minZ = minZ;
+            roiJson.maxZ = maxZ;
+            roiJson.minT = minT;
+            roiJson.maxT = maxT;
 
             // return r;
             var html = this.template({'roi': roiJson});
@@ -6529,8 +6541,8 @@ var RoiModalView = Backbone.View.extend({
 
                 self.render();
 
-                // Load ROIs from OMERO...
-                self.loadRois();
+                // remove any previous OMERO ROIs
+                $("#roiModalRoiList table").empty();
             });
 
             this.shapeManager = new ShapeManager("roi_paper", 1, 1);
@@ -6554,13 +6566,17 @@ var RoiModalView = Backbone.View.extend({
             "click .pasteShape": "pasteShapes",
             "click .deleteShape": "deleteShapes",
             "click .selectAll": "selectAllShapes",
+            "click .loadRois": "loadRois",
         },
 
         // Load Rectangles from OMERO and render them
-        loadRois: function() {
+        loadRois: function(event) {
+            event.preventDefault();
+            // hide button and tip
+            $(".loadRois", this.$el).hide();
+            $("#roiModalTip").hide();
+
             var iid = this.m.get('imageId');
-            // remove any previous view
-            $("#roiModalRoiList table").empty();
             // We create a new Model and RoiLoaderView.
             // Then listen for selection events etc coming from RoiLoaderView
             var Rois = new RoiList();
@@ -6587,7 +6603,7 @@ var RoiModalView = Backbone.View.extend({
                     newPlane.theT = shapeJson.theT;
                 }
                 this.m.set(newPlane);
-                this.render();
+                this.renderImagePlane();
             }
         },
 
@@ -6851,10 +6867,14 @@ var RoiModalView = Backbone.View.extend({
             };
         },
 
+        renderImagePlane: function() {
+            var src = this.m.get_img_src();
+            this.$roiImg.attr('src', src);
+        },
 
         render: function() {
 
-            var src = this.m.get_img_src();
+            $(".loadRois", this.$el).show();
 
             var maxSize = 550,
                 frame_w = maxSize,
@@ -6888,13 +6908,13 @@ var RoiModalView = Backbone.View.extend({
                 "-webkit-transform": c.transform,
                 "transform": c.transform
             }
-            this.$roiImg.css(css)
-                .attr('src', src);
+            this.$roiImg.css(css);
 
             $("#roi_paper").css(css);
 
             $("#roiViewer").css({'width': frame_w + 'px', 'height': frame_h + 'px'});
 
+            this.renderImagePlane();
             this.renderToolbar();
             this.renderSidebar();
         }

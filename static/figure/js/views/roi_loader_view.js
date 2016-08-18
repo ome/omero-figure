@@ -130,12 +130,15 @@ var RoiLoaderView = Backbone.View.extend({
 
         roiData.forEach(function(roi){
             // var r = {'id': roi.id, 'type': '-'}
-            var roiJson = {'id': roi.get('id')},
+            var roiJson = {id: roi.get('id'),
+                           shapes: []},
                 minT, maxT = 0,
                 minZ, maxZ = 0;
             if (roi.shapes) {
-                // r.shapes = roi.shapes;
                 roiJson.shapes = roi.shapes.map(function(shapeModel){
+                    if (["Rectangle", "Ellipse", "Line"].indexOf(shapeModel.get('type')) < 0) {
+                        return;
+                    }
                     var s = shapeModel.convertOMEROShape();
                     s.icon = roiIcons[s.type];
                     if (s.theZ !== undefined) {
@@ -157,13 +160,22 @@ var RoiLoaderView = Backbone.View.extend({
                     return s;
                 }.bind(this));
 
-                roiJson.type = roiJson.shapes[0].type;
-                roiJson.icon = roiJson.shapes[0].icon;
-                roiJson.minZ = minZ;
-                roiJson.maxZ = maxZ;
-                roiJson.minT = minT;
-                roiJson.maxT = maxT;
+                // filter any undefined shapes
+                roiJson.shapes = roiJson.shapes.filter(function(s) {
+                    return s !== undefined;
+                });
             }
+            // If we have NO supported shapes, ignore ROI
+            if (roiJson.shapes.length === 0) {
+                return;
+            }
+
+            roiJson.type = roiJson.shapes[0].type;
+            roiJson.icon = roiJson.shapes[0].icon;
+            roiJson.minZ = minZ;
+            roiJson.maxZ = maxZ;
+            roiJson.minT = minT;
+            roiJson.maxT = maxT;
 
             // return r;
             var html = this.template({'roi': roiJson});

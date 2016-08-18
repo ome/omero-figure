@@ -62,8 +62,8 @@ var RoiModalView = Backbone.View.extend({
 
                 self.render();
 
-                // Load ROIs from OMERO...
-                self.loadRois();
+                // remove any previous OMERO ROIs
+                $("#roiModalRoiList table").empty();
             });
 
             this.shapeManager = new ShapeManager("roi_paper", 1, 1);
@@ -87,13 +87,17 @@ var RoiModalView = Backbone.View.extend({
             "click .pasteShape": "pasteShapes",
             "click .deleteShape": "deleteShapes",
             "click .selectAll": "selectAllShapes",
+            "click .loadRois": "loadRois",
         },
 
         // Load Rectangles from OMERO and render them
-        loadRois: function() {
+        loadRois: function(event) {
+            event.preventDefault();
+            // hide button and tip
+            $(".loadRois", this.$el).hide();
+            $("#roiModalTip").hide();
+
             var iid = this.m.get('imageId');
-            // remove any previous view
-            $("#roiModalRoiList table").empty();
             // We create a new Model and RoiLoaderView.
             // Then listen for selection events etc coming from RoiLoaderView
             var Rois = new RoiList();
@@ -120,7 +124,7 @@ var RoiModalView = Backbone.View.extend({
                     newPlane.theT = shapeJson.theT;
                 }
                 this.m.set(newPlane);
-                this.render();
+                this.renderImagePlane();
             }
         },
 
@@ -384,10 +388,14 @@ var RoiModalView = Backbone.View.extend({
             };
         },
 
+        renderImagePlane: function() {
+            var src = this.m.get_img_src();
+            this.$roiImg.attr('src', src);
+        },
 
         render: function() {
 
-            var src = this.m.get_img_src();
+            $(".loadRois", this.$el).show();
 
             var maxSize = 550,
                 frame_w = maxSize,
@@ -421,13 +429,13 @@ var RoiModalView = Backbone.View.extend({
                 "-webkit-transform": c.transform,
                 "transform": c.transform
             }
-            this.$roiImg.css(css)
-                .attr('src', src);
+            this.$roiImg.css(css);
 
             $("#roi_paper").css(css);
 
             $("#roiViewer").css({'width': frame_w + 'px', 'height': frame_h + 'px'});
 
+            this.renderImagePlane();
             this.renderToolbar();
             this.renderSidebar();
         }
