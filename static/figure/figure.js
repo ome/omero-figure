@@ -6664,6 +6664,10 @@ var RoiModalView = Backbone.View.extend({
             event.preventDefault();
 
             var shapesJson = this.shapeManager.getShapesJson();
+            shapesJson = shapesJson.filter(function(s){
+                // Remove any temporary shapes (from hovering over OMERO shapes)
+                return (s.id !== this.TEMP_SHAPE_ID);
+            }.bind(this));
             this.model.getSelected().forEach(function(panel){
 
                 // We use save() to notify undo/redo queue. TODO - fix!
