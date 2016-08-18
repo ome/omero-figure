@@ -12,7 +12,7 @@ var RoiLoaderView = Backbone.View.extend({
 
     events: {
         "mouseover .roiModalRoiItem": "mouseoverRoiItem",
-        // "mouseout .roiModalRoiItem": "mouseoutRoiItem",
+        "mouseout .roiModalRoiItem": "mouseoutRoiItem",
         "click .roiModalRoiItem": "clickRoiItem",
         "click .addOmeroShape": "addOmeroShape",
     },
@@ -82,6 +82,11 @@ var RoiLoaderView = Backbone.View.extend({
         }
         var shapeId = parseInt($tr.attr('data-shapeId'), 10);
         this.collection.selectShape(shapeId);
+    },
+
+    mouseoutRoiItem: function(event) {
+        // Simply select nothing
+        this.collection.selectShape();
     },
 
     // We display a shape on an image Panel using the Panel model and PanelView.
