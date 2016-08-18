@@ -693,8 +693,9 @@
     }
 
     .lutBg {
+        /* NB: when updating png, consider using different name to avoid cache */
         background-image: url('../images/luts_10.png');   /* each lut is 10px high */
-        background-size: 100% 1600px;  /* height is stretched 5x (50px per LUT) */
+        background-size: 100% 1850px;  /* height is stretched 5x (50px per LUT) */
         background-repeat: no-repeat;
     }
 
