@@ -128,6 +128,13 @@ var RoiModalView = Backbone.View.extend({
 
             var shapeJson = args[0],
                 shape;
+            // Remove the temp shape
+            this.shapeManager.deleteShapesByIds([this.TEMP_SHAPE_ID]);
+            var existingShape = this.shapeManager.findShapeAtCoords(shapeJson);
+            // If shape has been added at exact coords already, we bail out!
+            if (existingShape) {
+                return;
+            }
             if (shapeJson) {
                 var viewport = this.m.getViewportAsRect();
                 shape = this.shapeManager.addShapeJson(shapeJson, viewport);
