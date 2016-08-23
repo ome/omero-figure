@@ -60,10 +60,11 @@ var RoiModalView = Backbone.View.extend({
                     self.shapeManager.setShapesJson(shapesJson);
                 }
 
-                self.render();
-
                 // remove any previous OMERO ROIs
                 $("#roiModalRoiList table").empty();
+
+                self.render();
+                self.checkForRois();
             });
 
             this.shapeManager = new ShapeManager("roi_paper", 1, 1);
@@ -88,6 +89,23 @@ var RoiModalView = Backbone.View.extend({
             "click .deleteShape": "deleteShapes",
             "click .selectAll": "selectAllShapes",
             "click .loadRois": "loadRois",
+        },
+
+        checkForRois: function() {
+            var url = BASE_WEBFIGURE_URL + 'roiCount/' + this.m.get('imageId') + '/';
+
+            var $btn = $(".loadRois", this.$el)
+                .attr({'disabled': 'disabled'})
+                .show();
+            $btn.parent().attr('title', 'Checking for ROIs...');  // title on parent div - still works if btn disabled
+            $.getJSON(url, function(data){
+                if (data.roi && data.roi > 0) {
+                    $btn.removeAttr('disabled')
+                    .parent().attr('title', 'Load ' + data.roi + ' ROIs from OMERO');
+                } else {
+                    $btn.parent().attr('title', 'This image has no ROIs on the OMERO server');
+                }
+            });
         },
 
         // Load Rectangles from OMERO and render them
@@ -394,8 +412,6 @@ var RoiModalView = Backbone.View.extend({
         },
 
         render: function() {
-
-            $(".loadRois", this.$el).show();
 
             var maxSize = 550,
                 frame_w = maxSize,
