@@ -12,7 +12,7 @@
         <% } %>
     </td>
     <td>
-        <span class="glyphicon <%= roi.icon %>"></span>
+        <span class="glyphicon <% if (roi.shapes[0].icon) { %><%= roi.icon %><% } %>"></span>
     </td>
 
     <td>
@@ -29,9 +29,15 @@
             <% if (roi.maxT !== roi.minT) print(" - " + (roi.maxT + 1)); %>
         <% } %>
     </td>
-    <td class="roiViewport"></td>
+    <td class="roiViewport">
+        <% if (!roi.shapes[0].icon) { %>
+            <span title="<%= roi.shapes[0].type %> not supported in OMERO.figure">
+                <%= roi.shapes[0].type %>
+            </span>
+        <% } %>
+    </td>
     <td>
-        <% if (roi.shapes.length === 1) { %>
+        <% if (roi.shapes.length === 1 && roi.shapes[0].icon) { %>
         <button type="button" class="addOmeroShape btn btn-success btn-sm"
                 title="Add Shape to image">
             Add

@@ -4,15 +4,23 @@
     <% _.each(shapes, function(shape) { %>
     <tr class="roiModalRoiItem shape" data-shapeId="<%= shape.id %>" >
         <td></td>
-        <td><span class="glyphicon <%= shape.icon %>"></span> </td>
+        <td><span class="glyphicon <% if (shape.icon) { %><%= shape.icon %><% } %>"></span> </td>
         <td>Z: <%= shape.theZ + 1 %> </td>
         <td>T: <%= shape.theT + 1 %> </td>
-        <td class="roiViewport"></td>
+        <td class="roiViewport">
+            <% if (!shape.icon) { %>
+                <span title="<%= shape.type %> not supported in OMERO.figure">
+                    <%= shape.type %>
+                </span>
+            <% } %>
+        </td>
         <td>
+            <% if (shape.icon) { %>
             <button type="button" class="addOmeroShape btn btn-success btn-sm"
                     title="Add Shape to image">
                 Add
             </button>
+            <% } %>
         </td>
     </tr>
     <% }) %>

@@ -1,5 +1,42 @@
 this["JST"] = this["JST"] || {};
 
+this["JST"]["static/figure/templates/channel_slider_template.html"] = function(obj) {
+obj || (obj = {});
+var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
+function print() { __p += __j.call(arguments, '') }
+with (obj) {
+__p += '\n<div class="clearfix" style="position: relative">\n\t<span class=\'ch_start\'>\n\t\t<input type="number" data-window="start"\n\t\t\t';
+ if (startsNotEqual) { ;
+__p += '\n\t\t\t\ttitle="Average: ' +
+((__t = ( startAvg )) == null ? '' : __t) +
+' (selected images have different start values)"\n\t\t\t\tstyle="color: #ccc;"\n\t\t\t';
+ } ;
+__p += '\n\t\t\tdata-idx="' +
+((__t = ( idx )) == null ? '' : __t) +
+'" style="width: 40px" value=\'' +
+((__t = ( startAvg )) == null ? '' : __t) +
+'\' max=\'' +
+((__t = ( endAvg )) == null ? '' : __t) +
+'\'></input>\n\t</span>\n\t<div class=\'ch_slider\' style=\'background-color:#' +
+((__t = ( color )) == null ? '' : __t) +
+'\'></div>\n\t<span class=\'ch_end\'>\n\t\t<input type="number" data-window="end"\n\t\t';
+ if (endsNotEqual) { ;
+__p += '\n\t\t\ttitle="Average: ' +
+((__t = ( endAvg )) == null ? '' : __t) +
+' (selected images have different end values)"\n\t\t\tstyle="color: #ccc;"\n\t\t';
+ } ;
+__p += '\n\t\tdata-idx="' +
+((__t = ( idx )) == null ? '' : __t) +
+'" value=\'' +
+((__t = ( endAvg )) == null ? '' : __t) +
+'\' min=\'' +
+((__t = ( startAvg )) == null ? '' : __t) +
+'\'></input>\n\t</span>\n</div>\n';
+
+}
+return __p
+};
+
 this["JST"]["static/figure/templates/channel_toggle_template.html"] = function(obj) {
 obj || (obj = {});
 var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
@@ -686,9 +723,12 @@ __p += '\n        >\n    <td>\n        ';
  if (roi.shapes.length > 1) { ;
 __p += '\n            <span class="toggleRoi glyphicon glyphicon-play"></span>\n        ';
  } ;
-__p += '\n    </td>\n    <td>\n        <span class="glyphicon ' +
-((__t = ( roi.icon )) == null ? '' : __t) +
-'"></span>\n    </td>\n\n    <td>\n        Z:\n        ';
+__p += '\n    </td>\n    <td>\n        <span class="glyphicon ';
+ if (roi.shapes[0].icon) { ;
+__p +=
+((__t = ( roi.icon )) == null ? '' : __t);
+ } ;
+__p += '"></span>\n    </td>\n\n    <td>\n        Z:\n        ';
  if (roi.minZ !== undefined) { ;
 __p += '\n            ' +
 ((__t = ( roi.minZ + 1 )) == null ? '' : __t) +
@@ -704,8 +744,16 @@ __p += '\n            ' +
  if (roi.maxT !== roi.minT) print(" - " + (roi.maxT + 1)); ;
 __p += '\n        ';
  } ;
-__p += '\n    </td>\n    <td class="roiViewport"></td>\n    <td>\n        ';
- if (roi.shapes.length === 1) { ;
+__p += '\n    </td>\n    <td class="roiViewport">\n        ';
+ if (!roi.shapes[0].icon) { ;
+__p += '\n            <span title="' +
+((__t = ( roi.shapes[0].type )) == null ? '' : __t) +
+' not supported in OMERO.figure">\n                ' +
+((__t = ( roi.shapes[0].type )) == null ? '' : __t) +
+'\n            </span>\n        ';
+ } ;
+__p += '\n    </td>\n    <td>\n        ';
+ if (roi.shapes.length === 1 && roi.shapes[0].icon) { ;
 __p += '\n        <button type="button" class="addOmeroShape btn btn-success btn-sm"\n                title="Add Shape to image">\n            Add\n        </button>\n        ';
  } ;
 __p += '\n    </td>\n</tr>\n';
@@ -725,13 +773,28 @@ __p += '\n    ';
  _.each(shapes, function(shape) { ;
 __p += '\n    <tr class="roiModalRoiItem shape" data-shapeId="' +
 ((__t = ( shape.id )) == null ? '' : __t) +
-'" >\n        <td></td>\n        <td><span class="glyphicon ' +
-((__t = ( shape.icon )) == null ? '' : __t) +
-'"></span> </td>\n        <td>Z: ' +
+'" >\n        <td></td>\n        <td><span class="glyphicon ';
+ if (shape.icon) { ;
+__p +=
+((__t = ( shape.icon )) == null ? '' : __t);
+ } ;
+__p += '"></span> </td>\n        <td>Z: ' +
 ((__t = ( shape.theZ + 1 )) == null ? '' : __t) +
 ' </td>\n        <td>T: ' +
 ((__t = ( shape.theT + 1 )) == null ? '' : __t) +
-' </td>\n        <td class="roiViewport"></td>\n        <td>\n            <button type="button" class="addOmeroShape btn btn-success btn-sm"\n                    title="Add Shape to image">\n                Add\n            </button>\n        </td>\n    </tr>\n    ';
+' </td>\n        <td class="roiViewport">\n            ';
+ if (!shape.icon) { ;
+__p += '\n                <span title="' +
+((__t = ( shape.type )) == null ? '' : __t) +
+' not supported in OMERO.figure">\n                    ' +
+((__t = ( shape.type )) == null ? '' : __t) +
+'\n                </span>\n            ';
+ } ;
+__p += '\n        </td>\n        <td>\n            ';
+ if (shape.icon) { ;
+__p += '\n            <button type="button" class="addOmeroShape btn btn-success btn-sm"\n                    title="Add Shape to image">\n                Add\n            </button>\n            ';
+ } ;
+__p += '\n        </td>\n    </tr>\n    ';
  }) ;
 __p += '\n';
  } ;

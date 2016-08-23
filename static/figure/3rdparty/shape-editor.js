@@ -1817,6 +1817,9 @@ ShapeManager.prototype.addShapesJson = function addShapesJson(jsonShapes, constr
 // Return false if shape didn't get created
 ShapeManager.prototype.addShapeJson = function addShapeJson(jsonShape, constrainRegion) {
     var newShape = this.createShapeJson(jsonShape);
+    if (!newShape) {
+        return;
+    }
     if (constrainRegion) {
         if (typeof constrainRegion === "boolean") {
             constrainRegion = {x: 0, y: 0, width: this._orig_width, height: this._orig_height};

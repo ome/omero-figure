@@ -17,6 +17,11 @@ var RoiLoaderView = Backbone.View.extend({
         "click .addOmeroShape": "addOmeroShape",
     },
 
+    roiIcons: {'Rectangle': 'rect-icon',
+               'Ellipse': 'ellipse-icon',
+               'Line': 'line-icon',
+               'Arrow': 'arrow-icon'},
+
     addOmeroShape: function(event) {
         var $tr = $(event.target);
         // $tr.parentsUntil(".roiModalRoiItem")  DIDN'T work!
@@ -41,12 +46,19 @@ var RoiLoaderView = Backbone.View.extend({
     },
 
     renderShapes: function(roiId) {
-        var roiData = this.collection.get(roiId).toJSON();
-        var html = this.shapeTemplate({'shapes': roiData.shapes});
+        var roi = this.collection.get(roiId);
+        var shapesJson = roi.shapes.map(function(shapeModel){
+            var s = shapeModel.convertOMEROShape();
+            s.icon = this.roiIcons[s.type];
+            return s;
+        }.bind(this));
+        var html = this.shapeTemplate({'shapes': shapesJson});
         $(".roiModalRoiItem[data-roiId='" + roiId + "']", this.$el).after(html);
-        roiData.shapes.forEach(function(s){
+        shapesJson.forEach(function(s){
             var $td = $(".roiModalRoiItem[data-shapeId='" + s.id + "'] td.roiViewport", this.$el);
-            this.appendShape($td, s);
+            if (s.icon) {
+                this.appendShape($td, s);
+            }
         }.bind(this));
     },
 
@@ -124,23 +136,15 @@ var RoiLoaderView = Backbone.View.extend({
 
         var roiData = this.collection;  //.toJSON();
 
-        // var msg = "[No ROIs found on this image in OMERO]";
-        var roiIcons = {'Rectangle': 'rect-icon', 'Ellipse': 'ellipse-icon',
-                        'Line': 'line-icon', 'Arrow': 'arrow-icon'};
-
         roiData.forEach(function(roi){
-            // var r = {'id': roi.id, 'type': '-'}
             var roiJson = {id: roi.get('id'),
                            shapes: []},
                 minT, maxT = 0,
                 minZ, maxZ = 0;
             if (roi.shapes) {
                 roiJson.shapes = roi.shapes.map(function(shapeModel){
-                    if (["Rectangle", "Ellipse", "Line"].indexOf(shapeModel.get('type')) < 0) {
-                        return;
-                    }
                     var s = shapeModel.convertOMEROShape();
-                    s.icon = roiIcons[s.type];
+                    s.icon = this.roiIcons[s.type];
                     if (s.theZ !== undefined) {
                         if (minZ === undefined) {
                             minZ = s.theZ
@@ -159,15 +163,6 @@ var RoiLoaderView = Backbone.View.extend({
                     }
                     return s;
                 }.bind(this));
-
-                // filter any undefined shapes
-                roiJson.shapes = roiJson.shapes.filter(function(s) {
-                    return s !== undefined;
-                });
-            }
-            // If we have NO supported shapes, ignore ROI
-            if (roiJson.shapes.length === 0) {
-                return;
             }
 
             roiJson.type = roiJson.shapes[0].type;
@@ -183,7 +178,10 @@ var RoiLoaderView = Backbone.View.extend({
             this.$el.append(html);
 
             var $element = $("#roiModalRoiList .roiViewport").last();
-            this.appendShape($element, roiJson.shapes[0]);
+            if (roiJson.shapes[0].icon) {
+                // Only show shape if supported type
+                this.appendShape($element, roiJson.shapes[0]);
+            }
 
         }.bind(this));
 
