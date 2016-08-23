@@ -994,15 +994,15 @@ var Ellipse = function Ellipse(options) {
     } else {
         this._id = this.manager.getRandomId();
     }
-    this._cx = options.cx;
-    this._cy = options.cy;
-    this._rx = options.rx;
-    this._ry = options.ry;
+    this._x = options.x;
+    this._y = options.y;
+    this._radiusX = options.radiusX;
+    this._radiusY = options.radiusY;
     this._rotation = options.rotation || 0;
 
     // We handle transform matrix by creating this.Matrix
     // This is used as a one-off transform of the handles positions
-    // when they are created. This then updates the _cx, _cy, _rx, _ry & rotation
+    // when they are created. This then updates the _x, _y, _radiusX, _radiusY & rotation
     // of the ellipse itself (see below)
     if (options.transform && options.transform.startsWith('matrix')) {
         var tt = options.transform.replace('matrix(', '').replace(')', '').split(" ");
@@ -1015,10 +1015,10 @@ var Ellipse = function Ellipse(options) {
         this.Matrix = Raphael.matrix(a1, a2, b1, b2, c1, c2);
     }
 
-    if (this._rx === 0 || this._ry === 0) {
+    if (this._radiusX === 0 || this._radiusY === 0) {
         this._yxRatio = 0.5;
     } else {
-        this._yxRatio = this._ry / this._rx;
+        this._yxRatio = this._radiusY / this._radiusX;
     }
 
     this._strokeColor = options.strokeColor;
@@ -1072,7 +1072,7 @@ var Ellipse = function Ellipse(options) {
 
     // create handles, applying this.Matrix if set
     this.createHandles();
-    // update cx, cy, rx, ry & rotation
+    // update x, y, radiusX, radiusY & rotation
     // If we have Matrix, recalculate width/height ratio based on all handles
     var resizeWidth = !!this.Matrix;
     this.updateShapeFromHandles(resizeWidth);
@@ -1083,10 +1083,10 @@ var Ellipse = function Ellipse(options) {
 Ellipse.prototype.toJson = function toJson() {
     var rv = {
         'type': "Ellipse",
-        'cx': this._cx,
-        'cy': this._cy,
-        'rx': this._rx,
-        'ry': this._ry,
+        'x': this._x,
+        'y': this._y,
+        'radiusX': this._radiusX,
+        'radiusY': this._radiusY,
         'rotation': this._rotation,
         'strokeWidth': this._strokeWidth,
         'strokeColor': this._strokeColor
@@ -1104,7 +1104,7 @@ Ellipse.prototype.compareCoords = function compareCoords(json) {
     if (json.type !== selfJson.type) {
         return false;
     }
-    ['cx', 'cy', 'rx', 'ry', 'rotation'].forEach(function(c){
+    ['x', 'y', 'radiusX', 'radiusY', 'rotation'].forEach(function(c){
         if (Math.round(json[c]) !== Math.round(selfJson[c])) {
             match = false;
         }
@@ -1114,15 +1114,15 @@ Ellipse.prototype.compareCoords = function compareCoords(json) {
 
 // Useful for pasting json with an offset
 Ellipse.prototype.offsetCoords = function offsetCoords(json, dx, dy) {
-    json.cx = json.cx + dx;
-    json.cy = json.cy + dy;
+    json.x = json.x + dx;
+    json.y = json.y + dy;
     return json;
 };
 
 // Shift this shape by dx and dy
 Ellipse.prototype.offsetShape = function offsetShape(dx, dy) {
-    this._cx = this._cx + dx;
-    this._cy = this._cy + dy;
+    this._x = this._x + dx;
+    this._y = this._y + dy;
     this.drawShape();
 };
 
@@ -1165,8 +1165,8 @@ Ellipse.prototype.destroy = function destroy() {
 Ellipse.prototype.intersectRegion = function intersectRegion(region) {
     var path = this.manager.regionToPath(region, this._zoomFraction * 100);
     var f = this._zoomFraction,
-        x = parseInt(this._cx * f, 10),
-        y = parseInt(this._cy * f, 10);
+        x = parseInt(this._x * f, 10),
+        y = parseInt(this._y * f, 10);
 
     if (Raphael.isPointInsidePath(path, x, y)) {
         return true;
@@ -1180,13 +1180,13 @@ Ellipse.prototype.getPath = function getPath() {
 
     // Adapted from https://github.com/poilu/raphael-boolean
     var a = this.element.attrs,
-        rx = a.rx,
-        ry = a.ry,
+        radiusX = a.radiusX,
+        radiusY = a.radiusY,
         cornerPoints = [
-            [a.cx - rx, a.cy - ry],
-            [a.cx + rx, a.cy - ry],
-            [a.cx + rx, a.cy + ry],
-            [a.cx - rx, a.cy + ry]
+            [a.x - radiusX, a.y - radiusY],
+            [a.x + radiusX, a.y - radiusY],
+            [a.x + radiusX, a.y + radiusY],
+            [a.x - radiusX, a.y + radiusY]
         ],
         path = [];
     var radiusShift = [
@@ -1212,13 +1212,13 @@ Ellipse.prototype.getPath = function getPath() {
     for (var i = 0; i <= 3; i++) {
         //insert starting point
         if (i === 0) {
-            path.push(["M", cornerPoints[0][0], cornerPoints[0][1] + ry]);
+            path.push(["M", cornerPoints[0][0], cornerPoints[0][1] + radiusY]);
         }
 
         //insert "curveto" (radius factor .446 is taken from Inkscape)
-        var c1 = [cornerPoints[i][0] + radiusShift[i][0][0] * rx * 0.446, cornerPoints[i][1] + radiusShift[i][0][1] * ry * 0.446];
-        var c2 = [cornerPoints[i][0] + radiusShift[i][1][0] * rx * 0.446, cornerPoints[i][1] + radiusShift[i][1][1] * ry * 0.446];
-        var p2 = [cornerPoints[i][0] + radiusShift[i][1][0] * rx, cornerPoints[i][1] + radiusShift[i][1][1] * ry];
+        var c1 = [cornerPoints[i][0] + radiusShift[i][0][0] * radiusX * 0.446, cornerPoints[i][1] + radiusShift[i][0][1] * radiusY * 0.446];
+        var c2 = [cornerPoints[i][0] + radiusShift[i][1][0] * radiusX * 0.446, cornerPoints[i][1] + radiusShift[i][1][1] * radiusY * 0.446];
+        var p2 = [cornerPoints[i][0] + radiusShift[i][1][0] * radiusX, cornerPoints[i][1] + radiusShift[i][1][1] * radiusY];
         path.push(["C", c1[0], c1[1], c2[0], c2[1], p2[0], p2[1]]);
     }
     path.push(["Z"]);
@@ -1269,19 +1269,19 @@ Ellipse.prototype.updateShapeFromHandles = function updateShapeFromHandles(resiz
     }
     
     // centre is half-way between 'start' and 'end' handles
-    this._cx = (hh.start.x + hh.end.x)/2;
-    this._cy = (hh.start.y + hh.end.y)/2;
+    this._x = (hh.start.x + hh.end.x)/2;
+    this._y = (hh.start.y + hh.end.y)/2;
     // Radius-x is half of distance between handles
-    this._rx = Math.sqrt((lengthX * lengthX) + (lengthY * lengthY)) / 2;
+    this._radiusX = Math.sqrt((lengthX * lengthX) + (lengthY * lengthY)) / 2;
     // Radius-y may depend on handles OR on x/y ratio
     if (resizeWidth) {
-        this._ry = Math.sqrt((widthX * widthX) + (widthY * widthY)) / 2;
-        this._yxRatio = this._ry / this._rx;
+        this._radiusY = Math.sqrt((widthX * widthX) + (widthY * widthY)) / 2;
+        this._yxRatio = this._radiusY / this._radiusX;
     } else {
         if (shiftKey) {
             this._yxRatio = 1;
         }
-        this._ry = this._yxRatio * this._rx;
+        this._radiusY = this._yxRatio * this._radiusX;
     }
 
     this.drawShape();
@@ -1293,15 +1293,15 @@ Ellipse.prototype.drawShape = function drawShape() {
         strokeW = this._strokeWidth * this._zoomFraction;
 
     var f = this._zoomFraction,
-        cx = this._cx * f,
-        cy = this._cy * f,
-        rx = this._rx * f,
-        ry = this._ry * f;
+        x = this._x * f,
+        y = this._y * f,
+        radiusX = this._radiusX * f,
+        radiusY = this._radiusY * f;
 
-    this.element.attr({'cx': cx,
-                       'cy': cy,
-                       'rx': rx,
-                       'ry': ry,
+    this.element.attr({'cx': x,
+                       'cy': y,
+                       'rx': radiusX,
+                       'ry': radiusY,
                        'stroke': strokeColor,
                        'stroke-width': strokeW});
     this.element.transform('r'+ this._rotation);
@@ -1422,18 +1422,18 @@ Ellipse.prototype.createHandles = function createHandles() {
 Ellipse.prototype.getHandleCoords = function getHandleCoords() {
     // Returns MODEL coordinates (not zoom coordinates)
     var rot = Raphael.rad(this._rotation),
-        cx = this._cx,
-        cy = this._cy,
-        rx = this._rx,
-        ry = this._ry,
-        startX = cx - (Math.cos(rot) * rx),
-        startY = cy - (Math.sin(rot) * rx),
-        endX = cx + (Math.cos(rot) * rx),
-        endY = cy + (Math.sin(rot) * rx),
-        leftX = cx + (Math.sin(rot) * ry),
-        leftY = cy - (Math.cos(rot) * ry),
-        rightX = cx - (Math.sin(rot) * ry),
-        rightY = cy + (Math.cos(rot) * ry);
+        x = this._x,
+        y = this._y,
+        radiusX = this._radiusX,
+        radiusY = this._radiusY,
+        startX = x - (Math.cos(rot) * radiusX),
+        startY = y - (Math.sin(rot) * radiusX),
+        endX = x + (Math.cos(rot) * radiusX),
+        endY = y + (Math.sin(rot) * radiusX),
+        leftX = x + (Math.sin(rot) * radiusY),
+        leftY = y - (Math.cos(rot) * radiusY),
+        rightX = x - (Math.sin(rot) * radiusY),
+        rightY = y + (Math.cos(rot) * radiusY);
 
     return {'start':{x: startX, y: startY},
             'end':{x: endX, y: endY},
@@ -1459,10 +1459,10 @@ CreateEllipse.prototype.startDrag = function startDrag(startX, startY) {
     this.ellipse = new Ellipse({
         'manager': this.manager,
         'paper': this.paper,
-        'cx': startX,
-        'cy': startY,
-        'rx': 0,
-        'ry': 0,
+        'x': startX,
+        'y': startY,
+        'radiusX': 0,
+        'radiusY': 0,
         'rotation': 0,
         'strokeWidth': strokeWidth,
         'zoom': zoom,
@@ -1478,7 +1478,7 @@ CreateEllipse.prototype.stopDrag = function stopDrag() {
 
     // Don't create ellipse of zero size (click, without drag)
     var coords = this.ellipse.toJson();
-    if (coords.rx < 2) {
+    if (coords.radiusX < 2) {
         this.ellipse.destroy();
         delete this.ellipse;
         return;
@@ -1851,10 +1851,10 @@ ShapeManager.prototype.createShapeJson = function createShapeJson(jsonShape) {
     }
 
     if (s.type === 'Ellipse') {
-        options.cx = s.cx;
-        options.cy = s.cy;
-        options.rx = s.rx;
-        options.ry = s.ry;
+        options.x = s.x;
+        options.y = s.y;
+        options.radiusX = s.radiusX;
+        options.radiusY = s.radiusY;
         options.rotation = s.rotation || 0;
         options.transform = s.transform;
         newShape = new Ellipse(options);
