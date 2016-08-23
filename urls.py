@@ -67,4 +67,7 @@ urlpatterns = patterns(
     url(r'^unit_conversion/(?P<value>[0-9.]+)/(?P<fromUnit>[A-Z]+)/'
         '(?P<toUnit>[A-Z]+)/$',
         views.unit_conversion, name='unit_conversion'),
+
+    url(r'^roiCount/(?P<imageId>[0-9]+)/$', views.roiCount,
+        name='figure_roiCount'),
 )
