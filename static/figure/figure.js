@@ -1229,12 +1229,12 @@ var ShapeModel = Backbone.Model.extend({
             }
         }
         if (s.type === 'Ellipse') {
-            // If we have OMERO 5.3, Ellipse has x, y, radiusX, radiusY
-            if (s.radiusX !== undefined) {
-                s.cx = s.x;
-                s.cy = s.y;
-                s.rx = s.radiusX;
-                s.ry = s.radiusY;
+            // If we have < OMERO 5.3, Ellipse has cx, cy, rx, ry
+            if (s.rx !== undefined) {
+                s.x = s.cx;
+                s.y = s.cy;
+                s.radiusX = s.rx;
+                s.radiusY = s.ry;
             }
         }
         return s;
