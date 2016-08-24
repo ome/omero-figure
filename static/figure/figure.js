@@ -50,17 +50,18 @@
 
             var load_url = BASE_WEBFIGURE_URL + "load_web_figure/" + fileId + "/",
                 self = this;
-            
+
+
             $.getJSON(load_url, function(data){
                 data.fileId = fileId;
                 self.load_from_JSON(data);
                 self.set('unsaved', false);
             });
         },
-        
+
         load_from_JSON: function(data) {
             var self = this;
-          
+
             // bring older files up-to-date
             data = self.version_transform(data);
 
@@ -95,7 +96,7 @@
                 self.trigger("reset_undo_redo");
             }, 50);
         },
-        
+
         // take Figure_JSON from a previous version,
         // and transform it to latest version
         version_transform: function(json) {
@@ -114,7 +115,7 @@
 
             return json;
         },
-        
+
         figure_toJSON: function() {
             // Turn panels into json
             var p_json = [],
@@ -146,7 +147,7 @@
             }
             return figureJSON;
         },
-        
+
         figure_fromJSON: function(data) {
             var parsed = JSON.parse(data);
             delete parsed.fileId;
@@ -512,6 +513,7 @@
         }
 
     });
+
 
 
     // ------------------------ Panel -----------------------------------------
