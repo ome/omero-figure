@@ -111,11 +111,16 @@
                 _.each(json.panels, function(p){
                     if (p.shapes) {
                         p.shapes = p.shapes.map(function(shape){
+                            // Update to OMERO 5.3.0 model of Ellipse
                             if (shape.type === "Ellipse") {
                                 shape.x = shape.cx;
                                 shape.y = shape.cy;
                                 shape.radiusX = shape.rx;
                                 shape.radiusY = shape.ry;
+                                delete shape.cx;
+                                delete shape.cy;
+                                delete shape.rx;
+                                delete shape.ry;
                             }
                             return shape;
                         });
