@@ -3809,7 +3809,7 @@ var LegendView = Backbone.View.extend({
         events: {
             "submit .addIdForm": "previewSetId",
             "click .preview": "previewSetId",
-            "keyup .imgIds": "keyPressed",
+            "keyup .imgId": "keyPressed",
             "click .doSetId": "doSetId",
         },
 
@@ -3826,7 +3826,7 @@ var LegendView = Backbone.View.extend({
 
         // Only enable submit button when input has a number in it
         keyPressed: function() {
-            var idInput = $('input.imgIds', this.$el).val(),
+            var idInput = $('input.imgId', this.$el).val(),
                 previewBtn = $('button.preview', this.$el),
                 re = /^\d+$/;
             if (re.test(idInput)) {
@@ -3841,7 +3841,7 @@ var LegendView = Backbone.View.extend({
             event.preventDefault();
 
             var self = this,
-                idInput = $('input.imgIds', this.$el).val();
+                idInput = $('input.imgId', this.$el).val();
 
             // get image Data
             $.getJSON(BASE_WEBFIGURE_URL + 'imgData/' + parseInt(idInput, 10) + '/', function(data){
@@ -5311,7 +5311,7 @@ var RectView = Backbone.View.extend({
             event.preventDefault();
             // Simply show dialog - Everything else handled by SetIdModalView
             $("#setIdModal").modal('show');
-            $("#setIdModal .imgIds").val("").focus();
+            $("#setIdModal .imgId").val("").focus();
         },
 
         // just update x,y,w,h by rendering ONE template
