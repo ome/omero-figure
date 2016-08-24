@@ -33,7 +33,7 @@ var RoiLoaderView = Backbone.View.extend({
         if ($tr.attr('data-shapeId')) {
             var shapeId = parseInt($tr.attr('data-shapeId'), 10);
             var shape = this.collection.getShape(shapeId);
-            var shapeJson = shape.convertOMEROShape();
+            var shapeJson = shape.toJSON();
             this.collection.trigger('shape_add', [shapeJson]);
         }
     },
@@ -48,7 +48,7 @@ var RoiLoaderView = Backbone.View.extend({
     renderShapes: function(roiId) {
         var roi = this.collection.get(roiId);
         var shapesJson = roi.shapes.map(function(shapeModel){
-            var s = shapeModel.convertOMEROShape();
+            var s = shapeModel.toJSON();
             s.icon = this.roiIcons[s.type];
             return s;
         }.bind(this));
