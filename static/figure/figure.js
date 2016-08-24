@@ -4002,6 +4002,7 @@ var LegendView = Backbone.View.extend({
             "submit .addImagesForm": "addImages",
             "click .btn-primary": "addImages",
             "keyup .imgIds": "keyPressed",
+            "paste .imgIds": "keyPressed",
         },
 
         initialize: function(options) {
@@ -4018,10 +4019,16 @@ var LegendView = Backbone.View.extend({
         },
 
         // Only enable submit button when input has a number in it
-        keyPressed: function() {
+        keyPressed: function(event) {
             var idInput = $('input.imgIds', this.$el).val(),
                 submitBtn = $('button.btn-primary', this.$el),
                 re = /\d.*/;
+            // Strangely if 'paste' event, value is not immediately set
+            // Try again after short timeout...
+            if (event && event.type === "paste") {
+                setTimeout(this.keyPressed, 50);
+                return;
+            }
             if (re.test(idInput)) {
                 submitBtn.removeAttr("disabled");
             } else {
