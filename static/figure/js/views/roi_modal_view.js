@@ -128,7 +128,15 @@ var RoiModalView = Backbone.View.extend({
                 // We append el first, then render so that ROI panels & shapes render correctly
                 $("#roiModalRoiList table").append(roiLoaderView.el);
                 roiLoaderView.render();
-            }.bind(this)});
+            }.bind(this),
+            error: function(m, rsp){
+                var info = rsp.status + " " + rsp.statusText
+                if (rsp.status === 404) {
+                    // OMERO 5.0 url is /get_rois_json/iid (no final slash)
+                    info = "You need to use OMERO 5.1 or later";
+                }
+                alert("Failed to load ROIS: " + info);
+            } });
         },
 
         showShapePlane: function(args) {
