@@ -5293,9 +5293,13 @@ var RectView = Backbone.View.extend({
             "click .set_dpi": "set_dpi",
             "click .clear_dpi": "clear_dpi",
             "blur .xywh_form input": "handle_xywh",
+            "keyup .xywh_form input": "handle_xywh",
         },
 
         handle_xywh: function(event) {
+            if (event.type === "keyup" && event.which !== 13) {
+                return;
+            }
             var attr = event.target.getAttribute("name");
             var value = parseInt(event.target.value, 10);
             if (isNaN(value)) {
