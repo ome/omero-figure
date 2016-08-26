@@ -336,6 +336,17 @@
             return {'w': w, 'h': h, 'cols': cols, 'rows': rows}
         },
 
+        getPageOffset: function(x, y) {
+            var gap = this.get('paper_spacing'),
+                pw = this.get('paper_width'),
+                ph = this.get('paper_height');
+            var xspacing = gap + pw;
+            var yspacing = gap + ph;
+            var xoffset = x % xspacing;
+            var yoffset = y % yspacing;
+            return {'x': xoffset, 'y': yoffset};
+        },
+
         getDefaultFigureName: function() {
             var d = new Date(),
                 dt = d.getFullYear() + "-" + (d.getMonth()+1) + "-" +d.getDate(),

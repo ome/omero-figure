@@ -341,6 +341,17 @@
             return {'w': w, 'h': h, 'cols': cols, 'rows': rows}
         },
 
+        getPageOffset: function(x, y) {
+            var gap = this.get('paper_spacing'),
+                pw = this.get('paper_width'),
+                ph = this.get('paper_height');
+            var xspacing = gap + pw;
+            var yspacing = gap + ph;
+            var xoffset = x % xspacing;
+            var yoffset = y % yspacing;
+            return {'x': xoffset, 'y': yoffset};
+        },
+
         getDefaultFigureName: function() {
             var d = new Date(),
                 dt = d.getFullYear() + "-" + (d.getMonth()+1) + "-" +d.getDate(),
@@ -2400,14 +2411,6 @@ var CropModalView = Backbone.View.extend({
 
             // If a panel is added...
             this.model.panels.on("add", this.addOne, this);
-
-            // Select a different size paper
-            $("#page_size_chooser").change(function(){
-                var wh = $(this).val().split(","),
-                    w = wh[0],
-                    h = wh[1];
-                self.model.set({'paper_width':w, 'paper_height':h});
-            });
 
             // Don't leave the page with unsaved changes!
             window.onbeforeunload = function() {
@@ -4631,7 +4634,7 @@ var RectView = Backbone.View.extend({
                 this.ipv.remove();
             }
             if (selected.length > 0) {
-                this.ipv = new InfoPanelView({models: selected});
+                this.ipv = new InfoPanelView({models: selected, figureModel: this.model});
                 this.ipv.render();
                 $("#infoTab").append(this.ipv.el);
             }
@@ -5274,7 +5277,7 @@ var RectView = Backbone.View.extend({
         initialize: function(opts) {
             // if (opts.models) {
             this.render = _.debounce(this.render);
-
+            this.figureModel = opts.figureModel;
             this.models = opts.models;
             if (opts.models.length > 1) {
                 var self = this;
@@ -5333,10 +5336,14 @@ var RectView = Backbone.View.extend({
         // just update x,y,w,h by rendering ONE template
         drag_resize: function(xywh) {
             $("#xywh_table").remove();
-            var json = {'x': xywh[0] >> 0,
-                        'y': xywh[1] >> 0,
-                        'width': xywh[2] >> 0,
-                        'height': xywh[3] >> 0};
+            var json = {'x': xywh[0].toFixed(0),
+                        'y': xywh[1].toFixed(0),
+                        'width': xywh[2].toFixed(0),
+                        'height': xywh[3].toFixed(0)};
+            var offset = this.figureModel.getPageOffset(json.x, json.y);
+            console.log(offset);
+            json.x = offset.x;
+            json.y = offset.y;
             json.dpi = this.model.getPanelDpi(json.width, json.height);
             json.export_dpi = this.model.get('export_dpi');
             this.$el.append(this.xywh_template(json));
@@ -5354,17 +5361,24 @@ var RectView = Backbone.View.extend({
                     remoteUrl = m.get('baseUrl') + "/img_detail/" + m.get('imageId') + "/";
                 }
                 // start with json data from first Panel
+                var this_json = m.toJSON();
+                // Format floating point values
+                _.each(["x", "y", "width", "height"], function(a){
+                    if (this_json[a] != "-") {
+                        this_json[a] = this_json[a].toFixed(0);
+                    }
+                });
+                var offset = this.figureModel.getPageOffset(this_json.x, this_json.y);
+                this_json.x = offset.x;
+                this_json.y = offset.y;
+                this_json.dpi = m.getPanelDpi();
+                this_json.channel_labels = this_json.channels.map(function(c){return c.label})
                 if (!json) {
-                    json = m.toJSON();
-                    json.dpi = m.getPanelDpi();
-                    json.channel_labels = [];
-                    _.each(json.channels, function(c){ json.channel_labels.push(c.label);});
+                    json = this_json;
                 } else {
                     json.name = title;
                     // compare json summary so far with this Panel
-                    var this_json = m.toJSON(),
-                        attrs = ["imageId", "orig_width", "orig_height", "sizeT", "sizeZ", "x", "y", "width", "height", "dpi", "export_dpi"];
-                    this_json.dpi = m.getPanelDpi();
+                    var attrs = ["imageId", "orig_width", "orig_height", "sizeT", "sizeZ", "x", "y", "width", "height", "dpi", "export_dpi"];
                     _.each(attrs, function(a){
                         if (json[a] != this_json[a]) {
                             json[a] = "-";
@@ -5382,16 +5396,9 @@ var RectView = Backbone.View.extend({
                     }
 
                 }
-            });
+            }.bind(this));
 
             json.export_dpi = json.export_dpi || 0;
-
-            // Format floating point values
-            _.each(["x", "y", "width", "height"], function(a){
-                if (json[a] != "-") {
-                    json[a] = json[a].toFixed(0);
-                }
-            });
 
             // Link IF we have a single remote image, E.g. http://jcb-dataviewer.rupress.org/jcb/img_detail/625679/
             json.imageLink = false;
