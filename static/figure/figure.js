@@ -341,15 +341,20 @@
             return {'w': w, 'h': h, 'cols': cols, 'rows': rows}
         },
 
-        getPageOffset: function(x, y) {
+        getPageOffset: function(coords) {
             var gap = this.get('paper_spacing'),
                 pw = this.get('paper_width'),
                 ph = this.get('paper_height');
             var xspacing = gap + pw;
             var yspacing = gap + ph;
-            var xoffset = x % xspacing;
-            var yoffset = y % yspacing;
-            return {'x': xoffset, 'y': yoffset};
+            var offset = {};
+            if (coords.x !== undefined){
+                offset.x = coords.x % xspacing;
+            }
+            if (coords.y !== undefined){
+                offset.y = coords.y % yspacing;
+            }
+            return offset;
         },
 
         getDefaultFigureName: function() {
@@ -5309,8 +5314,14 @@ var RectView = Backbone.View.extend({
                 return;
             }
             this.models.forEach(function(m) {
-                m.set(attr, value);
-            });
+                if (attr === 'x' || attr ==='y'){
+                    var old = m.get(attr);
+                    var coords = {};
+                    coords[attr] = old;
+                    var offset = this.figureModel.getPageOffset(coords);
+                    m.set(attr, old - offset[attr] + value);
+                }                
+            }.bind(this));
         },
 
         set_dpi: function(event) {
@@ -5340,7 +5351,7 @@ var RectView = Backbone.View.extend({
                         'y': xywh[1].toFixed(0),
                         'width': xywh[2].toFixed(0),
                         'height': xywh[3].toFixed(0)};
-            var offset = this.figureModel.getPageOffset(json.x, json.y);
+            var offset = this.figureModel.getPageOffset(json);
             console.log(offset);
             json.x = offset.x;
             json.y = offset.y;
@@ -5368,7 +5379,7 @@ var RectView = Backbone.View.extend({
                         this_json[a] = this_json[a].toFixed(0);
                     }
                 });
-                var offset = this.figureModel.getPageOffset(this_json.x, this_json.y);
+                var offset = this.figureModel.getPageOffset(this_json);
                 this_json.x = offset.x;
                 this_json.y = offset.y;
                 this_json.dpi = m.getPanelDpi();

@@ -336,15 +336,20 @@
             return {'w': w, 'h': h, 'cols': cols, 'rows': rows}
         },
 
-        getPageOffset: function(x, y) {
+        getPageOffset: function(coords) {
             var gap = this.get('paper_spacing'),
                 pw = this.get('paper_width'),
                 ph = this.get('paper_height');
             var xspacing = gap + pw;
             var yspacing = gap + ph;
-            var xoffset = x % xspacing;
-            var yoffset = y % yspacing;
-            return {'x': xoffset, 'y': yoffset};
+            var offset = {};
+            if (coords.x !== undefined){
+                offset.x = coords.x % xspacing;
+            }
+            if (coords.y !== undefined){
+                offset.y = coords.y % yspacing;
+            }
+            return offset;
         },
 
         getDefaultFigureName: function() {
