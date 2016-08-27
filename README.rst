@@ -1,3 +1,10 @@
+.. image:: https://travis-ci.org/ome/figure.svg?branch=master
+    :target: https://travis-ci.org/ome/figure
+
+.. image:: https://badge.fury.io/py/omero-figure.svg
+    :target: https://badge.fury.io/py/omero-figure
+
+
 OMERO.figure
 ============
 
@@ -7,18 +14,18 @@ For full details see http://figure.openmicroscopy.org
 
 
 Requirements
-============
+------------
 
 * OMERO 4.4.x or OMERO 5.x
 
 Installation
-============
+------------
 
 Please see instructions at http://figure.openmicroscopy.org
 
 
 Development
-===========
+-----------
 
 We use Grunt for various tools.
 See http://figure.openmicroscopy.org/2014/05/01/testing-with-jshint-jasmine-grunt.html
@@ -75,3 +82,14 @@ If you are using docker-machine (e.g. on Mac OS X or Windows), you can find the 
     192.168.99.100
     # Now check the result in your browser at:
     http://192.168.99.100:8000/
+
+
+License
+-------
+
+MAPR is released under the AGPL.
+
+Copyright
+---------
+
+2016, The Open Microscopy Environment

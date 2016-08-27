@@ -21,18 +21,33 @@
 # Version: 1.0
 
 
+import os
 from setuptools import setup, find_packages
 
-VERSION = '1.2.1'
+
+# Utility function to read the README file.
+# Used for the long_description.  It's nice, because now 1) we have a top level
+# README file and 2) it's easier to type in the README file than to put a raw
+# string in below ...
+def read(fname):
+    return open(os.path.join(os.path.dirname(__file__), fname)).read()
+
+
+VERSION = '1.2.2'
+
 
 setup(name="figure",
+      packages=find_packages(exclude=['ez_setup']),
       version=VERSION,
-      description=('A high-level Python Web Client framework for OMERO'),
+      description="A Python plugin for OMERO.web",
+      long_description=read('README.rst'),
       author='The Open Microscopy Team',
       author_email='ome-devel@lists.openmicroscopy.org.uk',
       license='AGPLv3',
-      packages=find_packages(exclude=['ez_setup']),
+      url="https://github.com/ome/figure",
+      download_url='https://github.com/ome/figure/tarball/1.2.2',  # NOQA
+      keywords=['OMERO.web', 'figure'],
+      install_requires=['omego'],
       include_package_data=True,
       zip_safe=False,
-      install_requires=['reportlab', 'markdown'],
       )

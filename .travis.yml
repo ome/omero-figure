@@ -12,3 +12,4 @@ before_script: npm install -g grunt-cli
 script:
  - flake8 -v .
  - grunt jshint
+ - python setup.py sdist install
