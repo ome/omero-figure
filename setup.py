@@ -36,7 +36,7 @@ def read(fname):
 VERSION = '1.2.2'
 
 
-setup(name="figure",
+setup(name="omero-figure",
       packages=find_packages(exclude=['ez_setup']),
       version=VERSION,
       description="A Python plugin for OMERO.web",
@@ -47,7 +47,7 @@ setup(name="figure",
       url="https://github.com/ome/figure",
       download_url='https://github.com/ome/figure/tarball/1.2.2',  # NOQA
       keywords=['OMERO.web', 'figure'],
-      install_requires=['omego'],
+      install_requires=['omego', 'reportlab', 'markdown'],
       include_package_data=True,
       zip_safe=False,
       )

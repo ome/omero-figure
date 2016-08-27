@@ -5,11 +5,13 @@ language: node_js
 # http://docs.travis-ci.com/user/workers/container-based-infrastructure/
 sudo: false
 
-before_install: pip install --user flake8
+before_install:
+  - pip install --user flake8
+  - flake8 -v .
 
-before_script: npm install -g grunt-cli
+before_script:
+  - npm install -g grunt-cli
 
 script:
- - flake8 -v .
- - grunt jshint
- - python setup.py sdist install
+  - grunt jshint
+  - python setup.py sdist install
