@@ -14,4 +14,4 @@ before_script:
 
 script:
   - grunt jshint
-  - python setup.py sdist install
+  - python setup.py sdist install --user || exit 1
