@@ -1421,6 +1421,13 @@
                         self.set_color(idx, newColor);
                     }
                 });
+            } else if (color == 'lutpicker') {
+                FigureLutPicker.show({
+                    success: function(lutName){
+                        // LUT names are handled same as color strings
+                        self.set_color(idx, lutName);
+                    }
+                });
             } else {
                 this.set_color(idx, color);
             }
@@ -1545,6 +1552,11 @@
                 if (!compatible) {
                     json = [];
                 }
+                // Add LUT offsets
+                json = json.map(function(ch){
+                    ch.lutBgPos = FigureLutPicker.getLutBackgroundPosition(ch.color);
+                    return ch;
+                });
                 html = this.template({'channels':json,
                     'z_projection_disabled': z_projection_disabled,
                     'rotation': rotation,
@@ -1565,8 +1577,8 @@
                             color = ch.color;
                         if (color == "FFFFFF") color = "ccc";  // white slider would be invisible
                         var $div = $("<div><span class='ch_start'>" + start_label +
-                                "</span><div class='ch_slider' style='background-color:#" + color +
-                                "'></div><span class='ch_end'>" + end_label + "</span></div>")
+                                "</span><div class='ch_slider lutBg' style='background-color:#" + color +
+                                "; background-position: " + ch.lutBgPos + "'></div><span class='ch_end'>" + end_label + "</span></div>")
                             .appendTo($channel_sliders);
 
                         $div.find('.ch_slider').slider({

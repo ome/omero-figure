@@ -7,7 +7,13 @@ function print() { __p += __j.call(arguments, '') }
 with (obj) {
 __p += '\n\n    ';
  _.each(channels, function(c, i) { ;
-__p += '\n        <div class="btn-group" style="padding:2px">\n            <button type="button"\n            title="Turn channel on/off"\nclass="btn btn-default channel-btn ';
+__p += '\n        <div class="btn-group" style="padding:2px">\n            <button type="button"\n            title="Turn channel on/off"\nclass="btn btn-default channel-btn lutBg"\n                    data-index="' +
+((__t = ( i )) == null ? '' : __t) +
+'"\n                    style="background-color:#' +
+((__t = ( c.color )) == null ? '' : __t) +
+'; background-position: ' +
+((__t = ( c.lutBgPos )) == null ? '' : __t) +
+'">\n                <div class="';
  if(c.active) { ;
 __p += 'ch-btn-down';
  } else if (typeof c.active == 'boolean') { ;
@@ -15,13 +21,9 @@ __p += 'ch-btn-up';
  } else { ;
 __p += 'ch-btn-flat';
  };
-__p += '"\n                    data-index="' +
+__p += '">&nbsp</div>&nbsp\n            </button>\n            <button type="button" class="btn btn-default dropdown-toggle"\n                    data-toggle="dropdown" title="Pick channel color">\n                <span class="caret"></span>\n            </button>\n            <ul class="dropdown-menu colorpicker" data-index="' +
 ((__t = ( i )) == null ? '' : __t) +
-'"\n                    style="background-color:#' +
-((__t = ( c.color )) == null ? '' : __t) +
-'">\n                &nbsp\n            </button>\n            <button type="button" class="btn btn-default dropdown-toggle"\n                    data-toggle="dropdown" title="Pick channel color">\n                <span class="caret"></span>\n            </button>\n            <ul class="dropdown-menu colorpicker" data-index="' +
-((__t = ( i )) == null ? '' : __t) +
-'">\n                <li class="dropdown-header">Channel Color</li>\n                <li class="divider"></li>\n                <li><a data-color="0000FF" href="#">\n                    <span style="background-color:#00f">&nbsp &nbsp &nbsp</span>&nbsp Blue\n                </a></li>\n                <li><a data-color="00FF00" href="#">\n                    <span style="background-color:#0f0">&nbsp &nbsp &nbsp</span>&nbsp Green\n                </a></li>\n                <li><a data-color="FF0000" href="#">\n                    <span style="background-color:#f00">&nbsp &nbsp &nbsp</span>&nbsp Red\n                </a></li>\n                <li><a data-color="FFFF00" href="#">\n                    <span style="background-color:#ff0">&nbsp &nbsp &nbsp</span>&nbsp Yellow\n                </a></li>\n                <li><a data-color="FFFFFF" href="#">\n                    <span style="background-color:#fff">&nbsp &nbsp &nbsp</span>&nbsp White\n                </a></li>\n                <li><a data-color="FF00FF" href="#">\n                    <span style="background-color:#f0f">&nbsp &nbsp &nbsp</span>&nbsp Magenta\n                </a></li>\n                <li class="divider"></li>\n                <li><a data-color="colorpicker" data-oldcolor="' +
+'">\n                <li class="dropdown-header">Channel Color</li>\n                <li class="divider"></li>\n                <li><a data-color="0000FF" href="#">\n                    <span style="background-color:#00f">&nbsp &nbsp &nbsp</span>&nbsp Blue\n                </a></li>\n                <li><a data-color="00FF00" href="#">\n                    <span style="background-color:#0f0">&nbsp &nbsp &nbsp</span>&nbsp Green\n                </a></li>\n                <li><a data-color="FF0000" href="#">\n                    <span style="background-color:#f00">&nbsp &nbsp &nbsp</span>&nbsp Red\n                </a></li>\n                <li><a data-color="FFFF00" href="#">\n                    <span style="background-color:#ff0">&nbsp &nbsp &nbsp</span>&nbsp Yellow\n                </a></li>\n                <li><a data-color="FFFFFF" href="#">\n                    <span style="background-color:#fff">&nbsp &nbsp &nbsp</span>&nbsp White\n                </a></li>\n                <li><a data-color="FF00FF" href="#">\n                    <span style="background-color:#f0f">&nbsp &nbsp &nbsp</span>&nbsp Magenta\n                </a></li>\n                <li class="divider"></li>\n                <li><a data-color="lutpicker" href="#">\n                    <span class="lutBg">&nbsp &nbsp &nbsp</span>&nbsp Lookup Tables\n                </a></li>\n                <li><a data-color="colorpicker" data-oldcolor="' +
 ((__t = ( c.color )) == null ? '' : __t) +
 '" href="#">\n                    <span class="colorpickerOption">&nbsp &nbsp &nbsp</span>&nbsp More Colors...\n                </a></li>\n            </ul>\n        </div><br>\n    ';
  }); ;
@@ -149,6 +151,31 @@ __p += '\n\n                <form class="edit-label-form form-inline" role="form
 '\n\n                </form>\n\n            ';
  }); ;
 __p += '\n        </div>\n';
+
+}
+return __p
+};
+
+this["JST"]["static/figure/templates/lut_picker.html"] = function(obj) {
+obj || (obj = {});
+var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
+function print() { __p += __j.call(arguments, '') }
+with (obj) {
+__p += '\n\n<div class="btn-group-vertical col-xs-6" role="group">\n\n\t';
+ _.each(luts, function(lut, i) { ;
+__p += '\n\n\t\t<button type="button" class="btn btn-default lutOption" data-lut="' +
+((__t = ( lut.name )) == null ? '' : __t) +
+'">\n\t\t\t<span class="lutBg" style="background-position: ' +
+((__t = ( lut.bgPos )) == null ? '' : __t) +
+'">&nbsp</span>\n\t\t\t' +
+((__t = ( lut.displayName )) == null ? '' : __t) +
+' </button>\n\n\t\t';
+ if (i === parseInt(luts.length/2)) { ;
+__p += '\n\t\t\t</div>\n\t\t\t<div class="btn-group-vertical col-xs-6" role="group">\n\t\t';
+ } ;
+__p += '\n\n\t';
+ }) ;
+__p += '\n</div>\n';
 
 }
 return __p

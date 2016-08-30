@@ -264,15 +264,7 @@
                     // (assume all panels are same size)
                     coords.px = coords.px || coords.c.x - (full_width * coords.scale)/2;
                     coords.py = coords.py || coords.c.y - (full_height * coords.scale)/2;
-                    var channels = data.channels;
-                    if (data.rdefs.model === "greyscale") {
-                        // we don't support greyscale, but instead set active channel grey
-                        _.each(channels, function(ch){
-                            if (ch.active) {
-                                ch.color = "FFFFFF";
-                            }
-                        });
-                    }
+
                     // ****** This is the Data Model ******
                     //-------------------------------------
                     // Any changes here will create a new version
@@ -289,7 +281,8 @@
                         'theZ': data.rdefs.defaultZ,
                         'sizeT': data.size.t,
                         'theT': data.rdefs.defaultT,
-                        'channels': channels,
+                        'rdefs': {'model': data.rdefs.model},
+                        'channels': data.channels,
                         'orig_width': data.size.width,
                         'orig_height': data.size.height,
                         'x': coords.px,
@@ -306,7 +299,8 @@
                         n.baseUrl = baseUrl;
                     }
                     // create Panel (and select it)
-                    self.panels.create(n).set('selected', true);
+                    // We do some additional processing in Panel.parse()
+                    self.panels.create(n, {'parse': true}).set('selected', true);
                     self.notifySelectionChange();
 
                     // update px, py for next panel
@@ -671,6 +665,27 @@
 
         initialize: function() {
 
+        },
+
+        // When we're creating a Panel, we process the data a little here:
+        parse: function(data, options) {
+            var greyscale = data.rdefs.model === "greyscale";
+            delete data.rdefs
+            data.channels = data.channels.map(function(ch){
+                // channels: use 'lut' for color if set. Don't save 'lut'
+                if (ch.lut) {
+                    if (ch.lut.length > 0) {
+                        ch.color = ch.lut;
+                    }
+                    delete ch.lut;
+                }
+                // we don't support greyscale, but instead set active channel grey
+                if (greyscale && ch.active) {
+                    ch.color = "FFFFFF";
+                }
+                return ch;
+            });
+            return data;
         },
 
         syncOverride: true,
@@ -3641,6 +3656,159 @@ var LegendView = Backbone.View.extend({
     });
 
 
+//
+// Copyright (C) 2016 University of Dundee & Open Microscopy Environment.
+// All rights reserved.
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+
+
+// Should only ever have a singleton on this
+var LutPickerView = Backbone.View.extend({
+
+    el: $("#lutpickerModal"),
+
+    template: JST["static/figure/templates/lut_picker.html"],
+
+    LUT_NAMES: ["16_colors.lut",
+                "3-3-2_rgb.lut",
+                "5_ramps.lut",
+                "6_shades.lut",
+                "blue_orange_icb.lut",
+                "brgbcmyw.lut",
+                "cool.lut",
+                "cyan_hot.lut",
+                "edges.lut",
+                "fire.lut",
+                "gem.lut",
+                "glasbey.lut",
+                "glasbey_inverted.lut",
+                "glow.lut",
+                "grays.lut",
+                "green_fire_blue.lut",
+                "hilo.lut",
+                "ica.lut",
+                "ica2.lut",
+                "ica3.lut",
+                "ice.lut",
+                "magenta_hot.lut",
+                "orange_hot.lut",
+                "phase.lut",
+                "physics.lut",
+                "rainbow_rgb.lut",
+                "red-green.lut",
+                "red_hot.lut",
+                "royal.lut",
+                "sepia.lut",
+                "smart.lut",
+                "spectrum.lut",
+                "thal.lut",
+                "thallium.lut",
+                "thermal.lut",
+                "unionjack.lut",
+                "yellow_hot.lut"],
+
+    initialize:function () {
+    },
+
+    
+    events: {
+        "click button[type='submit']": "handleSubmit",
+        "click .lutOption": "pickLut",
+    },
+
+    handleSubmit: function() {
+        this.success(this.pickedLut);
+        $("#lutpickerModal").modal('hide');
+    },
+
+    pickLut: function(event) {
+        var lutName = event.currentTarget.getAttribute('data-lut');
+        // Save the name - used in handleSubmit();
+        this.pickedLut = lutName;
+
+        // Update preview to show LUT
+        var bgPos = this.getLutBackgroundPosition(lutName);
+        $(".lutPreview", this.el).css('background-position', bgPos);
+        // Enable OK button
+        $("button[type='submit']", this.el).removeAttr('disabled');
+    },
+
+    loadLuts: function() {
+        var url = WEBGATEWAYINDEX + 'luts/';
+        var promise = $.getJSON(url);
+        return promise;
+    },
+
+    getLutBackgroundPosition: function(lutName) {
+        var lutIndex = this.LUT_NAMES.indexOf(lutName);
+        var css = {};
+        if (lutIndex > -1) {
+            return '0px -' + ((lutIndex * 50) +2) + 'px';
+        } else {
+            return '0px 100px';  // hides background
+        }
+    },
+
+    formatLutName: function(lutName) {
+        lutName = lutName.replace(".lut", "");
+        lutName = lutName.replace(/_/g, " ");
+        // Title case
+        lutName = lutName[0].toUpperCase() + lutName.slice(1);
+        return lutName;
+    },
+
+    show: function(options) {
+
+        $("#lutpickerModal").modal('show');
+
+        // save callback to use on submit
+        if (options.success) {
+            this.success = options.success;
+        }
+
+        this.loadLuts().done(function(data){
+            this.luts = data.luts;
+            this.render();
+        }.bind(this)).fail(function(){
+            // E.g. 404 with Older OMERO (pre 5.3.0)
+            this.render();
+        }.bind(this));
+    },
+
+    render:function() {
+        
+        var html = "",
+            luts;
+        if (!this.luts) {
+            html = "<p>Loading Lookup Tables failed.</p>";
+            html += "<p>Your OMERO version does not support LUTs. Please upgrade.</p>";
+        } else {
+            luts = this.luts.map(function(lut) {
+                // Add css background-position to each lut to offset luts_10.png
+                return {'bgPos': this.getLutBackgroundPosition(lut.name),
+                        'name': lut.name,
+                        'displayName': this.formatLutName(lut.name)};
+            }.bind(this));
+            html = this.template({'luts': luts});
+        }
+        $(".modal-body", this.el).html(html);
+    }
+});
+
+
 // Events, show/hide and rendering for various Modal dialogs.
 
     var DpiModalView = Backbone.View.extend({
@@ -6021,6 +6189,13 @@ var RectView = Backbone.View.extend({
                         self.set_color(idx, newColor);
                     }
                 });
+            } else if (color == 'lutpicker') {
+                FigureLutPicker.show({
+                    success: function(lutName){
+                        // LUT names are handled same as color strings
+                        self.set_color(idx, lutName);
+                    }
+                });
             } else {
                 this.set_color(idx, color);
             }
@@ -6145,6 +6320,11 @@ var RectView = Backbone.View.extend({
                 if (!compatible) {
                     json = [];
                 }
+                // Add LUT offsets
+                json = json.map(function(ch){
+                    ch.lutBgPos = FigureLutPicker.getLutBackgroundPosition(ch.color);
+                    return ch;
+                });
                 html = this.template({'channels':json,
                     'z_projection_disabled': z_projection_disabled,
                     'rotation': rotation,
@@ -6165,8 +6345,8 @@ var RectView = Backbone.View.extend({
                             color = ch.color;
                         if (color == "FFFFFF") color = "ccc";  // white slider would be invisible
                         var $div = $("<div><span class='ch_start'>" + start_label +
-                                "</span><div class='ch_slider' style='background-color:#" + color +
-                                "'></div><span class='ch_end'>" + end_label + "</span></div>")
+                                "</span><div class='ch_slider lutBg' style='background-color:#" + color +
+                                "; background-position: " + ch.lutBgPos + "'></div><span class='ch_end'>" + end_label + "</span></div>")
                             .appendTo($channel_sliders);
 
                         $div.find('.ch_slider').slider({
@@ -7091,6 +7271,7 @@ $(function(){
     var figureModel = new FigureModel();
 
     window.FigureColorPicker = new ColorPickerView();
+    window.FigureLutPicker = new LutPickerView();
 
     // Override 'Backbone.sync'...
     Backbone.ajaxSync = Backbone.sync;

@@ -4,10 +4,10 @@
         <div class="btn-group" style="padding:2px">
             <button type="button"
             title="Turn channel on/off"
-class="btn btn-default channel-btn <% if(c.active) { %>ch-btn-down<% } else if (typeof c.active == 'boolean') { %>ch-btn-up<% } else { %>ch-btn-flat<% }%>"
+class="btn btn-default channel-btn lutBg"
                     data-index="<%= i %>"
-                    style="background-color:#<%= c.color %>">
-                &nbsp
+                    style="background-color:#<%= c.color %>; background-position: <%= c.lutBgPos %>">
+                <div class="<% if(c.active) { %>ch-btn-down<% } else if (typeof c.active == 'boolean') { %>ch-btn-up<% } else { %>ch-btn-flat<% }%>">&nbsp</div>&nbsp
             </button>
             <button type="button" class="btn btn-default dropdown-toggle"
                     data-toggle="dropdown" title="Pick channel color">
@@ -35,6 +35,9 @@ class="btn btn-default channel-btn <% if(c.active) { %>ch-btn-down<% } else if (
                     <span style="background-color:#f0f">&nbsp &nbsp &nbsp</span>&nbsp Magenta
                 </a></li>
                 <li class="divider"></li>
+                <li><a data-color="lutpicker" href="#">
+                    <span class="lutBg">&nbsp &nbsp &nbsp</span>&nbsp Lookup Tables
+                </a></li>
                 <li><a data-color="colorpicker" data-oldcolor="<%= c.color %>" href="#">
                     <span class="colorpickerOption">&nbsp &nbsp &nbsp</span>&nbsp More Colors...
                 </a></li>

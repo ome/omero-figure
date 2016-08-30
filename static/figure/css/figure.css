@@ -245,6 +245,13 @@
     .ch-btn-flat {
         background-image: url("../images/button-flat.png")
     }
+    .ch-btn-down, .ch-btn-up, .ch-btn-flat {
+        position: absolute;
+        left: 0;
+        top: 0;
+        right: 0;
+        bottom: 0;
+    }
 
     .zp-btn-down {
         background-image: url("../images/button-down-grey.png")
@@ -475,9 +482,11 @@
     }
     .tab-pane .ui-slider {
         margin: 13px 5px 6px;
-        background: none repeat scroll 0 0 #BBBBBB;
         border: 4px solid #fff;
         cursor: pointer;
+    }
+    #vp_z_slider, #vp_t_slider {
+        background: none repeat scroll 0 0 #BBBBBB;
     }
     .tab-pane .ui-slider-handle {
         background: none repeat scroll 0 0 #DDDDDD;
@@ -672,6 +681,28 @@
     .label-color span:first-child,
     .shape-color span:first-child {
         border: solid 1px #bbb;
+    }
+
+    .lutOption {
+        text-align: left;
+    }
+
+    .lutOption span {
+        width: 85px;
+        display: inline-block;
+    }
+
+    .lutBg {
+        /* NB: when updating png, consider using different name to avoid cache */
+        background-image: url('../images/luts_10.png');   /* each lut is 10px high */
+        background-size: 100% 1850px;  /* height is stretched 5x (50px per LUT) */
+        background-repeat: no-repeat;
+    }
+
+    .lutPreview {
+        width: 100%;
+        height: 45px;
+        border-top: 1px solid #e5e5e5;
     }
 
     .small-thumb {

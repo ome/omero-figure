@@ -29,6 +29,27 @@
 
         },
 
+        // When we're creating a Panel, we process the data a little here:
+        parse: function(data, options) {
+            var greyscale = data.rdefs.model === "greyscale";
+            delete data.rdefs
+            data.channels = data.channels.map(function(ch){
+                // channels: use 'lut' for color if set. Don't save 'lut'
+                if (ch.lut) {
+                    if (ch.lut.length > 0) {
+                        ch.color = ch.lut;
+                    }
+                    delete ch.lut;
+                }
+                // we don't support greyscale, but instead set active channel grey
+                if (greyscale && ch.active) {
+                    ch.color = "FFFFFF";
+                }
+                return ch;
+            });
+            return data;
+        },
+
         syncOverride: true,
 
         validate: function(attrs, options) {
