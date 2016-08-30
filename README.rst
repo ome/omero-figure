@@ -87,7 +87,7 @@ If you are using docker-machine (e.g. on Mac OS X or Windows), you can find the 
 License
 -------
 
-MAPR is released under the AGPL.
+OMERO.figure is released under the AGPL.
 
 Copyright
 ---------

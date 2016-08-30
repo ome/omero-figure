@@ -45,9 +45,9 @@ setup(name="omero-figure",
       author_email='ome-devel@lists.openmicroscopy.org.uk',
       license='AGPLv3',
       url="https://github.com/ome/figure",
-      download_url='https://github.com/ome/figure/tarball/1.2.2',  # NOQA
+      download_url='https://github.com/ome/figure/tarball/%s' % VERSION,
       keywords=['OMERO.web', 'figure'],
-      install_requires=['omego', 'reportlab', 'markdown'],
+      install_requires=['reportlab', 'markdown'],
       include_package_data=True,
       zip_safe=False,
       )
