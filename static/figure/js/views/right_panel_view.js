@@ -712,7 +712,12 @@
                     coords[attr] = old;
                     var offset = this.figureModel.getPageOffset(coords);
                     m.set(attr, old - offset[attr] + value);
-                }                
+                }
+                else {
+                    console.log(attr);
+                    console.log(value);
+                    m.set(attr, value);
+                }
             }.bind(this));
         },
 
@@ -744,7 +749,6 @@
                         'width': xywh[2].toFixed(0),
                         'height': xywh[3].toFixed(0)};
             var offset = this.figureModel.getPageOffset(json);
-            console.log(offset);
             json.x = offset.x;
             json.y = offset.y;
             json.dpi = this.model.getPanelDpi(json.width, json.height);
