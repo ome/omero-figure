@@ -714,8 +714,6 @@
                     m.set(attr, old - offset[attr] + value);
                 }
                 else {
-                    console.log(attr);
-                    console.log(value);
                     m.set(attr, value);
                 }
             }.bind(this));
