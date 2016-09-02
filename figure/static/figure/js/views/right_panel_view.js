@@ -52,7 +52,7 @@
 
         model: FigureModel,
 
-        roisTemplate: JST["static/figure/templates/rois_form_template.html"],
+        roisTemplate: JST["figure/static/figure/templates/rois_form_template.html"],
 
         el: $("#labelsTab"),
 
@@ -225,7 +225,7 @@
 
         model: FigureModel,
 
-        template: JST["static/figure/templates/labels_form_inner_template.html"],
+        template: JST["figure/static/figure/templates/labels_form_inner_template.html"],
 
         el: $("#labelsTab"),
 
@@ -395,8 +395,8 @@
     // Created new for each selection change
     var SelectedPanelsLabelsView = Backbone.View.extend({
 
-        template: JST["static/figure/templates/labels_form_template.html"],
-        inner_template: JST["static/figure/templates/labels_form_inner_template.html"],
+        template: JST["figure/static/figure/templates/labels_form_template.html"],
+        inner_template: JST["figure/static/figure/templates/labels_form_inner_template.html"],
 
         initialize: function(opts) {
 
@@ -509,7 +509,7 @@
     // Created new for each selection change
     var ScalebarFormView = Backbone.View.extend({
 
-        template: JST["static/figure/templates/scalebar_form_template.html"],
+        template: JST["figure/static/figure/templates/scalebar_form_template.html"],
 
         initialize: function(opts) {
 
@@ -668,8 +668,8 @@
 
     var InfoPanelView = Backbone.View.extend({
 
-        template: JST["static/figure/templates/info_panel_template.html"],
-        xywh_template: JST["static/figure/templates/xywh_panel_template.html"],
+        template: JST["figure/static/figure/templates/info_panel_template.html"],
+        xywh_template: JST["figure/static/figure/templates/xywh_panel_template.html"],
 
         initialize: function(opts) {
             // if (opts.models) {
@@ -932,7 +932,7 @@
 
     var ImageViewerView = Backbone.View.extend({
 
-        template: JST["static/figure/templates/viewport_template.html"],
+        template: JST["figure/static/figure/templates/viewport_template.html"],
 
         className: "imageViewer",
 
@@ -1294,7 +1294,7 @@
 
     var ZoomView = Backbone.View.extend({
 
-        template: JST["static/figure/templates/zoom_crop_template.html"],
+        template: JST["figure/static/figure/templates/zoom_crop_template.html"],
 
         initialize: function(opts) {
 
@@ -1415,7 +1415,7 @@
     // Coloured Buttons to Toggle Channels on/off.
     var ChannelToggleView = Backbone.View.extend({
         tagName: "div",
-        template: JST["static/figure/templates/channel_toggle_template.html"],
+        template: JST["figure/static/figure/templates/channel_toggle_template.html"],
 
         initialize: function(opts) {
             // This View may apply to a single PanelModel or a list
