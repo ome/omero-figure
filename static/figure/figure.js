@@ -5426,7 +5426,11 @@ var RectView = Backbone.View.extend({
                     var attrs = ["imageId", "orig_width", "orig_height", "sizeT", "sizeZ", "x", "y", "width", "height", "dpi", "export_dpi"];
                     _.each(attrs, function(a){
                         if (json[a] != this_json[a]) {
-                            json[a] = "-";
+                            if (a === 'x' || a === 'y' || a === 'width' || a === 'height') {
+                                json[a] = "";
+                            } else {
+                                json[a] = "-";
+                            }
                         }
                     });
                     // handle channel names
