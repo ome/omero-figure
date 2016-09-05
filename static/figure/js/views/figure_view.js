@@ -95,11 +95,13 @@
             "click .new_figure": "goto_newfigure",
             "click .open_figure": "open_figure",
             "click .export_json": "export_json",
+            "click .import_json": "import_json",
             "click .delete_figure": "delete_figure",
             "click .paper_setup": "paper_setup",
             "click .export-options a": "select_export_option",
             "click .zoom-paper-to-fit": "zoom_paper_to_fit",
             "click .about_figure": "show_about_dialog",
+            "submit .importJsonForm": "import_json_form"
         },
 
         keyboardEvents: {
@@ -431,7 +433,29 @@
             $('#exportJsonModal').modal('show');
             $('#exportJsonModal textarea').text(figureText);
         },
+        
+        import_json: function(event) {
+            event.preventDefault();
 
+            var showImport = function() {
+              $('#importJsonModal').modal('show');
+            };
+            
+            app.checkSaveAndClear(function() { showImport()} );
+        },
+
+        import_json_form: function(event) {
+          event.preventDefault();
+          
+          var $form = $('.importJsonForm'),
+              figureJSON = $('.form-control', $form).val();
+          this.model.figure_fromJSON(figureJSON);
+            
+          $('#importJsonModal').modal('hide');
+          $('#importJsonModal textarea').val('');
+          this.render();
+        },
+        
         copy_selected_panels: function(event) {
             event.preventDefault();
             if (this.modal_visible()) return true;

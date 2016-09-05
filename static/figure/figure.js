@@ -53,42 +53,48 @@
 
 
             $.getJSON(load_url, function(data){
-
-                // bring older files up-to-date
-                data = self.version_transform(data);
-
-                var name = data.figureName || "UN-NAMED",
-                    n = {'fileId': fileId,
-                        'figureName': name,
-                        'canEdit': data.canEdit,
-                        'paper_width': data.paper_width,
-                        'paper_height': data.paper_height,
-                        'page_size': data.page_size || 'letter',
-                        'page_count': data.page_count,
-                        'paper_spacing': data.paper_spacing,
-                        'page_col_count': data.page_col_count,
-                        'orientation': data.orientation,
-                        'legend': data.legend,
-                        'legend_collapsed': data.legend_collapsed,
-                    };
-
-                // For missing attributes, we fill in with defaults
-                // so as to clear everything from previous figure.
-                n = $.extend({}, self.defaults, n);
-
-                self.set(n);
-
-                _.each(data.panels, function(p){
-                    p.selected = false;
-                    self.panels.create(p);
-                });
-
+                data.fileId = fileId;
+                self.load_from_JSON(data);
                 self.set('unsaved', false);
-                // wait for undo/redo to handle above, then...
-                setTimeout(function() {
-                    self.trigger("reset_undo_redo");
-                }, 50);
             });
+        },
+
+        load_from_JSON: function(data) {
+            var self = this;
+
+            // bring older files up-to-date
+            data = self.version_transform(data);
+
+            var name = data.figureName || "UN-NAMED",
+                n = {'fileId': data.fileId,
+                    'figureName': name,
+                    'canEdit': data.canEdit,
+                    'paper_width': data.paper_width,
+                    'paper_height': data.paper_height,
+                    'page_size': data.page_size || 'letter',
+                    'page_count': data.page_count,
+                    'paper_spacing': data.paper_spacing,
+                    'page_col_count': data.page_col_count,
+                    'orientation': data.orientation,
+                    'legend': data.legend,
+                    'legend_collapsed': data.legend_collapsed,
+                };
+
+            // For missing attributes, we fill in with defaults
+            // so as to clear everything from previous figure.
+            n = $.extend({}, self.defaults, n);
+
+            self.set(n);
+
+            _.each(data.panels, function(p){
+                p.selected = false;
+                self.panels.create(p);
+            });
+
+            // wait for undo/redo to handle above, then...
+            setTimeout(function() {
+                self.trigger("reset_undo_redo");
+            }, 50);
         },
 
         // take Figure_JSON from a previous version,
@@ -140,6 +146,13 @@
                 figureJSON.fileId = this.get('fileId')
             }
             return figureJSON;
+        },
+
+        figure_fromJSON: function(data) {
+            var parsed = JSON.parse(data);
+            delete parsed.fileId;
+            this.load_from_JSON(parsed);
+            this.set('unsaved', true);
         },
 
         save_to_OMERO: function(options) {
@@ -2469,11 +2482,13 @@ var CropModalView = Backbone.View.extend({
             "click .new_figure": "goto_newfigure",
             "click .open_figure": "open_figure",
             "click .export_json": "export_json",
+            "click .import_json": "import_json",
             "click .delete_figure": "delete_figure",
             "click .paper_setup": "paper_setup",
             "click .export-options a": "select_export_option",
             "click .zoom-paper-to-fit": "zoom_paper_to_fit",
             "click .about_figure": "show_about_dialog",
+            "submit .importJsonForm": "import_json_form"
         },
 
         keyboardEvents: {
@@ -2805,7 +2820,29 @@ var CropModalView = Backbone.View.extend({
             $('#exportJsonModal').modal('show');
             $('#exportJsonModal textarea').text(figureText);
         },
+        
+        import_json: function(event) {
+            event.preventDefault();
 
+            var showImport = function() {
+              $('#importJsonModal').modal('show');
+            };
+            
+            app.checkSaveAndClear(function() { showImport()} );
+        },
+
+        import_json_form: function(event) {
+          event.preventDefault();
+          
+          var $form = $('.importJsonForm'),
+              figureJSON = $('.form-control', $form).val();
+          this.model.figure_fromJSON(figureJSON);
+            
+          $('#importJsonModal').modal('hide');
+          $('#importJsonModal textarea').val('');
+          this.render();
+        },
+        
         copy_selected_panels: function(event) {
             event.preventDefault();
             if (this.modal_visible()) return true;
