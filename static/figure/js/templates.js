@@ -677,6 +677,12 @@ with (obj) {
 __p += '\n\n<tr class="roiModalRoiItem"\n        data-roiId="' +
 ((__t = ( roi.id )) == null ? '' : __t) +
 '"\n        ';
+ if (!roi.shapes[0].icon) { ;
+__p += '\n            title="' +
+((__t = ( roi.shapes[0].type )) == null ? '' : __t) +
+' not supported in OMERO.figure"\n        ';
+ } ;
+__p += '\n        ';
  if (roi.shapes.length === 1) { ;
 __p += '\n            data-shapeId="' +
 ((__t = ( roi.shapes[0].id )) == null ? '' : __t) +
@@ -709,9 +715,7 @@ __p += '\n        ';
  } ;
 __p += '\n    </td>\n    <td class="roiViewport">\n        ';
  if (!roi.shapes[0].icon) { ;
-__p += '\n            <span title="' +
-((__t = ( roi.shapes[0].type )) == null ? '' : __t) +
-' not supported in OMERO.figure">\n                ' +
+__p += '\n            <span>\n                ' +
 ((__t = ( roi.shapes[0].type )) == null ? '' : __t) +
 '\n            </span>\n        ';
  } ;
@@ -736,7 +740,13 @@ __p += '\n    ';
  _.each(shapes, function(shape) { ;
 __p += '\n    <tr class="roiModalRoiItem shape" data-shapeId="' +
 ((__t = ( shape.id )) == null ? '' : __t) +
-'" >\n        <td></td>\n        <td><span class="glyphicon ';
+'"\n        ';
+ if (!shape.icon) { ;
+__p += 'title="' +
+((__t = ( shape.type )) == null ? '' : __t) +
+' not supported in OMERO.figure"';
+ } ;
+__p += '\n        >\n        <td></td>\n        <td><span class="glyphicon ';
  if (shape.icon) { ;
 __p +=
 ((__t = ( shape.icon )) == null ? '' : __t);
@@ -747,9 +757,7 @@ __p += '"></span> </td>\n        <td>Z: ' +
 ((__t = ( shape.theT + 1 )) == null ? '' : __t) +
 ' </td>\n        <td class="roiViewport">\n            ';
  if (!shape.icon) { ;
-__p += '\n                <span title="' +
-((__t = ( shape.type )) == null ? '' : __t) +
-' not supported in OMERO.figure">\n                    ' +
+__p += '\n                <span>\n                    ' +
 ((__t = ( shape.type )) == null ? '' : __t) +
 '\n                </span>\n            ';
  } ;

@@ -2,6 +2,9 @@
 
 <tr class="roiModalRoiItem"
         data-roiId="<%= roi.id %>"
+        <% if (!roi.shapes[0].icon) { %>
+            title="<%= roi.shapes[0].type %> not supported in OMERO.figure"
+        <% } %>
         <% if (roi.shapes.length === 1) { %>
             data-shapeId="<%= roi.shapes[0].id %>"
         <% } %>
@@ -31,7 +34,7 @@
     </td>
     <td class="roiViewport">
         <% if (!roi.shapes[0].icon) { %>
-            <span title="<%= roi.shapes[0].type %> not supported in OMERO.figure">
+            <span>
                 <%= roi.shapes[0].type %>
             </span>
         <% } %>
