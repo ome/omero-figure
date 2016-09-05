@@ -5,13 +5,10 @@
 # https://www.openmicroscopy.org/
 #   site/support/omero5.2/developers/Web/CreateApp.html
 
-
-def identity(x):
-    return x
-
-
-# import json
-CUSTOM_SETTINGS_MAPPINGS = {
-    "omero.web.figure.version":
-    ["OMERO_FIGURE_VERSION", "1.2.1", identity, None]
-}
+import json
+import os
+dir_path = os.path.dirname(os.path.realpath(__file__))
+package_path = os.path.join(dir_path, 'package.json')
+with open(package_path) as f:
+    data = json.load(f)
+OMERO_FIGURE_VERSION = data['version']
