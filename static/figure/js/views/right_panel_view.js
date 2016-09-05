@@ -697,6 +697,10 @@
         },
 
         handle_xywh: function(event) {
+            // Ignore the 2nd blur event generated during render()
+            if (this.rendering) {
+                return;
+            }
             if (event.type === "keyup" && event.which !== 13) {
                 return;
             }
@@ -705,18 +709,40 @@
             if (isNaN(value)) {
                 return;
             }
+
+            var figsize = this.figureModel.getFigureSize();
+            // Avoid re-rendering and losing focus everytime there is a Blur event
+            // set(attr, value) will not cause render()
+            this.ignoreChange = true;
             this.models.forEach(function(m) {
-                if (attr === 'x' || attr ==='y'){
+                if (attr === 'x' || attr ==='y') {
                     var old = m.get(attr);
                     var coords = {};
                     coords[attr] = old;
                     var offset = this.figureModel.getPageOffset(coords);
-                    m.set(attr, old - offset[attr] + value);
+                    var newValue = old - offset[attr] + value;
+                    // Keep panel within figure limits
+                    if (attr === 'x'){
+                        newValue = Math.min(figsize.w, newValue);
+                    } else if (attr === 'y') {
+                        newValue = Math.min(figsize.h, newValue);
+                    }
+                    newValue = Math.max(0, newValue);
+                    m.set(attr, newValue);
                 }
                 else {
+                    if (value<1) {
+                        this.render();
+                        return;
+                    }
                     m.set(attr, value);
                 }
             }.bind(this));
+            // Timout for ignoreChange
+            // Only reset this AFTER render() is called
+            setTimeout(function(){
+                this.ignoreChange = false;
+            }, 50);
         },
 
         set_dpi: function(event) {
@@ -756,6 +782,12 @@
 
         // render BOTH templates
         render: function() {
+            // If event comes from handle_xywh() then we dont need to render()
+            if (this.ignoreChange) {
+                return;
+            }
+            // Flag to ignore blur events caused by $el.html() below
+            this.rendering = true;
             var json,
                 title = this.models.length + " Panels Selected...",
                 remoteUrl,
@@ -824,9 +856,9 @@
                     xywh_html = this.xywh_template(json);
                 this.$el.html(html + xywh_html);
             }
+            this.rendering = false;
             return this;
         }
-
     });
 
 
