@@ -141,7 +141,7 @@ def imgData_json(request, imageId, conn=None, **kwargs):
     pixSizeX = str(px)  # As string E.g. "0.13262 MICROMETER"
     unitsSupport = " " in pixSizeX
 
-    rv = imageMarshal(image, request=request)
+    rv = imageMarshal(image)
 
     if unitsSupport:
         # Add extra parameters with units data
