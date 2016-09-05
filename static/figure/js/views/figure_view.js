@@ -42,14 +42,6 @@
             // If a panel is added...
             this.model.panels.on("add", this.addOne, this);
 
-            // Select a different size paper
-            $("#page_size_chooser").change(function(){
-                var wh = $(this).val().split(","),
-                    w = wh[0],
-                    h = wh[1];
-                self.model.set({'paper_width':w, 'paper_height':h});
-            });
-
             // Don't leave the page with unsaved changes!
             window.onbeforeunload = function() {
                 var canEdit = self.model.get('canEdit');

@@ -31,7 +31,7 @@
                 this.ipv.remove();
             }
             if (selected.length > 0) {
-                this.ipv = new InfoPanelView({models: selected});
+                this.ipv = new InfoPanelView({models: selected, figureModel: this.model});
                 this.ipv.render();
                 $("#infoTab").append(this.ipv.el);
             }
@@ -674,7 +674,7 @@
         initialize: function(opts) {
             // if (opts.models) {
             this.render = _.debounce(this.render);
-
+            this.figureModel = opts.figureModel;
             this.models = opts.models;
             if (opts.models.length > 1) {
                 var self = this;
@@ -692,6 +692,63 @@
             "click .setId": "setImageId",
             "click .set_dpi": "set_dpi",
             "click .clear_dpi": "clear_dpi",
+            "blur .xywh_form input": "handle_xywh",
+            "keyup .xywh_form input": "handle_xywh",
+        },
+
+        handle_xywh: function(event) {
+            // Ignore the 2nd blur event generated during render()
+            if (this.rendering) {
+                return;
+            }
+            if (event.type === "keyup" && event.which !== 13) {
+                return;
+            }
+            var attr = event.target.getAttribute("name");
+            var value = parseInt(event.target.value, 10);
+            if (isNaN(value)) {
+                return;
+            }
+
+            var figsize = this.figureModel.getFigureSize();
+            // Avoid re-rendering and losing focus everytime there is a Blur event
+            // set(attr, value) will not cause render()
+            this.ignoreChange = true;
+            this.models.forEach(function(m) {
+                if (attr === 'x' || attr ==='y') {
+                    var old = m.get(attr);
+                    var coords = {};
+                    coords[attr] = old;
+                    var offset = this.figureModel.getPageOffset(coords);
+                    var newValue = old - offset[attr] + value;
+                    // Keep panel within figure limits
+                    if (attr === 'x'){
+                        if (newValue > figsize.w || newValue < 0) {
+                            this.ignoreChange = false;
+                        }
+                        newValue = Math.min(figsize.w, newValue);
+                    } else if (attr === 'y') {
+                        if (newValue > figsize.h || newValue < 0) {
+                            this.ignoreChange = false;
+                        }
+                        newValue = Math.min(figsize.h, newValue);
+                    }
+                    newValue = Math.max(0, newValue);
+                    m.set(attr, newValue);
+                }
+                else {
+                    if (value<1) {
+                        this.render();
+                        return;
+                    }
+                    m.set(attr, value);
+                }
+            }.bind(this));
+            // Timout for ignoreChange
+            // Only reset this AFTER render() is called
+            setTimeout(function(){
+                this.ignoreChange = false;
+            }, 50);
         },
 
         set_dpi: function(event) {
@@ -717,10 +774,13 @@
         // just update x,y,w,h by rendering ONE template
         drag_resize: function(xywh) {
             $("#xywh_table").remove();
-            var json = {'x': xywh[0] >> 0,
-                        'y': xywh[1] >> 0,
-                        'width': xywh[2] >> 0,
-                        'height': xywh[3] >> 0};
+            var json = {'x': xywh[0].toFixed(0),
+                        'y': xywh[1].toFixed(0),
+                        'width': xywh[2].toFixed(0),
+                        'height': xywh[3].toFixed(0)};
+            var offset = this.figureModel.getPageOffset(json);
+            json.x = offset.x;
+            json.y = offset.y;
             json.dpi = this.model.getPanelDpi(json.width, json.height);
             json.export_dpi = this.model.get('export_dpi');
             this.$el.append(this.xywh_template(json));
@@ -728,6 +788,12 @@
 
         // render BOTH templates
         render: function() {
+            // If event comes from handle_xywh() then we dont need to render()
+            if (this.ignoreChange) {
+                return;
+            }
+            // Flag to ignore blur events caused by $el.html() below
+            this.rendering = true;
             var json,
                 title = this.models.length + " Panels Selected...",
                 remoteUrl,
@@ -738,20 +804,31 @@
                     remoteUrl = m.get('baseUrl') + "/img_detail/" + m.get('imageId') + "/";
                 }
                 // start with json data from first Panel
+                var this_json = m.toJSON();
+                // Format floating point values
+                _.each(["x", "y", "width", "height"], function(a){
+                    if (this_json[a] != "-") {
+                        this_json[a] = this_json[a].toFixed(0);
+                    }
+                });
+                var offset = this.figureModel.getPageOffset(this_json);
+                this_json.x = offset.x;
+                this_json.y = offset.y;
+                this_json.dpi = m.getPanelDpi();
+                this_json.channel_labels = this_json.channels.map(function(c){return c.label})
                 if (!json) {
-                    json = m.toJSON();
-                    json.dpi = m.getPanelDpi();
-                    json.channel_labels = [];
-                    _.each(json.channels, function(c){ json.channel_labels.push(c.label);});
+                    json = this_json;
                 } else {
                     json.name = title;
                     // compare json summary so far with this Panel
-                    var this_json = m.toJSON(),
-                        attrs = ["imageId", "orig_width", "orig_height", "sizeT", "sizeZ", "x", "y", "width", "height", "dpi", "export_dpi"];
-                    this_json.dpi = m.getPanelDpi();
+                    var attrs = ["imageId", "orig_width", "orig_height", "sizeT", "sizeZ", "x", "y", "width", "height", "dpi", "export_dpi"];
                     _.each(attrs, function(a){
                         if (json[a] != this_json[a]) {
-                            json[a] = "-";
+                            if (a === 'x' || a === 'y' || a === 'width' || a === 'height') {
+                                json[a] = "";
+                            } else {
+                                json[a] = "-";
+                            }
                         }
                     });
                     // handle channel names
@@ -766,16 +843,9 @@
                     }
 
                 }
-            });
+            }.bind(this));
 
             json.export_dpi = json.export_dpi || 0;
-
-            // Format floating point values
-            _.each(["x", "y", "width", "height"], function(a){
-                if (json[a] != "-") {
-                    json[a] = json[a].toFixed(0);
-                }
-            });
 
             // Link IF we have a single remote image, E.g. http://jcb-dataviewer.rupress.org/jcb/img_detail/625679/
             json.imageLink = false;
@@ -796,9 +866,9 @@
                     xywh_html = this.xywh_template(json);
                 this.$el.html(html + xywh_html);
             }
+            this.rendering = false;
             return this;
         }
-
     });
 
 
