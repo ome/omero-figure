@@ -5331,8 +5331,14 @@ var RectView = Backbone.View.extend({
                     var newValue = old - offset[attr] + value;
                     // Keep panel within figure limits
                     if (attr === 'x'){
+                        if (newValue > figsize.w || newValue < 0) {
+                            this.ignoreChange = false;
+                        }
                         newValue = Math.min(figsize.w, newValue);
                     } else if (attr === 'y') {
+                        if (newValue > figsize.h || newValue < 0) {
+                            this.ignoreChange = false;
+                        }
                         newValue = Math.min(figsize.h, newValue);
                     }
                     newValue = Math.max(0, newValue);
