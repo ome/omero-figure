@@ -4014,7 +4014,7 @@ var LutPickerView = Backbone.View.extend({
         events: {
             "submit .addIdForm": "previewSetId",
             "click .preview": "previewSetId",
-            "keyup .imgIds": "keyPressed",
+            "keyup .imgId": "keyPressed",
             "click .doSetId": "doSetId",
         },
 
@@ -4031,7 +4031,7 @@ var LutPickerView = Backbone.View.extend({
 
         // Only enable submit button when input has a number in it
         keyPressed: function() {
-            var idInput = $('input.imgIds', this.$el).val(),
+            var idInput = $('input.imgId', this.$el).val(),
                 previewBtn = $('button.preview', this.$el),
                 re = /^\d+$/;
             if (re.test(idInput)) {
@@ -4046,7 +4046,7 @@ var LutPickerView = Backbone.View.extend({
             event.preventDefault();
 
             var self = this,
-                idInput = $('input.imgIds', this.$el).val();
+                idInput = $('input.imgId', this.$el).val();
 
             // get image Data
             $.getJSON(BASE_WEBFIGURE_URL + 'imgData/' + parseInt(idInput, 10) + '/', function(data){
@@ -4207,6 +4207,7 @@ var LutPickerView = Backbone.View.extend({
             "submit .addImagesForm": "addImages",
             "click .btn-primary": "addImages",
             "keyup .imgIds": "keyPressed",
+            "paste .imgIds": "keyPressed",
         },
 
         initialize: function(options) {
@@ -4223,10 +4224,16 @@ var LutPickerView = Backbone.View.extend({
         },
 
         // Only enable submit button when input has a number in it
-        keyPressed: function() {
+        keyPressed: function(event) {
             var idInput = $('input.imgIds', this.$el).val(),
                 submitBtn = $('button.btn-primary', this.$el),
                 re = /\d.*/;
+            // Strangely if 'paste' event, value is not immediately set
+            // Try again after short timeout...
+            if (event && event.type === "paste") {
+                setTimeout(this.keyPressed, 50);
+                return;
+            }
             if (re.test(idInput)) {
                 submitBtn.removeAttr("disabled");
             } else {
@@ -5516,7 +5523,7 @@ var RectView = Backbone.View.extend({
             event.preventDefault();
             // Simply show dialog - Everything else handled by SetIdModalView
             $("#setIdModal").modal('show');
-            $("#setIdModal .imgIds").val("").focus();
+            $("#setIdModal .imgId").val("").focus();
         },
 
         // just update x,y,w,h by rendering ONE template

@@ -711,7 +711,7 @@
             event.preventDefault();
             // Simply show dialog - Everything else handled by SetIdModalView
             $("#setIdModal").modal('show');
-            $("#setIdModal .imgIds").val("").focus();
+            $("#setIdModal .imgId").val("").focus();
         },
 
         // just update x,y,w,h by rendering ONE template
