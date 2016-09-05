@@ -6,7 +6,7 @@
     
     // Version of the json file we're saving.
     // This only needs to increment when we make breaking changes (not linked to release versions.)
-    var VERSION = 1;
+    var VERSION = 2;
 
 
     // ------------------------- Figure Model -----------------------------------
@@ -110,6 +110,27 @@
                     p.pixel_size_x = ps;
                     p.pixel_size_y = ps;
                     delete p.pixel_size;
+                });
+            }
+            if (v < 2) {
+                console.log("Transforming to VERSION 2");
+                _.each(json.panels, function(p){
+                    if (p.shapes) {
+                        p.shapes = p.shapes.map(function(shape){
+                            // Update to OMERO 5.3.0 model of Ellipse
+                            if (shape.type === "Ellipse") {
+                                shape.x = shape.cx;
+                                shape.y = shape.cy;
+                                shape.radiusX = shape.rx;
+                                shape.radiusY = shape.ry;
+                                delete shape.cx;
+                                delete shape.cy;
+                                delete shape.rx;
+                                delete shape.ry;
+                            }
+                            return shape;
+                        });
+                    }
                 });
             }
 
@@ -1362,6 +1383,116 @@
         // localStorage: new Backbone.LocalStorage("figureShop-backbone")
     });
 
+
+var ShapeModel = Backbone.Model.extend({
+
+    parse: function(shape) {
+        // Convert OMERO.server shapes to OMERO.figure shapes
+        if (shape.markerEnd === 'Arrow' || shape.markerStart === 'Arrow') {
+            shape.type = 'Arrow';
+            if (shape.markerEnd !== 'Arrow') {
+                // Only marker start is arrow - reverse direction!
+                var tmp = {'x1': shape.x1, 'y1': shape.y1, 'x2': shape.x2, 'y2': shape.y2};
+                shape.x1 = tmp.x2;
+                shape.y1 = tmp.y2;
+                shape.x2 = tmp.x1;
+                shape.y2 = tmp.y1;
+            }
+        }
+        if (shape.type === 'Ellipse') {
+            // If we have < OMERO 5.3, Ellipse has cx, cy, rx, ry
+            if (shape.rx !== undefined) {
+                shape.x = shape.cx;
+                shape.y = shape.cy;
+                shape.radiusX = shape.rx;
+                shape.radiusY = shape.ry;
+            }
+        }
+        return shape;
+    },
+
+    convertOMEROShape: function() {
+        // Converts a shape json from OMERO into format taken by Shape-editor
+        // if shape has Arrow head, shape.type = Arrow
+        var s = this.toJSON();
+        if (s.markerEnd === 'Arrow' || s.markerStart === 'Arrow') {
+            s.type = 'Arrow';
+            if (s.markerEnd !== 'Arrow') {
+                // Only marker start is arrow - reverse direction!
+                var tmp = {'x1': s.x1, 'y1': s.y1, 'x2': s.x2, 'y2': s.y2};
+                s.x1 = tmp.x2;
+                s.y1 = tmp.y2;
+                s.x2 = tmp.x1;
+                s.y2 = tmp.y1;
+            }
+        }
+        if (s.type === 'Ellipse') {
+            // If we have < OMERO 5.3, Ellipse has cx, cy, rx, ry
+            if (s.rx !== undefined) {
+                s.x = s.cx;
+                s.y = s.cy;
+                s.radiusX = s.rx;
+                s.radiusY = s.ry;
+            }
+        }
+        return s;
+    },
+});
+
+var ShapeList = Backbone.Collection.extend({
+    model: ShapeModel
+});
+
+var RoiModel = Backbone.Model.extend({
+
+    initialize: function(data) {
+        this.shapes = new ShapeList(data.shapes, {'parse': true});
+    }
+});
+
+var RoiList = Backbone.Collection.extend({
+    // url: ROIS_JSON_URL + iid + "/",
+    model: RoiModel,
+
+    deselectShapes: function(){
+        this.forEach(function(roi){
+            roi.shapes.forEach(function(s){
+                if (s.get('selected')) {
+                    s.set('selected', false)
+                }
+            });
+        });
+    },
+
+    selectShape: function(shapeId){
+        var shape,
+            shapeJson;
+        this.forEach(function(roi){
+            roi.shapes.forEach(function(s){
+                if (s.get('id') === shapeId) {
+                    s.set('selected');
+                }
+            });
+        });
+        shape = this.getShape(shapeId);
+        if (shape) {
+            shapeJson = shape.toJSON();
+        }
+        this.trigger('change:selection', [shapeJson]);
+    },
+
+    getShape: function(shapeId){
+        var shape;
+        this.forEach(function(roi){
+            var s = roi.shapes.get(shapeId);
+            if (s) {
+                shape = s;
+            }
+        });
+        return shape;
+    }
+});
+
 // --------------- UNDO MANAGER ----------------------
 
 //
@@ -1859,8 +1990,7 @@ var CropModalView = Backbone.View.extend({
 
         el: $("#cropModal"),
 
-        // template: JST["static/figure/templates/paper_setup_modal_template.html"],
-        roiTemplate: JST["static/figure/templates/modal_dialogs/roi_modal_roi.html"],
+        roiTemplate: JST["static/figure/templates/modal_dialogs/crop_modal_roi.html"],
 
         model:FigureModel,
 
@@ -4401,7 +4531,20 @@ var LutPickerView = Backbone.View.extend({
             } else {
                 // delete shapes
                 if (this.shapeManager) {
-                    this.shapeManager.deleteAll();
+                    this.shapeManager.deleteAllShapes();
+                }
+            }
+        },
+
+        // crop the viewport to the bounding box of first shape
+        // Used when panel-views are used to show shapes in ROI dialog
+        crop_to_shape_bbox: function() {
+            // Need to get bbox from shapeManager...
+            if (this.shapeManager) {
+                var shapes = this.shapeManager.getShapesJson();
+                if (shapes.length > 0) {
+                    var bbox = this.shapeManager.getShapeBoundingBox(shapes[0].id);
+                    this.model.cropToRoi(bbox);
                 }
             }
         },
@@ -6409,6 +6552,197 @@ var RectView = Backbone.View.extend({
     });
 
 
+var RoiLoaderView = Backbone.View.extend({
+
+    tagName: 'tbody',
+
+    template: JST["static/figure/templates/modal_dialogs/roi_modal_roi.html"],
+    shapeTemplate: JST["static/figure/templates/modal_dialogs/roi_modal_shape.html"],
+
+    initialize: function(options) {
+        this.panel = options.panel;
+    },
+
+    events: {
+        "mouseover .roiModalRoiItem": "mouseoverRoiItem",
+        "mouseout .roiModalRoiItem": "mouseoutRoiItem",
+        "click .roiModalRoiItem": "clickRoiItem",
+        "click .addOmeroShape": "addOmeroShape",
+    },
+
+    roiIcons: {'Rectangle': 'rect-icon',
+               'Ellipse': 'ellipse-icon',
+               'Line': 'line-icon',
+               'Arrow': 'arrow-icon'},
+
+    addOmeroShape: function(event) {
+        var $tr = $(event.target);
+        // $tr.parentsUntil(".roiModalRoiItem")  DIDN'T work!
+        // Do it manually...
+        while (!$tr.hasClass("roiModalRoiItem")) {
+            $tr = $tr.parent();
+        }
+        // If ROI has a single shape, add it
+        if ($tr.attr('data-shapeId')) {
+            var shapeId = parseInt($tr.attr('data-shapeId'), 10);
+            var shape = this.collection.getShape(shapeId);
+            var shapeJson = shape.toJSON();
+            this.collection.trigger('shape_add', [shapeJson]);
+        }
+    },
+
+    removeShapes: function(roiId) {
+        var roiData = this.collection.get(roiId).toJSON();
+        roiData.shapes.forEach(function(s){
+            $(".roiModalRoiItem[data-shapeId='" + s.id + "']", this.$el).remove();
+        });
+    },
+
+    renderShapes: function(roiId) {
+        var roi = this.collection.get(roiId);
+        var shapesJson = roi.shapes.map(function(shapeModel){
+            var s = shapeModel.toJSON();
+            s.icon = this.roiIcons[s.type];
+            return s;
+        }.bind(this));
+        var html = this.shapeTemplate({'shapes': shapesJson});
+        $(".roiModalRoiItem[data-roiId='" + roiId + "']", this.$el).after(html);
+        shapesJson.forEach(function(s){
+            var $td = $(".roiModalRoiItem[data-shapeId='" + s.id + "'] td.roiViewport", this.$el);
+            if (s.icon) {
+                this.appendShape($td, s);
+            }
+        }.bind(this));
+    },
+
+    clickRoiItem: function(event) {
+        var $tr = $(event.target);
+        // $tr.parentsUntil(".roiModalRoiItem")  DIDN'T work!
+        // Do it manually...
+        while (!$tr.hasClass("roiModalRoiItem")) {
+            $tr = $tr.parent();
+        }
+        // If ROI has a single shape, add it
+        if ($tr.attr('data-shapeId')) {
+            var shapeId = parseInt($tr.attr('data-shapeId'), 10);
+            var shape = this.collection.getShape(shapeId);
+            var shapeJson = shape.toJSON();
+            this.collection.trigger('shape_click', [shapeJson]);
+        } else {
+            // Otherwise toggle ROI (show/hide shapes)
+            var roiId = parseInt($tr.attr('data-roiId'), 10);
+            var $span = $('.toggleRoi', $tr).toggleClass('rotate90');
+            if ($span.hasClass('rotate90')) {
+                this.renderShapes(roiId);
+            } else {
+                this.removeShapes(roiId);
+            }
+        }
+    },
+
+    mouseoverRoiItem: function(event) {
+        var $tr = $(event.target);
+        while (!$tr.hasClass("roiModalRoiItem")) {
+            $tr = $tr.parent();
+        }
+        var shapeId = parseInt($tr.attr('data-shapeId'), 10);
+        this.collection.selectShape(shapeId);
+    },
+
+    mouseoutRoiItem: function(event) {
+        // Simply select nothing
+        this.collection.selectShape();
+    },
+
+    // We display a shape on an image Panel using the Panel model and PanelView.
+    appendShape: function($element, shape) {
+
+        var panelJson = this.panel.toJSON();
+        panelJson.width = 50;
+        panelJson.height = 50;
+        panelJson.x = 0;
+        panelJson.y = 0;
+        panelJson.shapes = [shape];
+        var panelModel = new Panel(panelJson);
+        if (shape.theT !== undefined) {
+            panelModel.set('theT', shape.theT);
+        }
+        if (shape.theZ !== undefined) {
+            panelModel.set('theZ', shape.theZ);
+        }
+        // panelModel.cropToRoi(shape);
+        var view = new PanelView({model:panelModel});
+        var el = view.render().el;
+        $element.append(el);
+        // This is kinda painful but...
+        // We can't crop_to_shape_bbox until we have the view.shapeManager
+        // created and populated, since we need Raphael to give us the
+        // bounding box. BUT render_shapes() which creates the shapeManager
+        // is called after a setTimeout of 10 millisecs, because it needs
+        // DOM layout to work. So, we have to crop AFTER that (need a longer timeout!)
+        setTimeout(function(){
+            view.crop_to_shape_bbox();
+        }, 50);
+    },
+
+    render: function() {
+
+        var roiData = this.collection;  //.toJSON();
+
+        roiData.forEach(function(roi){
+            var roiJson = {id: roi.get('id'),
+                           shapes: []},
+                minT, maxT = 0,
+                minZ, maxZ = 0;
+            if (roi.shapes) {
+                roiJson.shapes = roi.shapes.map(function(shapeModel){
+                    var s = shapeModel.convertOMEROShape();
+                    s.icon = this.roiIcons[s.type];
+                    if (s.theZ !== undefined) {
+                        if (minZ === undefined) {
+                            minZ = s.theZ
+                        } else {
+                            minZ = Math.min(minZ, s.theZ);
+                        }
+                        maxZ = Math.max(maxZ, s.theZ);
+                    }
+                    if (s.theT !== undefined) {
+                        if (minT === undefined) {
+                            minT = s.theT
+                        } else {
+                            minT = Math.min(minT, s.theT);
+                        }
+                        maxT = Math.max(maxT, s.theT);
+                    }
+                    return s;
+                }.bind(this));
+            }
+
+            roiJson.type = roiJson.shapes[0].type;
+            roiJson.icon = roiJson.shapes[0].icon;
+            roiJson.minZ = minZ;
+            roiJson.maxZ = maxZ;
+            roiJson.minT = minT;
+            roiJson.maxT = maxT;
+
+            // return r;
+            var html = this.template({'roi': roiJson});
+
+            this.$el.append(html);
+
+            var $element = $("#roiModalRoiList .roiViewport").last();
+            if (roiJson.shapes[0].icon) {
+                // Only show shape if supported type
+                this.appendShape($element, roiJson.shapes[0]);
+            }
+
+        }.bind(this));
+
+        return this;
+    }
+});
+
+
 
 var RoiModalView = Backbone.View.extend({
 
@@ -6417,6 +6751,9 @@ var RoiModalView = Backbone.View.extend({
         el: $("#roiModal"),
 
         model:FigureModel,
+
+        // ID for temp shape that we add & remove from shapeManager
+        TEMP_SHAPE_ID: -1234,
 
         initialize: function() {
 
@@ -6459,7 +6796,7 @@ var RoiModalView = Backbone.View.extend({
                 self.m.set('rotation', 0);
 
                 self.shapeManager.setState("SELECT");
-                self.shapeManager.deleteAll();
+                self.shapeManager.deleteAllShapes();
 
                 // Load any existing shapes on panel
                 var shapesJson = self.m.get('shapes');
@@ -6467,10 +6804,11 @@ var RoiModalView = Backbone.View.extend({
                     self.shapeManager.setShapesJson(shapesJson);
                 }
 
-                self.render();
+                // remove any previous OMERO ROIs
+                $("#roiModalRoiList table").empty();
 
-                // disable submit until user chooses a region/ROI
-                // self.enableSubmit(false);
+                self.render();
+                self.checkForRois();
             });
 
             this.shapeManager = new ShapeManager("roi_paper", 1, 1);
@@ -6484,7 +6822,6 @@ var RoiModalView = Backbone.View.extend({
         events: {
             "submit .roiModalForm": "handleRoiForm",
             "click .shape-option .btn": "selectState",
-            "click .select-btn": "selectState",
             "click .dropdownSelect a": "select_dropdown_option",
             "change .line-width": "changeLineWidth",
             "change .shape-color": "changeColor",
@@ -6495,6 +6832,102 @@ var RoiModalView = Backbone.View.extend({
             "click .pasteShape": "pasteShapes",
             "click .deleteShape": "deleteShapes",
             "click .selectAll": "selectAllShapes",
+            "click .loadRois": "loadRois",
+        },
+
+        checkForRois: function() {
+            var url = BASE_WEBFIGURE_URL + 'roiCount/' + this.m.get('imageId') + '/';
+
+            var $btn = $(".loadRois", this.$el)
+                .attr({'disabled': 'disabled'})
+                .show();
+            $btn.parent().attr('title', 'Checking for ROIs...');  // title on parent div - still works if btn disabled
+            $.getJSON(url, function(data){
+                if (data.roi && data.roi > 0) {
+                    $btn.removeAttr('disabled')
+                    .parent().attr('title', 'Load ' + data.roi + ' ROIs from OMERO');
+                } else {
+                    $btn.parent().attr('title', 'This image has no ROIs on the OMERO server');
+                }
+            });
+        },
+
+        // Load Rectangles from OMERO and render them
+        loadRois: function(event) {
+            event.preventDefault();
+            // hide button and tip
+            $(".loadRois", this.$el).hide();
+            $("#roiModalTip").hide();
+
+            var iid = this.m.get('imageId');
+            // We create a new Model and RoiLoaderView.
+            // Then listen for selection events etc coming from RoiLoaderView
+            var Rois = new RoiList();
+            this.listenTo(Rois, "change:selection", this.showTempShape);  // mouseover shape
+            this.listenTo(Rois, "shape_add", this.addShapeFromOmero);
+            this.listenTo(Rois, "shape_click", this.showShapePlane);
+            Rois.url = ROIS_JSON_URL + iid + "/",
+            Rois.fetch({success: function(model, response, options){
+                var roiLoaderView = new RoiLoaderView({collection: model, panel: this.m});
+                // We append el first, then render so that ROI panels & shapes render correctly
+                $("#roiModalRoiList table").append(roiLoaderView.el);
+                roiLoaderView.render();
+            }.bind(this),
+            error: function(m, rsp){
+                var info = rsp.status + " " + rsp.statusText
+                if (rsp.status === 404) {
+                    // OMERO 5.0 url is /get_rois_json/iid (no final slash)
+                    info = "You need to use OMERO 5.1 or later";
+                }
+                alert("Failed to load ROIS: " + info);
+            } });
+        },
+
+        showShapePlane: function(args) {
+            var shapeJson = args[0];
+            if (shapeJson) {
+                var newPlane = {};
+                if (shapeJson.theZ !== undefined) {
+                    newPlane.theZ = shapeJson.theZ;
+                }
+                if (shapeJson.theT !== undefined) {
+                    newPlane.theT = shapeJson.theT;
+                }
+                this.m.set(newPlane);
+                this.renderImagePlane();
+            }
+        },
+
+        addShapeFromOmero: function(args) {
+
+            var shapeJson = args[0],
+                shape;
+            // Remove the temp shape
+            this.shapeManager.deleteShapesByIds([this.TEMP_SHAPE_ID]);
+            var existingShape = this.shapeManager.findShapeAtCoords(shapeJson);
+            // If shape has been added at exact coords already, we bail out!
+            if (existingShape) {
+                return;
+            }
+            if (shapeJson) {
+                var viewport = this.m.getViewportAsRect();
+                shape = this.shapeManager.addShapeJson(shapeJson, viewport);
+            }
+            if (!shape) {
+                alert("Couldn't add shape outside of current viewport");
+            } else {
+                this.shapeManager.selectShapes([shape]);
+            }
+        },
+
+        showTempShape: function(args) {
+            shape = args[0];
+            this.shapeManager.deleteShapesByIds([this.TEMP_SHAPE_ID]);
+            if (shape) {
+                var viewport = this.m.getViewportAsRect();
+                shape.id = this.TEMP_SHAPE_ID;
+                var ok = this.shapeManager.addShapeJson(shape, viewport);
+            }
         },
 
         copyShapes: function(event) {
@@ -6538,13 +6971,17 @@ var RoiModalView = Backbone.View.extend({
 
         deleteShapes: function(event) {
             event.preventDefault();
-            this.shapeManager.deleteSelected();
+            this.shapeManager.deleteSelectedShapes();
         },
 
         handleRoiForm: function(event) {
             event.preventDefault();
 
             var shapesJson = this.shapeManager.getShapesJson();
+            shapesJson = shapesJson.filter(function(s){
+                // Remove any temporary shapes (from hovering over OMERO shapes)
+                return (s.id !== this.TEMP_SHAPE_ID);
+            }.bind(this));
             this.model.getSelected().forEach(function(panel){
 
                 // We use save() to notify undo/redo queue. TODO - fix!
@@ -6612,7 +7049,7 @@ var RoiModalView = Backbone.View.extend({
         selectAllShapes: function(event) {
             event.preventDefault();
             // manager triggers shapeSelected, which renders toolbar
-            this.shapeManager.selectAll();
+            this.shapeManager.selectAllShapes();
         },
 
         selectState: function(event) {
@@ -6644,7 +7081,7 @@ var RoiModalView = Backbone.View.extend({
                 lineW = this.shapeManager.getStrokeWidth(),
                 color = this.shapeManager.getStrokeColor(),
                 scale = this.zoom,
-                sel = this.shapeManager.getSelected().length > 0,
+                sel = this.shapeManager.getSelectedShapes().length > 0,
                 toPaste = this.model.get('clipboard'),
                 windows = navigator.platform.toUpperCase().indexOf('WIN') > -1;
             color = color ? color.replace("#", "") : 'FFFFFF';
@@ -6682,9 +7119,51 @@ var RoiModalView = Backbone.View.extend({
             $("#roiModalTip").show().html(tip);
         },
 
-        render: function() {
-
+        // for rendering bounding-box viewports for shapes
+        getBboxJson: function(bbox, theZ, theT) {
+            var size = 50;   // longest side
+            var orig_width = this.m.get('orig_width'),
+                orig_height = this.m.get('orig_height');
+                // origT = this.m.get('theT'),
+                // origZ = this.m.get('theZ');
+            // theT = (theT !== undefined ? theT : this.m.get('theT'))
+            var div_w, div_h;
+            // get src for image by temp setting Z & T
+            if (theT !== undefined) this.m.set('theT', bbox.theT, {'silent': true});
+            if (theZ !== undefined) this.m.set('theZ', bbox.theZ, {'silent': true});
             var src = this.m.get_img_src();
+            if (bbox.width > bbox.height) {
+                div_w = size;
+                div_h = (bbox.height/bbox.width) * div_w;
+            } else {
+                div_h = size;
+                div_w = (bbox.width/bbox.height) * div_h;
+            }
+            var zoom = div_w/bbox.width;
+            var img_w = orig_width * zoom;
+            var img_h = orig_height * zoom;
+            var top = -(zoom * bbox.y);
+            var left = -(zoom * bbox.x);
+            // bbox.theT = bbox.theT !== undefined ? bbox.theT : origT;
+            // bbox.theZ = bbox.theZ !== undefined ? bbox.theZ : origZ;
+
+            return {
+                'src': src,
+                'w': div_w,
+                'h': div_h,
+                'top': top,
+                'left': left,
+                'img_w': img_w,
+                'img_h': img_h
+            };
+        },
+
+        renderImagePlane: function() {
+            var src = this.m.get_img_src();
+            this.$roiImg.attr('src', src);
+        },
+
+        render: function() {
 
             var maxSize = 550,
                 frame_w = maxSize,
@@ -6718,13 +7197,13 @@ var RoiModalView = Backbone.View.extend({
                 "-webkit-transform": c.transform,
                 "transform": c.transform
             }
-            this.$roiImg.css(css)
-                .attr('src', src);
+            this.$roiImg.css(css);
 
             $("#roi_paper").css(css);
 
             $("#roiViewer").css({'width': frame_w + 'px', 'height': frame_h + 'px'});
 
+            this.renderImagePlane();
             this.renderToolbar();
             this.renderSidebar();
         }

@@ -148,8 +148,15 @@
 
                             </div>
                         </div>
-                        <div id="roiModalSidebar" class="col-xs-4" style="padding-right:0">
+                        <div id="roiModalSidebar" class="col-xs-4"
+                                style="padding-right:0; height:600px; overflow-y:auto">
+                            <div id="roiModalRoiList">
+                                <table style="width: 100%" class="table table-hover table-condensed"></table>
+                            </div>
                             <p id="roiModalTip"></p>
+                            <div>
+                                <button class="loadRois btn btn-success" disabled='disabled'>Load ROIs from OMERO</button>
+                            </div>
                         </div>
                     </div>
                     <div class="modal-footer" style="margin-top: 0">
@@ -911,7 +918,7 @@
     <script src="{% static 'figure/3rdparty/bootstrap3/js/bootstrap.js' %}"></script>
     <script src="{% static 'figure/3rdparty/bootstrap-colorpicker/js/bootstrap-colorpicker.min.js' %}"></script>
     <script src="{% static 'figure/3rdparty/markdown-browser-0.6.0-beta1/markdown.min.js' %}"></script>
-    <script src="{% static 'figure/3rdparty/shape-editor.js' %}"></script>
+    <script src="{% static 'figure/3rdparty/shape-editor-2.0.0/shape-editor.js' %}"></script>
 
     <!-- underscore templates at static/figure/templates are compiled with '$ grunt jst' -->
     <script src="{% static 'figure/js/templates.js' %}?version={{ version }}"></script>
