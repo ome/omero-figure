@@ -22,6 +22,7 @@
 
 
 import os
+import json
 from setuptools import setup, find_packages
 
 
@@ -33,7 +34,14 @@ def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 
-VERSION = '1.2.2'
+def read_version(fname):
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    p = os.path.join(dir_path, fname)
+    with open(p) as f:
+        data = json.load(f)
+    return data['version']
+
+VERSION = read_version('package.json')
 
 
 setup(name="omero-figure",
