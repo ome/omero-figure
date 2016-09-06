@@ -8,7 +8,7 @@
 import json
 import os
 dir_path = os.path.dirname(os.path.realpath(__file__))
-package_path = os.path.join(dir_path, 'package.json')
+package_path = os.path.join(dir_path, '..', 'package.json')
 with open(package_path) as f:
     data = json.load(f)
 OMERO_FIGURE_VERSION = data['version']
