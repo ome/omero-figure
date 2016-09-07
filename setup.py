@@ -26,29 +26,25 @@ import json
 from setuptools import setup, find_packages
 
 
-# Utility function to read the README file.
-# Used for the long_description.  It's nice, because now 1) we have a top level
-# README file and 2) it's easier to type in the README file than to put a raw
-# string in below ...
-def read(fname):
-    return open(os.path.join(os.path.dirname(__file__), fname)).read()
-
-
-def read_version(fname):
+# Utility function to read the README file. Also support json content
+def read_file(fname, content_type=None):
     dir_path = os.path.dirname(os.path.realpath(__file__))
     p = os.path.join(dir_path, fname)
     with open(p) as f:
-        data = json.load(f)
-    return data['version']
+        if content_type in ('json',):
+            data = json.load(f)
+        else:
+            data = f.readlines()
+    return data
 
-VERSION = read_version('package.json')
 
+VERSION = read_file('package.json', content_type='json')['version']
 
 setup(name="omero-figure",
       packages=find_packages(exclude=['ez_setup']),
       version=VERSION,
       description="A Python plugin for OMERO.web",
-      long_description=read('README.rst'),
+      long_description=read_file('README.rst'),
       author='The Open Microscopy Team',
       author_email='ome-devel@lists.openmicroscopy.org.uk',
       license='AGPLv3',

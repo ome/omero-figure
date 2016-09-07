@@ -5,15 +5,4 @@
 # https://www.openmicroscopy.org/
 #   site/support/omero5.2/developers/Web/CreateApp.html
 
-import json
-import os
-import pkg_resources  # part of setuptools
-
-try:
-    OMERO_FIGURE_VERSION = pkg_resources.require("omero-figure")[0].version
-except:
-    dir_path = os.path.dirname(os.path.realpath(__file__))
-    package_path = os.path.join(dir_path, '..', 'package.json')
-    with open(package_path) as f:
-        data = json.load(f)
-    OMERO_FIGURE_VERSION = data['version']
+OMERO_FIGURE_VERSION = "1.2.1-dev"
