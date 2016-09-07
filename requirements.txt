@@ -1,3 +1,1 @@
-reportlab
-markdown
-omego
+omero

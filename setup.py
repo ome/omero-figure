@@ -55,7 +55,7 @@ setup(name="omero-figure",
       url="https://github.com/ome/figure",
       download_url='https://github.com/ome/figure/tarball/%s' % VERSION,
       keywords=['OMERO.web', 'figure'],
-      install_requires=['reportlab', 'markdown'],
+      install_requires=[],
       include_package_data=True,
       zip_safe=False,
       )
