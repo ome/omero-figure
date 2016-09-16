@@ -34,7 +34,7 @@ from cStringIO import StringIO
 
 from omeroweb.webclient.decorators import login_required
 
-from figure import settings
+from . import settings
 
 try:
     from PIL import Image

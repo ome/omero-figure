@@ -8,9 +8,9 @@ module.exports = function (grunt) {
     , jshint: {
         all: [
             "Gruntfile.js"
-          , "figure/static/figure/js/models/*.js"
-          , "figure/static/figure/js/views/*.js"
-          , "figure/static/figure/js/app.js"
+          , "omero_figure/static/figure/js/models/*.js"
+          , "omero_figure/static/figure/js/views/*.js"
+          , "omero_figure/static/figure/js/app.js"
         ]
       , options: {
           jshintrc: '.jshintrc'
@@ -18,10 +18,10 @@ module.exports = function (grunt) {
       }
     , jasmine: {
         src: [
-            "figure/static/figure/3rdparty/jquery-1.7.2.js",
-            "figure/static/figure/3rdparty/underscore.js",
-            "figure/static/figure/3rdparty/backbone.js",
-            "figure/static/figure/js/*.js"
+            "omero_figure/static/figure/3rdparty/jquery-1.7.2.js",
+            "omero_figure/static/figure/3rdparty/underscore.js",
+            "omero_figure/static/figure/3rdparty/backbone.js",
+            "omero_figure/static/figure/js/*.js"
         ]
       , options: {
           specs: "spec/*.js"
@@ -31,9 +31,9 @@ module.exports = function (grunt) {
     jst: {
       compile: {
         files: {
-          "figure/static/figure/js/templates.js": [
-            "figure/static/figure/templates/*.html",
-            "figure/static/figure/templates/**/*.html"
+          "omero_figure/static/figure/js/templates.js": [
+            "omero_figure/static/figure/templates/*.html",
+            "omero_figure/static/figure/templates/**/*.html"
           ]
         }
       }
@@ -42,17 +42,17 @@ module.exports = function (grunt) {
       src: {
         // we compile html templates with 'jst'
         files: [
-            'figure/static/figure/templates/*.html',
-            'figure/static/figure/templates/**/*.html'
+            'omero_figure/static/figure/templates/*.html',
+            'omero_figure/static/figure/templates/**/*.html'
         ],
         tasks: ['jst']
       },
       scripts: {
         // and concatonate js files into a single figure.js
         files: [
-            'figure/static/figure/js/models/*.js',
-            'figure/static/figure/js/views/*.js',
-            'figure/static/figure/js/app.js'
+            'omero_figure/static/figure/js/models/*.js',
+            'omero_figure/static/figure/js/views/*.js',
+            'omero_figure/static/figure/js/app.js'
         ],
         tasks: ['concat']
       },
@@ -66,10 +66,10 @@ module.exports = function (grunt) {
       js: {
         src: [
             "<banner>",
-            'figure/static/figure/js/models/*.js',
-            'figure/static/figure/js/views/*.js',
-            'figure/static/figure/js/app.js'],
-        dest: 'figure/static/figure/figure.js',
+            'omero_figure/static/figure/js/models/*.js',
+            'omero_figure/static/figure/js/views/*.js',
+            'omero_figure/static/figure/js/app.js'],
+        dest: 'omero_figure/static/figure/figure.js',
       },
     },
     replace: {
@@ -136,8 +136,8 @@ module.exports = function (grunt) {
               expand: true,
               flatten: true,
               src: [
-                  'figure/templates/figure/index.html',
-                  'figure/static/figure/figure.js'
+                  'omero_figure/templates/figure/index.html',
+                  'omero_figure/static/figure/figure.js'
               ], dest: 'demo/'}
         ]
       }
@@ -147,10 +147,10 @@ module.exports = function (grunt) {
         files: [
           {
             expand: true,
-            src: ['figure/static/figure/3rdparty/**',
-                  'figure/static/figure/css/**',
-                  'figure/static/figure/images/**',
-                  'figure/static/figure/js/templates.js'], dest: 'demo/'},
+            src: ['omero_figure/static/figure/3rdparty/**',
+                  'omero_figure/static/figure/css/**',
+                  'omero_figure/static/figure/images/**',
+                  'omero_figure/static/figure/js/templates.js'], dest: 'demo/'},
         ]
       },
     },
