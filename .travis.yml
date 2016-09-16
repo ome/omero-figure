@@ -13,5 +13,7 @@ before_script:
   - npm install -g grunt-cli
 
 script:
+  - grunt jst
+  - grunt concat
   - grunt jshint
   - python setup.py sdist install --user || exit 1
