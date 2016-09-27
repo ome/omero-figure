@@ -35,7 +35,7 @@
 
         el: $("#paperSetupModal"),
 
-        template: JST["static/figure/templates/modal_dialogs/paper_setup_modal_template.html"],
+        template: JST["figure/static/figure/templates/modal_dialogs/paper_setup_modal_template.html"],
 
         model:FigureModel,
 
@@ -160,7 +160,7 @@
 
         el: $("#setIdModal"),
 
-        template: JST["static/figure/templates/modal_dialogs/preview_Id_change_template.html"],
+        template: JST["figure/static/figure/templates/modal_dialogs/preview_Id_change_template.html"],
 
         model:FigureModel,
 

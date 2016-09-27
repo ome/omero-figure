@@ -4,7 +4,7 @@ var ShapeToolbarView = Backbone.View.extend({
 
     el: $("#shapes_toolbar"),
 
-    template: JST["static/figure/templates/shapes/shape_toolbar_template.html"],
+    template: JST["figure/static/figure/templates/shapes/shape_toolbar_template.html"],
 
     initialize: function(options) {
 

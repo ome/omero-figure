@@ -37,7 +37,7 @@ var ShapeListItemView = Backbone.View.extend({
 
     tagName:"div",
 
-    template: JST["static/figure/templates/shapes/shape_item_template.html"],
+    template: JST["figure/static/figure/templates/shapes/shape_item_template.html"],
 
     initialize:function () {
         this.listenTo(this.model, "change", this.render);
