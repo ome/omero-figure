@@ -2,7 +2,7 @@
 
 var RoiModalView = Backbone.View.extend({
 
-        template: JST["figure/static/figure/templates/shapes/shape_toolbar_template.html"],
+        template: JST["omero_figure/static/figure/templates/shapes/shape_toolbar_template.html"],
 
         el: $("#roiModal"),
 

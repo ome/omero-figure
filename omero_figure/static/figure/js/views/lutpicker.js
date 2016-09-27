@@ -23,7 +23,7 @@ var LutPickerView = Backbone.View.extend({
 
     el: $("#lutpickerModal"),
 
-    template: JST["figure/static/figure/templates/lut_picker.html"],
+    template: JST["omero_figure/static/figure/templates/lut_picker.html"],
 
     LUT_NAMES: ["16_colors.lut",
                 "3-3-2_rgb.lut",
