@@ -1,5 +1,5 @@
-.. image:: https://travis-ci.org/ome/figure.svg?branch=master
-    :target: https://travis-ci.org/ome/figure
+.. image:: https://travis-ci.org/ome/omero-figure.svg?branch=master
+    :target: https://travis-ci.org/ome/omero-figure
 
 .. image:: https://badge.fury.io/py/omero-figure.svg
     :target: https://badge.fury.io/py/omero-figure
@@ -68,7 +68,7 @@ Go to http://localhost:8000/ to test it.
 To update the figure.openmicroscopy.org site:
 
  - Copy the demo directory and replace the demo directory in gh-pages-staging branch.
- - Commit changes and open PR against ome/gh-pages-staging as described https://github.com/ome/figure/tree/gh-pages-staging
+ - Commit changes and open PR against ome/gh-pages-staging as described https://github.com/ome/omero-figure/tree/gh-pages-staging
 
 It is also possible to run the demo in docker without installing anything locally:
 
