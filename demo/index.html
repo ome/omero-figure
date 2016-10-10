@@ -32,14 +32,14 @@
 
     <link rel="stylesheet" href="static/figure/3rdparty/bootstrap3/css/bootstrap.css">
     <link rel="stylesheet" href="static/figure/3rdparty/bootstrap-colorpicker/css/bootstrap-colorpicker.min.css">
-    <link rel="stylesheet" href="static/figure/css/figure.css?version=1.2.1-dev">
+    <link rel="stylesheet" href="static/figure/css/figure.css?version=2.0.0-dev">
 
     <script type="text/javascript" src="//code.jquery.com/jquery-1.7.2.min.js"></script>
     <script type="text/javascript" src="//code.jquery.com/ui/1.8.19/jquery-ui.js"></script><link rel="stylesheet" href="//code.jquery.com/ui/1.8.19/themes/smoothness/jquery-ui.css" type="text/css" />
 
     <script>
 
-    var RELEASE_VERSION = "v1.2.1-dev";
+    var RELEASE_VERSION = "v2.0.0-dev";
 
     var BASE_WEBFIGURE_URL = "",
         SAVE_WEBFIGURE_URL = "/figure/save_web_figure/",
@@ -300,7 +300,7 @@
                     <p>Choose a new Image ID for the selected panels</p>
                     <form class="setIdForm form-inline" role="form" style="margin-top: 10px; margin-bottom: 10px">
                         <div class="form-group">
-                            <input type="text" class="form-control imgIds" placeholder="Image ID">
+                            <input type="text" class="form-control imgId" placeholder="Image ID">
                         </div>
                         <button type="submit" class="btn btn-primary preview" disabled="disabled">Preview</button>
                     </form>
@@ -367,6 +367,25 @@
             </div>
         </div>
     </div>
+    <!-- LUT-picker Modal -->
+    <div class="modal" id="lutpickerModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title">Lookup Table Chooser</h4>
+                </div>
+                <div class="modal-body" style="height: 500px">
+                    <p>Loading Lookup Tables...</p>
+                </div>
+                <div class="lutPreview lutBg"> &nbsp </div>
+                <div class="modal-footer" style="margin-top: 0">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" disabled="disabled">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
     <!-- Add-Images Modal - behaviour handled by AddImagesModalView -->
     <div class="modal" id="addImagesModal" tabindex="-1" role="dialog" aria-labelledby="addImagesLabel" aria-hidden="true">
         <div class="modal-dialog">
@@ -412,6 +431,30 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- Import json Modal -->
+    <div class="modal" id="importJsonModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog" style="width:800px">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="addImagesLabel">Import from json</h4>
+                </div>
+                <form class="importJsonForm" role="form">
+                    <div class="modal-body">
+                        <p>Paste the json data for the Figure into the text box below.
+                        </p>
+                        <div class="form-group" style="margin-top: 15px; margin-bottom: 0px">
+                            <textarea class="form-control" rows="15"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer" style="margin-top: 0">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">OK</button>
                     </div>
                 </form>
             </div>
@@ -556,6 +599,9 @@
                             </li>
                             <li class="export_json">
                                 <a href="#">Export as json</a>
+                            </li>
+                            <li class="import_json">
+                                <a href="#">Import from json</a>
                             </li>
                             <li class="delete_figure">
                                 <a href="#">Delete</a>
@@ -868,10 +914,10 @@
     <script src="static/figure/3rdparty/shape-editor.js"></script>
 
     <!-- underscore templates at static/figure/templates are compiled with '$ grunt jst' -->
-    <script src="static/figure/js/templates.js?version=1.2.1-dev"></script>
+    <script src="static/figure/js/templates.js?version=2.0.0-dev"></script>
 
     <!-- static/figure/js/ files are concatenated with '$ grunt concat' into static/figure.js -->
-    <script type="text/javascript" src="figure.js?version=1.2.1-dev"></script>
+    <script type="text/javascript" src="figure.js?version=2.0.0-dev"></script>
 
 </body>
 

@@ -4,11 +4,11 @@
     var PanelView = Backbone.View.extend({
         tagName: "div",
         className: "imagePanel",
-        template: JST["figure/static/figure/templates/figure_panel_template.html"],
-        label_template: JST["figure/static/figure/templates/labels/label_template.html"],
-        label_vertical_template: JST["figure/static/figure/templates/labels/label_vertical_template.html"],
-        label_table_template: JST["figure/static/figure/templates/labels/label_table_template.html"],
-        scalebar_template: JST["figure/static/figure/templates/scalebar_panel_template.html"],
+        template: JST["omero_figure/static/figure/templates/figure_panel_template.html"],
+        label_template: JST["omero_figure/static/figure/templates/labels/label_template.html"],
+        label_vertical_template: JST["omero_figure/static/figure/templates/labels/label_vertical_template.html"],
+        label_table_template: JST["omero_figure/static/figure/templates/labels/label_table_template.html"],
+        scalebar_template: JST["omero_figure/static/figure/templates/scalebar_panel_template.html"],
 
 
         initialize: function(opts) {
