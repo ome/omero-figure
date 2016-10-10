@@ -34,9 +34,8 @@ def read_file(fname, content_type=None):
         if content_type in ('json',):
             data = json.load(f)
         else:
-            data = f.readlines()
+            data = f.read()
     return data
-
 
 VERSION = read_file('package.json', content_type='json')['version']
 
