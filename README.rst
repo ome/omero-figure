@@ -33,6 +33,8 @@ for an introduction.
 
 Install Node from https://nodejs.org, then:
 
+::
+
     $ cd figure
     $ npm install
 
@@ -40,14 +42,20 @@ Install Grunt CLI as described on http://gruntjs.com/using-the-cli.
 
 To compile jst templates:
 
+::
+
 	$ grunt jst
 
 To concatenate js files into a single figure.js file that is used in the app:
+
+::
 
     $ grunt concat
 
 During development, you'll want to have both of these run whenever the relevant files are edited.
 This can be achieved with:
+
+::
 
 	$ grunt watch
 
@@ -56,10 +64,14 @@ we have a grunt task that concats and moves js files into demo/.
 It also replaces Django template tags in index.html and various js code
 fragments with static app code. This is all handled by the grunt task:
 
+::
+
     $ grunt demo
 
 This puts everything into the figure/demo/ directory.
 This can be tested locally via:
+
+::
 
     $ cd demo/
     $ python -m SimpleHTTPServer
@@ -72,10 +84,14 @@ To update the figure.openmicroscopy.org site:
 
 It is also possible to run the demo in docker without installing anything locally:
 
+::
+
     $ docker build -t figure-demo .
     $ docker run -ti --rm -p 8000:8000 figure-demo
 
 If you are using docker-machine (e.g. on Mac OS X or Windows), you can find the URL of your demo with:
+
+::
 
     # get the ip address of your docker machine (named default)
     $ docker-machine ip default
