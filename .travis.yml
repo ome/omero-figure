@@ -6,7 +6,7 @@ language: node_js
 sudo: false
 
 before_install:
-  - pip install restructuredtext_lint
+  - pip install --user restructuredtext_lint
   - pip install --user flake8
   - flake8 -v .
   - rst-lint README.rst
