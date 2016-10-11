@@ -6,8 +6,10 @@ language: node_js
 sudo: false
 
 before_install:
+  - pip install --user restructuredtext_lint
   - pip install --user flake8
   - flake8 -v .
+  - rst-lint README.rst
 
 before_script:
   - npm install -g grunt-cli
