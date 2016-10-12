@@ -10,13 +10,13 @@ minor feature improvements.
 
 Features:
 
- - Faster listing of files in File > Open dialog [#145](https://github.com/ome/figure/pull/145)
- - Improved filtering of listed files by name [#147](https://github.com/ome/figure/pull/147)
+ - Faster listing of files in File > Open dialog [#145](https://github.com/ome/omero-figure/pull/145)
+ - Improved filtering of listed files by name [#147](https://github.com/ome/omero-figure/pull/147)
 
 Bug Fixes:
 
- - Fixes a bug in rotating labels when exporting as tiff [#140](https://github.com/ome/figure/pull/140)
- - Fixes pixel sizes for images with custom pixel size units (not microns) [#144](https://github.com/ome/figure/pull/144)
+ - Fixes a bug in rotating labels when exporting as tiff [#140](https://github.com/ome/omero-figure/pull/140)
+ - Fixes pixel sizes for images with custom pixel size units (not microns) [#144](https://github.com/ome/omero-figure/pull/144)
 
 
 Grab the release from the OMERO.figure [1.2.1 download page](http://downloads.openmicroscopy.org/figure/1.2.1/).

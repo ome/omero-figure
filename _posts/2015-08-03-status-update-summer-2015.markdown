@@ -10,7 +10,7 @@ project are worth mentioning:
 <h2>Figure moved to OME</h2>
 
 As you may have noticed, the 'figure' repository has changed ownership from
-me (Will) to the OME team at [https://github.com/ome/figure](https://github.com/ome/figure).
+me (Will) to the OME team at [https://github.com/ome/omero-figure](https://github.com/ome/omero-figure).
 
 <blockquote class="twitter-tweet" lang="en"><p lang="en" dir="ltr"><a href="https://twitter.com/hashtag/OMERO?src=hash">#OMERO</a>.figure has moved to <a href="http://t.co/l0HsmGyfrF">http://t.co/l0HsmGyfrF</a> and <a href="https://t.co/Rhblqbc7Lv">https://t.co/Rhblqbc7Lv</a>. My &quot;baby&quot; has grown up and been adopted by <a href="https://twitter.com/openmicroscopy">@openmicroscopy</a>!</p>&mdash; Will Moore (@will_j_moore) <a href="https://twitter.com/will_j_moore/status/616373142525726721">July 1, 2015</a></blockquote>
 <script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
@@ -22,7 +22,7 @@ a team effort.
 From now on, individual Pull Requests will be deployed, reviewed, tested and any issues
 addressed *before* being merged, in the same way as on all the other OME projects.
 
-The same process applies to the OMERO.figure website (including [this blog post](https://github.com/ome/figure/pull/96)) and the
+The same process applies to the OMERO.figure website (including [this blog post](https://github.com/ome/omero-figure/pull/96)) and the
 site has a new, improved url: [figure.openmicroscopy.org](http://figure.openmicroscopy.org),
 which you are looking at right now.
 
@@ -30,7 +30,7 @@ which you are looking at right now.
 <h2>ROI support</h2>
 
 My major focus on OMERO.figure this summer (apart from having some time off) has been
-working on the much-requested [support of ROIs](https://github.com/ome/figure/issues/79).
+working on the much-requested [support of ROIs](https://github.com/ome/omero-figure/issues/79).
 
 I began by developing the tools for drawing and editing simple shapes on an image.
 Lines, Arrows, Rectangles and Ellipses will cover many users' needs, with others to come later.
