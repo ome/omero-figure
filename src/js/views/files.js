@@ -244,7 +244,7 @@ var FileListItemView = Backbone.View.extend({
 
     tagName:"tr",
 
-    template: JST["omero_figure/static/figure/templates/files/figure_file_item.html"],
+    template: JST["src/templates/files/figure_file_item.html"],
 
     initialize:function () {
         this.model.bind("change", this.render, this);
