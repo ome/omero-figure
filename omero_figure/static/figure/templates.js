@@ -66,7 +66,7 @@ function print() { __p += __j.call(arguments, '') }
 with (obj) {
 __p += '\n    <p>';
  print(_.escape(name)) ;
-__p += '</p>\n    <div class="clearfix"></div>\n\n    <table class="table">\n        <tbody>\n            <tr><td>Image</td></tr>\n            <tr><td>\n                <span class="glyphicon glyphicon-share"></span> Open with:\n                ';
+__p += '</p>\n    <div class="clearfix"></div>\n\n    <table class="table">\n        <tbody>\n            <tr><td>\n                <span class="glyphicon glyphicon-share"></span> Open with:\n                ';
  _.each(imageLinks, function(link, i) { ;
 __p += '\n                    ';
  if (i > 0) {print("|")} ;
