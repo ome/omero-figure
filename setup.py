@@ -37,7 +37,6 @@ def read_file(fname, content_type=None):
             data = f.read()
     return data
 
-#data = read_file('package.json', content_type='json')
 VERSION = "2.0.1"
 DESCRIPTION = "OMERO figure creation app"
 AUTHOR = "The Open Microscopy Team"
