@@ -32,14 +32,14 @@
 
     <link rel="stylesheet" href="static/figure/3rdparty/bootstrap3/css/bootstrap.css">
     <link rel="stylesheet" href="static/figure/3rdparty/bootstrap-colorpicker/css/bootstrap-colorpicker.min.css">
-    <link rel="stylesheet" href="static/figure/css/figure.css?version=2.0.0-dev">
+    <link rel="stylesheet" href="static/figure/css/figure.css?version=2.0.1">
 
     <script type="text/javascript" src="//code.jquery.com/jquery-1.7.2.min.js"></script>
     <script type="text/javascript" src="//code.jquery.com/ui/1.8.19/jquery-ui.js"></script><link rel="stylesheet" href="//code.jquery.com/ui/1.8.19/themes/smoothness/jquery-ui.css" type="text/css" />
 
     <script>
 
-    var RELEASE_VERSION = "v2.0.0-dev";
+    var RELEASE_VERSION = "v2.0.1";
 
     var BASE_WEBFIGURE_URL = "",
         SAVE_WEBFIGURE_URL = "/figure/save_web_figure/",
@@ -48,9 +48,9 @@
         MAKE_WEBFIGURE_URL = "{% url 'make_web_figure",
         ACTIVITIES_JSON_URL = "{% url 'activities_json",
         WEBGATEWAYINDEX = "{% url 'webgateway",
-        WEBINDEX_URL = "http://figure.openmicroscopy.org/",
+        WEBINDEX_URL = "https://github.com/ome/omero-figure",
         ROIS_JSON_URL = WEBGATEWAYINDEX + "get_rois_json/",
-        USER_FULL_NAME = "Will Moore";
+        USER_FULL_NAME = "The Open Microscopy Team";
 
     $(document).ready(function() {
 
@@ -115,7 +115,7 @@
                     </p>
                     <p>
                         &copy; 2013-2016 University of Dundee &amp; Open Microscopy Environment<br/>
-                        OMERO and OMERO.figure are distributed under the terms of the GNU GPL.<br/>
+                        OMERO is distributed under the terms of the GNU GPL and OMERO.figure under AGPL.<br/>
                         See: <a target="new" href="http://www.openmicroscopy.org">openmicroscopy.org</a>
                     </p>
                 </div>
@@ -571,7 +571,7 @@
     <div class="navbar navbar-inverse navbar-fixed-top">
         <div class="container">
             <div class="navbar-header" title="Back to figure.openmicroscopy.org">
-                <a class="navbar-brand" href="http://figure.openmicroscopy.org/">OMERO</a>
+                <a class="navbar-brand" href="https://github.com/ome/omero-figure">OMERO</a>
             </div>
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
@@ -914,10 +914,10 @@
     <script src="static/figure/3rdparty/shape-editor.js"></script>
 
     <!-- underscore templates at static/figure/templates are compiled with '$ grunt jst' -->
-    <script src="static/figure/js/templates.js?version=2.0.0-dev"></script>
+    <script src="static/figure/js/templates.js?version=2.0.1"></script>
 
     <!-- static/figure/js/ files are concatenated with '$ grunt concat' into static/figure.js -->
-    <script type="text/javascript" src="figure.js?version=2.0.0-dev"></script>
+    <script type="text/javascript" src="figure.js?version=2.0.1"></script>
 
 </body>
 
