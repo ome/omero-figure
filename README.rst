@@ -61,9 +61,6 @@ This following steps need to perform where the OMERO.server is running.
 
     $ pip install reportlab
 
-**Note**: For python 2.6, you will need Reportlab 2.7
-
-
 * Install script to generate figure. To perform this task, you must be an admin.
 
 The following steps assume that the OMERO.server is already running.
