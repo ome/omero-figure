@@ -97,7 +97,7 @@ module.exports = function (grunt) {
                 "' %}":
                     "",
                 '{{ userFullName }}':
-                    'The Open Microscopy Team',
+                    '<%= pkg.author %>',
                 '{% if scriptMissing %}disabled="disabled"{% endif %}':
                     'disabled="disabled"',
                 '<li class="save_as">':
@@ -107,7 +107,7 @@ module.exports = function (grunt) {
                 '{% now "Y" %}':
                     '<%= new Date().getFullYear() %>',
                 "{% url 'webindex' %}":
-                    "http://figure.openmicroscopy.org/",
+                    '<%= pkg.homepage %>',
                 'title="Back to OMERO.webclient"':
                     'title="Back to figure.openmicroscopy.org"',
                 "{% static 'figure/figure.js' %}": 'figure.js',
