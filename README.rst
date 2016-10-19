@@ -136,6 +136,8 @@ This can be tested locally via:
     $ python -m SimpleHTTPServer
 
 Go to http://localhost:8000/ to test it.
+This will not install the script and dependencies required to export the figure
+as PDF.
 
 To update the figure.openmicroscopy.org site:
 
