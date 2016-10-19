@@ -97,7 +97,7 @@ module.exports = function (grunt) {
                 "' %}":
                     "",
                 '{{ userFullName }}':
-                    'Will Moore',
+                    'The Open Microscopy Team',
                 '{% if scriptMissing %}disabled="disabled"{% endif %}':
                     'disabled="disabled"',
                 '<li class="save_as">':
