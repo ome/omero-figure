@@ -61,11 +61,6 @@ Enabling PDF generation
 
 **Note**: For python 2.6, you will need Reportlab 2.7
 
-* Optional: Figure legends can be formatted using Markdown syntax. To see this correctly in the exported PDF info page, we need `Python Markdown <https://pythonhosted.org/Markdown/index.html>`_ installed:
-
-::
-
-    $ pip install markdown
 
 * Install script to generate figure. To perform this task, you must be an admin.
 
@@ -83,6 +78,11 @@ Enabling PDF generation
 
         $ path/to/OMERO.server/bin/omero script upload omero/figure_scripts/Figure_To_Pdf.py --official
 
+* Optional: Figure legends can be formatted using Markdown syntax. To see this correctly in the exported PDF info page, we need `Python Markdown <https://pythonhosted.org/Markdown/index.html>`_ installed:
+
+::
+
+    $ pip install markdown
 
 Development
 ===========
