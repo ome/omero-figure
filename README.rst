@@ -16,7 +16,7 @@ For full details see http://figure.openmicroscopy.org
 Requirements
 ============
 
-* OMERO 5.0.0 or later.
+* OMERO 5.2.6 or newer.
 
 Installation
 ============
