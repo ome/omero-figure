@@ -95,7 +95,7 @@ Install Node from https://nodejs.org, then:
 
 ::
 
-    $ cd figure
+    $ cd omero-figure
     $ npm install
 
 Install Grunt CLI as described on http://gruntjs.com/using-the-cli.
@@ -128,7 +128,7 @@ fragments with static app code. This is all handled by the grunt task:
 
     $ grunt demo
 
-This puts everything into the figure/demo/ directory.
+This puts everything into the omero-figure/demo/ directory.
 This can be tested locally via:
 
 ::
