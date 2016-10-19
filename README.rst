@@ -67,6 +67,21 @@ Enabling PDF generation
 
     $ pip install markdown
 
+* Install script to generate figure. To perform this task, you must be an admin.
+
+  - Go to the directory where ``omero_figure`` has been installed.
+  - Copy ``/omero_figure/scripts/omero/figure_scripts/Figure_To_Pdf.py`` to ``path/to/omero-server/lib/scripts/omero/figure_scripts``
+  - Restart the OMERO.server
+
+  Alternatively, if the OMERO.server is already running
+
+  - Go to the directory where ``omero_figure`` has been installed.
+  - Go to ``/omero_figure/scripts``
+  - Upload the script as an official script:
+
+::
+
+        $ path/to/OMERO.server/bin/omero script upload omero/figure_scripts/Figure_To_Pdf.py --official
 
 
 Development
