@@ -45,9 +45,8 @@ Now restart OMERO.web as normal.
 
 **Warning**:
 
-if OMERO.figure is installed with OMERO version prior to **5.2.6**,
-the url will be https://your-web-server/omero_figure instead of https://your-web-server/figure as previously. This is due to a package re-organization required to distribute the application using a package manager.
-If installed with OMERO **5.2.6 and older**, the url will be back to https://your-web-server/figure.
+OMERO.figure version 2.x is meant to be installed into OMERO.web **5.2.6 or newer**
+This is due to Django Framework compatibility and a package re-organization required to distribute the application using Python Package Manager PyPi.
 
 
 Enabling PDF generation
