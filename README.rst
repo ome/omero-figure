@@ -45,14 +45,14 @@ Now restart OMERO.web as normal.
 
 **Warning**:
 
-OMERO.figure version 2.x is meant to be installed into OMERO.web **5.2.6 or newer**
+OMERO.figure version 2.x is meant to be installed into OMERO.web **5.2.6 or newer**.
 This is due to Django Framework compatibility and a package re-organization required to distribute the application using Python Package Manager PyPi.
 
 
 Enabling PDF generation
 -----------------------
 
-This following steps need to perform where the OMERO.server is running.
+This following steps need to perform where the OMERO.server is installed.
 
 * Install `reportlab <https://bitbucket.org/rptlab/reportlab>`_ PDF python package:
 
