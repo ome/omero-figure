@@ -35,14 +35,39 @@ Add figure custom app to your installed web apps:
 
     $ bin/omero config append omero.web.apps '"omero_figure"'
 
-Now restart OMERO.web as normal.
+Display a link to 'Figure' at the top of the webclient:
 
+::
+
+    $ bin/omero config append omero.web.ui.top_links '["Figure", "figure_index", {"title": "Open Figure in new tab", "target": "figure"}]' 
+
+Now restart OMERO.web as normal.
 
 **Warning**:
 
 if OMERO.figure is installed with OMERO version prior to **5.2.6**,
 the url will be https://your-web-server/omero_figure instead of https://your-web-server/figure as previously. This is due to a package re-organization required to distribute the application using a package manager.
 If installed with OMERO **5.2.6 and older**, the url will be back to https://your-web-server/figure.
+
+
+Enabling PDF generation
+-----------------------
+
+* Install `reportlab <https://bitbucket.org/rptlab/reportlab>`_ PDF python package:
+
+::
+
+    $ pip install reportlab
+
+**Note**: For python 2.6, you will need Reportlab 2.7
+
+* Optional: Figure legends can be formatted using Markdown syntax. To see this correctly in the exported PDF info page, we need `Python Markdown <https://pythonhosted.org/Markdown/index.html>`_ installed:
+
+::
+
+    $ pip install markdown
+
+
 
 Development
 ===========
