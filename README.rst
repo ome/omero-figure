@@ -53,6 +53,8 @@ If installed with OMERO **5.2.6 and older**, the url will be back to https://you
 Enabling PDF generation
 -----------------------
 
+This following steps need to perform where the OMERO.server is running.
+
 * Install `reportlab <https://bitbucket.org/rptlab/reportlab>`_ PDF python package:
 
 ::
@@ -64,19 +66,16 @@ Enabling PDF generation
 
 * Install script to generate figure. To perform this task, you must be an admin.
 
-  - Go to the directory where ``omero_figure`` has been installed.
-  - Copy ``/omero_figure/scripts/omero/figure_scripts/Figure_To_Pdf.py`` to ``path/to/omero-server/lib/scripts/omero/figure_scripts``
-  - Restart the OMERO.server
+The following steps assume that the OMERO.server is already running.
 
-  Alternatively, if the OMERO.server is already running
-
-  - Go to the directory where ``omero_figure`` has been installed.
-  - Go to ``/omero_figure/scripts``
-  - Upload the script as an official script:
+- Go to the directory where ``omero_figure`` has been installed, this could be on a different machine.
+- Go to ``/omero_figure/scripts``
+- Upload, if not already installed, the script as an official script:
 
 ::
 
-        $ path/to/OMERO.server/bin/omero script upload omero/figure_scripts/Figure_To_Pdf.py --official
+    $ path/to/OMERO.server/bin/omero script upload omero/figure_scripts/Figure_To_Pdf.py --official
+
 
 * Optional: Figure legends can be formatted using Markdown syntax. To see this correctly in the exported PDF info page, we need `Python Markdown <https://pythonhosted.org/Markdown/index.html>`_ installed:
 
