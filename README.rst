@@ -14,18 +14,38 @@ For full details see http://figure.openmicroscopy.org
 
 
 Requirements
-------------
+============
 
-* OMERO 4.4.x or OMERO 5.x
+* OMERO 5.0.0 or later.
 
 Installation
-------------
+============
 
-Please see instructions at http://figure.openmicroscopy.org
+Install OMERO.web.
 
+This app installs into the OMERO.web framework.
+
+::
+
+    $ pip install omero-figure
+
+Add figure custom app to your installed web apps:
+
+::
+
+    $ bin/omero config append omero.web.apps '"omero_figure"'
+
+Now restart OMERO.web as normal.
+
+
+**Warning**:
+
+if OMERO.figure is installed with OMERO version prior to **5.2.6**,
+the url will be https://your-web-server/omero_figure instead of https://your-web-server/figure as previously. This is due to a package re-organization required to distribute the application using a package manager.
+If installed with OMERO **5.2.6 and older**, the url will be back to https://your-web-server/figure.
 
 Development
------------
+===========
 
 We use Grunt for various tools.
 See http://figure.openmicroscopy.org/2014/05/01/testing-with-jshint-jasmine-grunt.html
