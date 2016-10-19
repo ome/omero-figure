@@ -73,6 +73,11 @@ The following steps assume that the OMERO.server is already running.
 
     $ path/to/OMERO.server/bin/omero script upload omero/figure_scripts/Figure_To_Pdf.py --official
 
+Alternatively, before starting the OMERO.server:
+
+- Go to the directory where ``omero_figure`` has been installed, this could be on a different machine.
+- Copy ``/omero_figure/scripts/omero/figure_scripts/Figure_To_Pdf.py`` to ``path/to/OMERO.server/lib/scripts/omero/figure_scripts``
+- Restart the OMERO.server
 
 * Optional: Figure legends can be formatted using Markdown syntax. To see this correctly in the exported PDF info page, we need `Python Markdown <https://pythonhosted.org/Markdown/index.html>`_ installed:
 
