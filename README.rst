@@ -46,13 +46,13 @@ Now restart OMERO.web as normal.
 **Warning**:
 
 OMERO.figure version 2.x is meant to be installed into OMERO.web **5.2.6 or newer**.
-This is due to Django Framework compatibility and a package re-organization required to distribute the application using Python Package Manager PyPi.
+This is due to Django Framework compatibility and a package reorganization required to distribute the application using Python Package Manager PyPi.
 
 
 Enabling PDF generation
 -----------------------
 
-This following steps need to perform where the OMERO.server is installed.
+This following steps need to be performed where the OMERO.server is installed.
 
 * Install `reportlab <https://bitbucket.org/rptlab/reportlab>`_ PDF python package:
 
@@ -64,7 +64,7 @@ This following steps need to perform where the OMERO.server is installed.
 
 The following steps assume that the OMERO.server is already running.
 
-- Go to the directory where ``omero_figure`` has been installed, this could be on a different machine.
+- Go to the directory where ``omero_figure`` has been installed, this could be on a different machine
 - Go to ``/omero_figure/scripts``
 - Upload, if not already installed, the script as an official script:
 
@@ -74,7 +74,7 @@ The following steps assume that the OMERO.server is already running.
 
 Alternatively, before starting the OMERO.server:
 
-- Go to the directory where ``omero_figure`` has been installed, this could be on a different machine.
+- Go to the directory where ``omero_figure`` has been installed, this could be on a different machine
 - Copy ``/omero_figure/scripts/omero/figure_scripts/Figure_To_Pdf.py`` to ``path/to/OMERO.server/lib/scripts/omero/figure_scripts``
 - Restart the OMERO.server
 
@@ -142,7 +142,7 @@ as PDF.
 
 To update the figure.openmicroscopy.org site:
 
-- Copy the demo directory and replace the demo directory in gh-pages-staging branch.
+- Copy the demo directory and replace the demo directory in gh-pages-staging branch
 - Commit changes and open PR against ome/gh-pages-staging as described https://github.com/ome/omero-figure/tree/gh-pages-staging
 
 It is also possible to run the demo in docker without installing anything locally:
