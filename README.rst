@@ -21,9 +21,9 @@ Requirements
 Installation
 ============
 
-Install OMERO.web.
+This section assumes that an OMERO.server is already installed.
 
-This app installs into the OMERO.web framework.
+Install the app:
 
 ::
 
@@ -39,7 +39,7 @@ Display a link to 'Figure' at the top of the webclient:
 
 ::
 
-    $ bin/omero config append omero.web.ui.top_links '["Figure", "figure_index", {"title": "Open Figure in new tab", "target": "figure"}]' 
+    $ bin/omero config append omero.web.ui.top_links '["Figure", "figure_index", {"title": "Open Figure in new tab", "target": "_blank"}]' 
 
 Now restart OMERO.web as normal.
 
