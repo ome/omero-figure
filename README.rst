@@ -45,8 +45,8 @@ Now restart OMERO.web as normal.
 
 **Warning**:
 
-OMERO.figure version 2.x is meant to be installed into OMERO.web **5.2.6 or newer**.
-This is due to Django Framework compatibility and a package reorganization required to distribute the application using Python Package Manager PyPi.
+OMERO.figure version 2.x requires OMERO.web **5.2.6 or newer**.
+This is due to Django Framework compatibility and a required package reorganization in OMERO.figure in version 2.0 so the application can be distributed using Python Package Manager PyPi.
 
 
 Enabling PDF generation
