@@ -8,7 +8,7 @@
 OMERO.figure
 ============
 
-OMERO.web app for creating figures from images in OMERO.
+An OMERO.web app for creating figures from images in OMERO.
 
 For full details see http://figure.openmicroscopy.org
 
