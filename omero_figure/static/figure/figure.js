@@ -5637,6 +5637,10 @@ var RectView = Backbone.View.extend({
                     if (v.getUrl) {
                         url = v.getUrl(selectedObjs, v.url);
                     }
+                    // Ignore any 'Open with OMERO.figure' urls
+                    if (url.indexOf(BASE_WEBFIGURE_URL) === 0) {
+                        return;
+                    }
                     imageLinks.push({'text': v.label, 'url': url});
                 });
             }
