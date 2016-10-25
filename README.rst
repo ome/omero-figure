@@ -63,7 +63,7 @@ The script can be uploaded using two alternative workflows, both of which requir
     $ cd omero_figure/scripts
     $ path/to/OMERO.server/bin/omero script upload omero/figure_scripts/Figure_To_Pdf.py --official
 
-*Option2*: Alternatively, before starting the OMERO.server, copy the script from the figure install
+*Option 2*: Alternatively, before starting the OMERO.server, copy the script from the figure install
 ``/omero_figure/scripts/omero/figure_scripts/Figure_To_Pdf.py`` to the OMERO.server ``path/to/OMERO.server/lib/scripts/omero/figure_scripts``. Then restart the OMERO.server.
 
 Now install the script's dependencies:
