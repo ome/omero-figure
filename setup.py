@@ -37,12 +37,11 @@ def read_file(fname, content_type=None):
             data = f.read()
     return data
 
-data = read_file('package.json', content_type='json')
-VERSION = data['version']
-DESCRIPTION = data['description']
-AUTHOR = data['author']
-LICENSE = data['license']
-HOMEPAGE = data['homepage']
+VERSION = "2.0.1"
+DESCRIPTION = "OMERO figure creation app"
+AUTHOR = "The Open Microscopy Team"
+LICENSE = "AGPLv3"
+HOMEPAGE = "https://github.com/ome/omero-figure"
 
 setup(name="omero-figure",
       packages=find_packages(exclude=['ez_setup']),
