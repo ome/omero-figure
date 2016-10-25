@@ -536,13 +536,29 @@
     }
     .ch_slider {
         height: 11px !important;
-        width: 245px !important;
-        top: 5px;
-        left: 39px;
+        width: 225px !important;
+        top: -6px;
+        left: 50px;
     }
     .ch_start, .ch_end {
         position: absolute;
         top: 0px;
+    }
+    .ch_start, .ch_end {
+        position: absolute;
+        top: 0px;
+    }
+    .ch_start input, .ch_end input {
+        width: 40px;
+    }
+    /* Hide spinner added to 'number' inputs */
+    input[type='number'] {
+        -moz-appearance:textfield;
+    }
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
     }
     .ch_start {
         left: 4px;
@@ -550,7 +566,7 @@
         width: 30px;
     }
     .ch_end {
-        right: 5px;
+        right: 12px;
         text-align: left;
         width: 30px;
     }
