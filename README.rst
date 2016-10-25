@@ -23,7 +23,7 @@ Installing from Pypi
 
 This section assumes that an OMERO.web is already installed.
 
-Install the app using `pip <https://pypi.python.org/pypi>`_:
+Install the app using `pip <https://pip.pypa.io/en/stable/>`_:
 
 ::
 
