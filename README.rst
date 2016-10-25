@@ -18,12 +18,12 @@ Requirements
 
 * OMERO 5.2.6 or newer.
 
-Installation
-============
+Installing from Pypi
+====================
 
-This section assumes that an OMERO.server is already installed.
+This section assumes that an OMERO.web is already installed.
 
-Install the app:
+Install the app using `pip <https://pypi.python.org/pypi>`_:
 
 ::
 
@@ -46,7 +46,7 @@ Now restart OMERO.web as normal.
 **Warning**:
 
 OMERO.figure version 2.x requires OMERO.web **5.2.6 or newer**.
-This is due to Django Framework compatibility and to a required package reorganization in OMERO.figure in version 2.0 so the application can be distributed using Python Package Manager PyPi.
+This is due to a Django Framework compatibility and to a required package reorganization in OMERO.figure in version 2.0 so the application can be distributed from Python Package Index `PyPi <https://https://pypi.python.org/pypi>`_.
 
 
 Enabling figure export
