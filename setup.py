@@ -49,16 +49,16 @@ setup(name="omero-figure",
       description=DESCRIPTION,
       long_description=read_file('README.rst'),
       classifiers=[
-        'Development Status :: 5 - Production/Stable',
-        'Intended Audience :: End Users/Desktop',
-        'License :: OSI Approved :: GNU Affero General Public License v3 '
-        'or later (AGPLv3+)',
-        'Natural Language :: English',
-        'Operating System :: OS Independent',
-        'Programming Language :: JavaScript',
-        'Topic :: Software Development :: User Interfaces',
-      ], # Get strings from
-         # http://pypi.python.org/pypi?%3Aaction=list_classifiers
+          'Development Status :: 5 - Production/Stable',
+          'Intended Audience :: End Users/Desktop',
+          'License :: OSI Approved :: GNU Affero General Public License v3 '
+          'or later (AGPLv3+)',
+          'Natural Language :: English',
+          'Operating System :: OS Independent',
+          'Programming Language :: JavaScript',
+          'Topic :: Software Development :: User Interfaces',
+      ],  # Get strings from
+          # http://pypi.python.org/pypi?%3Aaction=list_classifiers
       author=AUTHOR,
       author_email='ome-devel@lists.openmicroscopy.org.uk',
       license=LICENSE,
