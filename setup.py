@@ -53,7 +53,7 @@ setup(name="omero-figure",
           'Environment :: Web Environment',
           'Framework :: Django',
           'Intended Audience :: End Users/Desktop',
-          'Intended Audience :: Science/Research'
+          'Intended Audience :: Science/Research',
           'License :: OSI Approved :: GNU Affero General Public License v3 '
           'or later (AGPLv3+)',
           'Natural Language :: English',
@@ -66,7 +66,6 @@ setup(name="omero-figure",
           'Topic :: Scientific/Engineering :: Visualization',
           'Topic :: Software Development :: Libraries :: '
           'Application Frameworks',
-          'Topic :: Software Development :: Libraries :: Python Modules',
           'Topic :: Text Processing :: Markup :: HTML'
       ],  # Get strings from
           # http://pypi.python.org/pypi?%3Aaction=list_classifiers
