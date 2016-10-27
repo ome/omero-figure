@@ -2,15 +2,15 @@
 
 Features:
 
-	- Distribute app from Pypi
+	- Distribute app from PyPI
 
 ## 2.0.0 (2016-10-11)
 
 Features:
 
 	- Rename repository
-	- Re-organize packages
-	- Set up distribution from Python Package Index Pypi.
+	- Reorganize packages
+	- Set up distribution from Python Package Index PyPI.
 
 ## 1.2.1 (2016-04-20)
 
@@ -21,7 +21,7 @@ Features:
 
 Bug Fixes:
 
-	- Fixes a bug in rotating labels when exporting as tiff #140
+	- Fixes a bug in rotating labels when exporting as TIFF #140
 	- Fixes pixel sizes for images with custom pixel size units (not microns) #144
 
 ## 1.2.0 (2015-11-24)
