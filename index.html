@@ -115,9 +115,9 @@ title: OMERO.figure
         </table>
 
         <a id="install"></a>
-        <h1>Installing from Pypi</h1>
+        <h1>Installing from PyPI</h1>
         <p>
-          You need to be running OMERO.web <strong>5.2.6</strong> or newer
+          You need to be running OMERO.web <strong>5.2.6</strong> or newer.
           <ul>
             <li>Install the app using <a href="https://pip.pypa.io/en/stable/">pip</a>:<br>
               <code style="width:650px">
@@ -125,7 +125,7 @@ title: OMERO.figure
               </code>
             </li>
             <li>Add the app to OMERO.web:
-              <code> $ bin/omero config append omero.web.apps '"omero_figure"' &nbsp # NB: double quotes</code><br>
+              <code> $ bin/omero config append omero.web.apps '"omero_figure"' # NB: double quotes</code>
             </li>
             <li>Display a link to 'Figure' at the top of the webclient:<br>
               <!-- with 'target' set to open the link in a new tab: -->
@@ -137,7 +137,7 @@ title: OMERO.figure
             </li>
           </ul>
           <strong>Warning:</strong>
-          OMERO.figure version 2.x requires OMERO.web <strong>5.2.6 or newer</strong>. This is due to a Django Framework compatibility and to a required package reorganization in OMERO.figure in version 2.0 so the application can be distributed from Python Package Index <a href="https://pypi.python.org/pypi">PyPi</a>.
+          OMERO.figure version 2.x requires OMERO.web <strong>5.2.6 or newer</strong>. This is due to a Django Framework compatibility and to a required package reorganization in OMERO.figure in version 2.0 so the application can be distributed from Python Package Index <a href="https://pypi.python.org/pypi">PyPI</a>.
           
           <h4>Enabling figure export</h4>
 
@@ -146,17 +146,17 @@ title: OMERO.figure
           Figures can be exported as PDF or TIFF files using a script that runs on the OMERO.server. This script needs to be uploaded to the OMERO.server and its dependencies installed on the OMERO.server machine.
 
           The script can be uploaded using two alternative workflows, both of which require you to be an admin.
-
+          <br>
           <ul>
             <li>
-              <i>Option 1</i>: Connect to the OMERO server and upload script via the CLI. It is important to be in the correct directory when uploading so that the script is uploaded with the full path: <code>omero/figure_scripts/Figure_To_Pdf.py</code>:<br>
+              Option 1: Connect to the OMERO server and upload script via the CLI. It is important to be in the correct directory when uploading so that the script is uploaded with the full path <strong>omero/figure_scripts/Figure_To_Pdf.py</strong>:
               <code style="width:650px">
                 $ cd omero_figure/scripts <br>
                 $ path/to/OMERO.server/bin/omero script upload omero/figure_scripts/Figure_To_Pdf.py --official
               </code>
             </li>
             <li>
-              <i>Option 2</i>: Alternatively, before starting the OMERO.server, copy the script from the figure install <code>/omero_figure/scripts/omero/figure_scripts/Figure_To_Pdf.py</code> to the OMERO.server <code>path/to/OMERO.server/lib/scripts/omero/figure_scripts</code>. Then restart the OMERO.server.
+              <i>Option 2</i>: Alternatively, before starting the OMERO.server, copy the script from the figure install <strong>/omero_figure/scripts/omero/figure_scripts/Figure_To_Pdf.py</strong> to the OMERO.server <strong>path/to/OMERO.server/lib/scripts/omero/figure_scripts</strong>. Then restart the OMERO.server.
           </li> 
           </ul>
           Now install the script's dependencies:
@@ -176,7 +176,7 @@ title: OMERO.figure
 
         <h1>Update instructions</h1>
         <p>
-          If you have a version of figure, not installed using <code>pip</code>
+          If you have a version of figure, not installed using PyPI.
           <ul>
             <li>
               Remove the 'figure' directory from <strong>within</strong> directory that is on your PYTHONPATH.
@@ -206,8 +206,6 @@ title: OMERO.figure
                   <br>
                   # Add back new link as described in the install instructions above
                 </code>
-                If your OMERO.web version is earlier than 5.1.0 then this change
-                will be ignored until you upgrade.
             </li>
             <li>Now restart OMERO.web as normal.
             </li>
