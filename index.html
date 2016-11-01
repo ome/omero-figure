@@ -117,7 +117,7 @@ title: OMERO.figure
         <a id="install"></a>
         <h1>Installing from PyPI</h1>
         <p>
-          You need to be running OMERO.web <strong>5.2.6</strong> or newer.
+          OMERO.figure version 2.x requires OMERO.web <strong>5.2.6 or newer</strong>.
           <ul>
             <li>Install the app using <a href="https://pip.pypa.io/en/stable/">pip</a>:<br>
               <code style="width:650px">
@@ -140,13 +140,14 @@ title: OMERO.figure
           OMERO.figure version 2.x requires OMERO.web <strong>5.2.6 or newer</strong>. This is due to a Django Framework compatibility and to a required package reorganization in OMERO.figure in version 2.0 so the application can be distributed from Python Package Index <a href="https://pypi.python.org/pypi">PyPI</a>.
           
           <h4>Enabling figure export</h4>
-
+          <p>
           This section assumes that an OMERO.server is already installed.
 
           Figures can be exported as PDF or TIFF files using a script that runs on the OMERO.server. This script needs to be uploaded to the OMERO.server and its dependencies installed on the OMERO.server machine.
 
           The script can be uploaded using two alternative workflows, both of which require you to be an admin.
-          <br>
+        </p>
+        <p>
           <ul>
             <li>
               Option 1: Connect to the OMERO server and upload script via the CLI. It is important to be in the correct directory when uploading so that the script is uploaded with the full path <strong>omero/figure_scripts/Figure_To_Pdf.py</strong>:<br>
@@ -173,12 +174,11 @@ title: OMERO.figure
             </li>
           </ul>
         </p>
-
         <h1>Update instructions</h1>
         <h3>Upgrade the app</h3>
         <p>
           Stop OMERO.web.
-          To upgrade a version of figure prior to <strong>2.0.1</strong>.
+          To upgrade a version of figure prior to <strong>2.0.1</strong>:
           <ul>
             <li>
               Remove the 'figure' directory from <strong>within</strong> the directory that is on your PYTHONPATH.
@@ -210,8 +210,9 @@ title: OMERO.figure
             <li>Restart OMERO.web as normal.
             </li>
           </ul>
-          <br>
-          To upgrade from version <strong>2.0.1</strong> or newer
+          </p>
+          <p>
+          To upgrade from version <strong>2.0.1</strong> or newer:
           <ul>
             <li>Run the following command:<br>
               <code style="width:700px">
@@ -223,6 +224,7 @@ title: OMERO.figure
           </ul>
         </p>
         <h3>Upgrade the figure export script</h3>
+        <p>
         <ul>
           <li>
             Connect to the OMERO server and replace script via the CLI:<br>
@@ -239,3 +241,5 @@ title: OMERO.figure
               </code>
           </li>
         </ul>
+      </p>
+    </p>
