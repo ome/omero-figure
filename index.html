@@ -178,7 +178,7 @@ title: OMERO.figure
         <h3>Upgrade the app</h3>
         <p>
           Stop OMERO.web.
-          To upgrade a version of figure prior to <strong>2.0.1</strong>:
+          To upgrade a version of OMERO.figure prior to <strong>2.0.1</strong>:
           <ul>
             <li>
               Remove the 'figure' directory from <strong>within</strong> the directory that is on your PYTHONPATH.
@@ -188,7 +188,7 @@ title: OMERO.figure
                 $ pip install omero-figure
               </code>
             </li>
-            <li>Remove the old 'figure' link<br>
+            <li>Remove the old 'figure' link and register the app:<br>
                 <code style="width:700px">
                   $ bin/omero config remove omero.web.apps '"figure"'<br>
                   # Register the app<br>
