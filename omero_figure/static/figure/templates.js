@@ -1,5 +1,42 @@
 this["JST"] = this["JST"] || {};
 
+this["JST"]["src/templates/channel_slider_template.html"] = function(obj) {
+obj || (obj = {});
+var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
+function print() { __p += __j.call(arguments, '') }
+with (obj) {
+__p += '\n<div class="clearfix" style="position: relative">\n\t<span class=\'ch_start\'>\n\t\t<input type="number" data-window="start"\n\t\t\t';
+ if (startsNotEqual) { ;
+__p += '\n\t\t\t\ttitle="Average: ' +
+((__t = ( startAvg )) == null ? '' : __t) +
+' (selected images have different start values)"\n\t\t\t\tstyle="color: #ccc;"\n\t\t\t';
+ } ;
+__p += '\n\t\t\tdata-idx="' +
+((__t = ( idx )) == null ? '' : __t) +
+'" style="width: 40px" value=\'' +
+((__t = ( startAvg )) == null ? '' : __t) +
+'\' max=\'' +
+((__t = ( endAvg )) == null ? '' : __t) +
+'\'></input>\n\t</span>\n\t<div class=\'ch_slider\' style=\'background-color:#' +
+((__t = ( color )) == null ? '' : __t) +
+'\'></div>\n\t<span class=\'ch_end\'>\n\t\t<input type="number" data-window="end"\n\t\t';
+ if (endsNotEqual) { ;
+__p += '\n\t\t\ttitle="Average: ' +
+((__t = ( endAvg )) == null ? '' : __t) +
+' (selected images have different end values)"\n\t\t\tstyle="color: #ccc;"\n\t\t';
+ } ;
+__p += '\n\t\tdata-idx="' +
+((__t = ( idx )) == null ? '' : __t) +
+'" value=\'' +
+((__t = ( endAvg )) == null ? '' : __t) +
+'\' min=\'' +
+((__t = ( startAvg )) == null ? '' : __t) +
+'\'></input>\n\t</span>\n</div>\n';
+
+}
+return __p
+};
+
 this["JST"]["src/templates/channel_toggle_template.html"] = function(obj) {
 obj || (obj = {});
 var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
@@ -521,6 +558,61 @@ __p += '\n        </div>\n    </div>\n';
 return __p
 };
 
+this["JST"]["src/templates/modal_dialogs/crop_modal_roi.html"] = function(obj) {
+obj || (obj = {});
+var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
+function print() { __p += __j.call(arguments, '') }
+with (obj) {
+__p += '\n<tr class="roiPickMe">\n    <td>\n        <div class="roi_wrapper" style="position: relative; overflow: hidden; margin: 5px; height: ' +
+((__t = ( h )) == null ? '' : __t) +
+'px; width: ' +
+((__t = ( w )) == null ? '' : __t) +
+'px">\n            <img class="roi_content"\n                data-roiId="' +
+((__t = ( roiId )) == null ? '' : __t) +
+'"\n                data-x="' +
+((__t = ( rect.x )) == null ? '' : __t) +
+'" data-y="' +
+((__t = ( rect.y )) == null ? '' : __t) +
+'" \n                data-width="' +
+((__t = ( rect.width )) == null ? '' : __t) +
+'" data-height="' +
+((__t = ( rect.height )) == null ? '' : __t) +
+'"\n                data-theT="' +
+((__t = ( rect.theT )) == null ? '' : __t) +
+'" data-theZ="' +
+((__t = ( rect.theZ )) == null ? '' : __t) +
+'"\n                style="position: absolute; top: ' +
+((__t = ( top )) == null ? '' : __t) +
+'px; left: ' +
+((__t = ( left )) == null ? '' : __t) +
+'px; width: ' +
+((__t = ( img_w )) == null ? '' : __t) +
+'px; height: ' +
+((__t = ( img_h )) == null ? '' : __t) +
+'px" src="' +
+((__t = ( src )) == null ? '' : __t) +
+'" />\n        </div>\n    </td>\n    ';
+ if (zStart) { ;
+__p += '\n    <td>\n        ' +
+((__t = ( zStart )) == null ? '' : __t) +
+'\n        ';
+ if (zStart !== zEnd) print(" - " + zEnd); ;
+__p += '\n    </td>\n    ';
+ } ;
+__p += '\n    ';
+ if (tStart) { ;
+__p += '\n    <td>\n        ' +
+((__t = ( tStart )) == null ? '' : __t) +
+'\n        ';
+ if (tStart !== tEnd) print(" - " + tEnd); ;
+__p += '\n    </td>\n    ';
+ } ;
+__p += '\n</tr>\n';
+
+}
+return __p
+};
+
 this["JST"]["src/templates/modal_dialogs/paper_setup_modal_template.html"] = function(obj) {
 obj || (obj = {});
 var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
@@ -646,51 +738,102 @@ obj || (obj = {});
 var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
 function print() { __p += __j.call(arguments, '') }
 with (obj) {
-__p += '\n<tr class="roiPickMe">\n    <td>\n        <div class="roi_wrapper" style="position: relative; overflow: hidden; margin: 5px; height: ' +
-((__t = ( h )) == null ? '' : __t) +
-'px; width: ' +
-((__t = ( w )) == null ? '' : __t) +
-'px">\n            <img class="roi_content"\n                data-roiId="' +
-((__t = ( roiId )) == null ? '' : __t) +
-'"\n                data-x="' +
-((__t = ( rect.x )) == null ? '' : __t) +
-'" data-y="' +
-((__t = ( rect.y )) == null ? '' : __t) +
-'" \n                data-width="' +
-((__t = ( rect.width )) == null ? '' : __t) +
-'" data-height="' +
-((__t = ( rect.height )) == null ? '' : __t) +
-'"\n                data-theT="' +
-((__t = ( rect.theT )) == null ? '' : __t) +
-'" data-theZ="' +
-((__t = ( rect.theZ )) == null ? '' : __t) +
-'"\n                style="position: absolute; top: ' +
-((__t = ( top )) == null ? '' : __t) +
-'px; left: ' +
-((__t = ( left )) == null ? '' : __t) +
-'px; width: ' +
-((__t = ( img_w )) == null ? '' : __t) +
-'px; height: ' +
-((__t = ( img_h )) == null ? '' : __t) +
-'px" src="' +
-((__t = ( src )) == null ? '' : __t) +
-'" />\n        </div>\n    </td>\n    ';
- if (zStart) { ;
-__p += '\n    <td>\n        ' +
-((__t = ( zStart )) == null ? '' : __t) +
-'\n        ';
- if (zStart !== zEnd) print(" - " + zEnd); ;
-__p += '\n    </td>\n    ';
+__p += '\n\n<tr class="roiModalRoiItem"\n        data-roiId="' +
+((__t = ( roi.id )) == null ? '' : __t) +
+'"\n        ';
+ if (!roi.shapes[0].icon) { ;
+__p += '\n            title="' +
+((__t = ( roi.shapes[0].type )) == null ? '' : __t) +
+' not supported in OMERO.figure"\n        ';
  } ;
+__p += '\n        ';
+ if (roi.shapes.length === 1) { ;
+__p += '\n            data-shapeId="' +
+((__t = ( roi.shapes[0].id )) == null ? '' : __t) +
+'"\n        ';
+ } ;
+__p += '\n        >\n    <td>\n        ';
+ if (roi.shapes.length > 1) { ;
+__p += '\n            <span class="toggleRoi glyphicon glyphicon-play"></span>\n        ';
+ } ;
+__p += '\n    </td>\n    <td>\n        <span class="glyphicon ';
+ if (roi.shapes[0].icon) { ;
+__p +=
+((__t = ( roi.icon )) == null ? '' : __t);
+ } ;
+__p += '"></span>\n    </td>\n\n    <td>\n        Z:\n        ';
+ if (roi.minZ !== undefined) { ;
+__p += '\n            ' +
+((__t = ( roi.minZ + 1 )) == null ? '' : __t) +
+'\n            ';
+ if (roi.maxZ !== roi.minZ) print(" - " + (roi.maxZ + 1)); ;
+__p += '\n        ';
+ } ;
+__p += '\n    </td>\n    <td>\n        T:\n        ';
+ if (roi.minT !== undefined) { ;
+__p += '\n            ' +
+((__t = ( roi.minT + 1 )) == null ? '' : __t) +
+'\n            ';
+ if (roi.maxT !== roi.minT) print(" - " + (roi.maxT + 1)); ;
+__p += '\n        ';
+ } ;
+__p += '\n    </td>\n    <td class="roiViewport">\n        ';
+ if (!roi.shapes[0].icon) { ;
+__p += '\n            <span>\n                ' +
+((__t = ( roi.shapes[0].type )) == null ? '' : __t) +
+'\n            </span>\n        ';
+ } ;
+__p += '\n    </td>\n    <td>\n        ';
+ if (roi.shapes.length === 1 && roi.shapes[0].icon) { ;
+__p += '\n        <button type="button" class="addOmeroShape btn btn-success btn-sm"\n                title="Add Shape to image">\n            Add\n        </button>\n        ';
+ } ;
+__p += '\n    </td>\n</tr>\n';
+
+}
+return __p
+};
+
+this["JST"]["src/templates/modal_dialogs/roi_modal_shape.html"] = function(obj) {
+obj || (obj = {});
+var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
+function print() { __p += __j.call(arguments, '') }
+with (obj) {
+__p += '\n\n';
+ if (shapes.length > 1) { ;
 __p += '\n    ';
- if (tStart) { ;
-__p += '\n    <td>\n        ' +
-((__t = ( tStart )) == null ? '' : __t) +
-'\n        ';
- if (tStart !== tEnd) print(" - " + tEnd); ;
-__p += '\n    </td>\n    ';
+ _.each(shapes, function(shape) { ;
+__p += '\n    <tr class="roiModalRoiItem shape" data-shapeId="' +
+((__t = ( shape.id )) == null ? '' : __t) +
+'"\n        ';
+ if (!shape.icon) { ;
+__p += 'title="' +
+((__t = ( shape.type )) == null ? '' : __t) +
+' not supported in OMERO.figure"';
  } ;
-__p += '\n</tr>\n';
+__p += '\n        >\n        <td></td>\n        <td><span class="glyphicon ';
+ if (shape.icon) { ;
+__p +=
+((__t = ( shape.icon )) == null ? '' : __t);
+ } ;
+__p += '"></span> </td>\n        <td>Z: ' +
+((__t = ( shape.theZ + 1 )) == null ? '' : __t) +
+' </td>\n        <td>T: ' +
+((__t = ( shape.theT + 1 )) == null ? '' : __t) +
+' </td>\n        <td class="roiViewport">\n            ';
+ if (!shape.icon) { ;
+__p += '\n                <span>\n                    ' +
+((__t = ( shape.type )) == null ? '' : __t) +
+'\n                </span>\n            ';
+ } ;
+__p += '\n        </td>\n        <td>\n            ';
+ if (shape.icon) { ;
+__p += '\n            <button type="button" class="addOmeroShape btn btn-success btn-sm"\n                    title="Add Shape to image">\n                Add\n            </button>\n            ';
+ } ;
+__p += '\n        </td>\n    </tr>\n    ';
+ }) ;
+__p += '\n';
+ } ;
+__p += '\n';
 
 }
 return __p
@@ -722,17 +865,17 @@ obj || (obj = {});
 var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
 function print() { __p += __j.call(arguments, '') }
 with (obj) {
-__p += '\n\n<div class="btn-group" role="group" aria-label="...">\n    <button type="button" data-state="SELECT"\n    \tclass="btn btn-default select-btn ';
+__p += '\n\n<div class="btn-group shape-option" role="group" aria-label="...">\n    <button type="button" data-state="SELECT"\n        class="btn btn-default';
  if (state==='SELECT')print('pressed') ;
-__p += '">\n        <span class="glyphicon"></span></button>\n</div>\n\n\n<div class="btn-group shape-option" role="group" aria-label="...">\n    <button type="button" class="btn btn-default rect-btn ';
+__p += '">\n        <span class="glyphicon select-icon"></span></button>\n</div>\n\n\n<div class="btn-group shape-option" role="group" aria-label="...">\n    <button type="button" class="btn btn-default ';
  if (state==='RECT')print('pressed') ;
-__p += '"\n            title="Rectangle" data-state="RECT">\n        <span class="glyphicon"></span></button>\n    <button type="button" class="btn btn-default line-btn ';
+__p += '"\n            title="Rectangle" data-state="RECT">\n        <span class="glyphicon rect-icon"></span></button>\n    <button type="button" class="btn btn-default ';
  if (state==='LINE')print('pressed') ;
-__p += '"\n            title="Line" data-state="LINE">\n        <span class="glyphicon"></span></button>\n    <button type="button" class="btn btn-default arrow-btn ';
+__p += '"\n            title="Line" data-state="LINE">\n        <span class="glyphicon line-icon"></span></button>\n    <button type="button" class="btn btn-default ';
  if (state==='ARROW')print('pressed') ;
-__p += '"\n            title="Arrow" data-state="ARROW">\n        <span class="glyphicon"></span></button>\n    <button type="button" class="btn btn-default ellipse-btn ';
+__p += '"\n            title="Arrow" data-state="ARROW">\n        <span class="glyphicon arrow-icon"></span></button>\n    <button type="button" class="btn btn-default ';
  if (state==='ELLIPSE')print('pressed') ;
-__p += '"\n            title="Ellipse" data-state="ELLIPSE">\n        <span class="glyphicon"></span></button>\n</div>\n\n\n<div class="btn-group">\n    <button type="button" class="shape-color btn btn-default dropdown-toggle" title="Label Color"\n        data-toggle="dropdown">\n        <span data-color="' +
+__p += '"\n            title="Ellipse" data-state="ELLIPSE">\n        <span class="glyphicon ellipse-icon"></span></button>\n</div>\n\n\n<div class="btn-group">\n    <button type="button" class="shape-color btn btn-default dropdown-toggle" title="Label Color"\n        data-toggle="dropdown">\n        <span data-color="' +
 ((__t = ( color )) == null ? '' : __t) +
 '" style="background-color:#' +
 ((__t = ( color )) == null ? '' : __t) +
