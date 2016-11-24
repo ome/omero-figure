@@ -382,7 +382,7 @@ def make_web_figure(request, conn=None, **kwargs):
         except:
             pass
 
-    rsp = run_script(request, conn, sid, input_map, script_name='Figure.pdf')
+    rsp = run_script(request, conn, sid, input_map, scriptName='Figure.pdf')
     return HttpResponse(json.dumps(rsp), content_type='json')
 
 
