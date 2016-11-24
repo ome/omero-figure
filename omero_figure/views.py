@@ -48,7 +48,7 @@ JSON_FILEANN_NS = "omero.web.figure.json"
 SCRIPT_PATH = "/omero/figure_scripts/Figure_To_Pdf.py"
 
 
-def createOriginalFileFromFileObj(
+def create_original_file_from_file_obj(
         conn, fo, path, name, file_size, mimetype=None, ns=None):
     """
     This is a copy of the same method from Blitz Gateway, but fixes a bug
@@ -130,7 +130,7 @@ def shape_editor(request, conn=None, **kwargs):
 
 
 @login_required()
-def imgData_json(request, image_id, conn=None, **kwargs):
+def img_data_json(request, image_id, conn=None, **kwargs):
 
     image = conn.getObject("Image", image_id)
     if image is None:
@@ -252,7 +252,7 @@ def save_web_figure(request, conn=None, **kwargs):
         # Can't use unicode for file name
         figure_name = unicodedata.normalize(
             'NFKD', figure_name).encode('ascii', 'ignore')
-        orig_file = createOriginalFileFromFileObj(
+        orig_file = create_original_file_from_file_obj(
             conn, f, '', figure_name, file_size, mimetype="application/json")
         fa = omero.model.FileAnnotationI()
         fa.setFile(omero.model.OriginalFileI(orig_file.getId(), False))
@@ -425,7 +425,7 @@ def list_web_figures(request, conn=None, **kwargs):
     return HttpResponse(json.dumps(rsp), content_type='json')
 
 
-def defaultThumbnail(size=(120, 120)):
+def default_thumbnail(size=(120, 120)):
     """ Provide a placeholder thumbnail. Used in urls.py"""
     if isinstance(size, int):
         size = (size, size)

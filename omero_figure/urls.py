@@ -36,7 +36,7 @@ urlpatterns = patterns(
 
     url(r'^shape_editor/$', views.shape_editor, name='shape_editor'),
 
-    url(r'^imgData/(?P<imageId>[0-9]+)/$', views.imgData_json,
+    url(r'^imgData/(?P<imageId>[0-9]+)/$', views.img_data_json,
         name='figure_imgData'),
 
     # Send json to OMERO to create pdf using scripting service
@@ -55,7 +55,7 @@ urlpatterns = patterns(
 
     url(r'^render_thumbnail/(?P<iid>[0-9]+)/$',
         webgateway_views.render_thumbnail,
-        {'_defcb': views.defaultThumbnail},
+        {'_defcb': views.default_thumbnail},
         name="figure_render_thumbnail"),
 
     # Delete file annotations of saved Figures - 'POST' with 'fileId' of file
