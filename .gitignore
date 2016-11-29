@@ -4,4 +4,4 @@ demo/static/figure/
 node_modules/
 _site
 dist
-omero_figure.*
+omero_figure.egg-info
