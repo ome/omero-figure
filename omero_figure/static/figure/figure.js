@@ -5624,6 +5624,12 @@ var RectView = Backbone.View.extend({
         lockAspectRatio: function(event) {
             event.preventDefault();
             $(".set_aspect_ratio", this.$el).toggleClass("active");
+            if ($(".set_aspect_ratio", this.$el).hasClass("active")) {
+                $(".set_aspect_ratio", this.$el).css('color','green');
+            }
+            if (!$(".set_aspect_ratio", this.$el).hasClass("active")) {
+                $(".set_aspect_ratio", this.$el).css('color','red');
+            }
         },
 
         // just update x,y,w,h by rendering ONE template
