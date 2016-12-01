@@ -145,15 +145,11 @@ module.exports = function (grunt) {
   })
 
   grunt.loadNpmTasks('grunt-contrib-jshint')
-  grunt.loadNpmTasks('grunt-contrib-jasmine')
   grunt.loadNpmTasks('grunt-contrib-jst');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-replace');
   grunt.loadNpmTasks('grunt-contrib-copy');
-
-  grunt.registerTask('test', ['jshint', 'jasmine'])
-  grunt.registerTask('default', ['test'])
 
   // create a static 'demo' version of app
   // creates demo/index.html and demo/figure.js via 'replace' command
