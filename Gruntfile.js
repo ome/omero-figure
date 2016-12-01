@@ -16,18 +16,6 @@ module.exports = function (grunt) {
           jshintrc: '.jshintrc'
         },
     },
-    // jasmine: {
-    //     src: [
-    //         "omero_figure/static/figure/3rdparty/jquery-1.7.2.js",
-    //         "omero_figure/static/figure/3rdparty/underscore.js",
-    //         "omero_figure/static/figure/3rdparty/backbone.js",
-    //         "omero_figure/static/figure/js/*.js"
-    //     ]
-    //   , options: {
-    //       specs: "spec/*.js"
-    //     // , vendor: "vendor/**/*.js"
-    //   }
-    // },
     jst: {
       compile: {
         files: {
