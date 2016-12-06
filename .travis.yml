@@ -15,7 +15,6 @@ before_script:
   - npm install -g grunt-cli
 
 script:
-  - grunt jst
-  - grunt concat
-  - grunt jshint
   - python setup.py sdist install --user || exit 1
+  - if [ ! -f "omero_figure/static/figure/templates.js" ]; then exit 1 ;fi
+  - if [ ! -f "omero_figure/static/figure/figure.js" ]; then exit 1 ;fi

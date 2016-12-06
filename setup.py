@@ -21,8 +21,11 @@
 # Version: 1.0
 
 
-import os
 import json
+import os
+import setuptools.command.install
+import setuptools.command.sdist
+from distutils.core import Command
 from setuptools import setup, find_packages
 
 
@@ -43,6 +46,75 @@ DESCRIPTION = "OMERO figure creation app"
 AUTHOR = "The Open Microscopy Team"
 LICENSE = "AGPLv3"
 HOMEPAGE = "https://github.com/ome/omero-figure"
+
+
+cmdclass = {}
+
+
+class NpmInstall(Command):
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        read_file(fname="package.json", content_type='json')
+        self.spawn(['npm', 'install'])
+
+
+cmdclass['npm_install'] = NpmInstall
+
+
+class Grunt(Command):
+
+    sub_commands = [
+        ('npm_install', None)
+    ]
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        if not os.path.isdir('src'):
+            return
+
+        for command in self.get_sub_commands():
+            self.run_command(command)
+
+        self.spawn(['grunt', 'jst'])
+        self.spawn(['grunt', 'concat'])
+        self.spawn(['grunt', 'jshint'])
+
+
+cmdclass['grunt'] = Grunt
+
+
+class Sdist(setuptools.command.sdist.sdist):
+
+    def run(self):
+        if os.path.isdir('src'):
+            self.run_command('grunt')
+        setuptools.command.sdist.sdist.run(self)
+
+
+cmdclass['sdist'] = Sdist
+
+
+class Install(setuptools.command.install.install):
+
+    def run(self):
+        if os.path.isdir('src'):
+            self.run_command('grunt')
+        setuptools.command.install.install.run(self)
+
+
+cmdclass['install'] = Install
+
 
 setup(name="omero-figure",
       packages=find_packages(exclude=['ez_setup']),
@@ -79,4 +151,5 @@ setup(name="omero-figure",
       install_requires=[],
       include_package_data=True,
       zip_safe=False,
+      cmdclass=cmdclass,
       )
