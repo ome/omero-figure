@@ -51,27 +51,7 @@ HOMEPAGE = "https://github.com/ome/omero-figure"
 cmdclass = {}
 
 
-class NpmInstall(Command):
-
-    def initialize_options(self):
-        pass
-
-    def finalize_options(self):
-        pass
-
-    def run(self):
-        read_file(fname="package.json", content_type='json')
-        self.spawn(['npm', 'install'])
-
-
-cmdclass['npm_install'] = NpmInstall
-
-
 class Grunt(Command):
-
-    sub_commands = [
-        ('npm_install', None)
-    ]
 
     def initialize_options(self):
         pass
@@ -82,10 +62,6 @@ class Grunt(Command):
     def run(self):
         if not os.path.isdir('src'):
             return
-
-        for command in self.get_sub_commands():
-            self.run_command(command)
-
         self.spawn(['grunt', 'jst'])
         self.spawn(['grunt', 'concat'])
         self.spawn(['grunt', 'jshint'])
