@@ -24,6 +24,7 @@
 import json
 import os
 import setuptools.command.install
+import setuptools.command.develop
 import setuptools.command.sdist
 from distutils.core import Command
 from setuptools import setup, find_packages
@@ -90,6 +91,22 @@ class Install(setuptools.command.install.install):
 
 
 cmdclass['install'] = Install
+
+
+class Develop(setuptools.command.develop.develop):
+
+    sub_commands = setuptools.command.develop.develop.sub_commands + [
+        ('grunt', None)
+    ]
+
+    def run(self):
+        if os.path.isdir('src'):
+            for command in self.get_sub_commands():
+                self.run_command(command)
+        setuptools.command.develop.develop.run(self)
+
+
+cmdclass['develop'] = Develop
 
 
 setup(name="omero-figure",
