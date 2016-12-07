@@ -1,4 +1,6 @@
 language: node_js
+node_js:
+  - "6"
 
 # This (sudo: false) is needed to "run on container-based infrastructure" on
 # which cache: is available
