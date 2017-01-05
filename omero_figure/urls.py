@@ -69,6 +69,6 @@ urlpatterns = patterns(
         views.unit_conversion, name='unit_conversion'),
 
 
-    url(r'^roiCount/(?P<imageId>[0-9]+)/$', views.roiCount,
+    url(r'^roiCount/(?P<image_id>[0-9]+)/$', views.roi_count,
         name='figure_roiCount'),
 )

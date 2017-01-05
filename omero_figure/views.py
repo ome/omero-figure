@@ -476,26 +476,26 @@ def unit_conversion(request, value, from_unit, to_unit, conn=None, **kwargs):
 
 
 @login_required()
-def roiCount(request, imageId, conn=None, **kwargs):
+def roi_count(request, image_id, conn=None, **kwargs):
     """
     Get the counts of ROIs and Shapes on the image
     """
-    countShapes = request.GET.get('shapes', False)
+    count_shapes = request.GET.get('shapes', False)
     params = omero.sys.ParametersI()
-    params.addLong('imageId', imageId)
+    params.addLong('image_id', image_id)
     query = 'select count(*) from Roi as roi ' \
-            'where roi.image.id = :imageId'
+            'where roi.image.id = :image_id'
     count = conn.getQueryService().projection(
         query, params, conn.SERVICE_OPTS)
-    roiCount = count[0][0].getValue()
-    rv = {'roi': roiCount}
+    roi_count = count[0][0].getValue()
+    rv = {'roi': roi_count}
 
-    if countShapes:
+    if count_shapes:
         query = 'select count(shape) from Shape as shape ' \
                 'left outer join shape.roi as roi ' \
                 'where roi.image.id = :imageId'
         count = conn.getQueryService().projection(
             query, params, conn.SERVICE_OPTS)
-        shapeCount = count[0][0].getValue()
-        rv['shape'] = shapeCount
+        shape_count = count[0][0].getValue()
+        rv['shape'] = shape_count
     return HttpResponse(json.dumps(rv), content_type="application/json")
