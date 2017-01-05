@@ -761,20 +761,18 @@ __p += '\n    </td>\n    <td>\n        <span class="glyphicon ';
 __p +=
 ((__t = ( roi.icon )) == null ? '' : __t);
  } ;
-__p += '"></span>\n    </td>\n\n    <td>\n        Z:\n        ';
+__p += '"></span>\n    </td>\n\n    <td style="padding-left: 0; padding-right: 0">\n        Z:\n        ';
  if (roi.minZ !== undefined) { ;
 __p += '\n            ' +
-((__t = ( roi.minZ + 1 )) == null ? '' : __t) +
-'\n            ';
- if (roi.maxZ !== roi.minZ) print(" - " + (roi.maxZ + 1)); ;
+((__t = ( roi.minZ + 1 )) == null ? '' : __t);
+ if (roi.maxZ !== roi.minZ) print("-" + (roi.maxZ + 1)); ;
 __p += '\n        ';
  } ;
-__p += '\n    </td>\n    <td>\n        T:\n        ';
+__p += '\n    </td>\n    <td style="padding-left: 0; padding-right: 0">\n        T:\n        ';
  if (roi.minT !== undefined) { ;
 __p += '\n            ' +
-((__t = ( roi.minT + 1 )) == null ? '' : __t) +
-'\n            ';
- if (roi.maxT !== roi.minT) print(" - " + (roi.maxT + 1)); ;
+((__t = ( roi.minT + 1 )) == null ? '' : __t);
+ if (roi.maxT !== roi.minT) print("-" + (roi.maxT + 1)); ;
 __p += '\n        ';
  } ;
 __p += '\n    </td>\n    <td class="roiViewport">\n        ';
