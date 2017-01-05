@@ -58,17 +58,6 @@
         setInterval(function (){
             $.get("{% url 'keepalive_ping' %}");
         }, 60000);
-
-        // load Panels from localStorage (if any)
-        // figureModel.panels.fetch({
-        //     success: function(model, rsp, options) {
-        //         if (model.length == 0) {
-        //             $('#addImagesModal').modal();
-        //         }
-        //     }
-        // });
-        // figureModel.clearSelected();    // reset selection (all saved as 'true')
-
     });
 
     </script>
