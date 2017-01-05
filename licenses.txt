@@ -44,18 +44,6 @@ https://github.com/elasticsales/backbone.mousetrap
 License: MIT
 
 
-jasmine
-=======
-http://jasmine.github.io/
-License: MIT
-
-
-jasmine-jquery
-==============
-https://github.com/velesin/jasmine-jquery
-License: MIT
-
-
 Bootstrap Colorpicker
 =====================
 http://mjolnic.com/bootstrap-colorpicker/

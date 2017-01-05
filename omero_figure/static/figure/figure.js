@@ -1788,7 +1788,6 @@ var UndoView = Backbone.View.extend({
     }
 });
 
-
 var ChannelSliderView = Backbone.View.extend({
 
     template: JST["src/templates/channel_slider_template.html"],
@@ -1800,15 +1799,11 @@ var ChannelSliderView = Backbone.View.extend({
         this.models.forEach(function(m){
             self.listenTo(m, 'change:channels', self.render);
         });
-
-        // this.$el = $("#channel_sliders");
     },
 
     events: {
         "keyup .ch_start": "handle_channel_input",
-        // "blur .ch_start": "handle_channel_input",
         "keyup .ch_end": "handle_channel_input",
-        // "blur .ch_end": "handle_channel_input",
     },
 
     handle_channel_input: function(event) {
@@ -5152,7 +5147,13 @@ var RectView = Backbone.View.extend({
                 this.ctv = new ChannelToggleView({models: selected});
                 $("#channelToggle").empty().append(this.ctv.render().el);
             }
-
+            if (this.csv) {
+                this.csv.clear().remove();
+            }
+            if (selected.length > 0) {
+                this.csv = new ChannelSliderView({models: selected});
+                $("#channel_sliders").empty().append(this.csv.render().el);
+            }
         }
     });
 
@@ -6641,11 +6642,9 @@ var RectView = Backbone.View.extend({
         },
 
         clear: function() {
-            $(".ch_slider").slider("destroy");
             try {
                 this.$el.find('.rotation-slider').slider("destroy");
             } catch (e) {}
-            $("#channel_sliders").empty();
             return this;
         },
 
@@ -6741,42 +6740,6 @@ var RectView = Backbone.View.extend({
                     'rotation': rotation,
                     'z_projection': z_projection});
                 this.$el.html(html);
-
-                if (compatible) {
-                    $(".ch_slider").slider("destroy");
-                    var $channel_sliders = $("#channel_sliders").empty();
-                    _.each(json, function(ch, idx) {
-                        // Turn 'start' and 'end' into average values
-                        var start = (ch.window.start / self.models.length) << 0,
-                            end = (ch.window.end / self.models.length) << 0,
-                            min = Math.min(ch.window.min, start),
-                            max = Math.max(ch.window.max, end),
-                            start_label = ch.window.start_label || start,
-                            end_label = ch.window.end_label || end,
-                            color = ch.color;
-                        if (color == "FFFFFF") color = "ccc";  // white slider would be invisible
-                        var $div = $("<div><span class='ch_start'>" + start_label +
-                                "</span><div class='ch_slider lutBg' style='background-color:#" + color +
-                                "; background-position: " + ch.lutBgPos + "'></div><span class='ch_end'>" + end_label + "</span></div>")
-                            .appendTo($channel_sliders);
-
-                        $div.find('.ch_slider').slider({
-                            range: true,
-                            min: min,
-                            max: max,
-                            values: [start, end],
-                            slide: function(event, ui) {
-                                $div.children('.ch_start').text(ui.values[0]);
-                                $div.children('.ch_end').text(ui.values[1]);
-                            },
-                            stop: function(event, ui) {
-                                self.models.forEach(function(m) {
-                                    m.save_channel_window(idx, {'start': ui.values[0], 'end': ui.values[1]});
-                                });
-                            }
-                        });
-                    });
-                }
             }
             return this;
         }

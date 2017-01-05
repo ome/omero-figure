@@ -32,9 +32,9 @@ urlpatterns = patterns(
     # index 'home page' of the figure app
     url(r'^$', views.index, name='figure_index'),
     url(r'^new/$', views.index, name='new_figure'),
-    url(r'^file/(?P<fileId>[0-9]+)/$', views.index, name='load_figure'),
+    url(r'^file/(?P<file_id>[0-9]+)/$', views.index, name='load_figure'),
 
-    url(r'^imgData/(?P<imageId>[0-9]+)/$', views.imgData_json,
+    url(r'^imgData/(?P<image_id>[0-9]+)/$', views.img_data_json,
         name='figure_imgData'),
 
     # Send json to OMERO to create pdf using scripting service
@@ -44,7 +44,7 @@ urlpatterns = patterns(
     url(r'^save_web_figure/', views.save_web_figure, name='save_web_figure'),
 
     # Get json from file (file annotation Id)
-    url(r'^load_web_figure/(?P<fileId>[0-9]+)/$', views.load_web_figure,
+    url(r'^load_web_figure/(?P<file_id>[0-9]+)/$', views.load_web_figure,
         name='load_web_figure'),
 
     # List file annotations of saved Figures
@@ -53,7 +53,7 @@ urlpatterns = patterns(
 
     url(r'^render_thumbnail/(?P<iid>[0-9]+)/$',
         webgateway_views.render_thumbnail,
-        {'_defcb': views.defaultThumbnail},
+        {'_defcb': views.default_thumbnail},
         name="figure_render_thumbnail"),
 
     # Delete file annotations of saved Figures - 'POST' with 'fileId' of file
@@ -64,8 +64,8 @@ urlpatterns = patterns(
     # Converts Lengths of value in 'fromUnit' to 'toUnit'.
     # E.g. unit_conversion/1.12/MICROMETER/ANGSTROM/.
     # Returns result as json with keys of 'value', 'unit' and 'symbol'
-    url(r'^unit_conversion/(?P<value>[0-9.]+)/(?P<fromUnit>[A-Z]+)/'
-        '(?P<toUnit>[A-Z]+)/$',
+    url(r'^unit_conversion/(?P<value>[0-9.]+)/(?P<from_unit>[A-Z]+)/'
+        '(?P<to_unit>[A-Z]+)/$',
         views.unit_conversion, name='unit_conversion'),
 
 
