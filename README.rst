@@ -41,6 +41,14 @@ Display a link to 'Figure' at the top of the webclient:
 
     $ bin/omero config append omero.web.ui.top_links '["Figure", "figure_index", {"title": "Open Figure in new tab", "target": "_blank"}]' 
 
+
+Add 'Figure' to the 'Open with' options, available from context menu on
+the webclient tree:
+
+::
+
+    $ bin/omero config append omero.web.open_with '["omero_figure", "new_figure", {"supported_objects":["images"], "target": "_blank", "label": "OMERO.figure"}]'
+
 Now restart OMERO.web as normal.
 
 **Warning**:

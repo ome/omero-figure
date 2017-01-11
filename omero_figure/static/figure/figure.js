@@ -1657,6 +1657,147 @@ var UndoView = Backbone.View.extend({
         this.model.redo();
     }
 });
+var ChannelSliderView = Backbone.View.extend({
+
+    template: JST["src/templates/channel_slider_template.html"],
+
+    initialize: function(opts) {
+        // This View may apply to a single PanelModel or a list
+        this.models = opts.models;
+        var self = this;
+        this.models.forEach(function(m){
+            self.listenTo(m, 'change:channels', self.render);
+        });
+    },
+
+    events: {
+        "keyup .ch_start": "handle_channel_input",
+        "keyup .ch_end": "handle_channel_input",
+    },
+
+    handle_channel_input: function(event) {
+        if (event.type === "keyup" && event.which !== 13) {
+            return;     // Ignore keyups except 'Enter'
+        }
+        var idx = event.target.getAttribute('data-idx'),
+            startEnd = event.target.getAttribute('data-window');  // 'start' or 'end'
+        idx = parseInt(idx, 10);
+        var value = parseInt(event.target.value, 10);
+        if (isNaN(value)) return;
+        // Make sure 'start' < 'end' value
+        if (event.target.getAttribute('max') && value > event.target.getAttribute('max')){
+            alert("Enter a value less than " + event.target.getAttribute('max'));
+            return;
+        }
+        if (event.target.getAttribute('min') && value < event.target.getAttribute('min')){
+            alert("Enter a value greater than " + event.target.getAttribute('min'))
+            return;
+        }
+        var newCh = {};
+        newCh[startEnd] = value;
+        this.models.forEach(function(m) {
+            m.save_channel_window(idx, newCh);
+        });
+    },
+
+    clear: function() {
+        $(".ch_slider").slider("destroy");
+        $("#channel_sliders").empty();
+        return this;
+    },
+
+    render: function() {
+        var json,
+            self = this;
+
+            // Helper functions for map & reduce below
+            var addFn = function (prev, s) {
+                return prev + s;
+            };
+            var getColor = function(idx) {
+                return function(ch) {
+                    return ch[idx].color;
+                }
+            }
+            var windowFn = function (idx, attr) {
+                return function (ch) {
+                    return ch[idx].window[attr];
+                }
+            };
+            var allEqualFn = function(prev, value) {
+                return value === prev ? prev : false;
+            };
+            var reduceFn = function(fn) {
+                return function(prev, curr) {
+                    return fn(prev, curr);
+                }
+            }
+
+            // Comare channels from each Panel Model to see if they are
+            // compatible, and compile a summary json.
+            var chData = this.models.map(function(m){
+                return m.get('channels');
+            });
+            // images are compatible if all images have same channel count
+            var allSameCount = chData.reduce(function(prev, channels){
+                return channels.length === prev ? prev : false;
+            }, chData[0].length);
+
+            if (!allSameCount) {
+                return this;
+            }
+            $(".ch_slider").slider("destroy");
+            this.$el.empty();
+
+            chData[0].forEach(function(d, chIdx) {
+                // For each channel, summarise all selected images:
+                // Make list of various channel attributes:
+                var starts = chData.map(windowFn(chIdx, 'start'));
+                var ends = chData.map(windowFn(chIdx, 'end'));
+                var mins = chData.map(windowFn(chIdx, 'min'));
+                var maxs = chData.map(windowFn(chIdx, 'max'));
+                var colors = chData.map(getColor(chIdx));
+                // Reduce lists into summary for this channel
+                var startAvg = parseInt(starts.reduce(addFn, 0) / starts.length, 10);
+                var endAvg = parseInt(ends.reduce(addFn, 0) / ends.length, 10);
+                var startsNotEqual = starts.reduce(allEqualFn, starts[0]) === false;
+                var endsNotEqual = ends.reduce(allEqualFn, ends[0]) === false;
+                var min = mins.reduce(reduceFn(Math.min), 9999);
+                var max = maxs.reduce(reduceFn(Math.max), -9999);
+                var color = colors.reduce(allEqualFn, colors[0]) ? colors[0] : 'ccc';
+                if (color == "FFFFFF") color = "ccc";  // white slider would be invisible
+
+                // Make sure slider range is increased if needed to include current values
+                min = Math.min(min, startAvg);
+                max = Math.max(max, endAvg);
+
+                var sliderHtml = self.template({'idx': chIdx,
+                                                'startAvg': startAvg,
+                                                'startsNotEqual': startsNotEqual,
+                                                'endAvg': endAvg,
+                                                'endsNotEqual': endsNotEqual,
+                                                'color': color});
+                var $div = $(sliderHtml).appendTo(this.$el);
+
+                $div.find('.ch_slider').slider({
+                    range: true,
+                    min: min,
+                    max: max,
+                    values: [startAvg, endAvg],
+                    slide: function(event, ui) {
+                        $('.ch_start input', $div).val(ui.values[0]);
+                        $('.ch_end input', $div).val(ui.values[1]);
+                    },
+                    stop: function(event, ui) {
+                        self.models.forEach(function(m) {
+                            m.save_channel_window(chIdx, {'start': ui.values[0], 'end': ui.values[1]});
+                        });
+                    }
+                });
+            }.bind(this));
+        return this;
+    }
+});
 
 //
 // Copyright (C) 2015 University of Dundee & Open Microscopy Environment.
@@ -4862,7 +5003,13 @@ var RectView = Backbone.View.extend({
                 this.ctv = new ChannelToggleView({models: selected});
                 $("#channelToggle").empty().append(this.ctv.render().el);
             }
-
+            if (this.csv) {
+                this.csv.clear().remove();
+            }
+            if (selected.length > 0) {
+                this.csv = new ChannelSliderView({models: selected});
+                $("#channel_sliders").empty().append(this.csv.render().el);
+            }
         }
     });
 
@@ -5605,6 +5752,49 @@ var RectView = Backbone.View.extend({
             this.$el.append(this.xywh_template(json));
         },
 
+        getImageLinks: function(remoteUrl, imageIds, imageNames) {
+            // Link if we have a single remote image, E.g. http://jcb-dataviewer.rupress.org/jcb/img_detail/625679/
+            var imageLinks = [];
+            if (remoteUrl) {
+                if (imageIds.length == 1) {
+                    imageLinks.push({'text': 'Image viewer', 'url': remoteUrl});
+                }
+            // OR all the images are local...
+            } else {
+                imageLinks.push({'text': 'Webclient', 'url': WEBINDEX_URL + "?show=image-" + imageIds.join('|image-')});
+
+                // Handle other 'Open With' options
+                OPEN_WITH.forEach(function(v){
+                    var selectedObjs = imageIds.map(function(id, i){
+                        return {'id': id, 'name': imageNames[i], 'type': 'image'};
+                    });
+                    var enabled = false;
+                    if (typeof v.isEnabled === "function") {
+                        enabled = v.isEnabled(selectedObjs);
+                    } else if (typeof v.supported_objects === "object" && v.supported_objects.length > 0) {
+                        enabled = v.supported_objects.reduce(function(prev, supported){
+                            // enabled if plugin supports 'images' or 'image' (if we've selected a single image)
+                            return prev || supported === 'images' || (supported === 'image' && imageIds.length === 1);
+                        }, false);
+                    }
+                    if (!enabled) return;
+
+                    // Get the link via url provider...
+                    var url = v.url + '?image=' + imageIds.join('&image=');
+                    if (v.getUrl) {
+                        url = v.getUrl(selectedObjs, v.url);
+                    }
+                    // Ignore any 'Open with OMERO.figure' urls
+                    if (url.indexOf(BASE_WEBFIGURE_URL) === 0) {
+                        return;
+                    }
+                    var label = v.label || v.id;
+                    imageLinks.push({'text': label, 'url': url});
+                });
+            }
+            return imageLinks;
+        },
+
         // render BOTH templates
         render: function() {
             // If event comes from handle_xywh() then we dont need to render()
@@ -5616,9 +5806,11 @@ var RectView = Backbone.View.extend({
             var json,
                 title = this.models.length + " Panels Selected...",
                 remoteUrl,
+                imageNames = [],
                 imageIds = [];
             this.models.forEach(function(m) {
                 imageIds.push(m.get('imageId'));
+                imageNames.push(m.get('name'));
                 if (m.get('baseUrl')) {
                     remoteUrl = m.get('baseUrl') + "/img_detail/" + m.get('imageId') + "/";
                 }
@@ -5666,16 +5858,7 @@ var RectView = Backbone.View.extend({
 
             json.export_dpi = json.export_dpi || 0;
 
-            // Link IF we have a single remote image, E.g. http://jcb-dataviewer.rupress.org/jcb/img_detail/625679/
-            json.imageLink = false;
-            if (remoteUrl) {
-                if (imageIds.length == 1) {
-                    json.imageLink = remoteUrl;
-                }
-            // OR all the images are local
-            } else {
-                json.imageLink = WEBINDEX_URL + "?show=image-" + imageIds.join('|image-');
-            }
+            json.imageLinks = this.getImageLinks(remoteUrl, imageIds, imageNames);
 
             // all setId if we have a single Id
             json.setImageId = _.uniq(imageIds).length == 1;
@@ -6351,11 +6534,9 @@ var RectView = Backbone.View.extend({
         },
 
         clear: function() {
-            $(".ch_slider").slider("destroy");
             try {
                 this.$el.find('.rotation-slider').slider("destroy");
             } catch (e) {}
-            $("#channel_sliders").empty();
             return this;
         },
 
@@ -6451,42 +6632,6 @@ var RectView = Backbone.View.extend({
                     'rotation': rotation,
                     'z_projection': z_projection});
                 this.$el.html(html);
-
-                if (compatible) {
-                    $(".ch_slider").slider("destroy");
-                    var $channel_sliders = $("#channel_sliders").empty();
-                    _.each(json, function(ch, idx) {
-                        // Turn 'start' and 'end' into average values
-                        var start = (ch.window.start / self.models.length) << 0,
-                            end = (ch.window.end / self.models.length) << 0,
-                            min = Math.min(ch.window.min, start),
-                            max = Math.max(ch.window.max, end),
-                            start_label = ch.window.start_label || start,
-                            end_label = ch.window.end_label || end,
-                            color = ch.color;
-                        if (color == "FFFFFF") color = "ccc";  // white slider would be invisible
-                        var $div = $("<div><span class='ch_start'>" + start_label +
-                                "</span><div class='ch_slider lutBg' style='background-color:#" + color +
-                                "; background-position: " + ch.lutBgPos + "'></div><span class='ch_end'>" + end_label + "</span></div>")
-                            .appendTo($channel_sliders);
-
-                        $div.find('.ch_slider').slider({
-                            range: true,
-                            min: min,
-                            max: max,
-                            values: [start, end],
-                            slide: function(event, ui) {
-                                $div.children('.ch_start').text(ui.values[0]);
-                                $div.children('.ch_end').text(ui.values[1]);
-                            },
-                            stop: function(event, ui) {
-                                self.models.forEach(function(m) {
-                                    m.save_channel_window(idx, {'start': ui.values[0], 'end': ui.values[1]});
-                                });
-                            }
-                        });
-                    });
-                }
             }
             return this;
         }
@@ -7330,6 +7475,43 @@ var figureConfirmDialog = function(title, message, buttons, callback) {
     });
 };
 
+if (OME === undefined) {
+    var OME = {};
+}
+
+OPEN_WITH = [];
+
+OME.setOpenWithEnabledHandler = function(id, fn) {
+    // look for id in OPEN_WITH
+    OPEN_WITH.forEach(function(ow){
+        if (ow.id === id) {
+            ow.isEnabled = function() {
+                // wrap fn with try/catch, since error here will break jsTree menu
+                var args = Array.from(arguments);
+                var enabled = false;
+                try {
+                    enabled = fn.apply(this, args);
+                } catch (e) {
+                    // Give user a clue as to what went wrong
+                    console.log("Open with " + label + ": " + e);
+                }
+                return enabled;
+            }
+        }
+    });
+};
+
+// Helper can be used by 'open with' plugins to provide
+// a url for the selected objects
+OME.setOpenWithUrlProvider = function(id, fn) {
+    // look for id in OPEN_WITH
+    OPEN_WITH.forEach(function(ow){
+        if (ow.id === id) {
+            ow.getUrl = fn;
+        }
+    });
+};
+
 
 $(function(){
 
@@ -7366,6 +7548,19 @@ $(function(){
                 $this.text($this.text().replace("⌘", "Ctrl+"));
         });
     }
+
+    // When we load, setup Open With options
+    $.getJSON(WEBGATEWAYINDEX + "open_with/", function(data){
+        if (data && data.open_with_options) {
+            OPEN_WITH = data.open_with_options;
+            // Try to load scripts if specified:
+            OPEN_WITH.forEach(function(ow){
+                if (ow.script_url) {
+                    $.getScript(ow.script_url);
+                }
+            })
+        }
+    });
 
 });
 

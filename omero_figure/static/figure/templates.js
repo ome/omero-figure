@@ -1,5 +1,42 @@
 this["JST"] = this["JST"] || {};
 
+this["JST"]["src/templates/channel_slider_template.html"] = function(obj) {
+obj || (obj = {});
+var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
+function print() { __p += __j.call(arguments, '') }
+with (obj) {
+__p += '\n<div class="clearfix" style="position: relative">\n\t<span class=\'ch_start\'>\n\t\t<input type="number" data-window="start"\n\t\t\t';
+ if (startsNotEqual) { ;
+__p += '\n\t\t\t\ttitle="Average: ' +
+((__t = ( startAvg )) == null ? '' : __t) +
+' (selected images have different start values)"\n\t\t\t\tstyle="color: #ccc;"\n\t\t\t';
+ } ;
+__p += '\n\t\t\tdata-idx="' +
+((__t = ( idx )) == null ? '' : __t) +
+'" style="width: 40px" value=\'' +
+((__t = ( startAvg )) == null ? '' : __t) +
+'\' max=\'' +
+((__t = ( endAvg )) == null ? '' : __t) +
+'\'></input>\n\t</span>\n\t<div class=\'ch_slider\' style=\'background-color:#' +
+((__t = ( color )) == null ? '' : __t) +
+'\'></div>\n\t<span class=\'ch_end\'>\n\t\t<input type="number" data-window="end"\n\t\t';
+ if (endsNotEqual) { ;
+__p += '\n\t\t\ttitle="Average: ' +
+((__t = ( endAvg )) == null ? '' : __t) +
+' (selected images have different end values)"\n\t\t\tstyle="color: #ccc;"\n\t\t';
+ } ;
+__p += '\n\t\tdata-idx="' +
+((__t = ( idx )) == null ? '' : __t) +
+'" value=\'' +
+((__t = ( endAvg )) == null ? '' : __t) +
+'\' min=\'' +
+((__t = ( startAvg )) == null ? '' : __t) +
+'\'></input>\n\t</span>\n</div>\n';
+
+}
+return __p
+};
+
 this["JST"]["src/templates/channel_toggle_template.html"] = function(obj) {
 obj || (obj = {});
 var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
@@ -66,12 +103,16 @@ function print() { __p += __j.call(arguments, '') }
 with (obj) {
 __p += '\n    <p>';
  print(_.escape(name)) ;
-__p += '</p>\n    <div class="clearfix"></div>\n\n    <table class="table">\n        <tbody>\n            <tr><td>Image\n                ';
- if (imageLink) { ;
-__p += '\n                <a class="pull-right" target="new"\n                    href="' +
-((__t = ( imageLink )) == null ? '' : __t) +
-'">\n                    <span class="glyphicon glyphicon-share"></span> Show in Webclient\n                </a>\n                ';
- } ;
+__p += '</p>\n    <div class="clearfix"></div>\n\n    <table class="table">\n        <tbody>\n            <tr><td>\n                <span class="glyphicon glyphicon-share"></span> Open with:\n                ';
+ _.each(imageLinks, function(link, i) { ;
+__p += '\n                    ';
+ if (i > 0) {print("|")} ;
+__p += '\n                    <a target="_blank" href="' +
+((__t = ( link.url )) == null ? '' : __t) +
+'">\n                        ' +
+((__t = ( link.text )) == null ? '' : __t) +
+'\n                    </a>\n                ';
+ }) ;
 __p += '\n            </td></tr>\n            <tr><td>\n                <div class="col-sm-6"><small><strong>Image ID</strong>:</small></div>\n                <div class="col-sm-6">\n                    <small>' +
 ((__t = ( imageId )) == null ? '' : __t) +
 '</small>\n                    <button type="button"\n                            style="position:absolute; top:0px; right:0px"\n                            ';
