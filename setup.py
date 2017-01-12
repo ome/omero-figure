@@ -143,7 +143,7 @@ setup(name="omero-figure",
           'Intended Audience :: End Users/Desktop',
           'Intended Audience :: Science/Research',
           'License :: OSI Approved :: GNU Affero General Public License v3.0'
-          'or later (AGPLv3+)',
+          ' or later',
           'Natural Language :: English',
           'Operating System :: OS Independent',
           'Programming Language :: JavaScript',
