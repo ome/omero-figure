@@ -5625,10 +5625,10 @@ var RectView = Backbone.View.extend({
             event.preventDefault();
             $(".set_aspect_ratio", this.$el).toggleClass("active");
             if ($(".set_aspect_ratio", this.$el).hasClass("active")) {
-                $(".set_aspect_ratio", this.$el).css('color','green');
+                $(".aspect_ratio_selected", this.$el).addClass("glyphicon-ok-sign");
             }
             if (!$(".set_aspect_ratio", this.$el).hasClass("active")) {
-                $(".set_aspect_ratio", this.$el).css('color','red');
+                $(".aspect_ratio_selected", this.$el).removeClass("glyphicon-ok-sign");
             }
         },
 
