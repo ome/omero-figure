@@ -1,6 +1,6 @@
 {
-  "name": "figure",
-  "version": "1.0.0-beta1",
+  "name": "omero-figure",
+  "version": "2.0.1",
   "description": "OMERO figure creation app",
   "main": "index.js",
   "scripts": {
@@ -8,25 +8,26 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/will-moore/figure.git"
+    "url": "git://github.com/ome/omero-figure.git"
   },
   "keywords": [
     "backbone",
     "jQuery",
     "figure"
   ],
-  "author": "William Moore",
-  "license": "GPL",
+  "author": "The Open Microscopy Team",
+  "license": "AGPL-3.0",
   "bugs": {
-    "url": "https://github.com/will-moore/figure/issues"
+    "url": "https://github.com/ome/omero-figure/issues"
   },
-  "homepage": "https://github.com/will-moore/figure",
+  "homepage": "https://github.com/ome/omero-figure",
   "devDependencies": {
     "grunt": "~0.4.4",
     "grunt-contrib-concat": "^0.5.0",
-    "grunt-contrib-jasmine": "~0.6.4",
+    "grunt-contrib-copy": "^0.8.1",
     "grunt-contrib-jshint": "~0.10.0",
     "grunt-contrib-jst": "^0.6.0",
-    "grunt-contrib-watch": "^0.6.1"
+    "grunt-contrib-watch": "^0.6.1",
+    "grunt-replace": "^0.11.0"
   }
 }

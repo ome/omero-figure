@@ -1,5 +1,22 @@
 language: node_js
 node_js:
-  - 0.8
+  - "6"
+
+# This (sudo: false) is needed to "run on container-based infrastructure" on
+# which cache: is available
+# http://docs.travis-ci.com/user/workers/container-based-infrastructure/
+sudo: false
+
+before_install:
+  - pip install --user restructuredtext_lint
+  - pip install --user flake8 pycodestyle pep8-naming
+  - flake8 -v .
+  - rst-lint README.rst
+
 before_script:
   - npm install -g grunt-cli
+
+script:
+  - python setup.py sdist install --user || exit 1
+  - if [ ! -f "omero_figure/static/figure/templates.js" ]; then exit 1 ;fi
+  - if [ ! -f "omero_figure/static/figure/figure.js" ]; then exit 1 ;fi

@@ -1,0 +1,42 @@
+
+    <p><% print(_.escape(name)) %></p>
+    <div class="clearfix"></div>
+
+    <table class="table">
+        <tbody>
+            <tr><td>
+                <span class="glyphicon glyphicon-share"></span> Open with:
+                <% _.each(imageLinks, function(link, i) { %>
+                    <% if (i > 0) {print("|")} %>
+                    <a target="_blank" href="<%= link.url %>">
+                        <%= link.text %>
+                    </a>
+                <% }) %>
+            </td></tr>
+            <tr><td>
+                <div class="col-sm-6"><small><strong>Image ID</strong>:</small></div>
+                <div class="col-sm-6">
+                    <small><%= imageId %></small>
+                    <button type="button"
+                            style="position:absolute; top:0px; right:0px"
+                            <% if(!setImageId) { %>disabled="disabled"<% } %>
+                            class="btn btn-small btn-success setId">
+                        Edit ID
+                    </button>
+                </div>
+
+                <div class="col-sm-6"><small><strong>Dimensions (XY)</strong>:</small></div>
+                <div class="col-sm-6"><small><%= orig_width %> x <%= orig_height %></small></div>
+
+                <div class="col-sm-6"><small><strong>Z-sections/Timepoints</strong>:</small></div>
+                <div class="col-sm-6"><small><%= sizeZ %> x <%= sizeT %></small></div>
+                <div class="clearfix"></div>
+                <div class="col-sm-6"><small><strong>Channels</strong>:</small></div>
+                <div class="col-sm-6"><small>
+                    <% _.each(channel_labels, function(c, i) {
+                        print(_.escape(c)); print((i < channels.length-1) ? ", " : "");
+                    }); %>
+                </small></div>
+            </td></tr>
+        </tbody>
+    </table>
