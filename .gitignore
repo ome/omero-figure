@@ -2,3 +2,8 @@
 .DS_Store
 demo/static/figure/
 node_modules/
+_site
+dist
+omero_figure.egg-info
+omero_figure/static/figure/figure.js
+omero_figure/static/figure/templates.js

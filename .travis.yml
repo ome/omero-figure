@@ -1,4 +1,6 @@
 language: node_js
+node_js:
+  - "6"
 
 # This (sudo: false) is needed to "run on container-based infrastructure" on
 # which cache: is available
@@ -7,7 +9,7 @@ sudo: false
 
 before_install:
   - pip install --user restructuredtext_lint
-  - pip install --user flake8
+  - pip install --user flake8 pycodestyle pep8-naming
   - flake8 -v .
   - rst-lint README.rst
 
@@ -15,7 +17,6 @@ before_script:
   - npm install -g grunt-cli
 
 script:
-  - grunt jst
-  - grunt concat
-  - grunt jshint
   - python setup.py sdist install --user || exit 1
+  - if [ ! -f "omero_figure/static/figure/templates.js" ]; then exit 1 ;fi
+  - if [ ! -f "omero_figure/static/figure/figure.js" ]; then exit 1 ;fi

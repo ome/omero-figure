@@ -18,7 +18,7 @@ Requirements
 
 * OMERO 5.2.6 or newer.
 
-Installing from Pypi
+Installing from PyPI
 ====================
 
 This section assumes that an OMERO.web is already installed.
@@ -41,12 +41,20 @@ Display a link to 'Figure' at the top of the webclient:
 
     $ bin/omero config append omero.web.ui.top_links '["Figure", "figure_index", {"title": "Open Figure in new tab", "target": "_blank"}]' 
 
+
+Add 'Figure' to the 'Open with' options, available from context menu on
+the webclient tree:
+
+::
+
+    $ bin/omero config append omero.web.open_with '["omero_figure", "new_figure", {"supported_objects":["images"], "target": "_blank", "label": "OMERO.figure"}]'
+
 Now restart OMERO.web as normal.
 
 **Warning**:
 
 OMERO.figure version 2.x requires OMERO.web **5.2.6 or newer**.
-This is due to a Django Framework compatibility and to a required package reorganization in OMERO.figure in version 2.0 so the application can be distributed from Python Package Index `PyPi <https://https://pypi.python.org/pypi>`_.
+This is due to a Django Framework compatibility and to a required package reorganization in OMERO.figure in version 2.0 so the application can be distributed from Python Package Index `PyPI <https://pypi.python.org/pypi>`_.
 
 
 Enabling figure export

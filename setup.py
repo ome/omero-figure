@@ -21,8 +21,12 @@
 # Version: 1.0
 
 
-import os
 import json
+import os
+import setuptools.command.install
+import setuptools.command.develop
+import setuptools.command.sdist
+from distutils.core import Command
 from setuptools import setup, find_packages
 
 
@@ -37,17 +41,121 @@ def read_file(fname, content_type=None):
             data = f.read()
     return data
 
+
 VERSION = "2.0.1"
 DESCRIPTION = "OMERO figure creation app"
 AUTHOR = "The Open Microscopy Team"
-LICENSE = "AGPLv3"
+LICENSE = "AGPL-3.0"
 HOMEPAGE = "https://github.com/ome/omero-figure"
+
+
+cmdclass = {}
+
+
+class NpmInstall(Command):
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        self.spawn(['npm', 'install'])
+
+
+cmdclass['npm_install'] = NpmInstall
+
+
+class Grunt(Command):
+
+    sub_commands = [
+        ('npm_install', None)
+    ]
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        if not os.path.isdir('src'):
+            return
+        for command in self.get_sub_commands():
+            self.run_command(command)
+
+        self.spawn(['grunt', 'jst'])
+        self.spawn(['grunt', 'concat'])
+        self.spawn(['grunt', 'jshint', '--force'])
+
+
+cmdclass['grunt'] = Grunt
+
+
+class Sdist(setuptools.command.sdist.sdist):
+
+    def run(self):
+        if os.path.isdir('src'):
+            self.run_command('grunt')
+        setuptools.command.sdist.sdist.run(self)
+
+
+cmdclass['sdist'] = Sdist
+
+
+class Install(setuptools.command.install.install):
+
+    def run(self):
+        if os.path.isdir('src'):
+            self.run_command('grunt')
+        setuptools.command.install.install.run(self)
+
+
+cmdclass['install'] = Install
+
+
+class Develop(setuptools.command.develop.develop):
+
+    sub_commands = setuptools.command.develop.develop.sub_commands + [
+        ('grunt', None)
+    ]
+
+    def run(self):
+        if os.path.isdir('src'):
+            for command in self.get_sub_commands():
+                self.run_command(command)
+        setuptools.command.develop.develop.run(self)
+
+
+cmdclass['develop'] = Develop
+
 
 setup(name="omero-figure",
       packages=find_packages(exclude=['ez_setup']),
       version=VERSION,
       description=DESCRIPTION,
       long_description=read_file('README.rst'),
+      classifiers=[
+          'Development Status :: 5 - Production/Stable',
+          'Environment :: Web Environment',
+          'Framework :: Django',
+          'Intended Audience :: End Users/Desktop',
+          'Intended Audience :: Science/Research',
+          'License :: OSI Approved :: GNU Affero General Public License v3.0',
+          'Natural Language :: English',
+          'Operating System :: OS Independent',
+          'Programming Language :: JavaScript',
+          'Programming Language :: Python :: 2',
+          'Topic :: Internet :: WWW/HTTP',
+          'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
+          'Topic :: Internet :: WWW/HTTP :: WSGI',
+          'Topic :: Scientific/Engineering :: Visualization',
+          'Topic :: Software Development :: Libraries :: '
+          'Application Frameworks',
+          'Topic :: Text Processing :: Markup :: HTML'
+      ],  # Get strings from
+          # http://pypi.python.org/pypi?%3Aaction=list_classifiers
       author=AUTHOR,
       author_email='ome-devel@lists.openmicroscopy.org.uk',
       license=LICENSE,
@@ -57,4 +165,5 @@ setup(name="omero-figure",
       install_requires=[],
       include_package_data=True,
       zip_safe=False,
+      cmdclass=cmdclass,
       )

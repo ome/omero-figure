@@ -66,12 +66,16 @@ function print() { __p += __j.call(arguments, '') }
 with (obj) {
 __p += '\n    <p>';
  print(_.escape(name)) ;
-__p += '</p>\n    <div class="clearfix"></div>\n\n    <table class="table">\n        <tbody>\n            <tr><td>Image\n                ';
- if (imageLink) { ;
-__p += '\n                <a class="pull-right" target="new"\n                    href="' +
-((__t = ( imageLink )) == null ? '' : __t) +
-'">\n                    <span class="glyphicon glyphicon-share"></span> Show in Webclient\n                </a>\n                ';
- } ;
+__p += '</p>\n    <div class="clearfix"></div>\n\n    <table class="table">\n        <tbody>\n            <tr><td>\n                <span class="glyphicon glyphicon-share"></span> Open with:\n                ';
+ _.each(imageLinks, function(link, i) { ;
+__p += '\n                    ';
+ if (i > 0) {print("|")} ;
+__p += '\n                    <a target="_blank" href="' +
+((__t = ( link.url )) == null ? '' : __t) +
+'">\n                        ' +
+((__t = ( link.text )) == null ? '' : __t) +
+'\n                    </a>\n                ';
+ }) ;
 __p += '\n            </td></tr>\n            <tr><td>\n                <div class="col-sm-6"><small><strong>Image ID</strong>:</small></div>\n                <div class="col-sm-6">\n                    <small>' +
 ((__t = ( imageId )) == null ? '' : __t) +
 '</small>\n                    <button type="button"\n                            style="position:absolute; top:0px; right:0px"\n                            ';
