@@ -903,3 +903,9 @@
         max-height: 15px;
     }
 
+    .active .aspect_ratio_selected { 
+        display: inline-block
+    }
+    .aspect_ratio_selected {
+        display: none
+    }
