@@ -81,17 +81,19 @@ The script can be uploaded using two alternative workflows, both of which requir
 Now install the script's dependencies:
 
 
-* Install `reportlab <https://bitbucket.org/rptlab/reportlab>`_ PDF python package:
+* Install `reportlab <https://bitbucket.org/rptlab/reportlab>`_ PDF python package from distribution packages. 
+For example, install on CentOS 7:
 
 ::
 
-    $ pip install reportlab
+    $ yum install python-reportlab
 
-* Optional: Figure legends can be formatted using Markdown syntax. To see this correctly in the exported PDF info page, we need `Python Markdown <https://pythonhosted.org/Markdown/index.html>`_ installed:
+* Optional: Figure legends can be formatted using Markdown syntax. To see this correctly in the exported PDF info page, we need `Python Markdown <https://pythonhosted.org/Markdown/index.html>`_.
+For example, install on CentOS 7:
 
 ::
 
-    $ pip install markdown
+    $ yum install python-markdown
 
 Development
 ===========
