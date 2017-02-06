@@ -39,7 +39,8 @@ Display a link to 'Figure' at the top of the webclient:
 
 ::
 
-    $ bin/omero config append omero.web.ui.top_links '["Figure", "figure_index", {"title": "Open Figure in new tab", "target": "_blank"}]' 
+    $ bin/omero config append omero.web.ui.top_links '["Figure", "figure_index",
+      {"title": "Open Figure in new tab", "target": "_blank"}]' 
 
 
 Add 'Figure' to the 'Open with' options, available from context menu on
@@ -47,7 +48,8 @@ the webclient tree:
 
 ::
 
-    $ bin/omero config append omero.web.open_with '["omero_figure", "new_figure", {"supported_objects":["images"], "target": "_blank", "label": "OMERO.figure"}]'
+    $ bin/omero config append omero.web.open_with '["omero_figure", "new_figure",
+      {"supported_objects":["images"], "target": "_blank", "label": "OMERO.figure"}]'
 
 Now restart OMERO.web as normal.
 
@@ -79,17 +81,17 @@ The script can be uploaded using two alternative workflows, both of which requir
 Now install the script's dependencies:
 
 
-* Install `reportlab <https://bitbucket.org/rptlab/reportlab>`_ PDF python package:
+* Install `reportlab <https://bitbucket.org/rptlab/reportlab>`_ PDF python package from distribution packages. For example, install on CentOS 7:
 
 ::
 
-    $ pip install reportlab
+    $ yum install python-reportlab
 
-* Optional: Figure legends can be formatted using Markdown syntax. To see this correctly in the exported PDF info page, we need `Python Markdown <https://pythonhosted.org/Markdown/index.html>`_ installed:
+* Optional: Figure legends can be formatted using Markdown syntax. To see this correctly in the exported PDF info page, we need `Python Markdown <https://pythonhosted.org/Markdown/index.html>`_. For example, install on CentOS 7:
 
 ::
 
-    $ pip install markdown
+    $ yum install python-markdown
 
 Development
 ===========
