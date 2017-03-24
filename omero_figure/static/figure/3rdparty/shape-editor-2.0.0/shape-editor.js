@@ -1780,6 +1780,10 @@ ShapeManager.prototype.pasteShapesJson = function pasteShapesJson(jsonShapes, co
         allPasted = true;
     // For each shape we want to paste...
     jsonShapes.forEach(function(s){
+        // Create a shape to resolve any transform matrix -> coords
+        var temp = self.createShapeJson(s);
+        s = temp.toJson();
+        temp.destroy();
         // check if a shape is at the same coordinates...
         var match = self.findShapeAtCoords(s);
         // if so, keep offsetting until we find a spot...
