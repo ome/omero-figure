@@ -55,7 +55,7 @@ Now restart OMERO.web as normal.
 
 **Warning**:
 
-OMERO.figure version 2.x requires OMERO.web **5.2.6 or newer**.
+OMERO.figure version 3.0 requires OMERO.web **5.3.0**.
 This is due to a Django Framework compatibility and to a required package reorganization in OMERO.figure in version 2.0 so the application can be distributed from Python Package Index `PyPI <https://pypi.python.org/pypi>`_.
 
 
