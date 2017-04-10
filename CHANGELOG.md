@@ -1,3 +1,18 @@
+3.0.0 (April 2017)
+------------------
+
+- Load ROIs from OMERO to add new Shapes to your figure (PR #190)
+- Shapes can be selected to add to the image within the figure
+- Set an explicit x, y, width and height for selected panels (PR #169).
+- When resizing panels, you can enforce the current aspect ratio (PR #193)
+- Choose look-up tables from those provided by OMERO
+- Can render each channel with a different look-up table
+- Additional look-up tables can be added to the OMERO.server
+- Support for the new 'open-with' functionality
+- Rendering setting inputs for channels allow entering of numbers instead of only using sliders (PR #166)
+- flake8 and pep8 compatible
+- Use valid SPDX license expression
+
 2.0.1 (September 2016)
 ----------------------
 
