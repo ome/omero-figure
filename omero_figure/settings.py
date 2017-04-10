@@ -3,6 +3,6 @@
 # initialised custom settings.
 # See "App Settings" on
 # https://www.openmicroscopy.org/
-#   site/support/omero5.2/developers/Web/CreateApp.html
+#   site/support/omero5.3/developers/Web/CreateApp.html
 
-OMERO_FIGURE_VERSION = "2.0.1"
+OMERO_FIGURE_VERSION = "3.0.0"
