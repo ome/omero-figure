@@ -42,7 +42,7 @@ def read_file(fname, content_type=None):
     return data
 
 
-VERSION = "2.0.1"
+VERSION = "2.0.1.dev0"
 DESCRIPTION = "OMERO figure creation app"
 AUTHOR = "The Open Microscopy Team"
 LICENSE = "AGPL-3.0"
