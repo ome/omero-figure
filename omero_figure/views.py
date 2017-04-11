@@ -123,13 +123,6 @@ def index(request, file_id=None, conn=None, **kwargs):
 
 
 @login_required()
-def shape_editor(request, conn=None, **kwargs):
-
-    context = {}
-    return render(request, "figure/shapes.html", context)
-
-
-@login_required()
 def img_data_json(request, image_id, conn=None, **kwargs):
 
     image = conn.getObject("Image", image_id)
@@ -480,3 +473,29 @@ def unit_conversion(request, value, from_unit, to_unit, conn=None, **kwargs):
            'symbol': to_value.getSymbol()}
 
     return HttpResponse(json.dumps(rsp), content_type='json')
+
+
+@login_required()
+def roi_count(request, image_id, conn=None, **kwargs):
+    """
+    Get the counts of ROIs and Shapes on the image
+    """
+    count_shapes = request.GET.get('shapes', False)
+    params = omero.sys.ParametersI()
+    params.addLong('image_id', image_id)
+    query = 'select count(*) from Roi as roi ' \
+            'where roi.image.id = :image_id'
+    count = conn.getQueryService().projection(
+        query, params, conn.SERVICE_OPTS)
+    roi_count = count[0][0].getValue()
+    rv = {'roi': roi_count}
+
+    if count_shapes:
+        query = 'select count(shape) from Shape as shape ' \
+                'left outer join shape.roi as roi ' \
+                'where roi.image.id = :imageId'
+        count = conn.getQueryService().projection(
+            query, params, conn.SERVICE_OPTS)
+        shape_count = count[0][0].getValue()
+        rv['shape'] = shape_count
+    return HttpResponse(json.dumps(rv), content_type="application/json")

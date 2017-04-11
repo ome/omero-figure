@@ -696,6 +696,15 @@
         padding: 4px 8px;
     }
 
+    .toggleRoi {
+        transition: transform 300ms ease;
+        transform-origin: 30% 75%;
+    }
+    .rotate90 {
+        transform: rotate(90deg);
+    }
+
+
     .colorpicker span,
     .label-color span:first-child,
     .shape-color span:first-child {
@@ -878,19 +887,24 @@
         background: #ddd;
     }
 
-    .select-btn span{
+    .roiModalRoiItem .glyphicon {
+        width: 16px;
+        height: 16px;
+    }
+
+    .select-icon {
         background-image: url("../images/cursor-icon-16.png");
     }
-    .rect-btn span{
+    .rect-icon{
         background-image: url("../images/square-outline-icon-16.png");
     }
-    .line-btn span{
+    .line-icon{
         background-image: url("../images/line-icon-16.png");
     }
-    .arrow-btn span{
+    .arrow-icon{
         background-image: url("../images/arrow-icon-16.png");
     }
-    .ellipse-btn span{
+    .ellipse-icon{
         background-image: url("../images/ellipse-icon-16.png");
     }
     .linewidthOption {
@@ -901,6 +915,24 @@
     }
     .line-width .linewidthOption {
         max-height: 15px;
+    }
+    .roiModalRoiItem {
+        cursor: pointer;
+    }
+    .roiModalRoiItem.shape td {
+        border-top: 0 solid transparent;
+    }
+    .roiViewport {
+        position:relative;
+        width:55px;
+        height:55px;
+    }
+    .roiModalRoiItem .btn-sm {
+        padding: 3px 6px;
+        visibility: hidden;
+    }
+    .roiModalRoiItem:hover .btn-sm {
+        visibility: visible;
     }
 
     .aspectRatioSelected .okSign {
