@@ -42,7 +42,7 @@ def read_file(fname, content_type=None):
     return data
 
 
-VERSION = "2.0.1"
+VERSION = "3.0.0"
 DESCRIPTION = "OMERO figure creation app"
 AUTHOR = "The Open Microscopy Team"
 LICENSE = "AGPL-3.0"
@@ -142,7 +142,6 @@ setup(name="omero-figure",
           'Framework :: Django',
           'Intended Audience :: End Users/Desktop',
           'Intended Audience :: Science/Research',
-          'License :: OSI Approved :: GNU Affero General Public License v3.0',
           'Natural Language :: English',
           'Operating System :: OS Independent',
           'Programming Language :: JavaScript',
