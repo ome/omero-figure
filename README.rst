@@ -16,7 +16,7 @@ For full details see http://figure.openmicroscopy.org
 Requirements
 ============
 
-* OMERO 5.2.6 or newer.
+* OMERO 5.3.0 or newer.
 
 Installing from PyPI
 ====================
@@ -52,11 +52,6 @@ the webclient tree:
       {"supported_objects":["images"], "target": "_blank", "label": "OMERO.figure"}]'
 
 Now restart OMERO.web as normal.
-
-**Warning**:
-
-OMERO.figure version 3.0 requires OMERO.web **5.3.0**.
-This is due to a Django Framework compatibility and to a required package reorganization in OMERO.figure in version 2.0 so the application can be distributed from Python Package Index `PyPI <https://pypi.python.org/pypi>`_.
 
 
 Enabling figure export
