@@ -11,7 +11,9 @@ title: OMERO.figure
           <div style="text-align:right; font-size:50%">Read more...</div>
           </a>
         </h2>
-
+        <h2>Current Version: <strong>3.0.0</strong>
+        <div style="text-align:left; font-size:60%">See <a href="https://github.com/ome/omero-figure/blob/master/CHANGELOG.md">Release Notes</a></div>
+        </h2>  
         <h1 style="margin-top:0px">Fast figures from your OMERO images</h1>
 
         <iframe width="640" height="360" src="//www.youtube.com/embed/JNFvT8JwY7E?rel=0" frameborder="0" allowfullscreen></iframe>
@@ -63,7 +65,7 @@ title: OMERO.figure
 
         <a id="demo"></a>
         <h1>Try it now!</h1>
-        <p>I've created a live demo with several examples, based on figures published in the Journal of Cell Biology.
+        <p>We have created a live demo with several examples, based on figures published in the Journal of Cell Biology.
           This is a 'static' demo app (not hosted on an OMERO server), so you can't save changes. All the image data
           comes from the <a href="http://jcb-dataviewer.rupress.org/">OMERO-powered JCB-DataViewer</a>, where you can also browse the raw data.<br>
           Click figures for demos:
@@ -112,91 +114,139 @@ title: OMERO.figure
           </tr>
         </table>
 
-        <a id="releases"></a>
-        {% include release_history.html %}
-
-
         <a id="install"></a>
-        <h1>Install instructions</h1>
+        <h1>Installing from PyPI</h1>
         <p>
+          OMERO.figure version 3.0.0 requires OMERO.web <strong>5.3.0 or newer</strong>.
           <ul>
-            <li>You need to be running OMERO.web 5.0 or later</li>
-            <li>
-              Download the release from the top of this page, unzip and
-              rename the unzipped directory to 'figure'.
-            </li>
-            <li>
-              Place 'figure' <strong>within</strong> a directory that is on your PYTHONPATH.
-            </li>
-            <li>Add the app to OMERO.web:
-              <code> $ bin/omero config append omero.web.apps '"figure"' &nbsp # NB: double quotes</code>
-              NB: On Windows, you'll need to escape the inner double quotes:
-              <code> $ bin\omero config append omero.web.apps "\"figure\""</code>
-            </li>
-            <li>Display a link to 'Figure' at the top of the webclient: 
-              <!-- with 'target' set to open the link in a new tab: -->
+            <li>Install the app using <a href="https://pip.pypa.io/en/stable/">pip</a>:<br>
               <code style="width:650px">
-                $ bin/omero config append omero.web.ui.top_links '["Figure", "figure_index", {"title": "Open Figure in new tab", "target": "figure"}]'
+                $ pip install omero-figure
               </code>
             </li>
-            <li>Restart web. How you do this will depend on how you have deployed OMERO.web.
+            <li>Add the app to OMERO.web:
+              <code> $ bin/omero config append omero.web.apps '"omero_figure"' # NB: double quotes</code>
+            </li>
+            <li>Display a link to 'Figure' at the top of the webclient:<br>
+              <!-- with 'target' set to open the link in a new tab: -->
+              <code style="width:650px">
+                $ bin/omero config append omero.web.ui.top_links '["Figure", "figure_index", {"title": "Open Figure in new tab", "target": "_blank"}]'
+              </code>
+            </li>
+            <li>Add 'Figure' to the 'Open with' options, available from context menu on the webclient tree:<br>
+              <!-- with 'target' set to open the link in a new tab: -->
+              <code style="width:650px">
+                $ bin/omero config append omero.web.open_with '["omero_figure", "new_figure",
+                {"supported_objects":["images"], "target": "_blank", "label": "OMERO.figure"}]'
+              </code>
+            </li>
+            <li>Now restart OMERO.web as normal.
             </li>
           </ul>
-          <h4>To enable PDF generation:</h4>
+          <strong>Warning:</strong>
+          OMERO.figure version 2.x requires OMERO.web <strong>5.2.6 or newer</strong>. This is due to a Django Framework compatibility and to a required package reorganization in OMERO.figure in version 2.0 so the application can be distributed from Python Package Index <a href="https://pypi.python.org/pypi">PyPI</a>.
+          
+          <h4>Enabling figure export</h4>
+          <p>
+          This section assumes that an OMERO.server is already installed.
+
+          Figures can be exported as PDF or TIFF files using a script that runs on the OMERO.server. This script needs to be uploaded to the OMERO.server and its dependencies installed on the OMERO.server machine.
+
+          The script can be uploaded using two alternative workflows, both of which require you to be an admin.
+        </p>
+        <p>
           <ul>
-            <li>Install <a href="https://bitbucket.org/rptlab/reportlab">reportlab</a> PDF python package.<br>
-              In the simplest case: <code>$ pip install reportlab</code> OR  <code>$ easy_install reportlab</code><br>
-              NB: For python 2.6, you'll need Reportlab 2.7: <code>$ pip install reportlab==2.7</code>
+            <li>
+              Option 1: Connect to the OMERO server and upload script via the CLI. It is important to be in the correct directory when uploading so that the script is uploaded with the full path <strong>omero/figure_scripts/Figure_To_Pdf.py</strong>:<br>
+              <code style="width:650px">
+                $ cd omero_figure/scripts <br>
+                $ path/to/OMERO.server/bin/omero script upload omero/figure_scripts/Figure_To_Pdf.py --official
+              </code>
             </li>
-            <li>Optional: Figure legends can be formatted using Markdown syntax. To see this correctly in the
-              exported PDF info page, we need <a href="https://pythonhosted.org/Markdown/index.html">
-              Python-markdown</a>.
-              In the simplest case: <code>$ pip install markdown</code> OR  <code>$ easy_install markdown</code>
-            <li>Upload figure export script (need to be Admin):
-              <code style="width:700px">
-                $ cd figure/scripts   &nbsp &nbsp &nbsp # NB: important to be in this directory<br>
-                $ path/to/bin/omero script upload omero/figure_scripts/Figure_To_Pdf.py --official
+            <li>
+              <i>Option 2</i>: Alternatively, before starting the OMERO.server, copy the script from the figure install <strong>/omero_figure/scripts/omero/figure_scripts/Figure_To_Pdf.py</strong> to the OMERO.server <strong>path/to/OMERO.server/lib/scripts/omero/figure_scripts</strong>. Then restart the OMERO.server.
+          </li> 
+          </ul>
+          Now install the script's dependencies:
+          <ul>
+            <li>Install <a href="https://bitbucket.org/rptlab/reportlab">reportlab</a> PDF python package from distribution packages. For example, install on CentOS 7:<br>
+              <code style="width:650px">
+                $ yum install python-reportlab
+              </code>
+            </li>
+            <li>Optional: Figure legends can be formatted using Markdown syntax. To see this correctly in the exported PDF info page, we need <a href="https://pythonhosted.org/Markdown/index.html">Python-markdown</a>. For example, install on CentOS 7:<br>
+              <code style="width:650px">
+                $ yum install python-markdown
               </code>
             </li>
           </ul>
         </p>
-
         <h1>Update instructions</h1>
+        <h3>Upgrade the app</h3>
         <p>
+          Stop OMERO.web.
+          To upgrade from a version of OMERO.figure prior to <strong>2.0.1</strong>:
           <ul>
             <li>
-              To update an existing install of OMERO.figure to the latest release, download it,
-              unzip and replace the contents of the current /figure
-              directory with the contents of the unzipped directory.
+              Remove the 'figure' directory from <strong>within</strong> the directory that is on your PYTHONPATH.
             </li>
-            <li>NB: If you are upgrading from OMERO.figure 1.0.0 to 1.1.0 or later,
-                note that we now use Python-Markdown
-                (optional, see install instructions above).</li>
-            <li>Replace PDF generation script (need to be Admin):
-              <code style="width:700px">
-                $ cd figure/scripts   &nbsp &nbsp &nbsp # NB: important to be in this directory<br>
-                # List scripts to get the ID of omero/figure_scripts/Figure_To_Pdf.py<br>
-                $ path/to/bin/omero script list<br>
-                $ path/to/bin/omero script replace &ltscriptId&gt omero/figure_scripts/Figure_To_Pdf.py
+            <li>Install the app using <a href="https://pip.pypa.io/en/stable/">pip</a>:<br>
+              <code style="width:650px">
+                $ pip install omero-figure
               </code>
             </li>
-            <li>If upgrading from OMERO.figure 1.0.0 to 1.1.0 or later, you can update the
+            <li>Remove the old 'figure' app and add back the re-named 'omero_figure' app:<br>
+                <code style="width:700px">
+                  $ bin/omero config remove omero.web.apps '"figure"'<br>
+                  # Register the app<br>
+                  $ bin/omero config append omero.web.apps '"omero_figure"'<br>
+                </code>
+            </li>
+            <li>If upgrading from OMERO.figure 1.0.0, you can update the
               webclient link to figure,
               so that it automatically opens the figure app in a new tab. Simply remove the old link and add back the
-              new one...
+              new one...<br>
                 <code style="width:700px">
                   # In case you need to list current links...<br>
                   $ bin/omero config get omero.web.ui.top_links<br>
-                  <br>
                   # Remove the figure link...<br>
                   $ bin/omero config remove omero.web.ui.top_links '["Figure", "figure_index"]'<br>
-                  <br>
                   # Add back new link as described in the install instructions above
                 </code>
-                NB: If your OMERO.web version is earlier than 5.1.0 then this change
-                will be ignored until you upgrade.
             </li>
-            <li>Restart web. How you do this will depend on how you have deployed OMERO.web.
+            <li>Restart OMERO.web as normal.
+            </li>
+          </ul>
+          </p>
+          <p>
+          To upgrade from version <strong>2.0.1</strong> or newer:
+          <ul>
+            <li>Run the following command:<br>
+              <code style="width:700px">
+              $ pip install omero-figure --upgrade
+              </code>
+            </li>
+            <li>Restart OMERO.web as normal.
             </li>
           </ul>
         </p>
+        <h3>Upgrade the figure export script</h3>
+        <p>
+        <ul>
+          <li>
+            Connect to the OMERO server and replace script via the CLI:<br>
+              <code style="width:650px">
+                $ cd omero_figure/scripts <br>
+                # List scripts to get the ID of omero/figure_scripts/Figure_To_Pdf.py<br>
+                $ path/to/OMERO.server/bin/omero script list<br>
+                $ path/to/OMERO.server/bin/omero script replace &ltscriptId&gt omero/figure_scripts/Figure_To_Pdf.py
+              </code>
+          </li> 
+          <li>If upgrading from OMERO.figure 1.0.0, you may want to install <a href="https://pythonhosted.org/Markdown/index.html">Python-markdown</a><br>
+              <code style="width:650px">
+                $ pip install markdown
+              </code>
+          </li>
+        </ul>
+      </p>
+    </p>

@@ -1,5 +1,5 @@
 name: Your New Jekyll Site
 markdown: kramdown
-highlighter: pygments
+highlighter: rouge
 
 baseurl: ''
