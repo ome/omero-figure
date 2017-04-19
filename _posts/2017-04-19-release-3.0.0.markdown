@@ -7,6 +7,7 @@ date:   2017-04-17
 We are pleased to announce the release of OMERO.figure 3.0.0.
 This release builds on the previously unannounced 2.0 release in which the installation of
 OMERO.figure was moved to [PyPI](https://pypi.python.org/pypi?:action=display&name=omero-figure).
+Previous installation of OMERO.figure should first be removed before installing from PyPI.
 
 Installation is now much simpler. Principally the install is done via [pip](https://pypi.python.org/pypi/pip),
 with some additional configuration settings.
