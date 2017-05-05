@@ -200,6 +200,9 @@ def save_web_figure(request, conn=None, **kwargs):
             first_img_id = long(image_ids[0])
         # remove duplicates
         image_ids = list(set(image_ids))
+        # pretty-print json
+        figure_json = json.dumps(json_data, sort_keys=True,
+                                 indent=2, separators=(',', ': '))
     except:
         pass
 
