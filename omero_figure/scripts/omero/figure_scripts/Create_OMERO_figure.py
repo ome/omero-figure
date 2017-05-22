@@ -4,10 +4,10 @@ import omero.scripts as scripts
 from omero.gateway import BlitzGateway
 from omeroweb.webgateway.marshal import imageMarshal
 import json
+import copy
 from cStringIO import StringIO
 from omero.rtypes import wrap, rlong, rstring
 from omero.gateway import OriginalFileWrapper
-import math
 
 
 JSON_FILEANN_NS = "omero.web.figure.json"
@@ -103,8 +103,9 @@ def create_original_file_from_file_obj(fo, path, name, file_size, mimetype=None)
 
 class FigureBuilder(object):
 
-    def __init__(self):
+    def __init__(self, conn):
 
+        self.conn = conn
         self.figure_json = {"version":2,
                             "paper_width":595,
                             "paper_height":842,
@@ -114,7 +115,7 @@ class FigureBuilder(object):
 
     def add_images(self, image_ids):
 
-        images = list(conn.getObjects('Image', image_ids, respect_order=True))
+        images = list(self.conn.getObjects('Image', image_ids, respect_order=True))
 
         if len(images) == 0:
             return "No images found"
@@ -128,26 +129,29 @@ class FigureBuilder(object):
 
         panels_json = []
         for row, image in enumerate(images):
+
+            panel_json = self.get_panel_json(image, width, height)
+
             curr_y = row * (height + spacing)
             for c in range(image.getSizeC()):
+                j = copy.deepcopy(panel_json)
                 curr_x = c * (width + spacing)
-                j = self.get_panel_json(image, curr_x, curr_y, width, height, c)
+                j['x'] = curr_x
+                j['y'] = curr_y
+                for idx, ch in enumerate(j['channels']):
+                    ch['active'] = idx == c
                 j['labels'] = self.get_labels_json(j, c, row)
                 panels_json.append(j)
 
         self.figure_json['panels'] = panels_json
 
 
-    def get_panel_json(self, image, x, y, width, height, channel=None):
+    def get_panel_json(self, image, width, height):
 
         px = image.getPrimaryPixels().getPhysicalSizeX()
         py = image.getPrimaryPixels().getPhysicalSizeY()
 
         rv = imageMarshal(image)
-
-        if channel is not None:
-            for idx, ch in enumerate(rv['channels']):
-                ch['active'] = idx == channel
 
         img_json = {
             "labels":[],
@@ -166,18 +170,38 @@ class FigureBuilder(object):
             "dy":0,
             "rotation":0,
             "imageId":image.id,
-            # "datasetId":1301,
-            # "datasetName":"CENPB-siRNAi",
-            "name":"438CTR_01_5_R3D_D3D.dv",
+            "name": rv['meta']['imageName'],
             "orig_width": rv['size']['width'],
             "zoom":100,
             "shapes":[],
             "orig_height": rv['size']['height'],
             "theZ": rv['rdefs']['defaultZ'],
-            "y": y,
-            "x": x,
+            "y": 0,
+            "x": 0,
             "theT": rv['rdefs']['defaultT']
         }
+
+        time_list = []
+        if rv['size']['t'] > 1:
+            params = omero.sys.ParametersI()
+            params.addLong('pid', image.getPixelsId())
+            query = "from PlaneInfo as Info where"\
+                " Info.theZ=0 and Info.theC=0 and pixels.id=:pid"
+            info_list = conn.getQueryService().findAllByQuery(
+                query, params, conn.SERVICE_OPTS)
+            timemap = {}
+            for info in info_list:
+                t_index = info.theT.getValue()
+                if info.deltaT is not None:
+                    # planeInfo.deltaT gives number only (no units)
+                    # Therefore compatible with OMERO 5.0 and 5.1
+                    delta_t = int(round(info.deltaT.getValue()))
+                    timemap[t_index] = delta_t
+            for t in range(image.getSizeT()):
+                if t in timemap:
+                    time_list.append(timemap[t])
+        img_json['deltaT'] = time_list
+
         return img_json
 
 
@@ -205,7 +229,7 @@ class FigureBuilder(object):
 def create_omero_figure(conn, script_params):
 
 
-    figure_builder = FigureBuilder()
+    figure_builder = FigureBuilder(conn)
     figure_builder.add_images(script_params['IDs'])
 
     create_figure_file(figure_builder.figure_json)
