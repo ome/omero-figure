@@ -101,116 +101,114 @@ def create_original_file_from_file_obj(fo, path, name, file_size, mimetype=None)
     return OriginalFileWrapper(conn, original_file)
 
 
-def get_panel_json(image, x, y, width, height, channel=None):
+class FigureBuilder(object):
 
-    px = image.getPrimaryPixels().getPhysicalSizeX()
-    py = image.getPrimaryPixels().getPhysicalSizeY()
+    def __init__(self):
 
-    rv = imageMarshal(image)
+        self.figure_json = {"version":2,
+                            "paper_width":595,
+                            "paper_height":842,
+                            "page_size":"A4",
+                            "figureName":"from script",
+                            }
 
-    if channel is not None:
-        for idx, ch in enumerate(rv['channels']):
-            ch['active'] = idx == channel
+    def add_images(self, image_ids):
 
-    img_json = {
-        "labels":[],
-        "height": height,
-        "channels": rv['channels'],
-        # "deltaT":[],
-        # "selected":true,
-        "width": width,
-        "pixel_size_x": px.getValue(),
-        "pixel_size_x_unit": str(px.getUnit()),
-        "pixel_size_x_symbol": px.getSymbol(),
-        "pixel_size_y": py.getValue(),
-        "sizeT": rv['size']['t'],
-        "sizeZ": rv['size']['z'],
-        "dx":0,
-        "dy":0,
-        "rotation":0,
-        "imageId":image.id,
-        # "datasetId":1301,
-        # "datasetName":"CENPB-siRNAi",
-        "name":"438CTR_01_5_R3D_D3D.dv",
-        "orig_width": rv['size']['width'],
-        "zoom":100,
-        "shapes":[],
-        "orig_height": rv['size']['height'],
-        "theZ": rv['rdefs']['defaultZ'],
-        "y": y,
-        "x": x,
-        "theT": rv['rdefs']['defaultT']
-    }
-    return img_json
+        images = list(conn.getObjects('Image', image_ids, respect_order=True))
+
+        if len(images) == 0:
+            return "No images found"
+
+        width = 100
+        height = 100
+        spacing = width/20
+
+        curr_x = 0
+        curr_y = 0
+
+        panels_json = []
+        for row, image in enumerate(images):
+            curr_y = row * (height + spacing)
+            for c in range(image.getSizeC()):
+                curr_x = c * (width + spacing)
+                j = self.get_panel_json(image, curr_x, curr_y, width, height, c)
+                j['labels'] = self.get_labels_json(j, c, row)
+                panels_json.append(j)
+
+        self.figure_json['panels'] = panels_json
 
 
-def get_labels_json(panel_json, column, row):
+    def get_panel_json(self, image, x, y, width, height, channel=None):
 
-    labels = []
+        px = image.getPrimaryPixels().getPhysicalSizeX()
+        py = image.getPrimaryPixels().getPhysicalSizeY()
 
-    channels = panel_json['channels']
-    if row == 0:
-        labels.append({"text":channels[column]['label'],
-                       "size":14,
-                       "position":"top",
-                       "color":"000000"
-                     })
-    if column == 0:
-        labels.append({"text": panel_json['name'],
-                       "size":14,
-                       "position":"leftvert",
-                       "color":"000000"
-                     })
-    return labels
+        rv = imageMarshal(image)
+
+        if channel is not None:
+            for idx, ch in enumerate(rv['channels']):
+                ch['active'] = idx == channel
+
+        img_json = {
+            "labels":[],
+            "height": height,
+            "channels": rv['channels'],
+            # "deltaT":[],
+            # "selected":true,
+            "width": width,
+            "pixel_size_x": px.getValue(),
+            "pixel_size_x_unit": str(px.getUnit()),
+            "pixel_size_x_symbol": px.getSymbol(),
+            "pixel_size_y": py.getValue(),
+            "sizeT": rv['size']['t'],
+            "sizeZ": rv['size']['z'],
+            "dx":0,
+            "dy":0,
+            "rotation":0,
+            "imageId":image.id,
+            # "datasetId":1301,
+            # "datasetName":"CENPB-siRNAi",
+            "name":"438CTR_01_5_R3D_D3D.dv",
+            "orig_width": rv['size']['width'],
+            "zoom":100,
+            "shapes":[],
+            "orig_height": rv['size']['height'],
+            "theZ": rv['rdefs']['defaultZ'],
+            "y": y,
+            "x": x,
+            "theT": rv['rdefs']['defaultT']
+        }
+        return img_json
+
+
+    def get_labels_json(self, panel_json, column, row):
+
+        labels = []
+
+        channels = panel_json['channels']
+        if row == 0:
+            labels.append({"text":channels[column]['label'],
+                           "size":14,
+                           "position":"top",
+                           "color":"000000"
+                         })
+        if column == 0:
+            labels.append({"text": panel_json['name'],
+                           "size":14,
+                           "position":"leftvert",
+                           "color":"000000"
+                         })
+        return labels
+
 
 
 def create_omero_figure(conn, script_params):
-    figure_json = {"version":2,
-                   "paper_width":595,
-                   "paper_height":842,
-                   "page_size":"A4",
-                   # "page_count":"1",
-                   # "paper_spacing":50,
-                   # "page_col_count":"1",
-                   # "height_mm":297,
-                   # "width_mm":210,
-                   # "orientation":"vertical",
-                   # "legend":"",
-                   # "legend_collapsed":true,
-                   "figureName":"from script",
-                   # "fileId":32351
-                   }
 
 
-    image_ids = script_params['IDs']
+    figure_builder = FigureBuilder()
+    figure_builder.add_images(script_params['IDs'])
 
-    images = list(conn.getObjects('Image', image_ids, respect_order=True))
-
-    if len(images) == 0:
-        return "No images found"
-
-    # column_count = int(math.ceil(math.sqrt(len(images))))
-
-    width = 100
-    height = 100
-    spacing = width/20
-
-    curr_x = 0
-    curr_y = 0
-
-    panels_json = []
-    for row, image in enumerate(images):
-        curr_y = row * (height + spacing)
-        for c in range(image.getSizeC()):
-            curr_x = c * (width + spacing)
-            j = get_panel_json(image, curr_x, curr_y, width, height, c)
-            j['labels'] = get_labels_json(j, c, row)
-            panels_json.append(j)
-
-
-    figure_json['panels'] = panels_json
-
-    create_figure_file(figure_json)
+    create_figure_file(figure_builder.figure_json)
 
     return "Figure created"
 
