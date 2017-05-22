@@ -111,7 +111,14 @@ class FigureBuilder(object):
                             "paper_height":842,
                             "page_size":"A4",
                             "figureName":"from script",
+                            "panels": [],
                             }
+
+    def get_default_panel_width(self):
+        return 100;
+
+    def get_default_panel_height(self):
+        return self.get_default_panel_width();
 
     def add_images(self, image_ids):
 
@@ -120,33 +127,15 @@ class FigureBuilder(object):
         if len(images) == 0:
             return "No images found"
 
-        width = 100
-        height = 100
-        spacing = width/20
-
-        curr_x = 0
-        curr_y = 0
-
-        panels_json = []
-        for row, image in enumerate(images):
-
-            panel_json = self.get_panel_json(image, width, height)
-
-            curr_y = row * (height + spacing)
-            for c in range(image.getSizeC()):
-                j = copy.deepcopy(panel_json)
-                curr_x = c * (width + spacing)
-                j['x'] = curr_x
-                j['y'] = curr_y
-                for idx, ch in enumerate(j['channels']):
-                    ch['active'] = idx == c
-                j['labels'] = self.get_labels_json(j, c, row)
-                panels_json.append(j)
-
-        self.figure_json['panels'] = panels_json
+        for idx, image in enumerate(images):
+            panel_json = self.get_panel_json(image)
+            self.add_image(image, panel_json, idx)
 
 
-    def get_panel_json(self, image, width, height):
+    def get_panel_json(self, image):
+
+        width = self.get_default_panel_width()
+        height = self.get_default_panel_height()
 
         px = image.getPrimaryPixels().getPhysicalSizeX()
         py = image.getPrimaryPixels().getPhysicalSizeY()
@@ -205,18 +194,51 @@ class FigureBuilder(object):
         return img_json
 
 
-    def get_labels_json(self, panel_json, column, row):
+    def add_image(self, image, panel_json, idx):
+
+        width = self.get_default_panel_width()
+        height = self.get_default_panel_height()
+        spacing = width/20
+        curr_x = 0
+        curr_y = idx * (height + spacing)
+
+        # Add one panel per channel in a row
+        for c in range(image.getSizeC()):
+            j = copy.deepcopy(panel_json)
+            curr_x = c * (width + spacing)
+            j['x'] = curr_x
+            j['y'] = curr_y
+            for idx, ch in enumerate(j['channels']):
+                ch['active'] = idx == c
+            j['labels'] = self.get_labels_json(j)
+            self.figure_json['panels'].append(j)
+
+        # Add 'merged' panel with all channels
+        j = copy.deepcopy(panel_json)
+        curr_x = image.getSizeC() * (width + spacing)
+        j['x'] = curr_x
+        j['y'] = curr_y
+        for idx, ch in enumerate(j['channels']):
+            ch['active'] = True
+        j['labels'] = self.get_labels_json(j)
+        self.figure_json['panels'].append(j)
+
+
+    def get_labels_json(self, panel_json):
 
         labels = []
 
-        channels = panel_json['channels']
-        if row == 0:
-            labels.append({"text":channels[column]['label'],
-                           "size":14,
-                           "position":"top",
-                           "color":"000000"
-                         })
-        if column == 0:
+        # First row, add labels for active channels
+        if panel_json['y'] == 0:
+            for ch in panel_json['channels']:
+                if ch['active']:
+                    labels.append({"text": ch['label'],
+                                   "size": 14,
+                                   "position": "top",
+                                   "color": ch['color']
+                                 })
+        # First column, add image name
+        if panel_json['x'] == 0:
             labels.append({"text": panel_json['name'],
                            "size":14,
                            "position":"leftvert",
