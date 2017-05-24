@@ -196,6 +196,13 @@ class FigureBuilder(object):
 
     def add_image(self, image, panel_json, idx):
 
+        self.figure_json['panels'].append(panel_json)
+
+
+class SplitViewFigureBuilder(FigureBuilder):
+
+    def add_image(self, image, panel_json, idx):
+
         width = self.get_default_panel_width()
         height = self.get_default_panel_height()
         spacing = width/20
@@ -247,13 +254,35 @@ class FigureBuilder(object):
         return labels
 
 
+class MovieFigureBuilder(FigureBuilder):
+
+    def add_image(self, image, panel_json, idx):
+
+        width = self.get_default_panel_width()
+        height = self.get_default_panel_height()
+        spacing = width/20
+        curr_x = 0
+        curr_y = idx * (height + spacing)
+
+        # Add one panel per Time-point in a row
+        for t in range(5):
+            j = copy.deepcopy(panel_json)
+            curr_x = t * (width + spacing)
+            j['x'] = curr_x
+            j['y'] = curr_y
+            j['theT'] = t
+            self.figure_json['panels'].append(j)
+
 
 def create_omero_figure(conn, script_params):
 
 
-    figure_builder = FigureBuilder(conn)
-    figure_builder.add_images(script_params['IDs'])
+    if script_params['Figure_Type'] == 'Split View Figure':
+        figure_builder = SplitViewFigureBuilder(conn)
+    elif script_params['Figure_Type'] == 'Movie Figure':
+        figure_builder = MovieFigureBuilder(conn)
 
+    figure_builder.add_images(script_params['IDs'])
     create_figure_file(figure_builder.figure_json)
 
     return "Figure created"
@@ -266,6 +295,8 @@ if __name__ == "__main__":
     """
 
     data_types = [rstring('Image')]
+    figure_types = [rstring('Split View Figure'),
+                    rstring('Movie Figure')]
 
     client = scripts.client(
         'Create_OMERO_figure.py',
@@ -282,6 +313,11 @@ See http://figure.openmicroscopy.org""",
         scripts.List(
             "IDs", optional=False, grouping="02",
             description="List of Image IDs").ofType(rlong(0)),
+
+        scripts.String(
+            "Figure_Type", optional=False, grouping="03",
+            description="Type of figure to create.", values=figure_types,
+            default="Split View Figure"),
 
         authors=["William Moore", "OME Team"],
         institutions=["University of Dundee"],
