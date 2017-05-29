@@ -352,21 +352,26 @@ def make_web_figure(request, conn=None, **kwargs):
     Script will show up in the 'Activities' for users to monitor and
     download result etc.
     """
-    if not request.method == 'POST':
-        return HttpResponse("Need to use POST")
+    # if not request.method == 'POST':
+    #     return HttpResponse("Need to use POST")
 
-    script_service = conn.getScriptService()
-    sid = script_service.getScriptID(SCRIPT_PATH)
 
-    figure_json = request.POST.get('figureJSON')
+    from omero_figure.scripts.omero.figure_scripts.Figure_To_Pdf import FigureExport, TiffExport
+
+
+    # script_service = conn.getScriptService()
+    # sid = script_service.getScriptID(SCRIPT_PATH)
+
+    figure_json = str(request.POST.get('figureJSON').encode('utf8'))
+    print 'figure_json', figure_json
     # export options e.g. "PDF", "PDF_IMAGES"
     export_option = request.POST.get('exportOption')
     webclient_uri = request.build_absolute_uri(reverse('webindex'))
 
     input_map = {
-        'Figure_JSON': wrap(figure_json.encode('utf8')),
-        'Export_Option': wrap(str(export_option)),
-        'Webclient_URI': wrap(webclient_uri)}
+        'Figure_JSON': figure_json,
+        'Export_Option': export_option,
+        'Webclient_URI': webclient_uri}
 
     # If the figure has been saved, construct URL to it.
     figure_dict = json.loads(figure_json)
@@ -378,7 +383,14 @@ def make_web_figure(request, conn=None, **kwargs):
         except:
             pass
 
-    rsp = run_script(request, conn, sid, input_map, scriptName='Figure.pdf')
+    # rsp = run_script(request, conn, sid, input_map, scriptName='Figure.pdf')
+
+    fig_export = TiffExport(conn, input_map)
+    file_ann = fig_export.build_figure()
+
+    print file_ann
+
+    rsp = {'OK': file_ann.id}
     return HttpResponse(json.dumps(rsp), content_type='json')
 
 

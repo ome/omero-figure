@@ -557,7 +557,8 @@ class FigureExport(object):
 
         figure_json_string = script_params['Figure_JSON']
         # Since unicode can't be wrapped by rstring
-        figure_json_string = figure_json_string.decode('utf8')
+        # figure_json_string = figure_json_string.decode('utf8')
+        # figure_json_string = str(figure_json_string)
         self.figure_json = json.loads(figure_json_string)
 
         n = datetime.now()
@@ -1585,8 +1586,8 @@ class TiffExport(FigureExport):
     def save_figure(self):
         """ Completes PDF figure (or info-page PDF for TIFF export) """
         # We allow TIFF figure export without reportlab (no Info page)
-        if not reportlab_installed:
-            return
+        # if not reportlab_installed:
+        return
         self.figure_canvas.save()
 
 
