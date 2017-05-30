@@ -1,3 +1,4 @@
 include README.rst
 include LICENSE
+include package.json
 recursive-include omero_figure *
