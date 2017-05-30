@@ -20,29 +20,16 @@
 #
 # Version: 1.0
 
-
-import json
 import os
 import setuptools.command.install
 import setuptools.command.develop
 import setuptools.command.sdist
 from distutils.core import Command
 from setuptools import setup, find_packages
+from omero_figure.utils import read_version, read_file
 
 
-# Utility function to read the README file. Also support json content
-def read_file(fname, content_type=None):
-    dir_path = os.path.dirname(os.path.realpath(__file__))
-    p = os.path.join(dir_path, fname)
-    with open(p) as f:
-        if content_type in ('json',):
-            data = json.load(f)
-        else:
-            data = f.read()
-    return data
-
-
-VERSION = "3.0.0"
+VERSION = read_version('../package.json')
 DESCRIPTION = "OMERO figure creation app"
 AUTHOR = "The Open Microscopy Team"
 LICENSE = "AGPL-3.0"
@@ -135,7 +122,7 @@ setup(name="omero-figure",
       packages=find_packages(exclude=['ez_setup']),
       version=VERSION,
       description=DESCRIPTION,
-      long_description=read_file('README.rst'),
+      long_description=read_file('../README.rst'),
       classifiers=[
           'Development Status :: 5 - Production/Stable',
           'Environment :: Web Environment',
@@ -159,7 +146,7 @@ setup(name="omero-figure",
       author_email='ome-devel@lists.openmicroscopy.org.uk',
       license=LICENSE,
       url=HOMEPAGE,
-      download_url='https://github.com/ome/omero-figure/archive/v%s.tar.gz' % VERSION,
+      download_url='%s/archive/v%s.tar.gz' % (HOMEPAGE, VERSION),
       keywords=['OMERO.web', 'figure'],
       install_requires=[],
       include_package_data=True,
