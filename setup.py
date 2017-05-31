@@ -26,10 +26,10 @@ import setuptools.command.develop
 import setuptools.command.sdist
 from distutils.core import Command
 from setuptools import setup, find_packages
-from omero_figure.utils import read_version, read_file
+from omero_figure.utils import get_version, read_file
 
+VERSION = get_version()
 
-VERSION = read_version('../package.json')
 DESCRIPTION = "OMERO figure creation app"
 AUTHOR = "The Open Microscopy Team"
 LICENSE = "AGPL-3.0"
@@ -122,7 +122,7 @@ setup(name="omero-figure",
       packages=find_packages(exclude=['ez_setup']),
       version=VERSION,
       description=DESCRIPTION,
-      long_description=read_file('../README.rst'),
+      long_description=read_file('README.rst'),
       classifiers=[
           'Development Status :: 5 - Production/Stable',
           'Environment :: Web Environment',

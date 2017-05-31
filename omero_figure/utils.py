@@ -20,9 +20,11 @@ import json
 import os
 
 
+__version__ = "0.0.0"
+
+
 def read_file(fname, content_type=None):
-    dir_path = os.path.dirname(os.path.realpath(__file__))
-    p = os.path.join(dir_path, fname)
+    p = os.path.abspath(fname)
     with open(p) as f:
         if content_type in ('json',):
             data = json.load(f)
@@ -34,3 +36,10 @@ def read_file(fname, content_type=None):
 def read_version(file_name):
     d = read_file(file_name, 'json')
     return d['version']
+
+
+def get_version():
+    v = read_version('package.json')
+    global __version__
+    __version__ = v
+    return v

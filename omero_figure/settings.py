@@ -21,7 +21,4 @@
 # https://www.openmicroscopy.org/
 #   site/support/omero5.3/developers/Web/CreateApp.html
 
-from utils import read_version
-
-
-OMERO_FIGURE_VERSION = read_version('../package.json')
+OMERO_FIGURE_VERSION = "0.0.0"

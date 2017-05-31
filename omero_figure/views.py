@@ -34,7 +34,7 @@ from cStringIO import StringIO
 
 from omeroweb.webclient.decorators import login_required
 
-from . import settings
+from . import utils
 
 try:
     from PIL import Image
@@ -109,8 +109,6 @@ def index(request, file_id=None, conn=None, **kwargs):
     and lay them out in canvas by dragging & resizing etc
     """
 
-    version = settings.OMERO_FIGURE_VERSION
-
     script_service = conn.getScriptService()
     sid = script_service.getScriptID(SCRIPT_PATH)
     script_missing = sid <= 0
@@ -118,7 +116,7 @@ def index(request, file_id=None, conn=None, **kwargs):
 
     context = {'scriptMissing': script_missing,
                'userFullName': user_full_name,
-               'version': version}
+               'version': utils.__version__}
     return render(request, "figure/index.html", context)
 
 
