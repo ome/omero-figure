@@ -21,4 +21,8 @@
 # https://www.openmicroscopy.org/
 #   site/support/omero5.3/developers/Web/CreateApp.html
 
-OMERO_FIGURE_VERSION = "0.0.0"
+from . import utils
+import warnings
+
+warnings.warn("Deprecated. utils.__version__", DeprecationWarning)
+OMERO_FIGURE_VERSION = utils.__version__
