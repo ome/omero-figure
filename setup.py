@@ -30,10 +30,11 @@ from omero_figure.utils import get_version, read_file
 
 VERSION = get_version()
 
-DESCRIPTION = "OMERO figure creation app"
-AUTHOR = "The Open Microscopy Team"
-LICENSE = "AGPL-3.0"
-HOMEPAGE = "https://github.com/ome/omero-figure"
+d = read_file('package.json', 'json')
+DESCRIPTION = d['description']
+AUTHOR = d['author']
+LICENSE = d['license']
+HOMEPAGE = d['homepage']
 
 
 cmdclass = {}
