@@ -39,7 +39,6 @@ def read_version(file_name):
 
 
 def get_version():
-    v = read_version('package.json')
     global __version__
-    __version__ = v
-    return v
+    __version__ = read_version('package.json')
+    return __version__
