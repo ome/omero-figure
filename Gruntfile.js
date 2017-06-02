@@ -81,7 +81,7 @@ module.exports = function (grunt) {
                 "{% url 'list_web_figures' %}":
                     "static/json/list_web_figures.json",
                 "{% static '":
-                    "static/",
+                    "omero_figure/static/",
                 "' %}":
                     "",
                 '{{ userFullName }}':
