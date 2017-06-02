@@ -1511,6 +1511,18 @@
             "click .dropdown-menu a": "pick_color",
             "click .show-rotation": "show_rotation",
             "click .z-projection": "z_projection",
+            "click .flip": "flip_panel",
+        },
+
+        flip_panel: function(event) {
+
+            var flip = event.target.checked;
+            console.log("flip!!!", flip);
+
+            this.models.forEach(function(m){
+
+                m.set('flip', flip);
+            });
         },
 
         z_projection:function(e) {
@@ -1705,9 +1717,16 @@
                     ch.lutBgPos = FigureLutPicker.getLutBackgroundPosition(ch.color);
                     return ch;
                 });
+
+                var flipped = this.models.reduce(function(prev, m) {
+                    return prev && m.get('flip');
+                }, true);
+                console.log('flipped', flipped);
+
                 html = this.template({'channels':json,
                     'z_projection_disabled': z_projection_disabled,
                     'rotation': rotation,
+                    'flipped': flipped,
                     'z_projection': z_projection});
                 this.$el.html(html);
             }
