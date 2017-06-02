@@ -155,6 +155,6 @@ module.exports = function (grunt) {
   // creates demo/index.html and demo/figure.js via 'replace' command
   // then copies over other static js, css and images to demo/static/figure/..
   grunt.registerTask('demo', [
-      'concat', 'replace', 'copy'
+      'concat', 'jst', 'replace', 'copy'
   ]);
 };
