@@ -15,7 +15,7 @@
             // we render on Changes in the model OR selected shape etc.
             this.model.on('destroy', this.remove, this);
             this.listenTo(this.model,
-                'change:x change:y change:width change:height change:zoom change:dx change:dy change:rotation',
+                'change:x change:y change:width change:height change:zoom change:dx change:dy change:rotation change:flip',
                 this.render_layout);
             this.listenTo(this.model, 'change:scalebar change:pixel_size_x', this.render_scalebar);
             this.listenTo(this.model,

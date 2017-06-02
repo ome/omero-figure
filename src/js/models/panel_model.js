@@ -18,6 +18,7 @@
             selected: false,
             pixel_size_x_symbol: '\xB5m',     // microns by default
             pixel_size_x_unit: 'MICROMETER',
+            flip: true,
 
             // 'export_dpi' optional value to resample panel on export
             // model includes 'scalebar' object, e.g:
@@ -604,14 +605,16 @@
                 }
             }
 
+            var flip = this.get('flip') ? -1 : 1;
+            console.log('flip', flip, this.get('flip'));
             var css = {'left':img_x,
                        'top':img_y,
                        'width':img_w,
                        'height':img_h,
                        '-webkit-transform-origin': transform_x + '% ' + transform_y + '%',
                        'transform-origin': transform_x + '% ' + transform_y + '%',
-                       '-webkit-transform': 'rotate(' + rotation + 'deg)',
-                       'transform': 'rotate(' + rotation + 'deg)'
+                       '-webkit-transform': 'rotate(' + rotation + 'deg) scaleX(' + flip + ')',
+                       'transform': 'rotate(' + rotation + 'deg) scaleX(' + flip + ')'
                    };
             return css;
         },
