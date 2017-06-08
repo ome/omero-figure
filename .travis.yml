@@ -20,3 +20,10 @@ script:
   - python setup.py sdist install --user || exit 1
   - if [ ! -f "omero_figure/static/figure/templates.js" ]; then exit 1 ;fi
   - if [ ! -f "omero_figure/static/figure/figure.js" ]; then exit 1 ;fi
+  # Test demo build
+  - grunt demo || exit 1
+  - if [ ! -f "demo/figure.js" ]; then exit 1 ;fi
+  - if [ ! -f "demo/index.html" ]; then exit 1 ;fi
+  - if [ ! -f "demo/omero_figure/static/figure/templates.js" ]; then exit 1 ;fi
+  - if [ ! -f "demo/omero_figure/static/figure/css/figure.css" ]; then exit 1 ;fi
+  - if [ ! -f "demo/omero_figure/static/figure/images/luts_10.png" ]; then exit 1 ;fi
