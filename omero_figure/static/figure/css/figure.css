@@ -339,10 +339,10 @@
         width:100%;
     }
 
-    .glyphicon-ok {
+    .previewIdChange .glyphicon-ok {
         color: #0f0;
     }
-    .glyphicon-flag {
+    .previewIdChange .glyphicon-flag {
         color: #f00;
     }
     /* Classes here are generated in templates from 'top' etc See labelicon classes below */
@@ -711,6 +711,11 @@
     .label-color span:first-child,
     .shape-color span:first-child {
         border: solid 1px #bbb;
+    }
+
+    /* remove border from above */
+    .colorpicker .reverseIntensity span {
+        border-width: 0;
     }
 
     .lutOption {
