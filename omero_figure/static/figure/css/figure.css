@@ -720,7 +720,14 @@
         display: inline-block;
     }
 
-    .lutBg, .ch_slider .ui-slider-range {
+    .ch_slider .ui-slider-range {
+        background-image: url('../images/gradient.png');
+        background-size: 100% 50px;
+        background-position: 0 0;
+        background-repeat: no-repeat;
+    }
+
+    .lutBg, .ch_slider .lutBg {
         /* NB: when updating png, consider using different name to avoid cache */
         background-image: url('../images/luts_10.png');   /* each lut is 10px high */
         background-size: 100% 1950px;  /* height is stretched 5x (50px per LUT) */
