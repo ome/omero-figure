@@ -718,6 +718,14 @@
         transform: rotate(90deg);
     }
 
+    @keyframes spin {
+        100% { -webkit-transform: rotate(360deg); transform:rotate(360deg); }
+    }
+
+    .navbar-right .glyphicon-refresh {
+        animation: spin 2s linear infinite;
+        padding: 2px 2px 5px 2px;
+    }
 
     .colorpicker span,
     .label-color span:first-child,
