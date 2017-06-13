@@ -1534,7 +1534,7 @@ var ShapeManager = function ShapeManager(elementId, width, height, options) {
                           'cursor': 'default'});
     this.selectRegion = this.paper.rect(0, 0, width, height);
     this.selectRegion.hide().attr({'stroke': '#ddd',
-                                   'stroke-width': 0,
+                                   'stroke-width': 1,
                                    'stroke-dasharray': '- '});
     if (this.canEdit) {
         this.newShapeBg.drag(
