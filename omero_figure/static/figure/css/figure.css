@@ -536,9 +536,10 @@
     }
     .ch_slider {
         height: 11px !important;
-        width: 225px !important;
-        top: -6px;
-        left: 50px;
+        width: 170px !important;
+        top: -2px;
+        left: 104px;
+        position: absolute !important;
     }
     .ch_start, .ch_end {
         position: absolute;
@@ -549,7 +550,9 @@
         top: 0px;
     }
     .ch_start input, .ch_end input {
-        width: 40px;
+        width: 45px;
+        height: 33px;
+        text-align: center;
     }
     /* Hide spinner added to 'number' inputs */
     input[type='number'] {
@@ -561,14 +564,12 @@
         margin: 0;
     }
     .ch_start {
-        left: 4px;
+        left: 54px;
         text-align: right;
         width: 30px;
     }
     .ch_end {
-        right: 12px;
-        text-align: left;
-        width: 30px;
+        right: 0;
     }
     .ui-slider-disabled a {
         display: none;
