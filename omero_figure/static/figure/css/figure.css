@@ -160,7 +160,6 @@
     .markdown-info {
         padding: 3px 12px;
         color: #aaa;
-        display: none;
         text-align: right;
         padding-left: 40px;
         background: url(../images/markdown_light32x20.png) 0% center no-repeat;
@@ -168,8 +167,17 @@
     .markdown-info:hover {
         background: url(../images/markdown_dark32x20.png) 0% center no-repeat;
     }
-    .editing .markdown-info {
+    .legend-container .markdown-info {
+        display: none;
+    }
+    .legend-container .editing .markdown-info {
         display: block;
+    }
+
+    #labelsTab .markdown-info {
+        height: 18px;
+        margin: 9px 9px 0;
+        float: left"
     }
 
     /* hide appropriate collapse/hide button */
@@ -313,6 +321,9 @@
     .label_layout {
         position:absolute;
     }
+    .label_layout p {
+        margin: 0;
+    }
     .left_vlabels>div {
         margin-bottom: 5px;
     }
@@ -326,9 +337,10 @@
 
     .left_vlabels{
         position: absolute;
-        height: 100%;
         right: 100%;
-        width:400px;
+        height: 300%;
+        top: -100%;
+        width: 300%;
         text-align: center;
         -webkit-transform: rotate(-90deg);
         transform: rotate(-90deg);
@@ -348,13 +360,15 @@
     /* Classes here are generated in templates from 'top' etc See labelicon classes below */
     .label_top {
         bottom: 100%;
-        width: 100%;
+        width: 300%;
+        left: -100%;
         text-align: center;
         margin-bottom: 3px;
     }
     .label_bottom {
         top: 100%;
-        width: 100%;
+        width: 300%;
+        left: -100%;
         text-align:center;
     }
     .label_left {

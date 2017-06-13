@@ -467,12 +467,13 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                    <h4 class="modal-title">Legend Formatting</h4>
+                    <h4 class="modal-title">Markdown Formatting</h4>
                 </div>
                 <div class="modal-body">
                     <p>
                         You can use "Markdown" syntax to add formatting to plain text. For example,
-                        **this text will be bold** and this *word* will be italic.
+                        **this text will be bold** and this *word* will be italic. NB: Links are not
+                        supported for panel labels.
                     </p>
 
                     <table class="table">
@@ -888,9 +889,12 @@
 
                     <hr />
 
-                    <h5>Add Labels</h5>
-                    <form class="new-label-form form-inline" role="form">
+                    <h5 style="float: left">Add Labels</h5>
 
+                    <button type="button" class="btn btn-link markdown-info"
+                        title="Use Markdown formatting. Click for more info..."></button>
+                    <div class="clearfix"></div>
+                    <form class="new-label-form form-inline" role="form">
                     </form>
 
                     <h5>Edit Labels</h5>
