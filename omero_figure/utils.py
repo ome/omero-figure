@@ -20,7 +20,7 @@ import json
 import os
 
 
-__version__ = "0.0.0"
+__version__ = "3.0.0"
 
 
 def read_file(fname, content_type=None):
@@ -36,9 +36,3 @@ def read_file(fname, content_type=None):
 def read_version(file_name):
     d = read_file(file_name, 'json')
     return d['version']
-
-
-def get_version():
-    global __version__
-    __version__ = read_version('package.json')
-    return __version__

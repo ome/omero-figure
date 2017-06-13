@@ -26,11 +26,11 @@ import setuptools.command.develop
 import setuptools.command.sdist
 from distutils.core import Command
 from setuptools import setup, find_packages
-from omero_figure.utils import get_version, read_file
+import omero_figure.utils as utils
 
-VERSION = get_version()
+VERSION = utils.__version__
 
-d = read_file('package.json', 'json')
+d = utils.read_file('package.json', 'json')
 DESCRIPTION = d['description']
 AUTHOR = d['author']
 LICENSE = d['license']
@@ -123,7 +123,7 @@ setup(name="omero-figure",
       packages=find_packages(exclude=['ez_setup']),
       version=VERSION,
       description=DESCRIPTION,
-      long_description=read_file('README.rst'),
+      long_description=utils.read_file('README.rst'),
       classifiers=[
           'Development Status :: 5 - Production/Stable',
           'Environment :: Web Environment',
