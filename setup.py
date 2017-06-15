@@ -30,11 +30,10 @@ import omero_figure.utils as utils
 
 VERSION = utils.__version__
 
-d = utils.read_file('package.json', 'json')
-DESCRIPTION = d['description']
-AUTHOR = d['author']
-LICENSE = d['license']
-HOMEPAGE = d['homepage']
+DESCRIPTION = "OMERO figure creation app"
+AUTHOR = "The Open Microscopy Team"
+LICENSE = "AGPL-3.0"
+HOMEPAGE = "https://github.com/ome/omero-figure"
 
 
 cmdclass = {}
