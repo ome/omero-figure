@@ -31,8 +31,3 @@ def read_file(fname, content_type=None):
         else:
             data = f.read()
     return data
-
-
-def read_version(file_name):
-    d = read_file(file_name, 'json')
-    return d['version']
