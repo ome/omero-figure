@@ -1,6 +1,6 @@
 
 Managed manually
------------------
+----------------
 
 Library: backbone.js
 Site http://backbonejs.org/
