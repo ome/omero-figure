@@ -6,7 +6,7 @@ Library: backbone.js
 Site http://backbonejs.org/
 License: MIT
 
-Library: backbone.localstorage
+Library: backbone-localstorage
 Site: https://github.com/jeromegn/Backbone.localStorage
 License: MIT
 
