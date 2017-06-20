@@ -55,8 +55,8 @@ Site: https://github.com/ome/shape-editor
 License: BSD
 
 Library: raphael
-Site:
-License:
+Site: https://github.com/fanstatic/js.raphael
+License: BSD
 
 Managed through grunt
 ---------------------
