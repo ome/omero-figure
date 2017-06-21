@@ -18,6 +18,10 @@ Requirements
 
 * OMERO 5.3.0 or newer.
 
+To able to export the figure with italic or bold label, it is necessary
+to use OMERO 5.3.2 or newer.
+
+
 Installing from PyPI
 ====================
 
