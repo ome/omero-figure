@@ -22,10 +22,6 @@ Library: json2js
 Site: http://www.JSON.org/json2.js
 License: Public Domain
 
-Library: jquery-ui
-Site: http://jqueryui.com/
-License: MIT and GNU GENERAL PUBLIC LICENSE Version 2
-
 Library: markdown-browser-0.6.0-beta1
 Site: https://github.com/evilstreak/markdown-js
 License: MIT
