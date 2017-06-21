@@ -58,6 +58,10 @@ Library: raphael
 Site: https://github.com/fanstatic/js.raphael
 License: BSD
 
+Library: underscore
+Site: https://github.com/jashkenas/underscore
+License: MIT
+
 Managed through grunt
 ---------------------
 
