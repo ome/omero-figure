@@ -6,10 +6,6 @@ Library: backbone.js
 Site http://backbonejs.org/
 License: MIT
 
-Library: backbone-localstorage
-Site: https://github.com/jeromegn/Backbone.localStorage
-License: MIT
-
 Library: backbone.mousetrap
 Site: https://github.com/elasticsales/backbone.mousetrap
 License: MIT
@@ -26,17 +22,9 @@ Library: json2js
 Site: http://www.JSON.org/json2.js
 License: Public Domain
 
-Library: jquery-1.7.2
-Site: https://jquery.com/
-License: MIT
-
 Library: jquery-ui
 Site: http://jqueryui.com/
 License: MIT and GNU GENERAL PUBLIC LICENSE Version 2
-
-Library: jsrender
-Site: http://www.jsviews.com/
-License: MIT
 
 Library: markdown-browser-0.6.0-beta1
 Site: https://github.com/evilstreak/markdown-js
