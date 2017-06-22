@@ -1,7 +1,7 @@
 3.1.0 (June 2017)
 -----------------
 
-- Add support for markdown in panel labels (PR #209)
+- Add support for italics and bold in panel labels using markdown syntax (PR #209)
 - Allow export of a figure as new OMERO Images (one per page) (PR #210)
 - Allow to change the background colour of the pages (PR #211)
 - Make the json file human readable (PR #212)
