@@ -1,62 +1,407 @@
 
-Licenses
-========
+Managed manually
+----------------
 
-Backbone.js
-===========
-http://backbonejs.org/
+Library: backbone.js
+Site http://backbonejs.org/
 License: MIT
 
-
-Underscore
-==========
-http://underscorejs.org/
+Library: backbone.mousetrap
+Site: https://github.com/elasticsales/backbone.mousetrap
 License: MIT
 
+Library: bootstrap3
+Site: http://getbootstrap.com/
+License: Apache Software License, Version 2
 
-Backbone.localStorage
-=====================
-https://github.com/jeromegn/Backbone.localStorage
-License: MIT
+Library: bootstrap-colorpicker
+Site: http://mjolnic.com/bootstrap-colorpicker/
+License: Apache Software License, Version 2
 
-
-Bootstrap
-=========
-http://getbootstrap.com/
-License: Apache
-
-
-json2js
-=======
-http://www.JSON.org/json2.js
+Library: json2js
+Site: http://www.JSON.org/json2.js
 License: Public Domain
 
-
-mousetrap.js
-============
-craig.is/killing/mice
-License: Apache (version 2.0)
-
-
-backbone.mousetrap
-==================
-https://github.com/elasticsales/backbone.mousetrap
+Library: markdown-browser-0.6.0-beta1
+Site: https://github.com/evilstreak/markdown-js
 License: MIT
 
+Library: mousetrap-1.5.3
+Site: craig.is/killing/mice
+License: Apache Software License, Version 2
 
-Bootstrap Colorpicker
-=====================
-http://mjolnic.com/bootstrap-colorpicker/
-License: Apache
+Library: mousetrap-1.5.3
+Site: craig.is/killing/mice
+License: Apache Software License, Version 2
 
+Library: shape-editor-3.0.0
+Site: https://github.com/ome/shape-editor
+License: BSD
 
-markdown-js
-===========
-https://github.com/evilstreak/markdown-js
+Library: raphael
+Site: https://github.com/fanstatic/js.raphael
+License: BSD
+
+Library: underscore
+Site: https://github.com/jashkenas/underscore
 License: MIT
 
+Managed through grunt
+---------------------
 
-markdown-mark
-=============
-https://github.com/dcurtis/markdown-mark
-License: Creative Commons CC0 Universal Public Domain Dedication
+├─ abbrev@1.1.0
+│  ├─ licenses: ISC
+│  ├─ repository: https://github.com/isaacs/abbrev-js
+├─ amdefine@1.0.1
+│  ├─ licenses: BSD-3-Clause OR MIT
+│  ├─ repository: https://github.com/jrburke/amdefine
+├─ ansi-regex@0.2.1
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/sindresorhus/ansi-regex
+├─ ansi-regex@2.1.1
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/chalk/ansi-regex
+├─ ansi-styles@1.0.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/sindresorhus/ansi-styles
+├─ ansi-styles@1.1.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/sindresorhus/ansi-styles
+├─ ansi-styles@2.2.1
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/chalk/ansi-styles
+├─ applause@1.1.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/outatime/applause
+├─ argparse@0.1.16
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/nodeca/argparse
+├─ argparse@1.0.9
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/nodeca/argparse
+├─ async@0.1.22
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/caolan/async
+├─ async@0.2.10
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/caolan/async
+├─ chalk@0.4.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/sindresorhus/chalk
+├─ chalk@0.5.1
+│  ├─ licenses: MIT
+│  └─ repository: https://github.com/sindresorhus/chalk
+├─ chalk@1.1.3
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/chalk/chalk
+├─ cli@0.6.6
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/chriso/cli
+├─ coffee-script@1.12.6
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/jashkenas/coffeescript
+├─ coffee-script@1.3.3
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/jashkenas/coffee-script
+├─ colors@0.6.2
+│  ├─ licenses: UNKNOWN
+│  ├─ repository: https://github.com/Marak/colors.js
+├─ concat-stream@1.6.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/maxogden/concat-stream
+├─ console-browserify@1.1.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/Raynos/console-browserify
+├─ core-util-is@1.0.2
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/isaacs/core-util-is
+├─ cson-parser@1.3.5
+│  ├─ licenses: BSD-3-Clause
+│  ├─ repository: https://github.com/groupon/cson-parser
+├─ date-now@0.1.4
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/Colingo/date-now
+├─ dateformat@1.0.2-1.2.3
+│  ├─ licenses: MIT*
+├─ debug@0.7.4
+│  ├─ licenses: MIT*
+│  ├─ repository: https://github.com/visionmedia/debug
+├─ deep-equal@0.0.0
+│  ├─ licenses: MIT*
+│  ├─ repository: https://github.com/substack/node-deep-equal
+├─ defined@0.0.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/substack/defined
+├─ dom-serializer@0.1.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/cheeriojs/dom-renderer
+├─ domelementtype@1.1.3
+│  ├─ licenses: BSD*
+│  ├─ repository: https://github.com/FB55/domelementtype
+├─ domelementtype@1.3.0
+│  ├─ licenses: BSD*
+│  ├─ repository: https://github.com/FB55/domelementtype
+├─ domhandler@2.3.0
+│  ├─ licenses: BSD*
+│  ├─ repository: https://github.com/fb55/DomHandler
+├─ domutils@1.5.1
+│  ├─ licenses: BSD*
+│  ├─ repository: https://github.com/FB55/domutils
+├─ entities@1.0.0
+│  ├─ licenses: BSD*
+│  ├─ repository: https://github.com/fb55/node-entities
+├─ entities@1.1.1
+│  ├─ licenses: BSD*
+│  ├─ repository: https://github.com/fb55/node-entities
+├─ escape-string-regexp@1.0.5
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/sindresorhus/escape-string-regexp
+├─ esprima@1.0.4
+│  ├─ licenses: BSD
+│  └─ repository: https://github.com/ariya/esprima
+├─ esprima@3.1.3
+│  ├─ licenses: BSD-2-Clause
+│  ├─ repository: https://github.com/jquery/esprima
+├─ eventemitter2@0.4.14
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/hij1nx/EventEmitter2
+├─ exit@0.1.2
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/cowboy/node-exit
+├─ faye-websocket@0.4.4
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/faye/faye-websocket-node
+├─ file-sync-cmp@0.1.1
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/mgeisler/file-sync-cmp
+├─ findup-sync@0.1.3
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/cowboy/node-findup-sync
+├─ gaze@0.5.2
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/shama/gaze
+├─ getobject@0.1.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/cowboy/node-getobject
+├─ glob@3.1.21
+│  ├─ licenses: BSD*
+│  ├─ repository: https://github.com/isaacs/node-glob
+├─ glob@3.2.11
+│  ├─ licenses: BSD*
+│  ├─ repository: https://github.com/isaacs/node-glob
+├─ globule@0.1.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/cowboy/node-globule
+├─ graceful-fs@1.2.3
+│  ├─ licenses: BSD*
+│  ├─ repository: https://github.com/isaacs/node-graceful-fs
+├─ grunt@0.4.5
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/gruntjs/grunt
+├─ grunt-contrib-concat@0.5.1
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/gruntjs/grunt-contrib-concat
+├─ grunt-contrib-copy@0.8.2
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/gruntjs/grunt-contrib-copy
+├─ grunt-contrib-jshint@0.10.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/gruntjs/grunt-contrib-jshint
+├─ grunt-contrib-jst@0.6.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/gruntjs/grunt-contrib-jst
+├─ grunt-contrib-watch@0.6.1
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/gruntjs/grunt-contrib-watch
+├─ grunt-legacy-log@0.1.3
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/gruntjs/grunt-legacy-log
+├─ grunt-legacy-log-utils@0.1.1
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/gruntjs/grunt-legacy-log-utils
+├─ grunt-legacy-util@0.2.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/gruntjs/grunt-legacy-util
+├─ grunt-lib-contrib@0.7.1
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/gruntjs/grunt-lib-contrib
+├─ grunt-replace@0.11.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/outatime/grunt-replace
+├─ gzip-size@0.1.1
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/sindresorhus/gzip-size
+├─ has-ansi@0.1.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/sindresorhus/has-ansi
+├─ has-ansi@2.0.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/sindresorhus/has-ansi
+├─ has-color@0.1.7
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/sindresorhus/has-color
+├─ hooker@0.2.3
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/cowboy/javascript-hooker
+├─ htmlparser2@3.8.3
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/fb55/htmlparser2
+├─ iconv-lite@0.2.11
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/ashtuchkin/iconv-lite
+├─ inherits@1.0.2
+│  ├─ licenses: ISC*
+│  ├─ repository: https://github.com/isaacs/inherits
+├─ inherits@2.0.3
+│  ├─ licenses: ISC
+│  ├─ repository: https://github.com/isaacs/inherits
+├─ isarray@0.0.1
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/juliangruber/isarray
+├─ isarray@1.0.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/juliangruber/isarray
+├─ js-yaml@2.0.5
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/nodeca/js-yaml
+├─ js-yaml@3.8.4
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/nodeca/js-yaml
+├─ jshint@2.5.11
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/jshint/jshint
+├─ jsonify@0.0.0
+│  ├─ licenses: UNKNOWN
+│  ├─ repository: https://github.com/substack/jsonify
+├─ lodash@0.9.2
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/lodash/lodash
+├─ lodash@1.0.2
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/lodash/lodash
+├─ lodash@2.4.2
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/lodash/lodash
+├─ lodash@3.10.1
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/lodash/lodash
+├─ lru-cache@2.7.3
+│  ├─ licenses: ISC
+│  ├─ repository: https://github.com/isaacs/node-lru-cache
+├─ maxmin@0.1.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/sindresorhus/maxmin
+├─ minimatch@0.2.14
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/isaacs/minimatch
+├─ minimatch@0.3.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/isaacs/minimatch
+├─ minimatch@1.0.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/isaacs/minimatch
+├─ nopt@1.0.10
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/isaacs/nopt
+├─ nopt@2.0.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/isaacs/nopt
+├─ noptify@0.0.3
+│  ├─ licenses: UNKNOWN
+│  ├─ repository: https://github.com/mklabs/noptify
+├─ pretty-bytes@0.1.2
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/sindresorhus/pretty-bytes
+├─ process-nextick-args@1.0.7
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/calvinmetcalf/process-nextick-args
+├─ qs@0.5.6
+│  ├─ licenses: MIT*
+│  ├─ repository: https://github.com/visionmedia/node-querystring
+├─ readable-stream@1.1.14
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/isaacs/readable-stream
+├─ readable-stream@2.3.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/nodejs/readable-stream
+├─ rimraf@2.2.8
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/isaacs/rimraf
+├─ safe-buffer@5.0.1
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/feross/safe-buffer
+├─ safe-buffer@5.1.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/feross/safe-buffer
+├─ shelljs@0.3.0
+│  ├─ licenses: BSD*
+│  ├─ repository: https://github.com/arturadib/shelljs
+├─ sigmund@1.0.1
+│  ├─ licenses: ISC
+│  ├─ repository: https://github.com/isaacs/sigmund
+├─ source-map@0.3.0
+│  ├─ licenses: BSD
+│  ├─ repository: https://github.com/mozilla/source-map
+├─ sprintf-js@1.0.3
+│  ├─ licenses: BSD-3-Clause
+│  ├─ repository: https://github.com/alexei/sprintf.js
+├─ string_decoder@0.10.31
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/rvagg/string_decoder
+├─ string_decoder@1.0.2
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/rvagg/string_decoder
+├─ strip-ansi@0.1.1
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/sindresorhus/strip-ansi
+├─ strip-ansi@0.3.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/sindresorhus/strip-ansi
+├─ strip-ansi@3.0.1
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/chalk/strip-ansi
+├─ strip-json-comments@1.0.4
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/sindresorhus/strip-json-comments
+├─ strip-path@0.1.1
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/sindresorhus/strip-path
+├─ supports-color@0.2.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/sindresorhus/supports-color
+├─ supports-color@2.0.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/chalk/supports-color
+├─ tape@0.2.2
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/substack/tape
+├─ tiny-lr-fork@0.0.5
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/mklabs/tiny-lr
+├─ typedarray@0.0.6
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/substack/typedarray
+├─ underscore@1.6.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/jashkenas/underscore
+├─ underscore@1.7.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/jashkenas/underscore
+├─ underscore.string@2.2.1
+│  ├─ licenses: MIT
+│  └─ repository: https://github.com/epeli/underscore.string
+├─ underscore.string@2.3.3
+│  ├─ licenses: MIT
+│  └─ repository: https://github.com/epeli/underscore.string
+├─ underscore.string@2.4.0
+│  ├─ licenses: MIT
+│  └─ repository: https://github.com/epeli/underscore.string
+├─ util-deprecate@1.0.2
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/TooTallNate/util-deprecate
+├─ which@1.0.9
+│  ├─ licenses: ISC
+│  ├─ repository: https://github.com/isaacs/node-which
+└─ zlib-browserify@0.0.3
+   ├─ licenses: MIT
+   ├─ repository: https://github.com/brianloveswords/zlib-browserify
