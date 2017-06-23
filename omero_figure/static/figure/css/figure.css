@@ -351,10 +351,10 @@
         width:100%;
     }
 
-    .glyphicon-ok {
+    .previewIdChange .glyphicon-ok {
         color: #0f0;
     }
-    .glyphicon-flag {
+    .previewIdChange .glyphicon-flag {
         color: #f00;
     }
     /* Classes here are generated in templates from 'top' etc See labelicon classes below */
@@ -524,6 +524,7 @@
         height: 150px;
         margin-left: 15px;
         margin-top: 35px;
+        background: #666;
     }
     .show-rotation {
         padding: 5px 2px;
@@ -549,10 +550,11 @@
         position: relative;
     }
     .ch_slider {
-        height: 11px !important;
-        width: 225px !important;
-        top: -6px;
-        left: 50px;
+        height: 12px !important;
+        width: 170px !important;
+        top: -2px;
+        left: 104px;
+        position: absolute !important;
     }
     .ch_start, .ch_end {
         position: absolute;
@@ -563,7 +565,9 @@
         top: 0px;
     }
     .ch_start input, .ch_end input {
-        width: 40px;
+        width: 45px;
+        height: 33px;
+        text-align: center;
     }
     /* Hide spinner added to 'number' inputs */
     input[type='number'] {
@@ -575,14 +579,12 @@
         margin: 0;
     }
     .ch_start {
-        left: 4px;
+        left: 54px;
         text-align: right;
         width: 30px;
     }
     .ch_end {
-        right: 12px;
-        text-align: left;
-        width: 30px;
+        right: 0;
     }
     .ui-slider-disabled a {
         display: none;
@@ -733,6 +735,11 @@
         border: solid 1px #bbb;
     }
 
+    /* remove border from above */
+    .colorpicker .reverseIntensity span {
+        border-width: 0;
+    }
+
     .lutOption {
         text-align: left;
     }
@@ -742,10 +749,17 @@
         display: inline-block;
     }
 
-    .lutBg, .ch_slider .ui-slider-range {
+    .ch_slider .ui-slider-range {
+        background-image: url('../images/gradient.png');
+        background-size: 100% 50px;
+        background-position: 0 0;
+        background-repeat: no-repeat;
+    }
+
+    .lutBg, .ch_slider .lutBg {
         /* NB: when updating png, consider using different name to avoid cache */
         background-image: url('../images/luts_10.png');   /* each lut is 10px high */
-        background-size: 100% 1850px;  /* height is stretched 5x (50px per LUT) */
+        background-size: 100% 1950px;  /* height is stretched 5x (50px per LUT) */
         background-repeat: no-repeat;
     }
 
