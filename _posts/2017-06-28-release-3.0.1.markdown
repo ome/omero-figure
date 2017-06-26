@@ -1,0 +1,25 @@
+---
+layout: post
+title:  "Release: 3.0.1"
+date:   2017-06-26
+---
+
+We are pleased to announce the release of OMERO.figure 3.0.1.
+
+**NB:**  If upgrading from before 3.0.0, please read the release notes for 3.0.0 about
+switching to installation via PyPI.
+
+New features in OMERO.figure 3.0.1:
+
+ - Support for italics and bold in panel labels using markdown syntax ([PR #209](https://github.com/ome/omero-figure/pull/209)).
+ - Export of figures as new OMERO Images (each figure page creates a new OMERO Image) ([PR #210](https://github.com/ome/omero-figure/pull/210)).
+ - Set the background colour of figure pages ([PR #211](https://github.com/ome/omero-figure/pull/211)).
+ - Support for Reverse (Inverted) Intensity ([PR #219](https://github.com/ome/omero-figure/pull/219)).
+ - Allow scripting of various changes to the figure from the browser devtools console. See ([PR #216](https://github.com/ome/omero-figure/pull/216)) for examples.
+ - Format the json in saved files to be more human readable ([PR #212](https://github.com/ome/omero-figure/pull/212)).
+
+Bug fixes and cleanup include:
+
+ - Fix slider range issue when min pixel intensity is greater than 9999 ([PR #213](https://github.com/ome/omero-figure/pull/213)).
+ - Remove unused dependencies ([PR #223](https://github.com/ome/omero-figure/pull/223)).
+
