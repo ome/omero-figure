@@ -31,7 +31,7 @@ Install the app using `pip <https://pip.pypa.io/en/stable/>`_:
 
 ::
 
-    $ pip install omero-figure
+    $ pip install -U omero-figure
 
 Add figure custom app to your installed web apps:
 
