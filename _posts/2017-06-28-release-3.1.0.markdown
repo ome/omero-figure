@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Release: 3.1.0"
-date:   2017-06-26
+date:   2017-06-28
 ---
 
 We are pleased to announce the release of OMERO.figure 3.1.0.
