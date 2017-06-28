@@ -34,6 +34,10 @@ from cStringIO import StringIO
 
 from omeroweb.webclient.decorators import login_required
 
+# TODO: move this elsewhere if we're not using it as a script any more?
+from omero_figure.scripts.omero.figure_scripts.Figure_To_Pdf import FigureExport, TiffExport
+
+from . import settings
 from . import utils
 
 try:
@@ -350,21 +354,18 @@ def make_web_figure(request, conn=None, **kwargs):
     Script will show up in the 'Activities' for users to monitor and
     download result etc.
     """
-    if not request.method == 'POST':
-        return HttpResponse("Need to use POST")
+    # if not request.method == 'POST':
+    #     return HttpResponse("Need to use POST")
 
-    script_service = conn.getScriptService()
-    sid = script_service.getScriptID(SCRIPT_PATH)
-
-    figure_json = request.POST.get('figureJSON')
+    figure_json = str(request.POST.get('figureJSON').encode('utf8'))
     # export options e.g. "PDF", "PDF_IMAGES"
     export_option = request.POST.get('exportOption')
     webclient_uri = request.build_absolute_uri(reverse('webindex'))
 
     input_map = {
-        'Figure_JSON': wrap(figure_json.encode('utf8')),
-        'Export_Option': wrap(str(export_option)),
-        'Webclient_URI': wrap(webclient_uri)}
+        'Figure_JSON': figure_json,
+        'Export_Option': export_option,
+        'Webclient_URI': webclient_uri}
 
     # If the figure has been saved, construct URL to it.
     figure_dict = json.loads(figure_json)
@@ -372,12 +373,35 @@ def make_web_figure(request, conn=None, **kwargs):
         try:
             figure_url = reverse('load_figure', args=[figure_dict['fileId']])
             figure_url = request.build_absolute_uri(figure_url)
-            input_map['Figure_URI'] = wrap(figure_url)
+            input_map['Figure_URI'] = figure_url
         except:
             pass
 
-    rsp = run_script(request, conn, sid, input_map, scriptName='Figure.pdf')
-    return HttpResponse(json.dumps(rsp), content_type='json')
+    from io import BytesIO
+    from reportlab.pdfgen import canvas
+
+    # response = HttpResponse(content_type='application/pdf')
+    # response['Content-Disposition'] = 'attachment; filename="somefilename.pdf"'
+
+    buffer = BytesIO()
+
+    if export_option == "PDF":
+        fig_export = FigureExport(conn, input_map, file_object=buffer)
+        content_type='application/pdf'
+    elif export_option == "TIFF":
+        fig_export = TiffExport(conn, input_map, file_object=buffer)
+        content_type='application/tiff'
+
+    file_ann = fig_export.build_figure()
+    filename = fig_export.get_figure_file_name()
+
+    response = HttpResponse(content_type=content_type)
+    response['Content-Disposition'] = 'attachment; filename="%s"' % filename
+
+    file_data = buffer.getvalue()
+    buffer.close()
+    response.write(file_data)
+    return response
 
 
 @login_required()

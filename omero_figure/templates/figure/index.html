@@ -52,6 +52,8 @@
         ROIS_JSON_URL = WEBGATEWAYINDEX + "get_rois_json/",
         USER_FULL_NAME = "{{ userFullName }}";
 
+    var CSRF_TOKEN = "{% csrf_token %}";
+
     $(document).ready(function() {
 
         // keep-alive ping every minute, so that OMERO session doesn't die
@@ -733,7 +735,7 @@
                             {% if scriptMissing %}disabled="disabled"{% endif %}
                             data-export-option="PDF"
                             type="button" class="btn btn-success btn-sm export_pdf">
-                            Export PDF
+                            Download PDF
                         </button>
                         <button type="button" class="btn btn-success btn-sm dropdown-toggle" title="Export Options"
                             data-toggle="dropdown">

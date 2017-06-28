@@ -54,6 +54,7 @@ try:
     from reportlab.pdfgen import canvas
     from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
     from reportlab.lib.units import inch
+    from reportlab.lib.utils import ImageReader
     from reportlab.platypus import Paragraph
     from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT
     reportlab_installed = True
@@ -542,18 +543,20 @@ class FigureExport(object):
     Super class for exporting various figures, such as PDF or TIFF etc.
     """
 
-    def __init__(self, conn, script_params, export_images=False):
+    def __init__(self, conn, script_params, export_images=False, file_object=None):
 
         self.conn = conn
         self.script_params = script_params
         self.export_images = export_images
+        self.file_object = file_object
 
         self.ns = "omero.web.figure.pdf"
         self.mimetype = "application/pdf"
 
         figure_json_string = script_params['Figure_JSON']
         # Since unicode can't be wrapped by rstring
-        figure_json_string = figure_json_string.decode('utf8')
+        # figure_json_string = figure_json_string.decode('utf8')
+        # figure_json_string = str(figure_json_string)
         self.figure_json = json.loads(figure_json_string)
 
         n = datetime.now()
@@ -700,6 +703,10 @@ class FigureExport(object):
 
         # Saves the completed figure file
         self.save_figure()
+
+        # Don't need to create File Annotation if we've written to file
+        if self.file_object is not None:
+            return
 
         # PDF will get created in this group
         if group_id is None:
@@ -1343,7 +1350,11 @@ class FigureExport(object):
         if not reportlab_installed:
             raise ImportError(
                 "Need to install https://bitbucket.org/rptlab/reportlab")
-        name = self.get_figure_file_name()
+        if self.file_object is not None:
+            name = self.file_object
+        else:
+            name = self.get_figure_file_name()
+        print "create_figure PDF", name
         self.figure_canvas = canvas.Canvas(
             name, pagesize=(self.page_width, self.page_height))
 
@@ -1464,12 +1475,14 @@ class FigureExport(object):
         # in the folder to zip
         if self.zip_folder_name is not None:
             img_name = os.path.join(self.zip_folder_name, FINAL_DIR, img_name)
+            pil_img.save(img_name)
 
-        # Save Image to file, then bring into PDF
-        pil_img.save(img_name)
+        buffer = StringIO()
+        pil_img.save(buffer, 'TIFF')
+        buffer.seek(0)
         # Since coordinate system is 'bottom-up', convert from 'top-down'
         y = self.page_height - height - y
-        self.figure_canvas.drawImage(img_name, x, y, width, height)
+        self.figure_canvas.drawImage(ImageReader(buffer), x, y, width, height)
 
 
 class TiffExport(FigureExport):
@@ -1479,9 +1492,9 @@ class TiffExport(FigureExport):
     the TIFF instead of PDF.
     """
 
-    def __init__(self, conn, script_params, export_images=None):
+    def __init__(self, conn, script_params, export_images=None, file_object=None):
 
-        super(TiffExport, self).__init__(conn, script_params, export_images)
+        super(TiffExport, self).__init__(conn, script_params, export_images, file_object)
 
         from omero.gateway import THISPATH
         self.GATEWAYPATH = THISPATH
@@ -1695,9 +1708,11 @@ class TiffExport(FigureExport):
         Save the current PIL image page as a TIFF and start a new
         PIL image for the next page
         """
-        self.figure_file_name = self.get_figure_file_name()
-
-        self.tiff_figure.save(self.figure_file_name)
+        if self.file_object is not None:
+            self.tiff_figure.save(self.file_object, 'tiff')
+        else:
+            self.figure_file_name = self.get_figure_file_name()
+            self.tiff_figure.save(self.figure_file_name)
 
         # Create a new blank tiffFigure for subsequent pages
         self.create_figure()
@@ -1724,8 +1739,8 @@ class TiffExport(FigureExport):
     def save_figure(self):
         """ Completes PDF figure (or info-page PDF for TIFF export) """
         # We allow TIFF figure export without reportlab (no Info page)
-        if not reportlab_installed:
-            return
+        # if not reportlab_installed:
+        return
         self.figure_canvas.save()
 
 
