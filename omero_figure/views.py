@@ -381,8 +381,8 @@ def make_web_figure(request, conn=None, **kwargs):
     from io import BytesIO
     from reportlab.pdfgen import canvas
 
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = 'attachment; filename="somefilename.pdf"'
+    # response = HttpResponse(content_type='application/pdf')
+    # response['Content-Disposition'] = 'attachment; filename="somefilename.pdf"'
 
     buffer = BytesIO()
 
