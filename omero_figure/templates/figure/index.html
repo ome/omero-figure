@@ -30,7 +30,7 @@
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width">
 
-    <link rel="stylesheet" href="{% static 'figure/3rdparty/bootstrap3/css/bootstrap.css' %}">
+    <link rel="stylesheet" href="{% static 'figure/3rdparty/bootstrap-3.0.0/css/bootstrap.css' %}">
     <link rel="stylesheet" href="{% static 'figure/3rdparty/bootstrap-colorpicker/css/bootstrap-colorpicker.min.css' %}">
     <link rel="stylesheet" href="{% static 'figure/css/figure.css' %}?version={{ version }}">
 
@@ -469,12 +469,13 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                    <h4 class="modal-title">Legend Formatting</h4>
+                    <h4 class="modal-title">Markdown Formatting</h4>
                 </div>
                 <div class="modal-body">
                     <p>
                         You can use "Markdown" syntax to add formatting to plain text. For example,
-                        **this text will be bold** and this *word* will be italic.
+                        **this text will be bold** and this *word* will be italic. NB: Links are not
+                        supported for panel labels.
                     </p>
 
                     <table class="table">
@@ -712,12 +713,14 @@
 
                     <button id="pdf_inprogress" style="display:none" class="btn btn-primary btn-sm"
                             title="Figure generation in progress..." onClick="return false;">
-                        Exporting Figure...
+                        Exporting Figure
+                        <span class="glyphicon glyphicon-refresh"></span>
                     </button>
 
-                    <a id="pdf_download" href="#" target="download_pdf"
+                    <a id="pdf_download" href="#" target="_blank"
                             style="padding: 4px 10px; display: none;"
                             class="btn btn-primary btn-sm script-result" title="Download Figure">
+                        <!-- Tooltip and glyphicon also set on script completion in figure_view.js -->
                         <span class="glyphicon glyphicon-download-alt" style="font-size: 14px"></span>
                     </a>
 
@@ -742,23 +745,28 @@
                             <!-- NB: data-export-option attr used to label export button & handled by js on click -->
                             <li><a href="#" data-export-option="PDF"
                                     title="Export figure as PDF">
-                                <span class="glyphicon glyphicon-ok" style="color:#333"></span>
+                                <span class="glyphicon glyphicon-ok"></span>
                                 PDF</a>
                             </li>
                             <li><a href="#" data-export-option="PDF & images"
                                     title="Export as PDF, in zip with panel images">
-                                <span class="glyphicon glyphicon-ok" style="color:#333; visibility:hidden"></span>
+                                <span class="glyphicon glyphicon-ok" style="visibility:hidden"></span>
                                 PDF with images</a>
                             </li>
                             <li><a href="#" data-export-option="TIFF"
                                     title="Export figure as a TIFF image per page">
-                                <span class="glyphicon glyphicon-ok" style="color:#333; visibility:hidden"></span>
+                                <span class="glyphicon glyphicon-ok" style="visibility:hidden"></span>
                                 TIFF (300 dpi)</a>
                             </li>
                             <li><a href="#" data-export-option="TIFF & images"
                                     title="Export as TIFF, in zip with panel images">
-                                <span class="glyphicon glyphicon-ok" style="color:#333; visibility:hidden"></span>
+                                <span class="glyphicon glyphicon-ok" style="visibility:hidden"></span>
                                 TIFF with images</a>
+                            </li>
+                            <li><a href="#" data-export-option="to OMERO"
+                                    title="Export each page as an Image in OMERO">
+                                <span class="glyphicon glyphicon-ok" style="color:#333; visibility:hidden"></span>
+                                New OMERO Image</a>
                             </li>
                         </ul>
                     </div>
@@ -890,9 +898,12 @@
 
                     <hr />
 
-                    <h5>Add Labels</h5>
-                    <form class="new-label-form form-inline" role="form">
+                    <h5 style="float: left">Add Labels</h5>
 
+                    <button type="button" class="btn btn-link markdown-info"
+                        title="Use Markdown formatting. Click for more info..."></button>
+                    <div class="clearfix"></div>
+                    <form class="new-label-form form-inline" role="form">
                     </form>
 
                     <h5>Edit Labels</h5>
@@ -905,16 +916,15 @@
 
 
     <script src="{% static 'figure/3rdparty/json2.js' %}"></script>
-    <script src="{% static 'figure/3rdparty/underscore.js' %}"></script>
-    <script src="{% static 'figure/3rdparty/backbone.js' %}"></script>
-    <!-- <script src="{% static 'figure/3rdparty/backbone-localstorage.js' %}"></script> -->
-    <script src="{% static 'figure/3rdparty/raphael/raphael-min.js' %}"></script>
+    <script src="{% static 'figure/3rdparty/underscore-1.3.3.js' %}"></script>
+    <script src="{% static 'figure/3rdparty/backbone-1.0.0.js' %}"></script>
+    <script src="{% static 'figure/3rdparty/raphael-2.1.2/raphael-min.js' %}"></script>
     <script src="{% static 'figure/3rdparty/mousetrap-1.5.3/mousetrap.min.js' %}"></script>
     <script src="{% static 'figure/3rdparty/backbone.mousetrap/backbone.mousetrap.js' %}"></script>
-    <script src="{% static 'figure/3rdparty/bootstrap3/js/bootstrap.js' %}"></script>
+    <script src="{% static 'figure/3rdparty/bootstrap-3.0.0/js/bootstrap.js' %}"></script>
     <script src="{% static 'figure/3rdparty/bootstrap-colorpicker/js/bootstrap-colorpicker.min.js' %}"></script>
     <script src="{% static 'figure/3rdparty/markdown-browser-0.6.0-beta1/markdown.min.js' %}"></script>
-    <script src="{% static 'figure/3rdparty/shape-editor-2.0.0/shape-editor.js' %}"></script>
+    <script src="{% static 'figure/3rdparty/shape-editor-3.0.0/shape-editor.js' %}"></script>
 
     <!-- underscore templates at static/figure/templates are compiled with '$ grunt jst' -->
     <script src="{% static 'figure/templates.js' %}?version={{ version }}"></script>

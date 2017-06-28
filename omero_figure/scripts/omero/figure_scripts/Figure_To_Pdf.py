@@ -19,6 +19,7 @@
 import logging
 import json
 import unicodedata
+import numpy
 
 from datetime import datetime
 import os
@@ -51,15 +52,15 @@ except ImportError:
 
 try:
     from reportlab.pdfgen import canvas
-    from reportlab.lib.styles import getSampleStyleSheet
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
     from reportlab.lib.units import inch
     from reportlab.lib.utils import ImageReader
     from reportlab.platypus import Paragraph
+    from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT
     reportlab_installed = True
 except ImportError:
     reportlab_installed = False
-    logger.error("Reportlab not installed. See"
-                 " https://pypi.python.org/pypi/reportlab/")
+    logger.error("Reportlab not installed.")
 
 
 ORIGINAL_DIR = "1_originals"
@@ -130,7 +131,8 @@ class ShapeToPdfExport(object):
                 elif shape['type'] == "Ellipse":
                     self.draw_ellipse(shape)
 
-    def get_rgb(self, color):
+    @staticmethod
+    def get_rgb(color):
         # Convert from E.g. '#ff0000' to (255, 0, 0)
         red = int(color[1:3], 16)
         green = int(color[3:5], 16)
@@ -214,7 +216,8 @@ class ShapeToPdfExport(object):
         g = float(rgb[1])/255
         b = float(rgb[2])/255
         self.canvas.setStrokeColorRGB(r, g, b)
-        stroke_width = shape['strokeWidth'] * self.scale
+        stroke_width = shape['strokeWidth'] if 'strokeWidth' in shape else 2
+        stroke_width = stroke_width * self.scale
         self.canvas.setLineWidth(stroke_width)
 
         rotation = self.panel['rotation'] * -1
@@ -419,13 +422,6 @@ class ShapeToPilExport(object):
 
         return {'x': shape_x, 'y': shape_y}
 
-    def get_rgb(self, color):
-        # Convert from E.g. '#ff0000' to (255, 0, 0)
-        red = int(color[1:3], 16)
-        green = int(color[3:5], 16)
-        blue = int(color[5:7], 16)
-        return (red, green, blue)
-
     def draw_arrow(self, shape):
 
         start = self.get_panel_coords(shape['x1'], shape['y1'])
@@ -436,7 +432,7 @@ class ShapeToPilExport(object):
         y2 = end['y']
         head_size = ((shape['strokeWidth'] * 5) + 9) * self.scale
         stroke_width = shape['strokeWidth'] * self.scale
-        rgb = self.get_rgb(shape['strokeColor'])
+        rgb = ShapeToPdfExport.get_rgb(shape['strokeColor'])
 
         # Do some trigonometry to get the line angle can calculate arrow points
         dx = x2 - x1
@@ -476,13 +472,13 @@ class ShapeToPilExport(object):
         x2 = end['x']
         y2 = end['y']
         stroke_width = shape['strokeWidth'] * self.scale
-        rgb = self.get_rgb(shape['strokeColor'])
+        rgb = ShapeToPdfExport.get_rgb(shape['strokeColor'])
 
         self.draw.line([(x1, y1), (x2, y2)], fill=rgb, width=int(stroke_width))
 
     def draw_rectangle(self, shape):
         # clockwise list of corner points on the OUTSIDE of thick line
-        w = shape['strokeWidth']
+        w = shape['strokeWidth'] if 'strokeWidth' in shape else 2
         cx = shape['x'] + (shape['width']/2)
         cy = shape['y'] + (shape['height']/2)
         rotation = self.panel['rotation'] * -1
@@ -492,7 +488,7 @@ class ShapeToPilExport(object):
         cx = centre['x']
         cy = centre['y']
         scale_w = w * self.scale
-        rgb = self.get_rgb(shape['strokeColor'])
+        rgb = ShapeToPdfExport.get_rgb(shape['strokeColor'])
 
         # To support rotation, draw rect on temp canvas, rotate and paste
         width = int((shape['width'] + w) * self.scale)
@@ -522,7 +518,7 @@ class ShapeToPilExport(object):
         rx = self.scale * shape['radiusX']
         ry = self.scale * shape['radiusY']
         rotation = (shape['rotation'] + self.panel['rotation']) * -1
-        rgb = self.get_rgb(shape['strokeColor'])
+        rgb = ShapeToPdfExport.get_rgb(shape['strokeColor'])
 
         width = int((rx * 2) + w)
         height = int((ry * 2) + w)
@@ -585,13 +581,15 @@ class FigureExport(object):
         name = name.replace(",", ".")
         return "%s.zip" % name
 
-    def get_figure_file_name(self):
+    def get_figure_file_name(self, page=None):
         """
         For PDF export we will only create a single figure file, but
         for TIFF export we may have several pages, so we need unique names
         for each to avoid overwriting.
         This method supports both, simply using different extension
         (pdf/tiff) for each.
+
+        @param page:        If we know a page number we want to use.
         """
 
         # Extension is pdf or tiff
@@ -612,7 +610,7 @@ class FigureExport(object):
         # Remove commas: causes problems 'duplicate headers' in file download
         full_name = full_name.replace(",", ".")
 
-        index = 1
+        index = page if page is not None else 1
         if fext == "tiff" and self.page_count > 1:
             full_name = "%s_page_%02d.%s" % (name, index, fext)
         if self.zip_folder_name is not None:
@@ -693,7 +691,7 @@ class FigureExport(object):
             self.add_panels_to_page(panels_json, image_ids, page)
 
             # complete page and save
-            self.save_page()
+            self.save_page(p)
 
             col = col + 1
             if col >= page_col_count:
@@ -703,7 +701,7 @@ class FigureExport(object):
         # Add thumbnails and links page
         self.add_info_page(panels_json)
 
-        # Saves the completed  figure file
+        # Saves the completed figure file
         self.save_figure()
 
         # Don't need to create File Annotation if we've written to file
@@ -715,6 +713,9 @@ class FigureExport(object):
             group_id = self.conn.getEventContext().groupId
         self.conn.SERVICE_OPTS.setOmeroGroup(group_id)
 
+        return self.create_file_annotation(image_ids)
+
+    def create_file_annotation(self, image_ids):
         output_file = self.figure_file_name
         ns = self.ns
         mimetype = self.mimetype
@@ -755,6 +756,7 @@ class FigureExport(object):
         c_idxs = []
         windows = []
         colors = []
+        reverses = []
 
         # OMERO.figure doesn't support greyscale rendering
         image.setColorRenderingModel()
@@ -764,8 +766,9 @@ class FigureExport(object):
                 c_idxs.append(i+1)
                 windows.append([c['window']['start'], c['window']['end']])
                 colors.append(c['color'])
+                reverses.append(c['reverseIntensity'])
 
-        image.setActiveChannels(c_idxs, windows, colors)
+        image.setActiveChannels(c_idxs, windows, colors, reverses)
 
     def get_crop_region(self, panel):
         """
@@ -865,6 +868,16 @@ class FigureExport(object):
 
             pos = l['position']
             l['size'] = int(l['size'])   # make sure 'size' is number
+            # If page is black and label is black, make label white
+            page_color = self.figure_json.get('page_color', 'ffffff').lower()
+            label_color = l['color'].lower()
+            label_on_page = pos in ('left', 'right', 'top',
+                                    'bottom', 'leftvert')
+            if label_on_page:
+                if label_color == '000000' and page_color == '000000':
+                    l['color'] = 'ffffff'
+                if label_color == 'ffffff' and page_color == 'ffffff':
+                    l['color'] = '000000'
             if pos in positions:
                 positions[pos].append(l)
 
@@ -1126,6 +1139,8 @@ class FigureExport(object):
         y = y - page['y']
 
         image = self.conn.getObject("Image", image_id)
+        if image is None:
+            return None, None
         self.apply_rdefs(image, channels)
 
         # create name to save image
@@ -1153,6 +1168,8 @@ class FigureExport(object):
 
         conn = self.conn
         image = conn.getObject("Image", image_id)
+        if image is None:
+            return
         thumb_data = image.getThumbnail(size=(96, 96))
         i = StringIO(thumb_data)
         pil_img = Image.open(i)
@@ -1312,6 +1329,8 @@ class FigureExport(object):
             # For TIFF export, draw_panel() also adds shapes to the
             # PIL image before pasting onto the page...
             image, pil_img = self.draw_panel(panel, page, i)
+            if image is None:
+                continue
             if image.canAnnotate():
                 image_ids.add(image_id)
             # ... but for PDF we have to add shapes to the whole PDF page
@@ -1339,7 +1358,20 @@ class FigureExport(object):
         self.figure_canvas = canvas.Canvas(
             name, pagesize=(self.page_width, self.page_height))
 
-    def save_page(self):
+        # Page color - simply draw colored rectangle over whole page
+        page_color = self.figure_json.get('page_color')
+        if page_color and page_color.lower() != 'ffffff':
+            rgb = ShapeToPdfExport.get_rgb('#' + page_color)
+            r = float(rgb[0])/255
+            g = float(rgb[1])/255
+            b = float(rgb[2])/255
+            self.figure_canvas.setStrokeColorRGB(r, g, b)
+            self.figure_canvas.setFillColorRGB(r, g, b)
+            self.figure_canvas.setLineWidth(4)
+            self.figure_canvas.rect(0, 0, self.page_width,
+                                    self.page_height, fill=1)
+
+    def save_page(self, page=None):
         """ Called on completion of each page. Saves page of PDF """
         self.figure_canvas.showPage()
 
@@ -1349,25 +1381,53 @@ class FigureExport(object):
 
     def draw_text(self, text, x, y, fontsize, rgb, align="center"):
         """ Adds text to PDF. Overwritten for TIFF below """
-        ly = y + fontsize
-        ly = self.page_height - ly + 5
+        if markdown_imported:
+            # convert markdown to html
+            text = markdown.markdown(text)
+
+        y = self.page_height - y
         c = self.figure_canvas
+        # Needs to be wide enough to avoid wrapping
+        para_width = self.page_width
 
         red, green, blue = rgb
         red = float(red)/255
         green = float(green)/255
         blue = float(blue)/255
-        c.setFont("Helvetica", fontsize)
-        c.setFillColorRGB(red, green, blue)
+
+        alignment = TA_LEFT
         if (align == "center"):
-            c.drawCentredString(x, ly, text)
+            alignment = TA_CENTER
+            x = x - (para_width/2)
         elif (align == "right"):
-            c.drawRightString(x, ly, text)
+            alignment = TA_RIGHT
+            x = x - para_width
         elif (align == "left"):
-            c.drawString(x, ly, text)
+            pass
         elif align == 'vertical':
+            # Switch axes
             c.rotate(90)
-            c.drawCentredString(self.page_height - y, -(x + fontsize), text)
+            px = x
+            x = y
+            y = -px
+            # Align center
+            alignment = TA_CENTER
+            x = x - (para_width/2)
+
+        style_n = getSampleStyleSheet()['Normal']
+        style = ParagraphStyle(
+            'label',
+            parent=style_n,
+            alignment=alignment,
+            textColor=(red, green, blue),
+            fontSize=fontsize)
+
+        para = Paragraph(text, style)
+        w, h = para.wrap(para_width, y)   # find required space
+        para.drawOn(c, x, y - h + int(fontsize * 0.25))
+
+        # Rotate back again
+        if align == 'vertical':
             c.rotate(-90)
 
     def draw_line(self, x, y, x2, y2, width, rgb):
@@ -1438,7 +1498,6 @@ class TiffExport(FigureExport):
 
         from omero.gateway import THISPATH
         self.GATEWAYPATH = THISPATH
-        self.font_path = os.path.join(THISPATH, "pilfonts", "FreeSans.ttf")
 
         self.ns = "omero.web.figure.tiff"
         self.mimetype = "image/tiff"
@@ -1447,10 +1506,18 @@ class TiffExport(FigureExport):
         """ TIFF export doesn't add ROIs to page (does it to panel)"""
         pass
 
-    def get_font(self, fontsize):
+    def get_font(self, fontsize, bold=False, italics=False):
         """ Try to load font from known location in OMERO """
+        font_name = "FreeSans.ttf"
+        if bold and italics:
+            font_name = "FreeSansBoldOblique.ttf"
+        elif bold:
+            font_name = "FreeSansBold.ttf"
+        elif italics:
+            font_name = "FreeSansOblique.ttf"
+        path_to_font = os.path.join(self.GATEWAYPATH, "pilfonts", font_name)
         try:
-            font = ImageFont.truetype(self.font_path, fontsize)
+            font = ImageFont.truetype(path_to_font, fontsize)
         except:
             font = ImageFont.load(
                 '%s/pilfonts/B%0.2d.pil' % (self.GATEWAYPATH, 24))
@@ -1473,8 +1540,11 @@ class TiffExport(FigureExport):
         """
         tiff_width = self.scale_coords(self.page_width)
         tiff_height = self.scale_coords(self.page_height)
-        self.tiff_figure = Image.new(
-            "RGBA", (tiff_width, tiff_height), (255, 255, 255))
+        rgb = (255, 255, 255)
+        page_color = self.figure_json.get('page_color')
+        if page_color is not None:
+            rgb = ShapeToPdfExport.get_rgb('#' + page_color)
+        self.tiff_figure = Image.new("RGBA", (tiff_width, tiff_height), rgb)
 
     def paste_image(self, pil_img, img_name, panel, page, dpi=None):
         """ Add the PIL image to the current figure page """
@@ -1534,37 +1604,106 @@ class TiffExport(FigureExport):
             y += 1
             y2 += 1
 
+    def draw_temp_label(self, text, fontsize, rgb):
+        """Returns a new PIL image with text. Handles html."""
+        tokens = self.parse_html(text)
+
+        widths = []
+        heights = []
+        for t in tokens:
+            font = self.get_font(fontsize, t['bold'], t['italics'])
+            txt_w, txt_h = font.getsize(t['text'])
+            widths.append(txt_w)
+            heights.append(txt_h)
+
+        label_w = sum(widths)
+        label_h = max(heights)
+
+        temp_label = Image.new('RGBA', (label_w, label_h), (255, 255, 255, 0))
+        textdraw = ImageDraw.Draw(temp_label)
+
+        w = 0
+        for t in tokens:
+            font = self.get_font(fontsize, t['bold'], t['italics'])
+            txt_w, txt_h = font.getsize(t['text'])
+            textdraw.text((w, 0), t['text'], font=font, fill=rgb)
+            w += txt_w
+        return temp_label
+
+    def parse_html(self, html):
+        """
+        Parse html to give list of tokens with bold or italics
+
+        Returns list of [{'text': txt, 'bold': true, 'italics': false}]
+        """
+        in_bold = False
+        in_italics = False
+
+        # Remove any <p> tags
+        html = html.replace('<p>', '')
+        html = html.replace('</p>', '')
+
+        tokens = []
+        token = ""
+        i = 0
+        while i < len(html):
+            # look for start / end of b or i elements
+            start_bold = html[i:].startswith("<strong>")
+            end_bold = html[i:].startswith("</strong>")
+            start_ital = html[i:].startswith("<em>")
+            end_ital = html[i:].startswith("</em>")
+
+            if start_bold:
+                i += len("<strong>")
+            elif end_bold:
+                i += len("</strong>")
+            elif start_ital:
+                i += len("<em>")
+            elif end_ital:
+                i += len("</em>")
+
+            # if style has changed:
+            if start_bold or end_bold or start_ital or end_ital:
+                # save token with previous style
+                tokens.append({'text': token, 'bold': in_bold,
+                               'italics': in_italics})
+                token = ""
+                if start_bold or end_bold:
+                    in_bold = start_bold
+                elif start_ital or end_ital:
+                    in_italics = start_ital
+            else:
+                token = token + html[i]
+                i += 1
+        tokens.append({'text': token, 'bold': in_bold, 'italics': in_italics})
+        return tokens
+
     def draw_text(self, text, x, y, fontsize, rgb, align="center"):
         """ Add text to the current figure page """
         x = self.scale_coords(x)
+        y = y - 5       # seems to help, but would be nice to fix this!
+        y = self.scale_coords(y)
         fontsize = self.scale_coords(fontsize)
 
-        font = self.get_font(fontsize)
-        txt_w, txt_h = font.getsize(text)
+        if markdown_imported:
+            # convert markdown to html
+            text = markdown.markdown(text)
+
+        temp_label = self.draw_temp_label(text, fontsize, rgb)
 
         if align == "vertical":
-            # write text on temp image (transparent)
-            y = self.scale_coords(y)
-            x = int(round(x))
-            y = int(round(y))
-            temp_label = Image.new('RGBA', (txt_w, txt_h), (255, 255, 255, 0))
-            textdraw = ImageDraw.Draw(temp_label)
-            textdraw.text((0, 0), text, font=font, fill=rgb)
-            w = temp_label.rotate(90, expand=True)
-            # Use label as mask, so transparent part is not pasted
-            y = y - (w.size[1]/2)
-            self.tiff_figure.paste(w, (x, y), mask=w)
-        else:
-            y = y - 5       # seems to help, but would be nice to fix this!
-            y = self.scale_coords(y)
-            textdraw = ImageDraw.Draw(self.tiff_figure)
-            if align == "center":
-                x = x - (txt_w / 2)
-            elif align == "right":
-                x = x - txt_w
-            textdraw.text((x, y), text, font=font, fill=rgb)
+            temp_label = temp_label.rotate(90, expand=True)
+            y = y - (temp_label.size[1]/2)
+        elif align == "center":
+            x = x - (temp_label.size[0] / 2)
+        elif align == "right":
+                x = x - temp_label.size[0]
+        x = int(round(x))
+        y = int(round(y))
+        # Use label as mask, so transparent part is not pasted
+        self.tiff_figure.paste(temp_label, (x, y), mask=temp_label)
 
-    def save_page(self):
+    def save_page(self, page=None):
         """
         Save the current PIL image page as a TIFF and start a new
         PIL image for the next page
@@ -1605,6 +1744,68 @@ class TiffExport(FigureExport):
         self.figure_canvas.save()
 
 
+class OmeroExport(TiffExport):
+
+    def __init__(self, conn, script_params):
+
+        super(OmeroExport, self).__init__(conn, script_params)
+
+        self.new_image = None
+
+    def save_page(self, page=None):
+        """
+        Save the current PIL image page as a new OMERO image and start a new
+        PIL image for the next page
+        """
+        self.figure_file_name = self.get_figure_file_name(page + 1)
+
+        # Try to get a Dataset
+        dataset = None
+        for panel in self.figure_json['panels']:
+            parent = self.conn.getObject('Image', panel['imageId']).getParent()
+            if parent is not None and parent.OMERO_CLASS == 'Dataset':
+                if parent.canLink():
+                    dataset = parent
+                    break
+
+        # Need to specify group for new image
+        group_id = self.conn.getEventContext().groupId
+        if dataset is not None:
+            group_id = dataset.getDetails().group.id.val
+            dataset = dataset._obj      # get the omero.model.DatasetI
+        self.conn.SERVICE_OPTS.setOmeroGroup(group_id)
+
+        description = "Created from OMERO.figure: "
+        url = self.script_params.get("Figure_URI")
+        legend = self.figure_json.get('legend')
+        if url is not None:
+            description += url
+        if legend is not None:
+            description = "%s\n\n%s" % (description, legend)
+
+        np_array = numpy.asarray(self.tiff_figure)
+        red = np_array[::, ::, 0]
+        green = np_array[::, ::, 1]
+        blue = np_array[::, ::, 2]
+        plane_gen = iter([red, green, blue])
+        self.new_image = self.conn.createImageFromNumpySeq(
+            plane_gen,
+            self.figure_file_name,
+            sizeC=3,
+            description=description, dataset=dataset)
+        # Reset group context
+        self.conn.SERVICE_OPTS.setOmeroGroup(-1)
+        # Create a new blank tiffFigure for subsequent pages
+        self.create_figure()
+
+    def create_file_annotation(self, image_ids):
+        """Return result of script."""
+
+        # We don't need to create file annotation, but we can return
+        # the new image, which will be returned from the script
+        return self.new_image
+
+
 def export_figure(conn, script_params):
 
     # make sure we can find all images
@@ -1620,7 +1821,8 @@ def export_figure(conn, script_params):
         fig_export = TiffExport(conn, script_params)
     elif export_option == 'TIFF_IMAGES':
         fig_export = TiffExport(conn, script_params, export_images=True)
-
+    elif export_option == 'OMERO':
+        fig_export = OmeroExport(conn, script_params)
     return fig_export.build_figure()
 
 
@@ -1631,7 +1833,8 @@ def run_script():
     """
 
     export_options = [rstring('PDF'), rstring('PDF_IMAGES'),
-                      rstring('TIFF'), rstring('TIFF_IMAGES')]
+                      rstring('TIFF'), rstring('TIFF_IMAGES'),
+                      rstring('OMERO')]
 
     client = scripts.client(
         'Figure_To_Pdf.py',
@@ -1666,10 +1869,10 @@ def run_script():
         file_annotation = export_figure(conn, script_params)
 
         # return this file_annotation to the client.
-        client.setOutput("Message", rstring("Pdf Figure created"))
+        client.setOutput("Message", rstring("Figure created"))
         if file_annotation is not None:
             client.setOutput(
-                "File_Annotation",
+                "New_Figure",
                 robject(file_annotation._obj))
 
     finally:

@@ -70,10 +70,10 @@ module.exports = function (grunt) {
                 '{% load url from future %}': '',
                 '$.get("{% url \'keepalive_ping\' %}");': '',
                 '{% include "webgateway/base/includes/script_src_jquery.html" %}':
-                    '<script type="text/javascript" src="//code.jquery.com/jquery-1.7.2.min.js"></script>',
+                    '<script type="text/javascript" src="//code.jquery.com/jquery-1.11.1.min.js"></script>',
                 '{% include "webgateway/base/includes/jquery-ui.html" %}':
-                    '<script type="text/javascript" src="//code.jquery.com/ui/1.8.19/jquery-ui.js"></script>' +
-                    '<link rel="stylesheet" href="//code.jquery.com/ui/1.8.19/themes/smoothness/jquery-ui.css" type="text/css" />',
+                    '<script type="text/javascript" src="//code.jquery.com/ui/1.10.4/jquery-ui.js"></script>' +
+                    '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.10.4/css/jquery.ui.base.min.css" type="text/css" />',
                 "{% url 'figure_index' %}":
                     "",
                 "{% url 'save_web_figure' %}":
@@ -81,7 +81,7 @@ module.exports = function (grunt) {
                 "{% url 'list_web_figures' %}":
                     "static/json/list_web_figures.json",
                 "{% static '":
-                    "static/",
+                    "omero_figure/static/",
                 "' %}":
                     "",
                 '{{ userFullName }}':
@@ -155,6 +155,6 @@ module.exports = function (grunt) {
   // creates demo/index.html and demo/figure.js via 'replace' command
   // then copies over other static js, css and images to demo/static/figure/..
   grunt.registerTask('demo', [
-      'concat', 'replace', 'copy'
+      'concat', 'jst', 'replace', 'copy'
   ]);
 };

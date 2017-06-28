@@ -15,14 +15,19 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# This settings.py file will be imported by omero.settings file AFTER it has
-# initialised custom settings.
-# See "App Settings" on
-# https://www.openmicroscopy.org/
-#   site/support/omero5.3/developers/Web/CreateApp.html
 
-from . import utils
-import warnings
+import json
+import os
 
-warnings.warn("Deprecated. utils.__version__", DeprecationWarning)
-OMERO_FIGURE_VERSION = utils.__version__
+
+__version__ = "3.1.0"
+
+
+def read_file(fname, content_type=None):
+    p = os.path.abspath(fname)
+    with open(p) as f:
+        if content_type in ('json',):
+            data = json.load(f)
+        else:
+            data = f.read()
+    return data

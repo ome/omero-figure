@@ -18,6 +18,10 @@ Requirements
 
 * OMERO 5.3.0 or newer.
 
+To be able to export the figure as TIFF with italic or bold label, it is necessary
+to use OMERO 5.3.2 or newer.
+
+
 Installing from PyPI
 ====================
 
@@ -27,7 +31,7 @@ Install the app using `pip <https://pip.pypa.io/en/stable/>`_:
 
 ::
 
-    $ pip install omero-figure
+    $ pip install -U omero-figure
 
 Add figure custom app to your installed web apps:
 

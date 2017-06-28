@@ -1,6 +1,8 @@
 *.pyc
 .DS_Store
-demo/static/figure/
+demo/omero_figure/
+demo/figure.js
+demo/index.html
 node_modules/
 _site
 dist

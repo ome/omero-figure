@@ -1,9 +1,21 @@
+3.1.0 (June 2017)
+-----------------
+
+- Add support for italics and bold in panel labels using markdown syntax (PR #209)
+- Allow export of a figure as new OMERO Images (one per page) (PR #210)
+- Allow to change the background colour of the pages (PR #211)
+- Make the json file human readable (PR #212)
+- Fix slider range issue when min pixel intensity is greater than 9999 (PR #213)
+- Allow to script various changes to the figure from the browser devtools console (PR #216)
+- Add support for Reverse Intensity (PR #219)
+- Remove unused dependencies (PR #223)
+
 3.0.0 (April 2017)
 ------------------
 
 - Load ROIs from OMERO to add new Shapes to your figure (PR #190)
 - Shapes can be selected to add to the image within the figure
-- Set an explicit x, y, width and height for selected panels (PR #169).
+- Set an explicit x, y, width and height for selected panels (PR #169)
 - When resizing panels, you can enforce the current aspect ratio (PR #193)
 - Choose look-up tables from those provided by OMERO
 - Can render each channel with a different look-up table
