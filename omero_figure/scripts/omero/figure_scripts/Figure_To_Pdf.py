@@ -1432,9 +1432,9 @@ class TiffExport(FigureExport):
     the TIFF instead of PDF.
     """
 
-    def __init__(self, conn, script_params, export_images=None):
+    def __init__(self, conn, script_params, export_images=None, file_object=None):
 
-        super(TiffExport, self).__init__(conn, script_params, export_images)
+        super(TiffExport, self).__init__(conn, script_params, export_images, file_object)
 
         from omero.gateway import THISPATH
         self.GATEWAYPATH = THISPATH

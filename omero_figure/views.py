@@ -34,6 +34,9 @@ from cStringIO import StringIO
 
 from omeroweb.webclient.decorators import login_required
 
+# TODO: move this elsewhere if we're not using it as a script any more?
+from omero_figure.scripts.omero.figure_scripts.Figure_To_Pdf import FigureExport, TiffExport
+
 from . import settings
 
 try:
@@ -355,15 +358,7 @@ def make_web_figure(request, conn=None, **kwargs):
     # if not request.method == 'POST':
     #     return HttpResponse("Need to use POST")
 
-
-    from omero_figure.scripts.omero.figure_scripts.Figure_To_Pdf import FigureExport, TiffExport
-
-
-    # script_service = conn.getScriptService()
-    # sid = script_service.getScriptID(SCRIPT_PATH)
-
     figure_json = str(request.POST.get('figureJSON').encode('utf8'))
-    # print 'figure_json', figure_json
     # export options e.g. "PDF", "PDF_IMAGES"
     export_option = request.POST.get('exportOption')
     webclient_uri = request.build_absolute_uri(reverse('webindex'))
@@ -383,7 +378,6 @@ def make_web_figure(request, conn=None, **kwargs):
         except:
             pass
 
-    # rsp = run_script(request, conn, sid, input_map, scriptName='Figure.pdf')
     from io import BytesIO
     from reportlab.pdfgen import canvas
 
@@ -392,35 +386,22 @@ def make_web_figure(request, conn=None, **kwargs):
 
     buffer = BytesIO()
 
-    # # Create the PDF object, using the BytesIO object as its "file."
-    # p = canvas.Canvas(buffer)
+    if export_option == "PDF":
+        fig_export = FigureExport(conn, input_map, file_object=buffer)
+        content_type='application/pdf'
+    elif export_option == "TIFF":
+        fig_export = TiffExport(conn, input_map, file_object=buffer)
+        content_type='application/tiff'
 
-    # # Draw things on the PDF. Here's where the PDF generation happens.
-    # # See the ReportLab documentation for the full list of functionality.
-    # p.drawString(100, 100, "Hello world.")
-
-    # # Close the PDF object cleanly.
-    # p.showPage()
-    # p.save()
-
-    # # Get the value of the BytesIO buffer and write it to the response.
-    # pdf = buffer.getvalue()
-    # buffer.close()
-    # response.write(pdf)
-    # return response
-
-    fig_export = FigureExport(conn, input_map, file_object=buffer)
     file_ann = fig_export.build_figure()
-
     filename = fig_export.get_figure_file_name()
-    print 'filename', filename
 
-    response = HttpResponse(content_type='application/pdf')
+    response = HttpResponse(content_type=content_type)
     response['Content-Disposition'] = 'attachment; filename="%s"' % filename
 
-    pdf = buffer.getvalue()
+    file_data = buffer.getvalue()
     buffer.close()
-    response.write(pdf)
+    response.write(file_data)
     return response
 
 
