@@ -363,7 +363,7 @@ def make_web_figure(request, conn=None, **kwargs):
     # sid = script_service.getScriptID(SCRIPT_PATH)
 
     figure_json = str(request.POST.get('figureJSON').encode('utf8'))
-    print 'figure_json', figure_json
+    # print 'figure_json', figure_json
     # export options e.g. "PDF", "PDF_IMAGES"
     export_option = request.POST.get('exportOption')
     webclient_uri = request.build_absolute_uri(reverse('webindex'))
@@ -379,19 +379,49 @@ def make_web_figure(request, conn=None, **kwargs):
         try:
             figure_url = reverse('load_figure', args=[figure_dict['fileId']])
             figure_url = request.build_absolute_uri(figure_url)
-            input_map['Figure_URI'] = wrap(figure_url)
+            input_map['Figure_URI'] = figure_url
         except:
             pass
 
     # rsp = run_script(request, conn, sid, input_map, scriptName='Figure.pdf')
+    from io import BytesIO
+    from reportlab.pdfgen import canvas
 
-    fig_export = TiffExport(conn, input_map)
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="somefilename.pdf"'
+
+    buffer = BytesIO()
+
+    # # Create the PDF object, using the BytesIO object as its "file."
+    # p = canvas.Canvas(buffer)
+
+    # # Draw things on the PDF. Here's where the PDF generation happens.
+    # # See the ReportLab documentation for the full list of functionality.
+    # p.drawString(100, 100, "Hello world.")
+
+    # # Close the PDF object cleanly.
+    # p.showPage()
+    # p.save()
+
+    # # Get the value of the BytesIO buffer and write it to the response.
+    # pdf = buffer.getvalue()
+    # buffer.close()
+    # response.write(pdf)
+    # return response
+
+    fig_export = FigureExport(conn, input_map, file_object=buffer)
     file_ann = fig_export.build_figure()
 
-    print file_ann
+    filename = fig_export.get_figure_file_name()
+    print 'filename', filename
 
-    rsp = {'OK': file_ann.id}
-    return HttpResponse(json.dumps(rsp), content_type='json')
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="%s"' % filename
+
+    pdf = buffer.getvalue()
+    buffer.close()
+    response.write(pdf)
+    return response
 
 
 @login_required()

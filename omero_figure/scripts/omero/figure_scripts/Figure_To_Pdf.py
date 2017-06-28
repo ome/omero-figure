@@ -546,11 +546,12 @@ class FigureExport(object):
     Super class for exporting various figures, such as PDF or TIFF etc.
     """
 
-    def __init__(self, conn, script_params, export_images=False):
+    def __init__(self, conn, script_params, export_images=False, file_object=None):
 
         self.conn = conn
         self.script_params = script_params
         self.export_images = export_images
+        self.file_object = file_object
 
         self.ns = "omero.web.figure.pdf"
         self.mimetype = "application/pdf"
@@ -703,6 +704,10 @@ class FigureExport(object):
 
         # Saves the completed  figure file
         self.save_figure()
+
+        # Don't need to create File Annotation if we've written to file
+        if self.file_object is not None:
+            return
 
         # PDF will get created in this group
         if group_id is None:
@@ -1325,7 +1330,11 @@ class FigureExport(object):
         if not reportlab_installed:
             raise ImportError(
                 "Need to install https://bitbucket.org/rptlab/reportlab")
-        name = self.get_figure_file_name()
+        if self.file_object is not None:
+            name = self.file_object
+        else:
+            name = self.get_figure_file_name()
+        print "create_figure PDF", name
         self.figure_canvas = canvas.Canvas(
             name, pagesize=(self.page_width, self.page_height))
 
@@ -1557,9 +1566,11 @@ class TiffExport(FigureExport):
         Save the current PIL image page as a TIFF and start a new
         PIL image for the next page
         """
-        self.figure_file_name = self.get_figure_file_name()
-
-        self.tiff_figure.save(self.figure_file_name)
+        if self.file_object is not None:
+            self.tiff_figure.save(self.file_object, 'tiff')
+        else:
+            self.figure_file_name = self.get_figure_file_name()
+            self.tiff_figure.save(self.figure_file_name)
 
         # Create a new blank tiffFigure for subsequent pages
         self.create_figure()
