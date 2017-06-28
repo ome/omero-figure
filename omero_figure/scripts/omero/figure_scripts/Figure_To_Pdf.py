@@ -53,6 +53,7 @@ try:
     from reportlab.pdfgen import canvas
     from reportlab.lib.styles import getSampleStyleSheet
     from reportlab.lib.units import inch
+    from reportlab.lib.utils import ImageReader
     from reportlab.platypus import Paragraph
     reportlab_installed = True
 except ImportError:
@@ -1414,12 +1415,14 @@ class FigureExport(object):
         # in the folder to zip
         if self.zip_folder_name is not None:
             img_name = os.path.join(self.zip_folder_name, FINAL_DIR, img_name)
+            pil_img.save(img_name)
 
-        # Save Image to file, then bring into PDF
-        pil_img.save(img_name)
+        buffer = StringIO()
+        pil_img.save(buffer, 'TIFF')
+        buffer.seek(0)
         # Since coordinate system is 'bottom-up', convert from 'top-down'
         y = self.page_height - height - y
-        self.figure_canvas.drawImage(img_name, x, y, width, height)
+        self.figure_canvas.drawImage(ImageReader(buffer), x, y, width, height)
 
 
 class TiffExport(FigureExport):
