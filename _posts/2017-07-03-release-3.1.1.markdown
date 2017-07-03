@@ -1,0 +1,14 @@
+---
+layout: post
+title:  "Release: 3.1.1"
+date:   2017-07-03
+---
+
+We are pleased to announce the release of OMERO.figure 3.1.1.
+This is a bug fixing release
+
+Bug fixes include:
+
+ - Fix export of figures created before the introduction of the Reverse Intensity feature in OMERO 5.3.0 ([PR #229](https://github.com/ome/omero-figure/pull/229)).
+ - Fix label of channels with LUT assigned. This fixes the failure when exporting the figure ([PR #230](https://github.com/ome/omero-figure/pull/230)).
+ - Set the background color of all pages when exporting a figure on multiple pages ([PR #231](https://github.com/ome/omero-figure/pull/231)).
