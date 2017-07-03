@@ -1,3 +1,10 @@
+3.1.1 (July 2017)
+-----------------
+
+- Fix export of figures created before the introduction of the Reverse Intensity feature in OMERO 5.3.0
+- Fix label of channels with LUT assigned. This fixes the failure when exporting the figure
+- Set the background color of all pages when exporting a figure on multiple pages
+
 3.1.0 (June 2017)
 -----------------
 
