@@ -112,14 +112,9 @@ def index(request, file_id=None, conn=None, **kwargs):
     Single page 'app' for creating a Figure, allowing you to choose images
     and lay them out in canvas by dragging & resizing etc
     """
-
-    script_service = conn.getScriptService()
-    sid = script_service.getScriptID(SCRIPT_PATH)
-    script_missing = sid <= 0
     user_full_name = conn.getUser().getFullName()
 
-    context = {'scriptMissing': script_missing,
-               'userFullName': user_full_name,
+    context = {'userFullName': user_full_name,
                'version': utils.__version__}
     return render(request, "figure/index.html", context)
 
@@ -385,12 +380,21 @@ def make_web_figure(request, conn=None, **kwargs):
 
     buffer = BytesIO()
 
-    if export_option == "PDF":
+    if export_option == 'PDF':
         fig_export = FigureExport(conn, input_map, file_object=buffer)
         content_type='application/pdf'
-    elif export_option == "TIFF":
+    elif export_option == 'PDF_IMAGES':
+        fig_export = FigureExport(conn, input_map, export_images=True, file_object=buffer)
+        content_type='application/zip'
+    elif export_option == 'TIFF':
         fig_export = TiffExport(conn, input_map, file_object=buffer)
         content_type='application/tiff'
+    elif export_option == 'TIFF_IMAGES':
+        fig_export = TiffExport(conn, input_map, export_images=True, file_object=buffer)
+        content_type='application/zip'
+    elif export_option == 'OMERO':
+        fig_export = OmeroExport(conn, input_map)
+        # TODO - return json containing new Image ID
 
     file_ann = fig_export.build_figure()
     filename = fig_export.get_figure_file_name()

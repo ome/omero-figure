@@ -730,9 +730,8 @@
                         <span class="glyphicon glyphicon-warning-sign" style="font-size: 14px"></span>
                     </a>
 
-                    <div class="btn-group" {% if scriptMissing %}title="PDF script not installed"{% endif %}>
+                    <div class="btn-group">
                         <button id="create_figure_pdf" title="Generate figure for download"
-                            {% if scriptMissing %}disabled="disabled"{% endif %}
                             data-export-option="PDF"
                             type="button" class="btn btn-success btn-sm export_pdf">
                             Download PDF

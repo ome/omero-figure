@@ -20,6 +20,8 @@ import logging
 import json
 import unicodedata
 import numpy
+import tempfile
+import shutil
 
 from datetime import datetime
 import os
@@ -572,6 +574,8 @@ class FigureExport(object):
 
     def get_zip_name(self):
 
+        if self.file_object is not None:
+            return self.file_object
         # file names can't include unicode characters
         name = unicodedata.normalize(
             'NFKD', self.figure_name).encode('ascii', 'ignore')
@@ -657,66 +661,69 @@ class FigureExport(object):
 
         # somewhere to put PDF and images
         self.zip_folder_name = None
-        if create_zip:
-            self.zip_folder_name = "figure"
-            curr_dir = os.getcwd()
-            zip_dir = os.path.join(curr_dir, self.zip_folder_name)
-            os.mkdir(zip_dir)
-            if self.export_images:
-                for d in (ORIGINAL_DIR, RESAMPLED_DIR, FINAL_DIR):
-                    img_dir = os.path.join(zip_dir, d)
-                    os.mkdir(img_dir)
-                self.add_read_me_file()
+        rv = None
+        try:
+            if create_zip:
+                self.zip_folder_name = tempfile.mkdtemp()
+                print "self.zip_folder_name", self.zip_folder_name
+                # curr_dir = os.getcwd()
+                # zip_dir = os.path.join(curr_dir, self.zip_folder_name)
+                # os.mkdir(zip_dir)
+                if self.export_images:
+                    for d in (ORIGINAL_DIR, RESAMPLED_DIR, FINAL_DIR):
+                        img_dir = os.path.join(self.zip_folder_name, d)
+                        os.mkdir(img_dir)
+                    self.add_read_me_file()
 
-        # Create the figure file(s)
-        self.create_figure()
+            # Create the figure file(s)
+            self.create_figure()
 
-        panels_json = self.figure_json['panels']
-        image_ids = set()
+            panels_json = self.figure_json['panels']
+            image_ids = set()
 
-        group_id = None
-        # We get our group from the first image
-        id1 = panels_json[0]['imageId']
-        group_id = self.conn.getObject("Image", id1).getDetails().group.id.val
+            group_id = None
+            # We get our group from the first image
+            id1 = panels_json[0]['imageId']
+            self.conn.SERVICE_OPTS.setOmeroGroup(-1)
+            group_id = self.conn.getObject("Image", id1).getDetails().group.id.val
 
-        # For each page, add panels...
-        col = 0
-        row = 0
-        for p in range(self.page_count):
+            # For each page, add panels...
+            col = 0
+            row = 0
+            for p in range(self.page_count):
 
-            px = col * (self.page_width + paper_spacing)
-            py = row * (self.page_height + paper_spacing)
-            page = {'x': px, 'y': py}
+                px = col * (self.page_width + paper_spacing)
+                py = row * (self.page_height + paper_spacing)
+                page = {'x': px, 'y': py}
 
-            self.add_panels_to_page(panels_json, image_ids, page)
+                self.add_panels_to_page(panels_json, image_ids, page)
 
-            # complete page and save
-            self.save_page(p)
+                # complete page and save
+                self.save_page(p)
 
-            col = col + 1
-            if col >= page_col_count:
-                col = 0
-                row = row + 1
+                col = col + 1
+                if col >= page_col_count:
+                    col = 0
+                    row = row + 1
 
-        # Add thumbnails and links page
-        self.add_info_page(panels_json)
+            # Add thumbnails and links page
+            self.add_info_page(panels_json)
 
-        # Saves the completed figure file
-        self.save_figure()
+            # Saves the completed figure file
+            self.save_figure()
 
-        # Don't need to create File Annotation if we've written to file
-        if self.file_object is not None:
-            return
+            # PDF will get created in this group
+            if group_id is None:
+                group_id = self.conn.getEventContext().groupId
+            self.conn.SERVICE_OPTS.setOmeroGroup(group_id)
 
-        # PDF will get created in this group
-        if group_id is None:
-            group_id = self.conn.getEventContext().groupId
-        self.conn.SERVICE_OPTS.setOmeroGroup(group_id)
-
-        return self.create_file_annotation(image_ids)
+            rv = self.create_file_annotation(image_ids)
+        finally:
+            if self.zip_folder_name is not None:
+                shutil.rmtree(self.zip_folder_name, ignore_errors=True)
+        return rv
 
     def create_file_annotation(self, image_ids):
-        output_file = self.figure_file_name
         ns = self.ns
         mimetype = self.mimetype
 
@@ -725,31 +732,37 @@ class FigureExport(object):
             # Recursively zip everything up
             compress(zip_name, self.zip_folder_name)
 
-            output_file = zip_name
+            # output_file = zip_name
             ns = "omero.web.figure.zip"
             mimetype = "application/zip"
+        # else:
+        #     output_file = self.figure_file_name
 
-        file_ann = self.conn.createFileAnnfromLocalFile(
-            output_file,
-            mimetype=mimetype,
-            ns=ns)
+        # Don't need to create File Annotation if we've written to file
+        # if self.file_object is not None:
+        #     return
 
-        links = []
-        for iid in list(image_ids):
-            link = ImageAnnotationLinkI()
-            link.parent = ImageI(iid, False)
-            link.child = file_ann._obj
-            links.append(link)
-        if len(links) > 0:
-            # Don't want to fail at this point due to strange permissions combo
-            try:
-                links = self.conn.getUpdateService().saveAndReturnArray(
-                    links, self.conn.SERVICE_OPTS)
-            except:
-                logger.error("Failed to attach figure: %s to images %s"
-                             % (file_ann, image_ids))
+        # file_ann = self.conn.createFileAnnfromLocalFile(
+        #     output_file,
+        #     mimetype=mimetype,
+        #     ns=ns)
 
-        return file_ann
+        # links = []
+        # for iid in list(image_ids):
+        #     link = ImageAnnotationLinkI()
+        #     link.parent = ImageI(iid, False)
+        #     link.child = file_ann._obj
+        #     links.append(link)
+        # if len(links) > 0:
+        #     # Don't want to fail at this point due to strange permissions combo
+        #     try:
+        #         links = self.conn.getUpdateService().saveAndReturnArray(
+        #             links, self.conn.SERVICE_OPTS)
+        #     except:
+        #         logger.error("Failed to attach figure: %s to images %s"
+        #                      % (file_ann, image_ids))
+
+        # return file_ann
 
     def apply_rdefs(self, image, channels):
         """ Apply the channel levels and colors to the image """
@@ -1739,8 +1752,8 @@ class TiffExport(FigureExport):
     def save_figure(self):
         """ Completes PDF figure (or info-page PDF for TIFF export) """
         # We allow TIFF figure export without reportlab (no Info page)
-        # if not reportlab_installed:
-        return
+        if not reportlab_installed:
+            return
         self.figure_canvas.save()
 
 
