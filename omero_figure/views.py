@@ -28,7 +28,6 @@ from omeroweb.webclient.views import run_script
 from django.core.urlresolvers import reverse
 from omero.rtypes import wrap, rlong, rstring, unwrap
 import omero
-from omero.gateway import OriginalFileWrapper
 
 from cStringIO import StringIO
 
