@@ -423,10 +423,9 @@ def make_web_figure(request, conn=None, **kwargs):
         try:
             links = update.saveAndReturnArray(links, conn.SERVICE_OPTS)
         except:
-            return {"Error": "Failed to attach to images"}
+            pass
 
-
-    return JsonResponse({"FileAnnotation": file_id})
+    return JsonResponse({"FileAnnotation": {'id': file_id}})
 
 
 @login_required()

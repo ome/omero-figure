@@ -187,6 +187,30 @@
             // Export to file annotation
             $.post( url, data).done(function( data ) {
                 console.log("Export done", data);
+
+                $create_figure_pdf.show();
+                $pdf_inprogress.hide();
+
+                // Show result
+                if (data.FileAnnotation) {
+                    var fa_id = data.FileAnnotation.id;
+                    var fa_download = WEBINDEX_URL + "annotation/" + fa_id + "/";
+                    $pdf_download
+                        .attr({'href': fa_download, 'data-original-title': 'Download Figure'})
+                        .show()
+                        .children('span').prop('class', 'glyphicon glyphicon-download-alt');
+                } else if (data.Image) {
+                    var fa_download = pdf_job.results.New_Figure.browse_url;
+                    $pdf_download
+                        .attr({'href': fa_download, 'data-original-title': 'Go to Figure Image'})
+                        .show()
+                        .tooltip()
+                        .children('span').prop('class', 'glyphicon glyphicon-share');
+                } else if (pdf_job.stderr) {
+                    // Only show any errors if NO result
+                    var stderr_url = WEBINDEX_URL + "get_original_file/" + pdf_job.stderr + "/";
+                    $script_error.attr('href', stderr_url).show();
+                }
             });
         },
 

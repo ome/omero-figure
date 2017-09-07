@@ -1,7 +1,33 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+# Copyright (C) 2017 University of Dundee & Open Microscopy Environment.
+# All rights reserved.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+"""Tools for drawing Shapes to PDF or TIFF figures."""
+
+from PIL import Image, ImageDraw
+from math import atan, sin, cos, sqrt, radians
+
+
 class ShapeToPdfExport(object):
+    """Draw shapes to PDF with reportlab."""
 
     def __init__(self, canvas, panel, page, crop, page_height):
-
+        """Constructor."""
         self.canvas = canvas
         self.panel = panel
         self.page = page
@@ -24,7 +50,7 @@ class ShapeToPdfExport(object):
 
     @staticmethod
     def get_rgb(color):
-        # Convert from E.g. '#ff0000' to (255, 0, 0)
+        """Convert from E.g. '#ff0000' to (255, 0, 0)."""
         red = int(color[1:3], 16)
         green = int(color[3:5], 16)
         blue = int(color[5:7], 16)
@@ -33,6 +59,7 @@ class ShapeToPdfExport(object):
     def panel_to_page_coords(self, shape_x, shape_y):
         """
         Convert coordinate from the image onto the PDF page.
+
         Handles zoom, offset & rotation of panel, rotating the
         x, y point around the centre of the cropped region
         and scaling appropriately.
@@ -82,6 +109,7 @@ class ShapeToPdfExport(object):
         return {'x': shape_x, 'y': shape_y, 'inPanel': in_panel}
 
     def draw_rectangle(self, shape):
+        """Draw a rectangle to PDF canvas."""
         top_left = self.panel_to_page_coords(shape['x'], shape['y'])
 
         # Don't draw if all corners are outside the panel
@@ -127,6 +155,7 @@ class ShapeToPdfExport(object):
             self.canvas.restoreState()
 
     def draw_line(self, shape):
+        """Draw line to PDF canvas."""
         start = self.panel_to_page_coords(shape['x1'], shape['y1'])
         end = self.panel_to_page_coords(shape['x2'], shape['y2'])
         x1 = start['x']
@@ -151,6 +180,7 @@ class ShapeToPdfExport(object):
         self.canvas.drawPath(p, fill=1, stroke=1)
 
     def draw_arrow(self, shape):
+        """Draw arrow to PDF canvas."""
         start = self.panel_to_page_coords(shape['x1'], shape['y1'])
         end = self.panel_to_page_coords(shape['x2'], shape['y2'])
         x1 = start['x']
@@ -210,6 +240,7 @@ class ShapeToPdfExport(object):
         self.canvas.drawPath(p, fill=1, stroke=1)
 
     def draw_ellipse(self, shape):
+        """Draw ellipse to PDF canvas."""
         stroke_width = shape['strokeWidth'] * self.scale
         c = self.panel_to_page_coords(shape['x'], shape['y'])
         cx = c['x']
@@ -252,11 +283,12 @@ class ShapeToPdfExport(object):
 class ShapeToPilExport(object):
     """
     Class for drawing panel shapes onto a PIL image.
+
     We get a PIL image, the panel dict, and crop coordinates
     """
 
     def __init__(self, pil_img, panel, crop):
-
+        """Constructor."""
         self.pil_img = pil_img
         self.panel = panel
         # The crop region on the original image coordinates...
@@ -278,6 +310,7 @@ class ShapeToPilExport(object):
     def get_panel_coords(self, shape_x, shape_y):
         """
         Convert coordinate from the image onto the panel.
+
         Handles zoom, offset & rotation of panel, rotating the
         x, y point around the centre of the cropped region
         and scaling appropriately
@@ -314,7 +347,7 @@ class ShapeToPilExport(object):
         return {'x': shape_x, 'y': shape_y}
 
     def draw_arrow(self, shape):
-
+        """Draw arrow onto PIL Image."""
         start = self.get_panel_coords(shape['x1'], shape['y1'])
         end = self.get_panel_coords(shape['x2'], shape['y2'])
         x1 = start['x']
@@ -356,6 +389,7 @@ class ShapeToPilExport(object):
         self.draw.polygon(points, fill=rgb, outline=rgb)
 
     def draw_line(self, shape):
+        """Draw Line onto PIL Image."""
         start = self.get_panel_coords(shape['x1'], shape['y1'])
         end = self.get_panel_coords(shape['x2'], shape['y2'])
         x1 = start['x']
@@ -368,6 +402,7 @@ class ShapeToPilExport(object):
         self.draw.line([(x1, y1), (x2, y2)], fill=rgb, width=int(stroke_width))
 
     def draw_rectangle(self, shape):
+        """Draw Rectangle onto PIL Image."""
         # clockwise list of corner points on the OUTSIDE of thick line
         w = shape['strokeWidth'] if 'strokeWidth' in shape else 2
         cx = shape['x'] + (shape['width']/2)
@@ -401,7 +436,7 @@ class ShapeToPilExport(object):
                            mask=temp_rect)
 
     def draw_ellipse(self, shape):
-
+        """Draw Ellipse onto PIL Image."""
         w = int(shape['strokeWidth'] * self.scale)
         ctr = self.get_panel_coords(shape['x'], shape['y'])
         cx = ctr['x']

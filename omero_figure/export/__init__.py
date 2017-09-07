@@ -33,15 +33,10 @@ import zipfile
 # from math import atan, sin, cos, sqrt, radians
 from io import BytesIO
 
-from omero.model import ImageAnnotationLinkI, ImageI
 from shapes import ShapeToPdfExport, ShapeToPilExport
 
 from cStringIO import StringIO
-try:
-    from PIL import Image, ImageDraw, ImageFont
-except ImportError:
-    import Image
-    import ImageDraw
+from PIL import Image, ImageDraw, ImageFont
 
 logger = logging.getLogger('figure_to_pdf')
 
@@ -244,12 +239,6 @@ class FigureExport(object):
 
             panels_json = self.figure_json['panels']
             image_ids = set()
-
-            group_id = None
-            # We get our group from the first image
-            id1 = panels_json[0]['imageId']
-            self.conn.SERVICE_OPTS.setOmeroGroup(-1)
-            group_id = self.conn.getObject("Image", id1).getDetails().group.id.val
 
             # For each page, add panels...
             col = 0
@@ -1021,9 +1010,9 @@ class TiffExport(FigureExport):
     the TIFF instead of PDF.
     """
 
-    def __init__(self, conn, script_params, export_images=None, file_object=None):
+    def __init__(self, conn, script_params, export_images=None):
         """Constructor."""
-        super(TiffExport, self).__init__(conn, script_params, export_images, file_object)
+        super(TiffExport, self).__init__(conn, script_params, export_images)
 
         from omero.gateway import THISPATH
         self.GATEWAYPATH = THISPATH
