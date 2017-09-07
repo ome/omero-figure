@@ -693,11 +693,9 @@ class FigureExport(object):
         thumb_data = image.getThumbnail(size=(96, 96))
         i = StringIO(thumb_data)
         pil_img = Image.open(i)
-        temp_name = str(image_id) + "thumb.jpg"
-        pil_img.save(temp_name)
-        return temp_name
+        return pil_img
 
-    def add_para_with_thumb(self, text, page_y, style, thumb_src=None):
+    def add_para_with_thumb(self, text, page_y, style, thumbnail=None):
         """Add paragraph text to point on PDF info page."""
         c = self.figure_canvas
         aw = self.page_width - (inch * 2)
@@ -713,7 +711,7 @@ class FigureExport(object):
             text = "[Failed to format paragraph - not shown]"
             para = Paragraph(text, style)
         w, h = para.wrap(aw, page_y)   # find required space
-        if thumb_src is not None:
+        if thumbnail is not None:
             parah = max(h, imgh)
         else:
             parah = h
@@ -722,8 +720,11 @@ class FigureExport(object):
             c.save()
             page_y = maxh    # reset to top of new page
         indent = inch
-        if thumb_src is not None:
-            c.drawImage(thumb_src, inch, page_y - imgh, imgw, imgh)
+        if thumbnail is not None:
+            buffer = StringIO()
+            thumbnail.save(buffer, 'TIFF')
+            buffer.seek(0)
+            c.drawImage(ImageReader(buffer), inch, page_y - imgh, imgw, imgh)
             indent = indent + imgw + spacer
         para.drawOn(c, indent, page_y - h)
         return page_y - parah - spacer  # reduce the available height
@@ -802,7 +803,7 @@ class FigureExport(object):
             if iid in img_ids:
                 continue    # ignore images we've already handled
             img_ids.add(iid)
-            thumb_src = self.get_thumbnail(iid)
+            thumbnail = self.get_thumbnail(iid)
             # thumb = "<img src='%s' width='%s' height='%s' " \
             #         "valign='middle' />" % (thumbSrc, thumbSize, thumbSize)
             lines = []
@@ -813,7 +814,7 @@ class FigureExport(object):
             # addPara([" ".join(line)])
             line = " ".join(lines)
             page_y = self.add_para_with_thumb(
-                line, page_y, style=style_n, thumb_src=thumb_src)
+                line, page_y, style=style_n, thumbnail=thumbnail)
 
         if len(scalebars) > 0:
             scalebars = list(set(scalebars))
