@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from django.http import Http404, HttpResponse
+from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import render
 from datetime import datetime
 import unicodedata
@@ -345,12 +345,12 @@ def load_web_figure(request, file_id, conn=None, **kwargs):
 @login_required(setGroupContext=True)
 def make_web_figure(request, conn=None, **kwargs):
     """
-    Uses the scripting service to generate pdf via json etc in POST data.
-    Script will show up in the 'Activities' for users to monitor and
-    download result etc.
+    Uses the scripting service to generate figure via json etc in POST data.
+    Figure can be File annotation (pdf/tiff) or a new OMERO image.
+    Response will return file-annotation ID or the new Image ID.
     """
-    # if not request.method == 'POST':
-    #     return HttpResponse("Need to use POST")
+    if not request.method == 'POST':
+        return HttpResponse("Need to use POST")
 
     figure_json = str(request.POST.get('figureJSON').encode('utf8'))
     # export options e.g. "PDF", "PDF_IMAGES"
@@ -375,9 +375,6 @@ def make_web_figure(request, conn=None, **kwargs):
     from io import BytesIO
     from reportlab.pdfgen import canvas
 
-    # response = HttpResponse(content_type='application/pdf')
-    # response['Content-Disposition'] = 'attachment; filename="somefilename.pdf"'
-
     buffer = BytesIO()
 
     if export_option == 'PDF':
@@ -394,18 +391,9 @@ def make_web_figure(request, conn=None, **kwargs):
         content_type='application/zip'
     elif export_option == 'OMERO':
         fig_export = OmeroExport(conn, input_map)
-        # TODO - return json containing new Image ID
 
-    file_ann = fig_export.build_figure()
-    filename = fig_export.get_figure_file_name()
-
-    response = HttpResponse(content_type=content_type)
-    response['Content-Disposition'] = 'attachment; filename="%s"' % filename
-
-    file_data = buffer.getvalue()
-    buffer.close()
-    response.write(file_data)
-    return response
+    result = fig_export.build_figure()
+    return JsonResponse({"Done": "OK"})
 
 
 @login_required()
