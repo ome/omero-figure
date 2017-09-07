@@ -1,6 +1,5 @@
-
 #
-# Copyright (c) 2014 University of Dundee.
+# Copyright (c) 2014-2017 University of Dundee.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -16,6 +15,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+"""Main views.py for OMERO.figure."""
+
 from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import render
 from datetime import datetime
@@ -24,7 +25,6 @@ import json
 import time
 
 from omeroweb.webgateway.marshal import imageMarshal
-from omeroweb.webclient.views import run_script
 from django.core.urlresolvers import reverse
 from omero.rtypes import wrap, rlong, rstring, unwrap
 import omero
@@ -35,9 +35,8 @@ from cStringIO import StringIO
 from omeroweb.webclient.decorators import login_required
 
 # TODO: move this elsewhere if we're not using it as a script any more?
-from omero_figure.scripts.omero.figure_scripts.Figure_To_Pdf import FigureExport, TiffExport
+from omero_figure.export import FigureExport, TiffExport
 
-from . import settings
 from . import utils
 
 try:
@@ -372,28 +371,62 @@ def make_web_figure(request, conn=None, **kwargs):
         except:
             pass
 
-    from io import BytesIO
-    from reportlab.pdfgen import canvas
 
-    buffer = BytesIO()
+    image_ids = [panel['imageId'] for panel in figure_dict['panels']]
+    if len(image_ids) == 0:
+        return {'Error': 'No images in figure'}
+
 
     if export_option == 'PDF':
-        fig_export = FigureExport(conn, input_map, file_object=buffer)
+        fig_export = FigureExport(conn, input_map)
         content_type='application/pdf'
     elif export_option == 'PDF_IMAGES':
-        fig_export = FigureExport(conn, input_map, export_images=True, file_object=buffer)
+        fig_export = FigureExport(conn, input_map, export_images=True)
         content_type='application/zip'
     elif export_option == 'TIFF':
-        fig_export = TiffExport(conn, input_map, file_object=buffer)
+        fig_export = TiffExport(conn, input_map)
         content_type='application/tiff'
     elif export_option == 'TIFF_IMAGES':
-        fig_export = TiffExport(conn, input_map, export_images=True, file_object=buffer)
+        fig_export = TiffExport(conn, input_map, export_images=True)
         content_type='application/zip'
     elif export_option == 'OMERO':
         fig_export = OmeroExport(conn, input_map)
 
     result = fig_export.build_figure()
-    return JsonResponse({"Done": "OK"})
+    file_size = len(result.getvalue())
+    figure_name = fig_export.get_figure_file_name()
+
+    # TODO: set group based on first image in figure
+    group_id = conn.getEventContext().groupId
+    conn.SERVICE_OPTS.setOmeroGroup(group_id)
+
+    orig_file = conn.createOriginalFileFromFileObj(
+            result, '', figure_name, file_size, mimetype=fig_export.mimetype)
+
+    update = conn.getUpdateService()
+
+    ns = fig_export.ns
+    fa = omero.model.FileAnnotationI()
+    fa.setFile(omero.model.OriginalFileI(orig_file.getId(), False))
+    fa.setNs(wrap(ns))
+    fa = update.saveAndReturnObject(fa, conn.SERVICE_OPTS)
+    file_id = fa.getId().getValue()
+
+    links = []
+    for iid in image_ids:
+        link = omero.model.ImageAnnotationLinkI()
+        link.parent = omero.model.ImageI(iid, False)
+        link.child = omero.model.FileAnnotationI(file_id, False)
+        links.append(link)
+    if len(links) > 0:
+        # Don't want to fail at this point due to strange permissions combo
+        try:
+            links = update.saveAndReturnArray(links, conn.SERVICE_OPTS)
+        except:
+            return {"Error": "Failed to attach to images"}
+
+
+    return JsonResponse({"FileAnnotation": file_id})
 
 
 @login_required()

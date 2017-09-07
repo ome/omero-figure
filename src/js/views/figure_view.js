@@ -93,6 +93,7 @@
             "click .import_json": "import_json",
             "click .delete_figure": "delete_figure",
             "click .paper_setup": "paper_setup",
+            "click .export-options a": "select_export_option",
             "click .zoom-paper-to-fit": "zoom_paper_to_fit",
             "click .about_figure": "show_about_dialog",
             "submit .importJsonForm": "import_json_form"
@@ -131,7 +132,7 @@
 
             // Update text of main export_pdf button.
             var txt = $target.attr('data-export-option');
-            $('.export_pdf').text("Download " + txt).attr('data-export-option', txt);
+            $('.export_pdf').text("Export " + txt).attr('data-export-option', txt);
 
             // Hide download button
             $("#pdf_download").hide();
@@ -178,33 +179,34 @@
             var figureJSON = this.model.figure_toJSON();
 
             var url = MAKE_WEBFIGURE_URL,
-                postData = {
+                data = {
                     figureJSON: JSON.stringify(figureJSON),
                     exportOption: exportOption,
                 };
 
-            // Remove temp form if created before
-            $('#exportForm').remove()
-
-            // Build form and submit. Response is 'attachment' so will download directly
-            var exportFormHtml = "<form id='exportForm' style='display: none;' method='POST' action='"+MAKE_WEBFIGURE_URL+"'>";
-            exportFormHtml += CSRF_TOKEN;
-            _.each(postData, function(postValue, postKey){
-                var escapedKey = postKey.replace("\\", "\\\\").replace("'", "\'");
-                var escapedValue = postValue.replace("\\", "\\\\").replace("'", "\'");
-                exportFormHtml += "<input type='hidden' name='" + escapedKey + "' value='" + escapedValue + "'>";
+            // Export to file annotation
+            $.post( url, data).done(function( data ) {
+                console.log("Export done", data);
             });
-            exportFormHtml += "</form>";
-            var $fakeFormDom = $(exportFormHtml);
-            $("body").append($fakeFormDom);
-            $fakeFormDom.submit();
+        },
 
-            // After 1 second, revert to showing export button
-            // Don't have any way to do this when the file is downloaded!
-            setTimeout(function (){
-                $pdf_inprogress.hide();
-                $create_figure_pdf.show();
-            }, 1000);
+        select_export_option: function(event) {
+            event.preventDefault();
+            var $a = $(event.target),
+                $span = $a.children('span.glyphicon');
+            // We take the <span> from the <a> and place it in the <button>
+            if ($span.length === 0) $span = $a;  // in case we clicked on <span>
+            var $li = $span.parent().parent(),
+                $button = $li.parent().prev().prev(),
+                option = $span.attr("data-option");
+            var $flag = $button.find("span[data-option='" + option + "']");
+            if ($flag.length > 0) {
+                $flag.remove();
+            } else {
+                $span = $span.clone();
+                $button.append($span);
+            }
+            $button.trigger('change');      // can listen for this if we want to 'submit' etc
         },
 
         nudge_right: function(event) {

@@ -31,6 +31,7 @@ import os
 from os import path
 import zipfile
 # from math import atan, sin, cos, sqrt, radians
+from io import BytesIO
 
 from omero.model import ImageAnnotationLinkI, ImageI
 from shapes import ShapeToPdfExport, ShapeToPilExport
@@ -110,12 +111,12 @@ def compress(target, base):
 class FigureExport(object):
     """Super class for exporting various figures, such as PDF or TIFF etc."""
 
-    def __init__(self, conn, script_params, export_images=False, file_object=None):
+    def __init__(self, conn, script_params, export_images=False):
         """Constructor."""
         self.conn = conn
         self.script_params = script_params
         self.export_images = export_images
-        self.file_object = file_object
+        self.file_object = BytesIO()
 
         self.ns = "omero.web.figure.pdf"
         self.mimetype = "application/pdf"
@@ -139,8 +140,6 @@ class FigureExport(object):
 
     def get_zip_name(self):
         """Return name for zip file."""
-        if self.file_object is not None:
-            return self.file_object
         # file names can't include unicode characters
         name = unicodedata.normalize(
             'NFKD', self.figure_name).encode('ascii', 'ignore')
@@ -227,7 +226,6 @@ class FigureExport(object):
 
         # somewhere to put PDF and images
         self.zip_folder_name = None
-        rv = None
         try:
             if create_zip:
                 self.zip_folder_name = tempfile.mkdtemp()
@@ -277,60 +275,10 @@ class FigureExport(object):
 
             # Saves the completed figure file
             self.save_figure()
-
-            # PDF will get created in this group
-            if group_id is None:
-                group_id = self.conn.getEventContext().groupId
-            self.conn.SERVICE_OPTS.setOmeroGroup(group_id)
-
-            rv = self.create_file_annotation(image_ids)
         finally:
             if self.zip_folder_name is not None:
                 shutil.rmtree(self.zip_folder_name, ignore_errors=True)
-        return rv
-
-    # TODO: separate file creation from building file.
-    def create_file_annotation(self, image_ids):
-        """Create OMERO file annotation."""
-        ns = self.ns
-        mimetype = self.mimetype
-
-        if self.zip_folder_name is not None:
-            zip_name = self.get_zip_name()
-            # Recursively zip everything up
-            compress(zip_name, self.zip_folder_name)
-
-            # output_file = zip_name
-            ns = "omero.web.figure.zip"
-            mimetype = "application/zip"
-        else:
-            output_file = self.figure_file_name
-
-        # Don't need to create File Annotation if we've written to file
-        # if self.file_object is not None:
-        #     return
-
-        file_ann = self.conn.createFileAnnfromLocalFile(
-            output_file,
-            mimetype=mimetype,
-            ns=ns)
-
-        links = []
-        for iid in list(image_ids):
-            link = ImageAnnotationLinkI()
-            link.parent = ImageI(iid, False)
-            link.child = file_ann._obj
-            links.append(link)
-        if len(links) > 0:
-            # Don't want to fail at this point due to strange permissions combo
-            try:
-                links = self.conn.getUpdateService().saveAndReturnArray(
-                    links, self.conn.SERVICE_OPTS)
-            except:
-                logger.error("Failed to attach figure: %s to images %s"
-                             % (file_ann, image_ids))
-
-        return file_ann
+        return self.file_object
 
     def apply_rdefs(self, image, channels):
         """Apply the channel levels and colors to the image."""
