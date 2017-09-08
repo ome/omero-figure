@@ -144,6 +144,76 @@ class FigureExport(object):
         if (self.page_count > 1) and (export_option.startswith("TIFF")):
             self.create_zip = True
 
+    def build_figure(self):
+        """
+        The main building of the figure happens here, independently of format.
+
+        We set up directories as needed, call create_figure() to create
+        the PDF or TIFF then iterate through figure pages, adding panels
+        for each page.
+        Then we add an info page and create a zip of everything if needed.
+        Finally the created file or zip is uploaded to OMERO and attached
+        as a file annotation to all the images in the figure.
+        """
+        paper_spacing = ('paper_spacing' in self.figure_json and
+                         self.figure_json['paper_spacing'] or 50)
+        page_col_count = ('page_col_count' in self.figure_json and
+                          self.figure_json['page_col_count'] or 1)
+
+        # somewhere to put PDF and images
+        self.zip_folder_name = None
+        try:
+            if self.create_zip:
+                self.zip_folder_name = tempfile.mkdtemp()
+                if self.export_images:
+                    for d in (ORIGINAL_DIR, RESAMPLED_DIR, FINAL_DIR):
+                        img_dir = os.path.join(self.zip_folder_name, d)
+                        os.mkdir(img_dir)
+                    self.add_read_me_file()
+
+            # Create the figure file(s)
+            self.create_figure()
+
+            panels_json = self.figure_json['panels']
+            image_ids = set()
+
+            # For each page, add panels...
+            col = 0
+            row = 0
+            for p in range(self.page_count):
+
+                px = col * (self.page_width + paper_spacing)
+                py = row * (self.page_height + paper_spacing)
+                page = {'x': px, 'y': py}
+
+                self.add_panels_to_page(panels_json, image_ids, page)
+
+                # complete page and save
+                self.save_page(p)
+
+                col = col + 1
+                if col >= page_col_count:
+                    col = 0
+                    row = row + 1
+
+            # Add thumbnails and links page
+            self.add_info_page(panels_json)
+
+            # Saves the completed figure file
+            self.save_figure()
+
+            if self.zip_folder_name is not None:
+                # Recursively zip everything up to the file_object
+                compress(self.file_object, self.zip_folder_name)
+
+                # output_file = zip_name
+                self.ns = "omero.web.figure.zip"
+                self.mimetype = "application/zip"
+        finally:
+            if self.zip_folder_name is not None:
+                shutil.rmtree(self.zip_folder_name, ignore_errors=True)
+        return self.file_object
+
     def get_zip_name(self):
         """Return name for zip file."""
         # file names can't include unicode characters
@@ -207,77 +277,6 @@ class FigureExport(object):
             return self.get_zip_name()
         else:
             return self.get_figure_file_name()
-
-    def build_figure(self):
-        """
-        The main building of the figure happens here, independently of format.
-
-        We set up directories as needed, call create_figure() to create
-        the PDF or TIFF then iterate through figure pages, adding panels
-        for each page.
-        Then we add an info page and create a zip of everything if needed.
-        Finally the created file or zip is uploaded to OMERO and attached
-        as a file annotation to all the images in the figure.
-        """
-        paper_spacing = ('paper_spacing' in self.figure_json and
-                         self.figure_json['paper_spacing'] or 50)
-        page_col_count = ('page_col_count' in self.figure_json and
-                          self.figure_json['page_col_count'] or 1)
-
-        # somewhere to put PDF and images
-        self.zip_folder_name = None
-        try:
-            if self.create_zip:
-                self.zip_folder_name = tempfile.mkdtemp()
-                if self.export_images:
-                    for d in (ORIGINAL_DIR, RESAMPLED_DIR, FINAL_DIR):
-                        img_dir = os.path.join(self.zip_folder_name, d)
-                        os.mkdir(img_dir)
-                    self.add_read_me_file()
-
-            # Create the figure file(s)
-            self.create_figure()
-
-            panels_json = self.figure_json['panels']
-            image_ids = set()
-
-            # For each page, add panels...
-            col = 0
-            row = 0
-            for p in range(self.page_count):
-
-                px = col * (self.page_width + paper_spacing)
-                py = row * (self.page_height + paper_spacing)
-                page = {'x': px, 'y': py}
-
-                self.add_panels_to_page(panels_json, image_ids, page)
-
-                # complete page and save
-                self.save_page(p)
-
-                col = col + 1
-                if col >= page_col_count:
-                    col = 0
-                    row = row + 1
-
-            # Add thumbnails and links page
-            self.add_info_page(panels_json)
-
-            # Saves the completed figure file
-            self.save_figure()
-
-            if self.zip_folder_name is not None:
-                self.file_object = BytesIO()
-                # Recursively zip everything up to the file_object
-                compress(self.file_object, self.zip_folder_name)
-
-                # output_file = zip_name
-                self.ns = "omero.web.figure.zip"
-                self.mimetype = "application/zip"
-        finally:
-            if self.zip_folder_name is not None:
-                shutil.rmtree(self.zip_folder_name, ignore_errors=True)
-        return self.file_object
 
     def apply_rdefs(self, image, channels):
         """Apply the channel levels and colors to the image."""
