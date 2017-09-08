@@ -375,26 +375,26 @@ def make_web_figure(request, conn=None, **kwargs):
     image_ids = [panel['imageId'] for panel in figure_dict['panels']]
     if len(image_ids) == 0:
         return {'Error': 'No images in figure'}
+    # remove duplicates
+    image_ids = list(set(image_ids))
 
 
     if export_option == 'PDF':
         fig_export = FigureExport(conn, input_map)
-        content_type='application/pdf'
     elif export_option == 'PDF_IMAGES':
         fig_export = FigureExport(conn, input_map, export_images=True)
-        content_type='application/zip'
     elif export_option == 'TIFF':
         fig_export = TiffExport(conn, input_map)
-        content_type='application/tiff'
     elif export_option == 'TIFF_IMAGES':
         fig_export = TiffExport(conn, input_map, export_images=True)
-        content_type='application/zip'
     elif export_option == 'OMERO':
         fig_export = OmeroExport(conn, input_map)
 
+    # Create figure - returns the file object
     result = fig_export.build_figure()
+
     file_size = len(result.getvalue())
-    figure_name = fig_export.get_figure_file_name()
+    figure_name = fig_export.get_exported_file_name()
 
     # TODO: set group based on first image in figure
     group_id = conn.getEventContext().groupId

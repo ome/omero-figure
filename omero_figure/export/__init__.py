@@ -88,20 +88,17 @@ def compress(target, base):
     """
     Create a ZIP recursively from a given base directory.
 
-    @param target:      Name of the zip file we want to write E.g.
-                        "folder.zip"
+    @param target:      Name or file object to write to
     @param base:        Name of folder that we want to zip up E.g. "folder"
     """
-    zip_file = zipfile.ZipFile(target, 'w')
-    try:
+    with zipfile.ZipFile(target, 'w') as zip_file:
         for root, dirs, files in os.walk(base):
             archive_root = os.path.relpath(root, base)
             for f in files:
                 fullpath = os.path.join(root, f)
                 archive_name = os.path.join(archive_root, f)
                 zip_file.write(fullpath, archive_name)
-    finally:
-        zip_file.close()
+
 
 class FigureExport(object):
     """Super class for exporting various figures, such as PDF or TIFF etc."""
@@ -132,6 +129,20 @@ class FigureExport(object):
         # get Figure width & height...
         self.page_width = self.figure_json['paper_width']
         self.page_height = self.figure_json['paper_height']
+
+        # test to see if we've got multiple pages
+        page_count = ('page_count' in self.figure_json and
+                      self.figure_json['page_count'] or 1)
+        self.page_count = int(page_count)
+
+        # Create a zip if we have multiple TIFF pages or we're exporting Images
+        export_option = self.script_params['Export_Option']
+
+        self.create_zip = False
+        if self.export_images:
+            self.create_zip = True
+        if (self.page_count > 1) and (export_option.startswith("TIFF")):
+            self.create_zip = True
 
     def get_zip_name(self):
         """Return name for zip file."""
@@ -188,8 +199,14 @@ class FigureExport(object):
 
         # Handy to know what the last created file is:
         self.figure_file_name = full_name
-
         return full_name
+
+    def get_exported_file_name(self):
+        """Return name of pdf/tiff or zip returned from build_figure()."""
+        if self.create_zip:
+            return self.get_zip_name()
+        else:
+            return self.get_figure_file_name()
 
     def build_figure(self):
         """
@@ -202,32 +219,16 @@ class FigureExport(object):
         Finally the created file or zip is uploaded to OMERO and attached
         as a file annotation to all the images in the figure.
         """
-        # test to see if we've got multiple pages
-        page_count = ('page_count' in self.figure_json and
-                      self.figure_json['page_count'] or 1)
-        self.page_count = int(page_count)
         paper_spacing = ('paper_spacing' in self.figure_json and
                          self.figure_json['paper_spacing'] or 50)
         page_col_count = ('page_col_count' in self.figure_json and
                           self.figure_json['page_col_count'] or 1)
 
-        # Create a zip if we have multiple TIFF pages or we're exporting Images
-        export_option = self.script_params['Export_Option']
-        create_zip = False
-        if self.export_images:
-            create_zip = True
-        if (self.page_count > 1) and (export_option.startswith("TIFF")):
-            create_zip = True
-
         # somewhere to put PDF and images
         self.zip_folder_name = None
         try:
-            if create_zip:
+            if self.create_zip:
                 self.zip_folder_name = tempfile.mkdtemp()
-                print "self.zip_folder_name", self.zip_folder_name
-                # curr_dir = os.getcwd()
-                # zip_dir = os.path.join(curr_dir, self.zip_folder_name)
-                # os.mkdir(zip_dir)
                 if self.export_images:
                     for d in (ORIGINAL_DIR, RESAMPLED_DIR, FINAL_DIR):
                         img_dir = os.path.join(self.zip_folder_name, d)
@@ -264,6 +265,15 @@ class FigureExport(object):
 
             # Saves the completed figure file
             self.save_figure()
+
+            if self.zip_folder_name is not None:
+                self.file_object = BytesIO()
+                # Recursively zip everything up to the file_object
+                compress(self.file_object, self.zip_folder_name)
+
+                # output_file = zip_name
+                self.ns = "omero.web.figure.zip"
+                self.mimetype = "application/zip"
         finally:
             if self.zip_folder_name is not None:
                 shutil.rmtree(self.zip_folder_name, ignore_errors=True)
@@ -869,11 +879,11 @@ class FigureExport(object):
         if not reportlab_installed:
             raise ImportError(
                 "Need to install https://bitbucket.org/rptlab/reportlab")
-        if self.file_object is not None:
-            name = self.file_object
+        if self.zip_folder_name is not None:
+            # write to temp dir
+            name = os.path.join(self.zip_folder_name, self.get_figure_file_name())
         else:
-            name = self.get_figure_file_name()
-        print "create_figure PDF", name
+            name = self.file_object
         self.figure_canvas = canvas.Canvas(
             name, pagesize=(self.page_width, self.page_height))
 
@@ -1231,11 +1241,13 @@ class TiffExport(FigureExport):
 
         New PIL image is created for the next page
         """
-        if self.file_object is not None:
-            self.tiff_figure.save(self.file_object, 'tiff')
+        if self.zip_folder_name is not None:
+            # write to temp dir
+            name = os.path.join(self.zip_folder_name, self.get_figure_file_name())
         else:
-            self.figure_file_name = self.get_figure_file_name()
-            self.tiff_figure.save(self.figure_file_name)
+            name = self.file_object
+
+        self.tiff_figure.save(name, 'tiff')
 
         # Create a new blank tiffFigure for subsequent pages
         self.create_figure()
