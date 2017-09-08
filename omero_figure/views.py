@@ -341,7 +341,7 @@ def load_web_figure(request, file_id, conn=None, **kwargs):
     return HttpResponse(json.dumps(json_data), content_type='json')
 
 
-@login_required(setGroupContext=True)
+@login_required()
 def make_web_figure(request, conn=None, **kwargs):
     """
     Uses the scripting service to generate figure via json etc in POST data.
@@ -396,8 +396,8 @@ def make_web_figure(request, conn=None, **kwargs):
     file_size = len(result.getvalue())
     figure_name = fig_export.get_exported_file_name()
 
-    # TODO: set group based on first image in figure
-    group_id = conn.getEventContext().groupId
+    first_image = conn.getObject("Image", image_ids[0])
+    group_id = first_image.getDetails().group.id.val
     conn.SERVICE_OPTS.setOmeroGroup(group_id)
 
     orig_file = conn.createOriginalFileFromFileObj(
