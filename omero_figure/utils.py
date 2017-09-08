@@ -35,6 +35,7 @@ def read_file(fname, content_type=None):
             data = f.read()
     return data
 
+
 def new_omero_image(conn, image_file, name, dataset=None):
     """Create a new Image in OMERO from the image_file."""
 

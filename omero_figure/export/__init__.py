@@ -22,7 +22,6 @@
 import logging
 import json
 import unicodedata
-import numpy
 import tempfile
 import shutil
 
@@ -38,7 +37,7 @@ from shapes import ShapeToPdfExport, ShapeToPilExport
 from cStringIO import StringIO
 from PIL import Image, ImageDraw, ImageFont
 
-logger = logging.getLogger('figure_to_pdf')
+logger = logging.getLogger(__name__)
 
 try:
     import markdown
@@ -83,6 +82,7 @@ processing steps:
  - 3_final: These are the image panels that are inserted into the
    final figure, saved following any cropping, rotation and resampling steps.
 """
+
 
 def compress(target, base):
     """
@@ -882,7 +882,8 @@ class FigureExport(object):
                 "Need to install https://bitbucket.org/rptlab/reportlab")
         if self.zip_folder_name is not None:
             # write to temp dir
-            name = os.path.join(self.zip_folder_name, self.get_figure_file_name())
+            name = os.path.join(self.zip_folder_name,
+                                self.get_figure_file_name())
         else:
             name = self.file_object
         self.figure_canvas = canvas.Canvas(
@@ -1082,7 +1083,7 @@ class TiffExport(FigureExport):
         self.tiff_figure = Image.new("RGBA", (tiff_width, tiff_height), rgb)
 
     def add_page_color(self):
-        """ Don't need to do anything for TIFF. Image is already colored."""
+        """Don't need to do anything for TIFF. Image is already colored."""
         pass
 
     def paste_image(self, pil_img, img_name, panel, page, dpi=None):
@@ -1249,7 +1250,8 @@ class TiffExport(FigureExport):
         """
         if self.zip_folder_name is not None:
             # write to temp dir
-            name = os.path.join(self.zip_folder_name, self.get_figure_file_name())
+            name = os.path.join(self.zip_folder_name,
+                                self.get_figure_file_name())
         else:
             name = self.file_object
 

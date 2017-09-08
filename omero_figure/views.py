@@ -33,8 +33,6 @@ from omero.gateway import OriginalFileWrapper
 from cStringIO import StringIO
 
 from omeroweb.webclient.decorators import login_required
-
-# TODO: move this elsewhere if we're not using it as a script any more?
 from omero_figure.export import FigureExport, TiffExport
 
 from . import utils
@@ -48,7 +46,6 @@ except:
         pass
 
 JSON_FILEANN_NS = "omero.web.figure.json"
-SCRIPT_PATH = "/omero/figure_scripts/Figure_To_Pdf.py"
 
 
 def create_original_file_from_file_obj(
@@ -371,13 +368,11 @@ def make_web_figure(request, conn=None, **kwargs):
         except:
             pass
 
-
     image_ids = [panel['imageId'] for panel in figure_dict['panels']]
     if len(image_ids) == 0:
         return {'Error': 'No images in figure'}
     # remove duplicates
     image_ids = list(set(image_ids))
-
 
     if export_option == 'PDF':
         fig_export = FigureExport(conn, input_map)
@@ -417,7 +412,7 @@ def make_web_figure(request, conn=None, **kwargs):
     conn.SERVICE_OPTS.setOmeroGroup(group_id)
 
     orig_file = conn.createOriginalFileFromFileObj(
-            result, '', figure_name, file_size, mimetype=fig_export.mimetype)
+        result, '', figure_name, file_size, mimetype=fig_export.mimetype)
 
     # TODO: close? - and also for OMERO images.
     # confirm that TEMP files are getting cleaned up.
