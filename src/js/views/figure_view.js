@@ -186,7 +186,6 @@
 
             // Export to file annotation
             $.post( url, data).done(function( data ) {
-                console.log("Export done", data);
 
                 $create_figure_pdf.show();
                 $pdf_inprogress.hide();
@@ -199,8 +198,9 @@
                         .attr({'href': fa_download, 'data-original-title': 'Download Figure'})
                         .show()
                         .children('span').prop('class', 'glyphicon glyphicon-download-alt');
-                } else if (data.Image) {
-                    var fa_download = pdf_job.results.New_Figure.browse_url;
+                } else if (data.Images) {
+                    var query = data.Images.map(i => i.id).join('|image-')
+                    var fa_download = WEBINDEX_URL + "?show=image-" + query;
                     $pdf_download
                         .attr({'href': fa_download, 'data-original-title': 'Go to Figure Image'})
                         .show()

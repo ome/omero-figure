@@ -388,13 +388,29 @@ def make_web_figure(request, conn=None, **kwargs):
     elif export_option == 'TIFF_IMAGES':
         fig_export = TiffExport(conn, input_map, export_images=True)
     elif export_option == 'OMERO':
-        fig_export = OmeroExport(conn, input_map)
+        # We export as if it's a TIFF(s), then save to OMERO below
+        input_map['Export_Option'] = 'TIFF'
+        fig_export = TiffExport(conn, input_map)
 
     # Create figure - returns the file object
     result = fig_export.build_figure()
+    figure_name = fig_export.get_exported_file_name()
+
+    # If we want to create new Images in OMERO...
+    if export_option == 'OMERO':
+        dataset = None
+        for iid in image_ids:
+            parent = conn.getObject('Image', iid).getParent()
+            if parent is not None and parent.OMERO_CLASS == 'Dataset':
+                if parent.canLink():
+                    dataset = parent
+                    break
+        # 'result' could be single image file or zip with multiple tiffs
+        new_images = utils.new_omero_image(conn, result, figure_name, dataset)
+        imgs = [{'id': i.id} for i in new_images]
+        return JsonResponse({"Images": imgs})
 
     file_size = len(result.getvalue())
-    figure_name = fig_export.get_exported_file_name()
 
     first_image = conn.getObject("Image", image_ids[0])
     group_id = first_image.getDetails().group.id.val
@@ -402,6 +418,10 @@ def make_web_figure(request, conn=None, **kwargs):
 
     orig_file = conn.createOriginalFileFromFileObj(
             result, '', figure_name, file_size, mimetype=fig_export.mimetype)
+
+    # TODO: close? - and also for OMERO images.
+    # confirm that TEMP files are getting cleaned up.
+    # result.close()
 
     update = conn.getUpdateService()
 
