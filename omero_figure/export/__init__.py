@@ -1047,12 +1047,9 @@ class TiffExport(FigureExport):
             font_name = "FreeSansBold.ttf"
         elif italics:
             font_name = "FreeSansOblique.ttf"
-        path_to_font = os.path.join(self.GATEWAYPATH, "pilfonts", font_name)
-        try:
-            font = ImageFont.truetype(path_to_font, fontsize)
-        except:
-            font = ImageFont.load(
-                '%s/pilfonts/B%0.2d.pil' % (self.GATEWAYPATH, 24))
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+        path_to_font = os.path.join(dir_path, "fonts", font_name)
+        font = ImageFont.truetype(path_to_font, fontsize)
         return font
 
     def scale_coords(self, coord):
