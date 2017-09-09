@@ -1,6 +1,5 @@
-
 #
-# Copyright (c) 2014 University of Dundee.
+# Copyright (c) 2014-2017 University of Dundee.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -16,7 +15,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from django.http import Http404, HttpResponse
+"""Main views.py for OMERO.figure."""
+
+from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import render
 from datetime import datetime
 import unicodedata
@@ -24,7 +25,6 @@ import json
 import time
 
 from omeroweb.webgateway.marshal import imageMarshal
-from omeroweb.webclient.views import run_script
 from django.core.urlresolvers import reverse
 from omero.rtypes import wrap, rlong, rstring, unwrap
 import omero
@@ -33,6 +33,7 @@ from omero.gateway import OriginalFileWrapper
 from cStringIO import StringIO
 
 from omeroweb.webclient.decorators import login_required
+from omero_figure.export import FigureExport, TiffExport
 
 from . import utils
 
@@ -45,7 +46,6 @@ except:
         pass
 
 JSON_FILEANN_NS = "omero.web.figure.json"
-SCRIPT_PATH = "/omero/figure_scripts/Figure_To_Pdf.py"
 
 
 def create_original_file_from_file_obj(
@@ -108,14 +108,9 @@ def index(request, file_id=None, conn=None, **kwargs):
     Single page 'app' for creating a Figure, allowing you to choose images
     and lay them out in canvas by dragging & resizing etc
     """
-
-    script_service = conn.getScriptService()
-    sid = script_service.getScriptID(SCRIPT_PATH)
-    script_missing = sid <= 0
     user_full_name = conn.getUser().getFullName()
 
-    context = {'scriptMissing': script_missing,
-               'userFullName': user_full_name,
+    context = {'userFullName': user_full_name,
                'version': utils.__version__}
     return render(request, "figure/index.html", context)
 
@@ -343,28 +338,25 @@ def load_web_figure(request, file_id, conn=None, **kwargs):
     return HttpResponse(json.dumps(json_data), content_type='json')
 
 
-@login_required(setGroupContext=True)
+@login_required()
 def make_web_figure(request, conn=None, **kwargs):
     """
-    Uses the scripting service to generate pdf via json etc in POST data.
-    Script will show up in the 'Activities' for users to monitor and
-    download result etc.
+    Uses the scripting service to generate figure via json etc in POST data.
+    Figure can be File annotation (pdf/tiff) or a new OMERO image.
+    Response will return file-annotation ID or the new Image ID.
     """
     if not request.method == 'POST':
         return HttpResponse("Need to use POST")
 
-    script_service = conn.getScriptService()
-    sid = script_service.getScriptID(SCRIPT_PATH)
-
-    figure_json = request.POST.get('figureJSON')
+    figure_json = str(request.POST.get('figureJSON').encode('utf8'))
     # export options e.g. "PDF", "PDF_IMAGES"
     export_option = request.POST.get('exportOption')
     webclient_uri = request.build_absolute_uri(reverse('webindex'))
 
     input_map = {
-        'Figure_JSON': wrap(figure_json.encode('utf8')),
-        'Export_Option': wrap(str(export_option)),
-        'Webclient_URI': wrap(webclient_uri)}
+        'Figure_JSON': figure_json,
+        'Export_Option': export_option,
+        'Webclient_URI': webclient_uri}
 
     # If the figure has been saved, construct URL to it.
     figure_dict = json.loads(figure_json)
@@ -372,12 +364,83 @@ def make_web_figure(request, conn=None, **kwargs):
         try:
             figure_url = reverse('load_figure', args=[figure_dict['fileId']])
             figure_url = request.build_absolute_uri(figure_url)
-            input_map['Figure_URI'] = wrap(figure_url)
+            input_map['Figure_URI'] = figure_url
         except:
             pass
 
-    rsp = run_script(request, conn, sid, input_map, scriptName='Figure.pdf')
-    return HttpResponse(json.dumps(rsp), content_type='json')
+    image_ids = [panel['imageId'] for panel in figure_dict['panels']]
+    if len(image_ids) == 0:
+        return {'Error': 'No images in figure'}
+    # remove duplicates
+    image_ids = list(set(image_ids))
+
+    if export_option == 'PDF':
+        fig_export = FigureExport(conn, input_map)
+    elif export_option == 'PDF_IMAGES':
+        fig_export = FigureExport(conn, input_map, export_images=True)
+    elif export_option == 'TIFF':
+        fig_export = TiffExport(conn, input_map)
+    elif export_option == 'TIFF_IMAGES':
+        fig_export = TiffExport(conn, input_map, export_images=True)
+    elif export_option == 'OMERO':
+        # We export as if it's a TIFF(s), then save to OMERO below
+        input_map['Export_Option'] = 'TIFF'
+        fig_export = TiffExport(conn, input_map)
+
+    # Create figure - returns the file object
+    result = fig_export.build_figure()
+    figure_name = fig_export.get_exported_file_name()
+
+    # If we want to create new Images in OMERO...
+    if export_option == 'OMERO':
+        dataset = None
+        for iid in image_ids:
+            parent = conn.getObject('Image', iid).getParent()
+            if parent is not None and parent.OMERO_CLASS == 'Dataset':
+                if parent.canLink():
+                    dataset = parent
+                    break
+        # 'result' could be single image file or zip with multiple tiffs
+        new_images = utils.new_omero_image(conn, result, figure_name, dataset)
+        imgs = [{'id': i.id} for i in new_images]
+        return JsonResponse({"Images": imgs})
+
+    file_size = len(result.getvalue())
+
+    first_image = conn.getObject("Image", image_ids[0])
+    group_id = first_image.getDetails().group.id.val
+    conn.SERVICE_OPTS.setOmeroGroup(group_id)
+
+    orig_file = conn.createOriginalFileFromFileObj(
+        result, '', figure_name, file_size, mimetype=fig_export.mimetype)
+
+    # TODO: close? - and also for OMERO images.
+    # confirm that TEMP files are getting cleaned up.
+    # result.close()
+
+    update = conn.getUpdateService()
+
+    ns = fig_export.ns
+    fa = omero.model.FileAnnotationI()
+    fa.setFile(omero.model.OriginalFileI(orig_file.getId(), False))
+    fa.setNs(wrap(ns))
+    fa = update.saveAndReturnObject(fa, conn.SERVICE_OPTS)
+    file_id = fa.getId().getValue()
+
+    links = []
+    for iid in image_ids:
+        link = omero.model.ImageAnnotationLinkI()
+        link.parent = omero.model.ImageI(iid, False)
+        link.child = omero.model.FileAnnotationI(file_id, False)
+        links.append(link)
+    if len(links) > 0:
+        # Don't want to fail at this point due to strange permissions combo
+        try:
+            links = update.saveAndReturnArray(links, conn.SERVICE_OPTS)
+        except:
+            pass
+
+    return JsonResponse({"FileAnnotation": {'id': file_id}})
 
 
 @login_required()

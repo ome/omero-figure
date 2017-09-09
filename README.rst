@@ -58,40 +58,6 @@ the webclient tree:
 Now restart OMERO.web as normal.
 
 
-Enabling figure export
-----------------------
-
-This section assumes that an OMERO.server is already installed.
-
-Figures can be exported as PDF or TIFF files using a script that runs on the OMERO.server. This script needs to be uploaded to the OMERO.server and its dependencies installed on the OMERO.server machine.
-
-The script can be uploaded using two alternative workflows, both of which require you to be an admin.
-
-*Option 1*: Connect to the OMERO server and upload script via the CLI. It is important to be in the correct directory when uploading so that the script is uploaded with the full path: ``omero/figure_scripts/Figure_To_Pdf.py``:
-
-::
-
-    $ cd omero_figure/scripts
-    $ path/to/OMERO.server/bin/omero script upload omero/figure_scripts/Figure_To_Pdf.py --official
-
-*Option 2*: Alternatively, before starting the OMERO.server, copy the script from the figure install
-``/omero_figure/scripts/omero/figure_scripts/Figure_To_Pdf.py`` to the OMERO.server ``path/to/OMERO.server/lib/scripts/omero/figure_scripts``. Then restart the OMERO.server.
-
-Now install the script's dependencies:
-
-
-* Install `reportlab <https://bitbucket.org/rptlab/reportlab>`_ PDF python package from distribution packages. For example, install on CentOS 7:
-
-::
-
-    $ yum install python-reportlab
-
-* Optional: Figure legends can be formatted using Markdown syntax. To see this correctly in the exported PDF info page, we need `Python Markdown <https://pythonhosted.org/Markdown/index.html>`_. For example, install on CentOS 7:
-
-::
-
-    $ yum install python-markdown
-
 Development
 ===========
 
