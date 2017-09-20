@@ -170,6 +170,37 @@ def img_data_json(request, image_id, conn=None, **kwargs):
     return HttpResponse(json.dumps(rv), content_type='json')
 
 
+@login_required()
+def render_scaled_region(request, z, t, iid, conn=None, **kwargs):
+
+    region = request.GET.get('region')
+    x, y, width, height = [float(r) for r in region.split(',')]
+
+    zm = request.GET.get('zm')
+    zm = int(zm)
+
+    image = conn.getObject('Image', iid)
+    if image is None:
+        raise Http404()
+
+    scale_levels = image.getZoomLevelScaling()
+    if scale_levels is None:
+        # Not a big image - can load at full size
+        level = None
+    else:
+        # TODO: Pick level such that returned image is below MAX size
+        max_level = len(scale_levels.keys()) - 1
+        level = max_level - zm
+        max_scale = scale_levels[max_level]
+
+        x = x * scale_levels[zm]
+        y = y * scale_levels[zm]
+        width = width * scale_levels[zm]
+        height = height * scale_levels[zm]
+
+    jpeg_data = image.renderJpegRegion(z, t, x, y, width, height, level=level)
+    return HttpResponse(jpeg_data, content_type='image/jpeg')
+
 @login_required(setGroupContext=True)
 def save_web_figure(request, conn=None, **kwargs):
     """
