@@ -57,7 +57,7 @@ urlpatterns = patterns(
         name="figure_render_thumbnail"),
 
     # Region defined by ?region=x,y,w,h
-    url(r'^render_scaled_region/(?P<z>[0-9]+)/(?P<t>[0-9]+)/(?P<iid>[0-9]+)/$',
+    url(r'^render_scaled_region/(?P<iid>[0-9]+)/(?P<z>[0-9]+)/(?P<t>[0-9]+)/$',
         views.render_scaled_region,
         name="figure_render_scaled_region"),
 
