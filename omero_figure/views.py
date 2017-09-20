@@ -175,9 +175,8 @@ def render_scaled_region(request, z, t, iid, conn=None, **kwargs):
 
     region = request.GET.get('region')
     x, y, width, height = [float(r) for r in region.split(',')]
-
-    zm = request.GET.get('zm')
-    zm = int(zm)
+    max_size = request.GET.get('max_size', 2000)
+    max_size = int(max_size)
 
     image = conn.getObject('Image', iid)
     if image is None:
@@ -190,6 +189,13 @@ def render_scaled_region(request, z, t, iid, conn=None, **kwargs):
     else:
         # TODO: Pick level such that returned image is below MAX size
         max_level = len(scale_levels.keys()) - 1
+        longest_size = max(x, y)
+
+        # start small, and go until we reach target size
+        zm = max_level
+        while zm > 0 and scale_levels[zm - 1] * width < max_size:
+            zm = zm - 1
+
         level = max_level - zm
         max_scale = scale_levels[max_level]
 
