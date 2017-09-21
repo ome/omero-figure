@@ -37,6 +37,14 @@
 	"creationDate": "2014-09-18",
 	"canEdit": false,
 	"name": "Scotland Decides 2014"
+},
+{
+	"description": {"baseUrl": "https://idr.openmicroscopy.org/webgateway", "imageId": 122587},
+	"ownerFullName": "Will Moore",
+	"id": 7,
+	"creationDate": "2017-09-20",
+	"canEdit": false,
+	"name": "IDR images"
 }
 
 ]
