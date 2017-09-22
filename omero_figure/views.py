@@ -182,6 +182,9 @@ def render_scaled_region(request, z, t, iid, conn=None, **kwargs):
     if image is None:
         raise Http404()
 
+    sizeX = image.getSizeX()
+    sizeY = image.getSizeY()
+
     scale_levels = image.getZoomLevelScaling()
     if scale_levels is None:
         # Not a big image - can load at full size
@@ -198,12 +201,45 @@ def render_scaled_region(request, z, t, iid, conn=None, **kwargs):
 
         level = max_level - zm
 
-        x = x * scale_levels[zm]
-        y = y * scale_levels[zm]
-        width = width * scale_levels[zm]
-        height = height * scale_levels[zm]
+        # We need to use final rendered jpeg coordinates
+        # Convert from original image coordinates by scaling
+        scale = scale_levels[zm]
+        x = int(x * scale)
+        y = int(y * scale)
+        width = int(width * scale)
+        height = int(height * scale)
+        sizeX = int(sizeX * scale)
+        sizeY = int(sizeY * scale)
 
+    canvas = None
+    # Coordinates below are all final jpeg coordinates & sizes
+    if x < 0 or y < 0 or (x + width) > sizeX or (y + height) > sizeY:
+        # If we're outside the bounds of the image...
+        # Need to render reduced region and paste on to full size image
+        canvas = Image.new("RGBA", (width, height), (221, 221, 221))
+        paste_x = 0
+        paste_y = 0
+        if x < 0:
+            paste_x = -x
+            width = width + x
+            x = 0
+        if y < 0:
+            paste_y = -y
+            height = height + y
+            y = 0
+
+    # Render the region...
     jpeg_data = image.renderJpegRegion(z, t, x, y, width, height, level=level)
+
+    # paste to canvas if needed
+    if canvas is not None:
+        i = StringIO(jpeg_data)
+        to_paste = Image.open(i)
+        canvas.paste(to_paste, (paste_x, paste_y))
+        rv = StringIO()
+        canvas.save(rv, 'jpeg', quality=90)
+        jpeg_data = rv.getvalue()
+
     return HttpResponse(jpeg_data, content_type='image/jpeg')
 
 
