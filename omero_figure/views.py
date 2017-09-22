@@ -187,17 +187,16 @@ def render_scaled_region(request, z, t, iid, conn=None, **kwargs):
         # Not a big image - can load at full size
         level = None
     else:
-        # TODO: Pick level such that returned image is below MAX size
+        # Pick zoom such that returned image is below MAX size
         max_level = len(scale_levels.keys()) - 1
-        longest_size = max(x, y)
+        longest_side = max(width, height)
 
         # start small, and go until we reach target size
         zm = max_level
-        while zm > 0 and scale_levels[zm - 1] * width < max_size:
+        while zm > 0 and scale_levels[zm - 1] * longest_side < max_size:
             zm = zm - 1
 
         level = max_level - zm
-        max_scale = scale_levels[max_level]
 
         x = x * scale_levels[zm]
         y = y * scale_levels[zm]
@@ -206,6 +205,7 @@ def render_scaled_region(request, z, t, iid, conn=None, **kwargs):
 
     jpeg_data = image.renderJpegRegion(z, t, x, y, width, height, level=level)
     return HttpResponse(jpeg_data, content_type='image/jpeg')
+
 
 @login_required(setGroupContext=True)
 def save_web_figure(request, conn=None, **kwargs):
