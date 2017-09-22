@@ -182,8 +182,8 @@ def render_scaled_region(request, z, t, iid, conn=None, **kwargs):
     if image is None:
         raise Http404()
 
-    sizeX = image.getSizeX()
-    sizeY = image.getSizeY()
+    size_x = image.getSizeX()
+    size_y = image.getSizeY()
 
     scale_levels = image.getZoomLevelScaling()
     if scale_levels is None:
@@ -208,12 +208,12 @@ def render_scaled_region(request, z, t, iid, conn=None, **kwargs):
         y = int(y * scale)
         width = int(width * scale)
         height = int(height * scale)
-        sizeX = int(sizeX * scale)
-        sizeY = int(sizeY * scale)
+        size_x = int(size_x * scale)
+        size_y = int(size_y * scale)
 
     canvas = None
     # Coordinates below are all final jpeg coordinates & sizes
-    if x < 0 or y < 0 or (x + width) > sizeX or (y + height) > sizeY:
+    if x < 0 or y < 0 or (x + width) > size_x or (y + height) > size_y:
         # If we're outside the bounds of the image...
         # Need to render reduced region and paste on to full size image
         canvas = Image.new("RGBA", (width, height), (221, 221, 221))
