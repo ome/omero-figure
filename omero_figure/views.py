@@ -24,6 +24,7 @@ import json
 import time
 
 from omeroweb.webgateway.marshal import imageMarshal
+from omeroweb.webgateway.views import _get_prepared_image
 from omeroweb.webclient.views import run_script
 from django.core.urlresolvers import reverse
 from omero.rtypes import wrap, rlong, rstring, unwrap
@@ -178,9 +179,10 @@ def render_scaled_region(request, z, t, iid, conn=None, **kwargs):
     max_size = request.GET.get('max_size', 2000)
     max_size = int(max_size)
 
-    image = conn.getObject('Image', iid)
-    if image is None:
-        raise Http404()
+    pi = _get_prepared_image(request, iid, conn=conn)
+    if pi is None:
+        raise Http404
+    image, compress_quality = pi
 
     size_x = image.getSizeX()
     size_y = image.getSizeY()
@@ -229,7 +231,8 @@ def render_scaled_region(request, z, t, iid, conn=None, **kwargs):
             y = 0
 
     # Render the region...
-    jpeg_data = image.renderJpegRegion(z, t, x, y, width, height, level=level)
+    jpeg_data = image.renderJpegRegion(z, t, x, y, width, height, level=level,
+                                       compression=compress_quality)
 
     # paste to canvas if needed
     if canvas is not None:
