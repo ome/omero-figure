@@ -36,6 +36,7 @@ from cStringIO import StringIO
 from omeroweb.webclient.decorators import login_required
 
 from . import utils
+import logging
 
 try:
     from PIL import Image
@@ -44,6 +45,8 @@ except:
         import Image
     except:
         pass
+
+logger = logging.getLogger(__name__)
 
 JSON_FILEANN_NS = "omero.web.figure.json"
 SCRIPT_PATH = "/omero/figure_scripts/Figure_To_Pdf.py"
@@ -175,6 +178,8 @@ def img_data_json(request, image_id, conn=None, **kwargs):
 def render_scaled_region(request, z, t, iid, conn=None, **kwargs):
 
     region = request.GET.get('region')
+    logger.debug("Rendering region: %s, Image: %s" % (region, iid))
+
     x, y, width, height = [float(r) for r in region.split(',')]
     max_size = request.GET.get('max_size', 2000)
     max_size = int(max_size)
