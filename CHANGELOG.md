@@ -1,3 +1,10 @@
+3.1.2 (October 2017)
+--------------------
+
+- Fix display of channel buttons in IE11
+- Add IDR figure to demo
+- Remove extra computation when converting radians and degrees. Thanks to https://github.com/carandraug
+
 3.1.1 (July 2017)
 -----------------
 
