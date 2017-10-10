@@ -1,6 +1,6 @@
 [{
 	"description": {"baseUrl": "http://jcb-dataviewer.rupress.org/jcb", "imageId": 127},
-	"ownerFullName": "Will Moore",
+	"ownerFullName": "OME Team",
 	"id": 1,
 	"creationDate": "2007-10-22",
 	"canEdit": false,
@@ -8,7 +8,7 @@
 },
 {
 	"description": {"baseUrl": "http://jcb-dataviewer.rupress.org/jcb", "imageId": 573821},
-	"ownerFullName": "Will Moore",
+	"ownerFullName": "OME Team",
 	"id": 2,
 	"creationDate": "2013-10-07",
 	"canEdit": false,
@@ -16,7 +16,7 @@
 },
 {
 	"description": {"baseUrl": "http://jcb-dataviewer.rupress.org/jcb", "imageId": 573812},
-	"ownerFullName": "Will Moore",
+	"ownerFullName": "OME Team",
 	"id": 3,
 	"creationDate": "2013-10-07",
 	"canEdit": false,
@@ -24,7 +24,7 @@
 },
 {
 	"description": {"baseUrl": "http://jcb-dataviewer.rupress.org/jcb", "imageId": 623054},
-	"ownerFullName": "Will Moore",
+	"ownerFullName": "OME Team",
 	"id": 4,
 	"creationDate": "2014-03-10",
 	"canEdit": false,
@@ -32,11 +32,19 @@
 },
 {
 	"description": {"baseUrl": "http://jcb-dataviewer.rupress.org/jcb", "imageId": 623051},
-	"ownerFullName": "Will Moore",
+	"ownerFullName": "OME Team",
 	"id": 6,
 	"creationDate": "2014-09-18",
 	"canEdit": false,
 	"name": "Scotland Decides 2014"
+},
+{
+	"description": {"baseUrl": "https://idr.openmicroscopy.org/webgateway", "imageId": 122587},
+	"ownerFullName": "OME Team",
+	"id": 7,
+	"creationDate": "2017-09-20",
+	"canEdit": false,
+	"name": "IDR images"
 }
 
 ]
