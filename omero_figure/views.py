@@ -112,7 +112,8 @@ def index(request, file_id=None, conn=None, **kwargs):
     script_service = conn.getScriptService()
     sid = script_service.getScriptID(SCRIPT_PATH)
     script_missing = sid <= 0
-    user_full_name = conn.getUser().getFullName()
+    user = conn.getUser()
+    user_full_name = "%s %s" % (user.firstName, user.lastName)
 
     context = {'scriptMissing': script_missing,
                'userFullName': user_full_name,
