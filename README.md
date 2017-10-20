@@ -9,4 +9,4 @@ This is a jekyll-powered site. To view:
 To update figure.openmicroscopy.org site:
 
  - open a PR against ome/gh-pages-staging branch.
- - To stage this PR see https://www.openmicroscopy.org/site/support/contributing/ci-docs.html#term-figure-help-staging
+ - To stage this PR see https://docs.openmicroscopy.org/contributing/ci-docs.html#term-figure-help-staging
