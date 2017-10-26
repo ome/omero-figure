@@ -13,6 +13,7 @@
             new LabelsPanelView({model: this.model});
             new SliderButtonsView({model: this.model});
             new RoisFormView({model: this.model});
+            new AnnotationsView({model: this.model});
         },
 
         render: function() {
@@ -1226,7 +1227,7 @@
                 sizeT = this.models.getIfEqual('sizeT'),
                 deltaT = this.models.getDeltaTIfEqual(),
                 z_projection = this.models.allTrue('z_projection');
-            
+
             this.theT_avg = theT;
 
             if (wh <= 1) {
@@ -1237,7 +1238,7 @@
                 frame_h = this.full_size / wh;
             }
 
-            // Now get img src & positioning css for each panel, 
+            // Now get img src & positioning css for each panel,
             this.models.forEach(function(m){
                 var src = m.get_img_src(),
                     img_css = m.get_vp_img_css(m.get('zoom'), frame_w, frame_h, m.get('dx'), m.get('dy'));
@@ -1609,5 +1610,61 @@
                 this.$el.html(html);
             }
             return this;
+        }
+    });
+
+    // AnnotationsView
+    var AnnotationsView = Backbone.View.extend({
+        model: FigureModel,
+        cache: {},
+
+        el: $("#annotationsTab"),
+
+        template: JST["src/templates/annotations_template.html"],
+
+        initialize: function(opt) {
+            this.render = _.debounce(this.render);
+            this.models = opt.models;
+            this.listenTo(this.model, 'change:selection', this.render);
+            this.render();
+        },
+
+        render: function() {
+            var selected = this.model.getSelected();
+            var message = null;
+            var ann = new AnnotationsList();
+            if (selected && selected.length > 0) {
+                if (selected.length === 1) {
+                    var imgId = selected.at(0).get('imageId');
+                    if (this.cache[imgId] instanceof AnnotationsList)
+                        ann = this.cache[imgId];
+                    else {
+                        ann.fetch({
+                            url: BASE_WEBFIGURE_URL +
+                                    'get_annotations/?image=' + imgId,
+                            success: function(data) {
+                                this.cache[imgId] = data;
+                                this.renderTemplate(null, this.cache[imgId]);
+                            }.bind(this),
+                            error: function(err) {
+                                this.renderTemplate(
+                                    "Error requesting annotations", ann);
+                            }.bind(this)
+                        });
+                        return;
+                    }
+                } else message = "We don't do multi selection";
+            } else message = "No Image Selected";
+            this.renderTemplate(message, ann);
+            return this;
+        },
+
+        renderTemplate: function(message, annotations) {
+            if (typeof message !== 'string') message = null;
+            var html = this.template({
+                "message": message,
+                "annotations": annotations
+            });
+            this.$el.html(html);
         }
     });

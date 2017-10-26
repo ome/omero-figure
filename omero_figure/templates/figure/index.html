@@ -53,7 +53,6 @@
         USER_FULL_NAME = "{{ userFullName }}";
 
     $(document).ready(function() {
-
         // keep-alive ping every minute, so that OMERO session doesn't die
         setInterval(function (){
             $.get("{% url 'keepalive_ping' %}");
@@ -208,7 +207,7 @@
                 </div>
                 <form class="dpiModalForm" role="form">
                     <div class="modal-body">
-                        <p>Set a minimum resolution for selected panels. When exported as PDF, panel images below this dpi will be resampled as necessary. 
+                        <p>Set a minimum resolution for selected panels. When exported as PDF, panel images below this dpi will be resampled as necessary.
                         </p>
                         <div class="form-group" style="margin-top: 15px; margin-bottom: 0px">
                             <div class="input-group">
@@ -515,7 +514,7 @@
                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
                     <h4 class="modal-title">Open</h4>
                 </div>
-                
+
                     <div class="modal-body" style="height:450px">
                         <table class="table table-condensed">
                             <thead>
@@ -838,6 +837,7 @@
                 <li><a href="#infoTab">Info</a></li>
                 <li class="active"><a href="#previewTab">Preview</a></li>
                 <li><a href="#labelsTab">Labels</a></li>
+                <li><a href="#annotationsTab">Annotations</a></li>
             </ul>
 
             <div class="tab-content">
@@ -907,6 +907,9 @@
                     <h5>Edit Labels</h5>
                     <div id="selected_panels_labels"></div>
                 </div>
+
+                <div class="tab-pane" id="annotationsTab"></div>
+
             </div>
 
         </div>
