@@ -1,0 +1,25 @@
+
+<div>
+    <% if (message !== null) { %>
+        <div class="center"><%= message %></div>
+    <% } else if (annotations.length === 0) { %>
+        <div class="center">No Annotations Found</div>
+    <% } else { %>
+        <ul>
+    <%          annotations.forEach(function(a) { %>
+                    <%= a.get('type') %>
+                    <ul>
+                        <% if (a.get('Value')) { %>
+                            <li>Value: <%= a.get('Value') %></li>
+                        <% } %>
+                        <% if (a.get('Description')) { %>
+                            <li>Desc: <%= a.get('Description') %></li>
+                        <% } %>
+                        <% if (a.get('Namespace')) { %>
+                            <li>NS: <%= a.get('Namespace') %></li>
+                        <% } %>
+                    </ul>
+    <%         }) %>
+        </ul>
+    <% } %>
+</div>

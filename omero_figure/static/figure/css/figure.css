@@ -54,7 +54,7 @@
     }
 
     .pixelated {
-        /* Try to show images in their original pixelated form Although 'pixelated' isn't 
+        /* Try to show images in their original pixelated form Although 'pixelated' isn't
         supported yet: https://developer.mozilla.org/en-US/docs/Web/CSS/image-rendering
         Code from http://phrogz.net/tmp/canvas_image_zoom.html */
         image-rendering:optimizeSpeed;             /* Legal fallback */
@@ -982,4 +982,10 @@
     }
     .okSign {
         display: none
+    }
+    .center {
+        text-align: center;
+    }
+    #annotationsTab div {
+        overflow-x: hidden;
     }

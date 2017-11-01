@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from django.http import Http404, HttpResponse
+from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import render
 from datetime import datetime
 import unicodedata
@@ -29,6 +29,7 @@ from django.core.urlresolvers import reverse
 from omero.rtypes import wrap, rlong, rstring, unwrap
 import omero
 from omero.gateway import OriginalFileWrapper
+import omero_marshal
 
 from cStringIO import StringIO
 
@@ -500,3 +501,29 @@ def roi_count(request, image_id, conn=None, **kwargs):
         shape_count = count[0][0].getValue()
         rv['shape'] = shape_count
     return HttpResponse(json.dumps(rv), content_type="application/json")
+
+
+@login_required()
+def get_annotations(request, conn=None, **kwargs):
+    # get mandatory param image id
+    image_id = request.GET.get("image", None)
+    if image_id is None:
+        return JsonResponse(
+            {"error": "The image id is a mandatory parameter"})
+
+    # retrieve image object
+    img = conn.getObject("Image", image_id, opts=conn.SERVICE_OPTS)
+    if img is None:
+        return JsonResponse({"error": "Image not Found"}, status=404)
+
+    # iterate over annotations and marshal them
+    annotations = []
+    for ann in img.listAnnotations():
+        enc = omero_marshal.get_encoder(ann.OMERO_TYPE)
+        if enc is None:
+            enc = omero_marshal.get_encoder(omero.model.Annotation)
+        ann = enc.encode(ann)
+        if ann is not None:
+            annotations.append(ann)
+
+    return JsonResponse({"annotations": annotations})

@@ -71,4 +71,7 @@ urlpatterns = patterns(
 
     url(r'^roiCount/(?P<image_id>[0-9]+)/$', views.roi_count,
         name='figure_roiCount'),
+
+    url(r'^get_annotations/$', views.get_annotations,
+        name='figure_get_annotations'),
 )
