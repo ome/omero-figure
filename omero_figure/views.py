@@ -206,26 +206,28 @@ def save_web_figure(request, conn=None, **kwargs):
 
     file_id = request.POST.get('fileId')
 
+    if 'figureName' in json_data and len(json_data['figureName']) > 0:
+        figure_name = json_data['figureName']
+    else:
+        n = datetime.now()
+        # time-stamp name by default: WebFigure_2013-10-29_22-43-53.json
+        figure_name = "Figure_%s-%s-%s_%s-%s-%s.json" % \
+            (n.year, n.month, n.day, n.hour, n.minute, n.second)
+
+    # we store json in description field...
+    description = {}
+    if first_img_id is not None:
+        # We duplicate the figure name here for quicker access when
+        # listing files
+        # (use this instead of file name because it supports unicode)
+        description['name'] = figure_name
+        description['imageId'] = first_img_id
+        if 'baseUrl' in panel:
+            description['baseUrl'] = panel['baseUrl']
+    desc = json.dumps(description)
+
     if file_id is None:
         # Create new file
-        if 'figureName' in json_data and len(json_data['figureName']) > 0:
-            figure_name = json_data['figureName']
-        else:
-            n = datetime.now()
-            # time-stamp name by default: WebFigure_2013-10-29_22-43-53.json
-            figure_name = "Figure_%s-%s-%s_%s-%s-%s.json" % \
-                (n.year, n.month, n.day, n.hour, n.minute, n.second)
-        # we store json in description field...
-        description = {}
-        if first_img_id is not None:
-            # We duplicate the figure name here for quicker access when
-            # listing files
-            # (use this instead of file name because it supports unicode)
-            description['name'] = figure_name
-            description['imageId'] = first_img_id
-            if 'baseUrl' in panel:
-                description['baseUrl'] = panel['baseUrl']
-
         # Try to set Group context to the same as first image
         curr_gid = conn.SERVICE_OPTS.getOmeroGroup()
         try:
@@ -251,7 +253,6 @@ def save_web_figure(request, conn=None, **kwargs):
         fa = omero.model.FileAnnotationI()
         fa.setFile(omero.model.OriginalFileI(orig_file.getId(), False))
         fa.setNs(wrap(JSON_FILEANN_NS))
-        desc = json.dumps(description)
         fa.setDescription(wrap(desc))
         fa = update.saveAndReturnObject(fa, conn.SERVICE_OPTS)
         file_id = fa.getId().getValue()
@@ -264,7 +265,12 @@ def save_web_figure(request, conn=None, **kwargs):
         if fa is None:
             return Http404("Couldn't find FileAnnotation of ID: %s" % file_id)
         conn.SERVICE_OPTS.setOmeroGroup(fa.getDetails().group.id.val)
+        # Update description
+        fa._obj.setDescription(wrap(desc))
+        update.saveAndReturnObject(fa._obj, conn.SERVICE_OPTS)
         orig_file = fa._obj.file
+        # Update name and size
+        orig_file.setName(rstring(figure_name))
         size = len(figure_json)
         orig_file.setSize(rlong(size))
         orig_file = update.saveAndReturnObject(
