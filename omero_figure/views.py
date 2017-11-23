@@ -38,10 +38,10 @@ from . import utils
 
 try:
     from PIL import Image
-except:
+except ImportError:
     try:
         import Image
-    except:
+    except ImportError:
         pass
 
 JSON_FILEANN_NS = "omero.web.figure.json"
@@ -69,7 +69,7 @@ def create_original_file_from_file_obj(
     try:
         import hashlib
         hash_sha1 = hashlib.sha1
-    except:
+    except ImportError:
         import sha
         hash_sha1 = sha.new
     try:
@@ -77,7 +77,7 @@ def create_original_file_from_file_obj(
         h = hash_sha1()
         h.update(fo.read())
         original_file.setSha1(rstring(h.hexdigest()))
-    except:
+    except Exception:
         pass       # OMERO-5 doesn't need this
     upd = conn.getUpdateService()
     original_file = upd.saveAndReturnObject(original_file, conn.SERVICE_OPTS)
@@ -201,7 +201,7 @@ def save_web_figure(request, conn=None, **kwargs):
         # pretty-print json
         figure_json = json.dumps(json_data, sort_keys=True,
                                  indent=2, separators=(',', ': '))
-    except:
+    except Exception:
         pass
 
     file_id = request.POST.get('fileId')
@@ -228,17 +228,13 @@ def save_web_figure(request, conn=None, **kwargs):
 
         # Try to set Group context to the same as first image
         curr_gid = conn.SERVICE_OPTS.getOmeroGroup()
-        try:
-            conn.SERVICE_OPTS.setOmeroGroup('-1')
-            i = conn.getObject("Image", first_img_id)
-            if i is not None:
-                gid = i.getDetails().getGroup().getId().getValue()
-                conn.SERVICE_OPTS.setOmeroGroup(gid)
-            else:
-                # Don't leave as -1
-                conn.SERVICE_OPTS.setOmeroGroup(curr_gid)
-        except:
-            # revert back
+        conn.SERVICE_OPTS.setOmeroGroup('-1')
+        i = conn.getObject("Image", first_img_id)
+        if i is not None:
+            gid = i.getDetails().getGroup().getId()
+            conn.SERVICE_OPTS.setOmeroGroup(gid)
+        else:
+            # Don't leave as -1
             conn.SERVICE_OPTS.setOmeroGroup(curr_gid)
         file_size = len(figure_json)
         f = StringIO()
@@ -298,14 +294,14 @@ def save_web_figure(request, conn=None, **kwargs):
             for i in conn.getObjects("Image", image_ids):
                 if not i.canAnnotate():
                     continue
-                l = omero.model.ImageAnnotationLinkI()
-                l.parent = omero.model.ImageI(i.getId(), False)
-                l.child = omero.model.FileAnnotationI(file_id, False)
-                links.append(l)
+                lnk = omero.model.ImageAnnotationLinkI()
+                lnk.parent = omero.model.ImageI(i.getId(), False)
+                lnk.child = omero.model.FileAnnotationI(file_id, False)
+                links.append(lnk)
             # Don't want to fail at this point due to strange permissions combo
             try:
                 update.saveArray(links, conn.SERVICE_OPTS)
-            except:
+            except Exception:
                 pass
 
     return HttpResponse(str(file_id))
@@ -336,7 +332,7 @@ def load_web_figure(request, file_id, conn=None, **kwargs):
                 json_data['figureName'] = description['name']
             else:
                 json_data['figureName'] = json_file.getName()
-    except:
+    except ValueError:
         # If the json failed to parse, return the string anyway
         return HttpResponse(figure_json, content_type='json')
 
@@ -369,12 +365,9 @@ def make_web_figure(request, conn=None, **kwargs):
     # If the figure has been saved, construct URL to it.
     figure_dict = json.loads(figure_json)
     if 'fileId' in figure_dict:
-        try:
-            figure_url = reverse('load_figure', args=[figure_dict['fileId']])
-            figure_url = request.build_absolute_uri(figure_url)
-            input_map['Figure_URI'] = wrap(figure_url)
-        except:
-            pass
+        figure_url = reverse('load_figure', args=[figure_dict['fileId']])
+        figure_url = request.build_absolute_uri(figure_url)
+        input_map['Figure_URI'] = wrap(figure_url)
 
     rsp = run_script(request, conn, sid, input_map, scriptName='Figure.pdf')
     return HttpResponse(json.dumps(rsp), content_type='json')
