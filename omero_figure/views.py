@@ -294,10 +294,10 @@ def save_web_figure(request, conn=None, **kwargs):
             for i in conn.getObjects("Image", image_ids):
                 if not i.canAnnotate():
                     continue
-                lnk = omero.model.ImageAnnotationLinkI()
-                lnk.parent = omero.model.ImageI(i.getId(), False)
-                lnk.child = omero.model.FileAnnotationI(file_id, False)
-                links.append(lnk)
+                link = omero.model.ImageAnnotationLinkI()
+                link.parent = omero.model.ImageI(i.getId(), False)
+                link.child = omero.model.FileAnnotationI(file_id, False)
+                links.append(link)
             # Don't want to fail at this point due to strange permissions combo
             try:
                 update.saveArray(links, conn.SERVICE_OPTS)
