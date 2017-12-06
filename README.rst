@@ -12,6 +12,7 @@ An OMERO.web app for creating figures from images in OMERO.
 
 For full details see http://figure.openmicroscopy.org
 
+Also see [SUPPORT.md](./SUPPORT.md)
 
 Requirements
 ============
