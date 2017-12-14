@@ -25,7 +25,7 @@ import time
 
 from omeroweb.webgateway.marshal import imageMarshal
 from omeroweb.webclient.views import run_script
-from django.core.urlresolvers import reverse
+from django.core.urlresolvers import reverse, NoReverseMatch
 from omero.rtypes import wrap, rlong, rstring, unwrap
 import omero
 from omero.gateway import OriginalFileWrapper
@@ -365,9 +365,12 @@ def make_web_figure(request, conn=None, **kwargs):
     # If the figure has been saved, construct URL to it.
     figure_dict = json.loads(figure_json)
     if 'fileId' in figure_dict:
-        figure_url = reverse('load_figure', args=[figure_dict['fileId']])
-        figure_url = request.build_absolute_uri(figure_url)
-        input_map['Figure_URI'] = wrap(figure_url)
+        try:
+            figure_url = reverse('load_figure', args=[figure_dict['fileId']])
+            figure_url = request.build_absolute_uri(figure_url)
+            input_map['Figure_URI'] = wrap(figure_url)
+        except NoReverseMatch:
+            pass
 
     rsp = run_script(request, conn, sid, input_map, scriptName='Figure.pdf')
     return HttpResponse(json.dumps(rsp), content_type='json')
