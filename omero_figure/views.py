@@ -25,7 +25,7 @@ import time
 
 from omeroweb.webgateway.marshal import imageMarshal
 from omeroweb.webclient.views import run_script
-from django.core.urlresolvers import reverse
+from django.core.urlresolvers import reverse, NoReverseMatch
 from omero.rtypes import wrap, rlong, rstring, unwrap
 import omero
 
@@ -37,10 +37,10 @@ from . import utils
 
 try:
     from PIL import Image
-except:
+except ImportError:
     try:
         import Image
-    except:
+    except ImportError:
         pass
 
 JSON_FILEANN_NS = "omero.web.figure.json"
@@ -146,7 +146,7 @@ def save_web_figure(request, conn=None, **kwargs):
         # pretty-print json
         figure_json = json.dumps(json_data, sort_keys=True,
                                  indent=2, separators=(',', ': '))
-    except:
+    except Exception:
         pass
 
     file_id = request.POST.get('fileId')
@@ -173,17 +173,13 @@ def save_web_figure(request, conn=None, **kwargs):
 
         # Try to set Group context to the same as first image
         curr_gid = conn.SERVICE_OPTS.getOmeroGroup()
-        try:
-            conn.SERVICE_OPTS.setOmeroGroup('-1')
-            i = conn.getObject("Image", first_img_id)
-            if i is not None:
-                gid = i.getDetails().getGroup().getId().getValue()
-                conn.SERVICE_OPTS.setOmeroGroup(gid)
-            else:
-                # Don't leave as -1
-                conn.SERVICE_OPTS.setOmeroGroup(curr_gid)
-        except:
-            # revert back
+        conn.SERVICE_OPTS.setOmeroGroup('-1')
+        i = conn.getObject("Image", first_img_id)
+        if i is not None:
+            gid = i.getDetails().getGroup().getId()
+            conn.SERVICE_OPTS.setOmeroGroup(gid)
+        else:
+            # Don't leave as -1
             conn.SERVICE_OPTS.setOmeroGroup(curr_gid)
         file_size = len(figure_json)
         f = StringIO()
@@ -243,14 +239,14 @@ def save_web_figure(request, conn=None, **kwargs):
             for i in conn.getObjects("Image", image_ids):
                 if not i.canAnnotate():
                     continue
-                l = omero.model.ImageAnnotationLinkI()
-                l.parent = omero.model.ImageI(i.getId(), False)
-                l.child = omero.model.FileAnnotationI(file_id, False)
-                links.append(l)
+                link = omero.model.ImageAnnotationLinkI()
+                link.parent = omero.model.ImageI(i.getId(), False)
+                link.child = omero.model.FileAnnotationI(file_id, False)
+                links.append(link)
             # Don't want to fail at this point due to strange permissions combo
             try:
                 update.saveArray(links, conn.SERVICE_OPTS)
-            except:
+            except Exception:
                 pass
 
     return HttpResponse(str(file_id))
@@ -281,7 +277,7 @@ def load_web_figure(request, file_id, conn=None, **kwargs):
                 json_data['figureName'] = description['name']
             else:
                 json_data['figureName'] = json_file.getName()
-    except:
+    except ValueError:
         # If the json failed to parse, return the string anyway
         return HttpResponse(figure_json, content_type='json')
 
@@ -318,7 +314,7 @@ def make_web_figure(request, conn=None, **kwargs):
             figure_url = reverse('load_figure', args=[figure_dict['fileId']])
             figure_url = request.build_absolute_uri(figure_url)
             input_map['Figure_URI'] = wrap(figure_url)
-        except:
+        except NoReverseMatch:
             pass
 
     rsp = run_script(request, conn, sid, input_map, scriptName='Figure.pdf')
