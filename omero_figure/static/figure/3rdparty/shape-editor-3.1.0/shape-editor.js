@@ -1636,18 +1636,35 @@ Polygon.prototype.getStrokeWidth = function getStrokeWidth() {
 };
 
 Polygon.prototype.destroy = function destroy() {
-    console.trace('destroy?');
     this.element.remove();
-    // this.handles.remove();
+    this.handles.remove();
 };
 
 Polygon.prototype.intersectRegion = function intersectRegion(region) {
+    // region is {x, y, width, height} - Model coords (not zoomed)
+    // Compare with model coords of points...
 
-    var bbox = this.element.getBBox();
-    if (bbox.x > (region.x + region.width) ||
-        bbox.y > (region.y + region.height) ||
-        (bbox.x + bbox.width) < region.x ||
-        (bbox.y + bbox.height < region.y)) {
+    // Get bounding box from points...
+    var coords = this._points.split(" ").reduce(function(prev, xy){
+        var x = parseInt(xy.split(',')[0], 10);
+        var y = parseInt(xy.split(',')[1], 10);
+        if (!prev) {
+            prev = {'min_x': x, 'min_y': y, 'max_x': x, 'max_y': y};
+        } else {
+            prev.min_x = Math.min(prev.min_x, x);
+            prev.min_y = Math.min(prev.min_y, y);
+            prev.max_x = Math.max(prev.max_x, x);
+            prev.max_y = Math.max(prev.max_y, y);
+        }
+        return prev;
+    }, undefined);
+
+    // check for overlap - NB: this may return True even if no intersection
+    // since Polygon doesn't fill it's bounding box
+    if (coords.min_x > (region.x + region.width) ||
+        coords.min_y > (region.y + region.height) ||
+        coords.max_x < region.x ||
+        coords.max_y < region.y) {
         return false;
     }
     return true;
