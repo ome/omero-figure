@@ -28,7 +28,6 @@ from omeroweb.webclient.views import run_script
 from django.core.urlresolvers import reverse, NoReverseMatch
 from omero.rtypes import wrap, rlong, rstring, unwrap
 import omero
-from omero.gateway import OriginalFileWrapper
 
 from cStringIO import StringIO
 
@@ -46,60 +45,6 @@ except ImportError:
 
 JSON_FILEANN_NS = "omero.web.figure.json"
 SCRIPT_PATH = "/omero/figure_scripts/Figure_To_Pdf.py"
-
-
-def create_original_file_from_file_obj(
-        conn, fo, path, name, file_size, mimetype=None, ns=None):
-    """
-    This is a copy of the same method from Blitz Gateway, but fixes a bug
-    where the conn.SERVICE_OPTS are not passed in the API calls.
-    Once this is fixed in OMERO-5 (and we don't need to work with OMERO-4)
-    then we can revert to using the BlitzGateway for this method again.
-    """
-    raw_file_store = conn.createRawFileStore()
-
-    # create original file, set name, path, mimetype
-    original_file = omero.model.OriginalFileI()
-    original_file.setName(rstring(name))
-    original_file.setPath(rstring(path))
-    if mimetype:
-        original_file.mimetype = rstring(mimetype)
-    original_file.setSize(rlong(file_size))
-    # set sha1  # ONLY for OMERO-4
-    try:
-        import hashlib
-        hash_sha1 = hashlib.sha1
-    except ImportError:
-        import sha
-        hash_sha1 = sha.new
-    try:
-        fo.seek(0)
-        h = hash_sha1()
-        h.update(fo.read())
-        original_file.setSha1(rstring(h.hexdigest()))
-    except Exception:
-        pass       # OMERO-5 doesn't need this
-    upd = conn.getUpdateService()
-    original_file = upd.saveAndReturnObject(original_file, conn.SERVICE_OPTS)
-
-    # upload file
-    fo.seek(0)
-    raw_file_store.setFileId(original_file.getId().getValue(),
-                             conn.SERVICE_OPTS)
-    buf = 10000
-    for pos in range(0, long(file_size), buf):
-        block = None
-        if file_size-pos < buf:
-            block_size = file_size-pos
-        else:
-            block_size = buf
-        fo.seek(pos)
-        block = fo.read(block_size)
-        raw_file_store.write(block, pos, block_size, conn.SERVICE_OPTS)
-    # https://github.com/openmicroscopy/openmicroscopy/pull/2006
-    original_file = raw_file_store.save(conn.SERVICE_OPTS)
-    raw_file_store.close()
-    return OriginalFileWrapper(conn, original_file)
 
 
 @login_required()
@@ -242,8 +187,8 @@ def save_web_figure(request, conn=None, **kwargs):
         # Can't use unicode for file name
         figure_name = unicodedata.normalize(
             'NFKD', figure_name).encode('ascii', 'ignore')
-        orig_file = create_original_file_from_file_obj(
-            conn, f, '', figure_name, file_size, mimetype="application/json")
+        orig_file = conn.createOriginalFileFromFileObj(
+            f, '', figure_name, file_size, mimetype="application/json")
         fa = omero.model.FileAnnotationI()
         fa.setFile(omero.model.OriginalFileI(orig_file.getId(), False))
         fa.setNs(wrap(JSON_FILEANN_NS))
