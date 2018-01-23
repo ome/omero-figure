@@ -13,3 +13,4 @@ before_install:
 
 script:
   - .omero/app-docker
+  - .omero/scripts-docker
