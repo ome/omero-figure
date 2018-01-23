@@ -23,6 +23,9 @@
    Integration tests for testing the export of figures in PDF, TIFF, etc.
 """
 
+from script import ScriptTest
+
+
 figure_to_pdf = "/omero/figure_scripts/Figure_To_Pdf.py"
 
 
