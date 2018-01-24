@@ -32,5 +32,5 @@ figure_to_pdf = "/omero/figure_scripts/Figure_To_Pdf.py"
 class TestFigureScripts(ScriptTest):
 
     def test_export_figure_as_pdf(self):
-        sid = super(TestFigureScripts, self).get_script(figure_to_pdf)
-        assert sid > 0
+        script_id = super(TestFigureScripts, self).get_script(figure_to_pdf)
+        assert script_id > 0
