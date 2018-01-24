@@ -3,3 +3,4 @@ markdown: kramdown
 highlighter: rouge
 
 baseurl: /figure
+future: true
