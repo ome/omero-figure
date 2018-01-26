@@ -1,0 +1,50 @@
+[{
+	"description": {"baseUrl": "http://jcb-dataviewer.rupress.org/jcb", "imageId": 127},
+	"ownerFullName": "OME Team",
+	"id": 1,
+	"creationDate": "2007-10-22",
+	"canEdit": false,
+	"name": "Porter et al, Bod1: 2007"
+},
+{
+	"description": {"baseUrl": "http://jcb-dataviewer.rupress.org/jcb", "imageId": 573821},
+	"ownerFullName": "OME Team",
+	"id": 2,
+	"creationDate": "2013-10-07",
+	"canEdit": false,
+	"name": "Wang et al, Patronin: 2013"
+},
+{
+	"description": {"baseUrl": "http://jcb-dataviewer.rupress.org/jcb", "imageId": 573812},
+	"ownerFullName": "OME Team",
+	"id": 3,
+	"creationDate": "2013-10-07",
+	"canEdit": false,
+	"name": "Wang et al, Patronin: Figure 2"
+},
+{
+	"description": {"baseUrl": "http://jcb-dataviewer.rupress.org/jcb", "imageId": 623054},
+	"ownerFullName": "OME Team",
+	"id": 4,
+	"creationDate": "2014-03-10",
+	"canEdit": false,
+	"name": "Zatulovskiy et al, Chemotaxis"
+},
+{
+	"description": {"baseUrl": "http://jcb-dataviewer.rupress.org/jcb", "imageId": 623051},
+	"ownerFullName": "OME Team",
+	"id": 6,
+	"creationDate": "2014-09-18",
+	"canEdit": false,
+	"name": "Scotland Decides 2014"
+},
+{
+	"description": {"baseUrl": "https://idr.openmicroscopy.org/webgateway", "imageId": 122587},
+	"ownerFullName": "OME Team",
+	"id": 7,
+	"creationDate": "2017-09-20",
+	"canEdit": false,
+	"name": "IDR images"
+}
+
+]

@@ -15,7 +15,7 @@
 
         defaults: {
             // 'curr_zoom': 100,
-            'canEdit': true,
+            'canEdit': false,
             'unsaved': false,
             'canvas_width': 13000,
             'canvas_height': 8000,
@@ -49,7 +49,7 @@
 
         load_from_OMERO: function(fileId, success) {
 
-            var load_url = BASE_WEBFIGURE_URL + "load_web_figure/" + fileId + "/",
+            var load_url = BASE_WEBFIGURE_URL + "static/json/load_web_figure/" + fileId + ".json",
                 self = this;
 
 
@@ -3636,7 +3636,7 @@ var CropModalView = Backbone.View.extend({
                 this.$saveBtn.addClass('btn-default').removeClass('btn-success').attr('disabled', 'disabled');
                 this.$saveOption.addClass('disabled');
             }
-            if (this.model.get('fileId')) {
+            if (false) {
                 this.$deleteOption.removeClass('disabled');
             } else {
                 this.$deleteOption.addClass('disabled');
@@ -4076,7 +4076,7 @@ var FileListItemView = Backbone.View.extend({
         }
         baseUrl = baseUrl || BASE_WEBFIGURE_URL.slice(0, -1);  // remove last /
         json.thumbSrc = baseUrl + "/render_thumbnail/" + json.imageId + "/";
-        json.url = BASE_WEBFIGURE_URL + "file/" + json.id;
+        json.url = "#file/" + json.id;
         json.formatDate = this.formatDate;
         var h = this.template(json);
         $(this.el).html(h);
@@ -5755,7 +5755,7 @@ var RectView = Backbone.View.extend({
                 return false;
             }
 
-            if (label_text == '[tags]') {
+            if (label_text == '**Tags not in Demo**') {
                 // Load Tags for this image and create labels
 
                 selected.createLabelsFromTags({
@@ -8397,7 +8397,7 @@ $(function(){
                     callback();
                 }
             };
-            if (figureModel.get("unsaved")) {
+            if (false) {
 
                 var saveBtnTxt = "Save",
                     canEdit = figureModel.get('canEdit');
@@ -8474,15 +8474,15 @@ $(function(){
     });
 
     app = new FigureRouter();
-    Backbone.history.start({pushState: true, root: BASE_WEBFIGURE_URL});
+    Backbone.history.start();
 
     // We want 'a' links (E.g. to open_figure) to use app.navigate
     $(document).on('click', 'a', function (ev) {
         var href = $(this).attr('href');
         // check that links are 'internal' to this app
-        if (href.substring(0, BASE_WEBFIGURE_URL.length) === BASE_WEBFIGURE_URL) {
+        if (href.substring(0, 8) === '/figure/') {
             ev.preventDefault();
-            href = href.replace(BASE_WEBFIGURE_URL, "/");
+            href = href.replace('/figure', '');
             app.navigate(href, {trigger: true});
         }
     });
