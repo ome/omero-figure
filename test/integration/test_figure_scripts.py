@@ -37,7 +37,8 @@ name = "Figure_To_Pdf.py"
 
 class TestFigureScripts(ScriptTest):
 
-    @pytest.mark.parametrize("export_option", ["PDF"])
+    @pytest.mark.parametrize("export_option", ["PDF", "TIFF", "PDF_IMAGES",
+                                               "TIFF_IMAGES", "OMERO"])
     def test_export_figure_as(self, export_option):
         id = super(TestFigureScripts, self).get_script_by_name(path, name)
         assert id > 0
