@@ -66,8 +66,12 @@ class TestFigureScripts(ScriptTest):
             "Webclient_URI": omero.rtypes.rstring(uri)
         }
         ann = run_script(client, id, args, "New_Figure")
-        c = self.new_client(user=user)
-        check_file_annotation(c, ann)
+        # New image is returned when it is an OMERO image
+        if export_option is "OMERO":
+            assert isinstance(ann, "Image")
+        else:
+            c = self.new_client(user=user)
+            check_file_annotation(c, ann)
 
 
 def create_figure(image, size_x, size_y, size_z, size_c, size_t):
