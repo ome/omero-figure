@@ -14,7 +14,7 @@ New features in OMERO.figure 3.2.0:
  - Rename of channel rendering setting "Reverse intensity" to "Inverted" ([PR #238](https://github.com/ome/omero-figure/pull/238)).
 
 These features are included in the updated <a href="http://help.openmicroscopy.org/figure.html">User Manual</a>
-and a new <a href="https://www.youtube.com/watch?v=mjlNBUoGKRc&">demo video</a>.
+and a new <a href="https://www.youtube.com/watch?v=mjlNBUoGKRc">demo video</a>.
 
 Bug fixes include:
 
