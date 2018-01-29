@@ -1,6 +1,0 @@
-set -e
-set -u
-OMERO_VENV=${OMERO_VENT:-/opt/omero/web/venv}
-OMERO_DIST=${OMERO_DIST:-/opt/omero/web/OMERO.web}
-${OMERO_VENV}/bin/python \
-    $OMERO_DIST/bin/omero config append omero.web.apps '"omero_figure"'
