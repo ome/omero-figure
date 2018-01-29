@@ -1,3 +1,13 @@
+3.2.0 (January 2018)
+--------------------
+
+ - Cropping of the page to fit around image panels (PR #252)
+ - Creation of new labels from Tags on the image (PR #254)
+ - Allow renaming of saved figures (PR #251)
+ - Fix export of multi-page PDF info section with ReportLab 3.4.0 (PR #260)
+ - Fix display of Z and T index ranges in crop dialog (PR #258)
+ - Fix listing of files in the Files > Open dialog when user has middle name (PR #247)
+
 3.1.2 (October 2017)
 --------------------
 
