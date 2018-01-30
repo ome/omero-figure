@@ -1,33 +1,86 @@
 this["JST"] = this["JST"] || {};
 
-this["JST"]["static/figure/templates/channel_toggle_template.html"] = function(obj) {
+this["JST"]["src/templates/channel_slider_template.html"] = function(obj) {
 obj || (obj = {});
 var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
 function print() { __p += __j.call(arguments, '') }
 with (obj) {
-__p += '\n\n    ';
- _.each(channels, function(c, i) { ;
-__p += '\n        <div class="btn-group" style="padding:2px">\n            <button type="button"\n            title="Turn channel on/off"\nclass="btn btn-default channel-btn ';
- if(c.active) { ;
+__p += '\n <div class="clearfix" style="position: relative; padding-bottom: 4px">\n\n\n    <div class="btn-group">\n            <button type="button"\n            title="Turn channel on/off"\nclass="btn btn-default channel-btn lutBg"\n                    data-index="' +
+((__t = ( idx )) == null ? '' : __t) +
+'"\n                    style="background-color:#' +
+((__t = ( color )) == null ? '' : __t) +
+'; background-position: ' +
+((__t = ( lutBgPos )) == null ? '' : __t) +
+'">\n                <div class="';
+ if(active) { ;
 __p += 'ch-btn-down';
- } else if (typeof c.active == 'boolean') { ;
+ } else if (typeof active == 'boolean') { ;
 __p += 'ch-btn-up';
  } else { ;
 __p += 'ch-btn-flat';
  };
-__p += '"\n                    data-index="' +
-((__t = ( i )) == null ? '' : __t) +
-'"\n                    style="background-color:#' +
-((__t = ( c.color )) == null ? '' : __t) +
-'">\n                &nbsp\n            </button>\n            <button type="button" class="btn btn-default dropdown-toggle"\n                    data-toggle="dropdown" title="Pick channel color">\n                <span class="caret"></span>\n            </button>\n            <ul class="dropdown-menu colorpicker" data-index="' +
-((__t = ( i )) == null ? '' : __t) +
-'">\n                <li class="dropdown-header">Channel Color</li>\n                <li class="divider"></li>\n                <li><a data-color="0000FF" href="#">\n                    <span style="background-color:#00f">&nbsp &nbsp &nbsp</span>&nbsp Blue\n                </a></li>\n                <li><a data-color="00FF00" href="#">\n                    <span style="background-color:#0f0">&nbsp &nbsp &nbsp</span>&nbsp Green\n                </a></li>\n                <li><a data-color="FF0000" href="#">\n                    <span style="background-color:#f00">&nbsp &nbsp &nbsp</span>&nbsp Red\n                </a></li>\n                <li><a data-color="FFFF00" href="#">\n                    <span style="background-color:#ff0">&nbsp &nbsp &nbsp</span>&nbsp Yellow\n                </a></li>\n                <li><a data-color="FFFFFF" href="#">\n                    <span style="background-color:#fff">&nbsp &nbsp &nbsp</span>&nbsp White\n                </a></li>\n                <li><a data-color="FF00FF" href="#">\n                    <span style="background-color:#f0f">&nbsp &nbsp &nbsp</span>&nbsp Magenta\n                </a></li>\n                <li class="divider"></li>\n                <li><a data-color="colorpicker" data-oldcolor="' +
-((__t = ( c.color )) == null ? '' : __t) +
-'" href="#">\n                    <span class="colorpickerOption">&nbsp &nbsp &nbsp</span>&nbsp More Colors...\n                </a></li>\n            </ul>\n        </div><br>\n    ';
- }); ;
-__p += '\n\n    <div class="btn-group rotation-controls" style="padding:2px">\n        <button type="button" class="btn btn-default btn-sm show-rotation" title="Rotate image">\n            <span class="glyphicon glyphicon-repeat"></span>\n            <span class="rotation_value">' +
+__p += '">&nbsp</div>&nbsp\n            </button>\n            <button type="button" class="btn btn-default dropdown-toggle"\n                    data-toggle="dropdown" title="Pick channel color">\n                <span class="caret"></span>\n            </button>\n            <ul class="dropdown-menu colorpicker" data-index="' +
+((__t = ( idx )) == null ? '' : __t) +
+'">\n                <li>\n                    <a data-color="reverse" class="reverseIntensity" href="#">\n                        <span style="font-size: 18px; position: relative; top: 4px;;"\n                            class="glyphicon\n                            ';
+ if(reverse) { ;
+__p += 'glyphicon-check';
+ } else { ;
+__p += 'glyphicon-unchecked';
+ } ;
+__p += '">\n                        </span> Invert\n                    </a>\n                </li>\n                <li class="divider"></li>\n                <li><a data-color="0000FF" href="#">\n                    <span style="background-color:#00f">&nbsp &nbsp &nbsp</span>&nbsp Blue\n                </a></li>\n                <li><a data-color="00FF00" href="#">\n                    <span style="background-color:#0f0">&nbsp &nbsp &nbsp</span>&nbsp Green\n                </a></li>\n                <li><a data-color="FF0000" href="#">\n                    <span style="background-color:#f00">&nbsp &nbsp &nbsp</span>&nbsp Red\n                </a></li>\n                <li><a data-color="FFFF00" href="#">\n                    <span style="background-color:#ff0">&nbsp &nbsp &nbsp</span>&nbsp Yellow\n                </a></li>\n                <li><a data-color="FFFFFF" href="#">\n                    <span style="background-color:#fff">&nbsp &nbsp &nbsp</span>&nbsp White\n                </a></li>\n                <li><a data-color="FF00FF" href="#">\n                    <span style="background-color:#f0f">&nbsp &nbsp &nbsp</span>&nbsp Magenta\n                </a></li>\n                <li class="divider"></li>\n                <li><a data-color="lutpicker" href="#">\n                    <span class="lutBg">&nbsp &nbsp &nbsp</span>&nbsp Lookup Tables\n                </a></li>\n                <li><a data-color="colorpicker" data-oldcolor="' +
+((__t = ( color )) == null ? '' : __t) +
+'" href="#">\n                    <span class="colorpickerOption">&nbsp &nbsp &nbsp</span>&nbsp More Colors...\n                </a></li>\n            </ul>\n        </div><br>\n\n    <span class="ch_start">\n        <input type="number" data-window="start"\n        ';
+ if (startsNotEqual) { ;
+__p += '\n            title="Average: ' +
+((__t = ( startAvg )) == null ? '' : __t) +
+' (selected images have different start values)"\n            style="color: #ccc;"\n        ';
+ } ;
+__p += '\n        data-idx="' +
+((__t = (idx)) == null ? '' : __t) +
+'" value="' +
+((__t = ( startAvg )) == null ? '' : __t) +
+'" max="' +
+((__t = ( endAvg )) == null ? '' : __t) +
+'">\n    </span>\n    <div class="ch_slider" style="background-color:#ddd; background-color:#' +
+((__t = (color)) == null ? '' : __t) +
+'" aria-disabled="false">\n    </div>\n    <span class="ch_end">\n        <input type="number" data-window="end"\n        ';
+ if (endsNotEqual) { ;
+__p += '\n            title="Average: ' +
+((__t = ( endAvg )) == null ? '' : __t) +
+' (selected images have different end values)"\n            style="color: #ccc;"\n        ';
+ } ;
+__p += '\n        data-idx="' +
+((__t = (idx)) == null ? '' : __t) +
+'" value="' +
+((__t = ( endAvg )) == null ? '' : __t) +
+'" min="' +
+((__t = ( startAvg )) == null ? '' : __t) +
+'">\n    </span>\n</div>\n';
+
+}
+return __p
+};
+
+this["JST"]["src/templates/figure_panel_template.html"] = function(obj) {
+obj || (obj = {});
+var __t, __p = '', __e = _.escape;
+with (obj) {
+__p += '    <!-- The content of <div class=\'imagePanel\'> for each panel -->\n    <div class="imgContainer">\n        <img class="img_panel" />\n        <div id="' +
+((__t = ( randomId )) == null ? '' : __t) +
+'" class="panel_canvas"></div>\n    </div>\n';
+
+}
+return __p
+};
+
+this["JST"]["src/templates/image_display_options_template.html"] = function(obj) {
+obj || (obj = {});
+var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
+function print() { __p += __j.call(arguments, '') }
+with (obj) {
+__p += '\n    <div class="btn-group image-display-options rotation-controls">\n        <button type="button" class="btn btn-default btn-sm show-rotation" title="Rotate image">\n            <span class="glyphicon glyphicon-repeat"></span>\n            <span class="rotation_value">' +
 ((__t = ( rotation )) == null ? '' : __t) +
-'</span> &deg;\n        </button>\n\n        <div class="rotation-slider"></div>\n    </div>\n\n\n    <div class="btn-group" style="padding:2px" title="Maximum intensity Z-projection (choose range with 2 handles on Z-slider)">\n        <button type="button" class="btn btn-default btn-sm z-projection\n                ';
+'</span> &deg;\n        </button>\n\n        <div class="rotation-slider"></div>\n    </div>\n\n\n    <div class="btn-group image-display-options"\n         title="Maximum intensity Z-projection (choose range with 2 handles on Z-slider)">\n        <button type="button" class="btn btn-default btn-sm z-projection\n                ';
  if(z_projection) { ;
 __p += 'zp-btn-down';
  } else if (typeof z_projection == 'boolean') { ;
@@ -45,31 +98,23 @@ __p += '\n                >\n            <span class="glyphicon"></span>\n      
 return __p
 };
 
-this["JST"]["static/figure/templates/figure_panel_template.html"] = function(obj) {
-obj || (obj = {});
-var __t, __p = '', __e = _.escape;
-with (obj) {
-__p += '    <!-- The content of <div class=\'imagePanel\'> for each panel -->\n    <div class="imgContainer">\n        <img class="img_panel" />\n        <div id="' +
-((__t = ( randomId )) == null ? '' : __t) +
-'" class="panel_canvas"></div>\n    </div>\n';
-
-}
-return __p
-};
-
-this["JST"]["static/figure/templates/info_panel_template.html"] = function(obj) {
+this["JST"]["src/templates/info_panel_template.html"] = function(obj) {
 obj || (obj = {});
 var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
 function print() { __p += __j.call(arguments, '') }
 with (obj) {
 __p += '\n    <p>';
  print(_.escape(name)) ;
-__p += '</p>\n    <div class="clearfix"></div>\n\n    <table class="table">\n        <tbody>\n            <tr><td>Image\n                ';
- if (imageLink) { ;
-__p += '\n                <a class="pull-right" target="new"\n                    href="' +
-((__t = ( imageLink )) == null ? '' : __t) +
-'">\n                    <span class="glyphicon glyphicon-share"></span> Show in Webclient\n                </a>\n                ';
- } ;
+__p += '</p>\n    <div class="clearfix"></div>\n\n    <table class="table">\n        <tbody>\n            <tr><td>\n                <span class="glyphicon glyphicon-share"></span> Open with:\n                ';
+ _.each(imageLinks, function(link, i) { ;
+__p += '\n                    ';
+ if (i > 0) {print("|")} ;
+__p += '\n                    <a target="_blank" href="' +
+((__t = ( link.url )) == null ? '' : __t) +
+'">\n                        ' +
+((__t = ( link.text )) == null ? '' : __t) +
+'\n                    </a>\n                ';
+ }) ;
 __p += '\n            </td></tr>\n            <tr><td>\n                <div class="col-sm-6"><small><strong>Image ID</strong>:</small></div>\n                <div class="col-sm-6">\n                    <small>' +
 ((__t = ( imageId )) == null ? '' : __t) +
 '</small>\n                    <button type="button"\n                            style="position:absolute; top:0px; right:0px"\n                            ';
@@ -94,7 +139,7 @@ __p += '\n                </small></div>\n            </td></tr>\n        </tbod
 return __p
 };
 
-this["JST"]["static/figure/templates/labels_form_inner_template.html"] = function(obj) {
+this["JST"]["src/templates/labels_form_inner_template.html"] = function(obj) {
 obj || (obj = {});
 var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
 function print() { __p += __j.call(arguments, '') }
@@ -103,7 +148,7 @@ __p += '\n    <div class="input-group pull-left">\n        <input type="text" cl
  print(_.escape(l.text)) ;
 __p += '" style="max-height:29px"/>\n        ';
  if (!edit){ ;
-__p += '\n            <div class="input-group-btn">\n                <button type="button" class="btn btn-default btn-sm dropdown-toggle"\n                        data-toggle="dropdown" title="Label from data...">\n                    <span class="caret"></span>\n                </button>\n                <ul class="dropdown-menu pull-right">\n                    <li role="presentation" class="dropdown-header">Create Label(s) From:</li>\n                    <li role="presentation" class="divider"></li>\n                    <li><a href="#" data-label="[image-name]">Image Name</a></li>\n                    <li><a href="#" data-label="[dataset-name]">Dataset Name</a></li>\n                    <li><a href="#" data-label="[channels]">Channels</a></li>\n                    <li class="add_time_label">\n                        <a href="#" data-label="[time-secs]">Time (secs)</a>\n                    </li>\n                    <li class="add_time_label">\n                        <a href="#" data-label="[time-mins]">Time (mins)</a>\n                    </li>\n                    <li class="add_time_label">\n                        <a href="#" data-label="[time-hrs:mins:secs]">Time (hrs:mins:secs)</a>\n                    </li>\n                    <li class="add_time_label">\n                        <a href="#" data-label="[time-hrs:mins]">Time (hrs:mins)</a>\n                    </li>\n                </ul>\n            </div>\n        ';
+__p += '\n            <div class="input-group-btn">\n                <button type="button" class="btn btn-default btn-sm dropdown-toggle"\n                        data-toggle="dropdown" title="Label from data...">\n                    <span class="caret"></span>\n                </button>\n                <ul class="dropdown-menu pull-right">\n                    <li role="presentation" class="dropdown-header">Create Label(s) From:</li>\n                    <li role="presentation" class="divider"></li>\n                    <li><a href="#" data-label="[image-name]">Image Name</a></li>\n                    <li><a href="#" data-label="[dataset-name]">Dataset Name</a></li>\n                    <li title="Create labels from active Channels on the selected panel">\n                        <a href="#" data-label="[channels]">Channels</a>\n                    </li>\n                    <li title="Create labels from Tags on this Image in OMERO">\n                        <a href="#" data-label="[tags]">Tags</a>\n                    </li>\n                    <li class="add_time_label">\n                        <a href="#" data-label="[time-secs]">Time (secs)</a>\n                    </li>\n                    <li class="add_time_label">\n                        <a href="#" data-label="[time-mins]">Time (mins)</a>\n                    </li>\n                    <li class="add_time_label">\n                        <a href="#" data-label="[time-hrs:mins:secs]">Time (hrs:mins:secs)</a>\n                    </li>\n                    <li class="add_time_label">\n                        <a href="#" data-label="[time-hrs:mins]">Time (hrs:mins)</a>\n                    </li>\n                </ul>\n            </div>\n        ';
  } ;
 __p += '\n    </div>\n\n    <div class="btn-group">\n        <button type="button" class="font-size btn btn-default btn-sm dropdown-toggle" title="Font Size"\n            data-toggle="dropdown" style="width:33px">\n            <span>' +
 ((__t = ( l.size )) == null ? '' : __t) +
@@ -135,7 +180,7 @@ __p += '\n';
 return __p
 };
 
-this["JST"]["static/figure/templates/labels_form_template.html"] = function(obj) {
+this["JST"]["src/templates/labels_form_template.html"] = function(obj) {
 obj || (obj = {});
 var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
 function print() { __p += __j.call(arguments, '') }
@@ -154,7 +199,32 @@ __p += '\n        </div>\n';
 return __p
 };
 
-this["JST"]["static/figure/templates/rois_form_template.html"] = function(obj) {
+this["JST"]["src/templates/lut_picker.html"] = function(obj) {
+obj || (obj = {});
+var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
+function print() { __p += __j.call(arguments, '') }
+with (obj) {
+__p += '\n\n<div class="btn-group-vertical col-xs-6" role="group">\n\n\t';
+ _.each(luts, function(lut, i) { ;
+__p += '\n\n\t\t<button type="button" class="btn btn-default lutOption" data-lut="' +
+((__t = ( lut.name )) == null ? '' : __t) +
+'">\n\t\t\t<span class="lutBg" style="background-position: ' +
+((__t = ( lut.bgPos )) == null ? '' : __t) +
+'">&nbsp</span>\n\t\t\t' +
+((__t = ( lut.displayName )) == null ? '' : __t) +
+' </button>\n\n\t\t';
+ if (i === parseInt(luts.length/2)) { ;
+__p += '\n\t\t\t</div>\n\t\t\t<div class="btn-group-vertical col-xs-6" role="group">\n\t\t';
+ } ;
+__p += '\n\n\t';
+ }) ;
+__p += '\n</div>\n';
+
+}
+return __p
+};
+
+this["JST"]["src/templates/rois_form_template.html"] = function(obj) {
 obj || (obj = {});
 var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
 function print() { __p += __j.call(arguments, '') }
@@ -203,7 +273,7 @@ __p += ' >\n        <button class="edit_rois btn btn-sm btn-success"\n          
  if (panelCount !== 1) { ;
 __p += ' disabled="disabled"';
  } ;
-__p += ' >\n            Draw\n        </button>\n    </div>\n\n</form>\n';
+__p += ' >\n            Edit\n        </button>\n    </div>\n\n</form>\n';
  } ;
 __p += '\n';
 
@@ -211,7 +281,7 @@ __p += '\n';
 return __p
 };
 
-this["JST"]["static/figure/templates/scalebar_form_template.html"] = function(obj) {
+this["JST"]["src/templates/scalebar_form_template.html"] = function(obj) {
 obj || (obj = {});
 var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
 function print() { __p += __j.call(arguments, '') }
@@ -263,7 +333,7 @@ __p += '\n    </form>\n';
 return __p
 };
 
-this["JST"]["static/figure/templates/scalebar_panel_template.html"] = function(obj) {
+this["JST"]["src/templates/scalebar_panel_template.html"] = function(obj) {
 obj || (obj = {});
 var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
 function print() { __p += __j.call(arguments, '') }
@@ -290,7 +360,7 @@ __p += '\n    </div>\n';
 return __p
 };
 
-this["JST"]["static/figure/templates/viewport_template.html"] = function(obj) {
+this["JST"]["src/templates/viewport_template.html"] = function(obj) {
 obj || (obj = {});
 var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
 function print() { __p += __j.call(arguments, '') }
@@ -333,9 +403,9 @@ __p += '"\n                style="opacity:' +
 ((__t = ( css['transform'] )) == null ? '' : __t) +
 ';\n                    transform:' +
 ((__t = ( css['transform'] )) == null ? '' : __t) +
-'"\n                src="' +
+'"\n                src=\'' +
 ((__t = ( css.src )) == null ? '' : __t) +
-'" />\n            ';
+'\' />\n            ';
  }); ;
 __p += '\n        </div>';
 
@@ -343,7 +413,7 @@ __p += '\n        </div>';
 return __p
 };
 
-this["JST"]["static/figure/templates/xywh_panel_template.html"] = function(obj) {
+this["JST"]["src/templates/xywh_panel_template.html"] = function(obj) {
 obj || (obj = {});
 var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
 function print() { __p += __j.call(arguments, '') }
@@ -356,21 +426,21 @@ __p += '\n                        (Export at ' +
 ((__t = ( export_dpi )) == null ? '' : __t) +
 ' dpi\n                        <button type="button" title="Delete Label" class="close clear_dpi"\n                            title="Remove (don\'t change dpi on export)"\n                            aria-hidden="true" style="float: none; left: 0; margin: 0; top: -2px;">×</button>\n                        <label>)</label>\n                        ';
  } ;
-__p += '\n                    </div>\n                    <button class="btn btn-sm btn-success set_dpi"\n                        title="Resample to a higher dpi at export">Set dpi</button>\n                </form>\n                \n            </td></tr>\n            <tr><td>\n                <div class="col-sm-3" style="text-align: right"><small><strong>X</strong>:</small></div>\n                <div class="col-sm-3"><small>';
- print(x) ;
-__p += '</small></div>\n\n                <div class="col-sm-3" style="text-align: right"><small><strong>Width</strong>:</small></div>\n                <div class="col-sm-3"><small>';
- print(width) ;
-__p += '</small></div>\n\n                <div class="col-sm-3" style="text-align: right"><small><strong>Y</strong>:</small></div>\n                <div class="col-sm-3"><small>';
- print(y) ;
-__p += '</small></div>\n\n                <div class="col-sm-3" style="text-align: right"><small><strong>Height</strong>:</small></div>\n                <div class="col-sm-3"><small>';
- print(height) ;
-__p += '</small></div>\n            </td></tr>\n        </tbody>\n    </table>\n';
+__p += '\n                    </div>\n                    <button class="btn btn-sm btn-success set_dpi"\n                        title="Resample to a higher dpi at export">Set dpi</button>\n                </form>\n                \n            </td></tr>\n            <tr><td>\n                <form class="form-horizontal xywh_form" role="form" style="position:relative">\n                    <div class="form-group">\n                        <label class="col-sm-2 control-label">X</label>\n                        <div class="col-sm-4">\n                            <input type="number" name="x" min="0" class="form-control input-sm" value="' +
+((__t = ( x )) == null ? '' : __t) +
+'">\n                        </div>\n                        <label class="col-sm-2 control-label">Width</label>\n                        <div class="col-sm-4">\n                            <input type="number" name="width" min="0" class="form-control input-sm" value="' +
+((__t = ( width )) == null ? '' : __t) +
+'">\n                        </div>\n                    </div>\n                    <div class="form-group" style="margin-bottom: -15px">\n                        <label class="col-sm-2 control-label">Y</label>\n                        <div class="col-sm-4">\n                            <input type="number" name="y" min="0" class="form-control input-sm" value="' +
+((__t = ( y )) == null ? '' : __t) +
+'">\n                        </div>\n                        <label class="col-sm-2 control-label">\n                            Height\n                        </label>\n                        <div class="col-sm-4">\n                            <input type="number" name="height" min="0" class="form-control input-sm" value="' +
+((__t = ( height )) == null ? '' : __t) +
+'">\n                        </div>\n                    </div>\n                    <button type="button" class="btn btn-link setAspectRatio"\n                        style="position:absolute; left:195px; top:25px; padding:3px; width:23px; height:24px; outline:none !important" title="Maintain aspect ratio"><span class="glyphicon glyphicon-link"></span><span class="glyphicon glyphicon-ok-sign okSign" style="left:-28px; top:-7px; font-size:10px; color:green"></span></button>\n                    <div style="position:absolute;left: 220px;top: 12px;border: solid #bbb 1px;width: 12px;height: 48px;border-right: 0px;"></div>\n                </form>\n            </td></tr>\n        </tbody>\n    </table>\n';
 
 }
 return __p
 };
 
-this["JST"]["static/figure/templates/zoom_crop_template.html"] = function(obj) {
+this["JST"]["src/templates/zoom_crop_template.html"] = function(obj) {
 obj || (obj = {});
 var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
 function print() { __p += __j.call(arguments, '') }
@@ -393,7 +463,7 @@ __p += ' >\n        Paste\n    </button>\n    <button type="button" class="btn b
 return __p
 };
 
-this["JST"]["static/figure/templates/files/figure_file_item.html"] = function(obj) {
+this["JST"]["src/templates/files/figure_file_item.html"] = function(obj) {
 obj || (obj = {});
 var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
 function print() { __p += __j.call(arguments, '') }
@@ -401,16 +471,17 @@ with (obj) {
 __p += '\n    ';
  if (disabled) { ;
 __p += '\n        <td>\n            ';
- if(imageId > 0) { print("<img class='small-thumb' src='" + thumbSrc + "' />") } ;
+ if(imageId > 0) { print("<img class='small-thumb' src='" + thumbSrc + "' />") }
+               else { print ("<div class='missingThumb small-thumb'></div>")} ;
 __p += '\n        </td>\n        <td title="This figure is currently open">\n            <div style="width:400px; word-wrap:break-word;">\n                ' +
 ((__t = ( name )) == null ? '' : __t) +
 '\n            </div>\n        </td>\n    ';
  } else { ;
 __p += '\n        <td>\n            <a href="' +
 ((__t = ( url )) == null ? '' : __t) +
-'">\n                ';
- if(imageId > 0) { print("<img class='small-thumb' src='" + thumbSrc + "' />") } ;
-__p += '\n            </a>\n        </td>\n        <td>\n            <div style="width:400px; word-wrap:break-word;">\n                <a href="' +
+'">\n                <img class=\'small-thumb\' src=\'' +
+((__t = ( thumbSrc )) == null ? '' : __t) +
+'\' />\n            </a>\n        </td>\n        <td>\n            <div style="width:400px; word-wrap:break-word;">\n                <a href="' +
 ((__t = ( url )) == null ? '' : __t) +
 '">' +
 ((__t = ( name )) == null ? '' : __t) +
@@ -426,7 +497,7 @@ __p += '\n    <td>\n        ' +
 return __p
 };
 
-this["JST"]["static/figure/templates/labels/label_table_template.html"] = function(obj) {
+this["JST"]["src/templates/labels/label_table_template.html"] = function(obj) {
 obj || (obj = {});
 var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
 function print() { __p += __j.call(arguments, '') }
@@ -449,7 +520,7 @@ __p += '\n            </td></tr>\n        </table>\n    </div>\n';
 return __p
 };
 
-this["JST"]["static/figure/templates/labels/label_template.html"] = function(obj) {
+this["JST"]["src/templates/labels/label_template.html"] = function(obj) {
 obj || (obj = {});
 var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
 function print() { __p += __j.call(arguments, '') }
@@ -472,7 +543,7 @@ __p += '\n    </div>\n';
 return __p
 };
 
-this["JST"]["static/figure/templates/labels/label_vertical_template.html"] = function(obj) {
+this["JST"]["src/templates/labels/label_vertical_template.html"] = function(obj) {
 obj || (obj = {});
 var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
 function print() { __p += __j.call(arguments, '') }
@@ -493,12 +564,69 @@ __p += '\n        </div>\n    </div>\n';
 return __p
 };
 
-this["JST"]["static/figure/templates/modal_dialogs/paper_setup_modal_template.html"] = function(obj) {
+this["JST"]["src/templates/modal_dialogs/crop_modal_roi.html"] = function(obj) {
 obj || (obj = {});
 var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
 function print() { __p += __j.call(arguments, '') }
 with (obj) {
-__p += '\n    <div class="col-sm-12">\n\n        <div class="form-horizontal">\n            <div class="form-group col-sm-6">\n                <label>Number of Pages</label>\n                <select class="pageCountSelect form-control">\n                    ';
+__p += '\n<tr class="roiPickMe">\n    <td>\n        <div class="roi_wrapper" style="position: relative; overflow: hidden; margin: 5px; height: ' +
+((__t = ( h )) == null ? '' : __t) +
+'px; width: ' +
+((__t = ( w )) == null ? '' : __t) +
+'px">\n            <img class="roi_content"\n                data-roiId="' +
+((__t = ( roiId )) == null ? '' : __t) +
+'"\n                data-x="' +
+((__t = ( rect.x )) == null ? '' : __t) +
+'" data-y="' +
+((__t = ( rect.y )) == null ? '' : __t) +
+'" \n                data-width="' +
+((__t = ( rect.width )) == null ? '' : __t) +
+'" data-height="' +
+((__t = ( rect.height )) == null ? '' : __t) +
+'"\n                data-theT="' +
+((__t = ( rect.theT )) == null ? '' : __t) +
+'" data-theZ="' +
+((__t = ( rect.theZ )) == null ? '' : __t) +
+'"\n                style="position: absolute; top: ' +
+((__t = ( top )) == null ? '' : __t) +
+'px; left: ' +
+((__t = ( left )) == null ? '' : __t) +
+'px; width: ' +
+((__t = ( img_w )) == null ? '' : __t) +
+'px; height: ' +
+((__t = ( img_h )) == null ? '' : __t) +
+'px" src="' +
+((__t = ( src )) == null ? '' : __t) +
+'" />\n        </div>\n    </td>\n    ';
+ if (zStart) { ;
+__p += '\n    <td>\n        ' +
+((__t = ( zStart )) == null ? '' : __t) +
+'\n        ';
+ if (zStart !== zEnd) print(" - " + zEnd); ;
+__p += '\n    </td>\n    ';
+ } ;
+__p += '\n    ';
+ if (tStart) { ;
+__p += '\n    <td>\n        ' +
+((__t = ( tStart )) == null ? '' : __t) +
+'\n        ';
+ if (tStart !== tEnd) print(" - " + tEnd); ;
+__p += '\n    </td>\n    ';
+ } ;
+__p += '\n</tr>\n';
+
+}
+return __p
+};
+
+this["JST"]["src/templates/modal_dialogs/paper_setup_modal_template.html"] = function(obj) {
+obj || (obj = {});
+var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
+function print() { __p += __j.call(arguments, '') }
+with (obj) {
+__p += '\n    <div class="col-sm-12">\n        <div class="form-horizontal">\n            <div class="form-group col-sm-6" style="margin-bottom: 15px;">\n                <label>Page Color</label>\n                <input class="pageColor form-control"\n                    value="#' +
+((__t = ( page_color )) == null ? '' : __t) +
+'"\n                    type="color" style="padding: 0" />\n            </div>\n        </div>\n        <div class="form-group col-sm-6"></div>\n        <div class="clearfix"></div>\n    </div>\n\n\n    <div class="col-sm-12">\n\n        <div class="form-horizontal">\n            <div class="form-group col-sm-6">\n                <label>Number of Pages</label>\n                <select class="pageCountSelect form-control">\n                    ';
  _.each([1,2,3,4,5,6,7,8,9,10],function(p){
                         print ("<option value='"+p+"'" + ((p == page_count) ? " selected " : "") + " >"+p+"</option>")
                     }); ;
@@ -516,7 +644,15 @@ __p += ' >\n                        A0 (841 x 1189 mm)\n                    </op
  if (page_size == 'letter') { print('selected') } ;
 __p += ' >\n                        Letter (216 x 280 mm)\n                    </option>\n                    <option value="mm" ';
  if (page_size == 'mm') { print('selected') } ;
-__p += ' >\n                        Custom (mm)\n                    </option>\n                </select>\n            </div>\n            <!-- <label for="inputPassword" class="col-sm-2 control-label">Password</label> -->\n        </div>\n    </div>\n    <div class="col-sm-6">\n        <label>Orientation</label>\n        <div class="form-horizontal">\n            <div class="form-group col-sm-6">\n                <input type="radio" name="pageOrientation" value="vertical"\n                    ';
+__p += ' >\n                        Custom (mm)\n                    </option>\n                    <option value="crop" ';
+ if (page_size == 'crop') { print('selected') } ;
+__p += '\n                        title="Fit a single page around all panels">\n                        ';
+ if (page_count > 1) { ;
+__p += '\n                            Crop single page to panels\n                        ';
+ } else { ;
+__p += '\n                            Crop page around panels\n                        ';
+ } ;
+__p += '\n                    </option>\n                </select>\n            </div>\n            <!-- <label for="inputPassword" class="col-sm-2 control-label">Password</label> -->\n        </div>\n    </div>\n    <div class="col-sm-6">\n        <label>Orientation</label>\n        <div class="form-horizontal">\n            <div class="form-group col-sm-6">\n                <input type="radio" name="pageOrientation" value="vertical"\n                    ';
  if (orientation == 'vertical') { print('checked') } ;
 __p += ' >\n                <label class="control-label text-muted">Vertical</label>\n            </div>\n            <div class="form-group col-sm-6">\n                <input type="radio" name="pageOrientation" value="horizontal"\n                    ';
  if (orientation == 'horizontal') { print('checked') } ;
@@ -538,7 +674,7 @@ __p += '\n                    class="form-control" value="' +
 return __p
 };
 
-this["JST"]["static/figure/templates/modal_dialogs/preview_Id_change_template.html"] = function(obj) {
+this["JST"]["src/templates/modal_dialogs/preview_Id_change_template.html"] = function(obj) {
 obj || (obj = {});
 var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
 function print() { __p += __j.call(arguments, '') }
@@ -613,62 +749,138 @@ __p += '\n';
 return __p
 };
 
-this["JST"]["static/figure/templates/modal_dialogs/roi_modal_roi.html"] = function(obj) {
+this["JST"]["src/templates/modal_dialogs/roi_modal_roi.html"] = function(obj) {
 obj || (obj = {});
 var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
 function print() { __p += __j.call(arguments, '') }
 with (obj) {
-__p += '\n<tr class="roiPickMe">\n    <td>\n        <div class="roi_wrapper" style="position: relative; overflow: hidden; margin: 5px; height: ' +
-((__t = ( h )) == null ? '' : __t) +
-'px; width: ' +
-((__t = ( w )) == null ? '' : __t) +
-'px">\n            <img class="roi_content"\n                data-roiId="' +
-((__t = ( roiId )) == null ? '' : __t) +
-'"\n                data-x="' +
-((__t = ( rect.x )) == null ? '' : __t) +
-'" data-y="' +
-((__t = ( rect.y )) == null ? '' : __t) +
-'" \n                data-width="' +
-((__t = ( rect.width )) == null ? '' : __t) +
-'" data-height="' +
-((__t = ( rect.height )) == null ? '' : __t) +
-'"\n                data-theT="' +
-((__t = ( rect.theT )) == null ? '' : __t) +
-'" data-theZ="' +
-((__t = ( rect.theZ )) == null ? '' : __t) +
-'"\n                style="position: absolute; top: ' +
-((__t = ( top )) == null ? '' : __t) +
-'px; left: ' +
-((__t = ( left )) == null ? '' : __t) +
-'px; width: ' +
-((__t = ( img_w )) == null ? '' : __t) +
-'px; height: ' +
-((__t = ( img_h )) == null ? '' : __t) +
-'px" src="' +
-((__t = ( src )) == null ? '' : __t) +
-'" />\n        </div>\n    </td>\n    ';
- if (zStart) { ;
-__p += '\n    <td>\n        ' +
-((__t = ( zStart )) == null ? '' : __t) +
-'\n        ';
- if (zStart !== zEnd) print(" - " + zEnd); ;
-__p += '\n    </td>\n    ';
+__p += '\n<tr>\n    <th></th>\n    <th></th>\n    <th>Z</th>\n    <th>T</th>\n    <th></th>\n</tr>\n';
+ _.each(rois, function(roi) { ;
+__p += '\n\n<tr class="roiModalRoiItem"\n        data-roiId="' +
+((__t = ( roi.id )) == null ? '' : __t) +
+'"\n        ';
+ if (!roi.shapes[0].icon) { ;
+__p += '\n            title="' +
+((__t = ( roi.shapes[0].type )) == null ? '' : __t) +
+' not supported in OMERO.figure"\n        ';
  } ;
-__p += '\n    ';
- if (tStart) { ;
-__p += '\n    <td>\n        ' +
-((__t = ( tStart )) == null ? '' : __t) +
-'\n        ';
- if (tStart !== tEnd) print(" - " + tEnd); ;
-__p += '\n    </td>\n    ';
+__p += '\n        ';
+ if (roi.shapes.length === 1) { ;
+__p += '\n            data-shapeId="' +
+((__t = ( roi.shapes[0].id )) == null ? '' : __t) +
+'"\n            title="' +
+((__t = ( roi.shapes[0].tooltip )) == null ? '' : __t) +
+'"\n        ';
  } ;
-__p += '\n</tr>\n';
+__p += '\n        >\n    <td>\n        ';
+ if (roi.shapes.length > 1) { ;
+__p += '\n            <span class="toggleRoi glyphicon glyphicon-play"></span>\n        ';
+ } ;
+__p += '\n    </td>\n    <td>\n        <span class="glyphicon ';
+ if (roi.shapes[0].icon) { ;
+__p +=
+((__t = ( roi.icon )) == null ? '' : __t);
+ } ;
+__p += '"></span>\n    </td>\n\n    <td style="padding-left: 0; padding-right: 0">\n        ';
+ if (roi.minZ !== undefined) { ;
+__p += '\n            ' +
+((__t = ( roi.minZ + 1 )) == null ? '' : __t);
+ if (roi.maxZ !== roi.minZ) print("-" + (roi.maxZ + 1)); ;
+__p += '\n        ';
+ } ;
+__p += '\n    </td>\n    <td style="padding-left: 0; padding-right: 0">\n        ';
+ if (roi.minT !== undefined) { ;
+__p += '\n            ' +
+((__t = ( roi.minT + 1 )) == null ? '' : __t);
+ if (roi.maxT !== roi.minT) print("-" + (roi.maxT + 1)); ;
+__p += '\n        ';
+ } ;
+__p += '\n    </td>\n    <td>\n        ';
+ if (roi.shapes.length === 1 && roi.shapes[0].icon) { ;
+__p += '\n        <button type="button" class="addOmeroShape btn btn-success btn-sm"\n                title="Add Shape to image">\n            Add\n        </button>\n        ';
+ } ;
+__p += '\n    </td>\n</tr>\n\n';
+ }) ;
+__p += '\n';
 
 }
 return __p
 };
 
-this["JST"]["static/figure/templates/shapes/shape_item_template.html"] = function(obj) {
+this["JST"]["src/templates/modal_dialogs/roi_modal_shape.html"] = function(obj) {
+obj || (obj = {});
+var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
+function print() { __p += __j.call(arguments, '') }
+with (obj) {
+__p += '\n\n';
+ if (shapes.length > 1) { ;
+__p += '\n    ';
+ _.each(shapes, function(shape) { ;
+__p += '\n    <tr class="roiModalRoiItem shape" data-shapeId="' +
+((__t = ( shape.id )) == null ? '' : __t) +
+'"\n        title="' +
+((__t = ( shape.tooltip )) == null ? '' : __t) +
+'"\n        ';
+ if (!shape.icon) { ;
+__p += 'title="' +
+((__t = ( shape.type )) == null ? '' : __t) +
+' not supported in OMERO.figure"';
+ } ;
+__p += '\n        >\n        <td></td>\n        <td>\n            <span class="glyphicon ';
+ if (shape.icon) { ;
+__p +=
+((__t = ( shape.icon )) == null ? '' : __t);
+ } ;
+__p += '"></span>\n        </td>\n        <td>' +
+((__t = ( shape.theZ + 1 )) == null ? '' : __t) +
+' </td>\n        <td>' +
+((__t = ( shape.theT + 1 )) == null ? '' : __t) +
+' </td>\n        <td>\n            ';
+ if (shape.icon) { ;
+__p += '\n            <button type="button" class="addOmeroShape btn btn-success btn-sm"\n                    title="Add Shape to image">\n                Add\n            </button>\n            ';
+ } else { ;
+__p += '\n                <span>\n                    ' +
+((__t = ( shape.type )) == null ? '' : __t) +
+'\n                </span>\n            ';
+ } ;
+__p += '\n        </td>\n    </tr>\n    ';
+ }) ;
+__p += '\n';
+ } ;
+__p += '\n';
+
+}
+return __p
+};
+
+this["JST"]["src/templates/modal_dialogs/roi_zt_buttons.html"] = function(obj) {
+obj || (obj = {});
+var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
+function print() { __p += __j.call(arguments, '') }
+with (obj) {
+__p += '\n<span class="label label-default" style="font-size: 12px">Z: ' +
+((__t = ( theZ + 1 )) == null ? '' : __t) +
+'</span>\n';
+ if (theZ != origZ) { ;
+__p += '\n    <button type="button" class="revert_theZ btn btn-success btn-xs">Revert to Z: ' +
+((__t = ( origZ + 1 )) == null ? '' : __t) +
+'</button>\n';
+ } ;
+__p += '\n<span class="label label-default" style="font-size: 12px">T: ' +
+((__t = ( theT +1 )) == null ? '' : __t) +
+'</span>\n';
+ if (theT != origT) { ;
+__p += '\n    <button type="button" class="revert_theT btn btn-success btn-xs">Revert to T: ' +
+((__t = ( origT + 1 )) == null ? '' : __t) +
+'</button>\n';
+ } ;
+__p += '\n';
+
+}
+return __p
+};
+
+this["JST"]["src/templates/shapes/shape_item_template.html"] = function(obj) {
 obj || (obj = {});
 var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
 function print() { __p += __j.call(arguments, '') }
@@ -689,22 +901,22 @@ __p += '\n\n    </div>\n';
 return __p
 };
 
-this["JST"]["static/figure/templates/shapes/shape_toolbar_template.html"] = function(obj) {
+this["JST"]["src/templates/shapes/shape_toolbar_template.html"] = function(obj) {
 obj || (obj = {});
 var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
 function print() { __p += __j.call(arguments, '') }
 with (obj) {
-__p += '\n\n<div class="btn-group" role="group" aria-label="...">\n    <button type="button" data-state="SELECT"\n    \tclass="btn btn-default select-btn ';
+__p += '\n\n<div class="btn-group shape-option" role="group" aria-label="...">\n    <button type="button" data-state="SELECT"\n        class="btn btn-default';
  if (state==='SELECT')print('pressed') ;
-__p += '">\n        <span class="glyphicon"></span></button>\n</div>\n\n\n<div class="btn-group shape-option" role="group" aria-label="...">\n    <button type="button" class="btn btn-default rect-btn ';
+__p += '">\n        <span class="glyphicon select-icon"></span></button>\n</div>\n\n\n<div class="btn-group shape-option" role="group" aria-label="...">\n    <button type="button" class="btn btn-default ';
  if (state==='RECT')print('pressed') ;
-__p += '"\n            title="Rectangle" data-state="RECT">\n        <span class="glyphicon"></span></button>\n    <button type="button" class="btn btn-default line-btn ';
+__p += '"\n            title="Rectangle" data-state="RECT">\n        <span class="glyphicon rect-icon"></span></button>\n    <button type="button" class="btn btn-default ';
  if (state==='LINE')print('pressed') ;
-__p += '"\n            title="Line" data-state="LINE">\n        <span class="glyphicon"></span></button>\n    <button type="button" class="btn btn-default arrow-btn ';
+__p += '"\n            title="Line" data-state="LINE">\n        <span class="glyphicon line-icon"></span></button>\n    <button type="button" class="btn btn-default ';
  if (state==='ARROW')print('pressed') ;
-__p += '"\n            title="Arrow" data-state="ARROW">\n        <span class="glyphicon"></span></button>\n    <button type="button" class="btn btn-default ellipse-btn ';
+__p += '"\n            title="Arrow" data-state="ARROW">\n        <span class="glyphicon arrow-icon"></span></button>\n    <button type="button" class="btn btn-default ';
  if (state==='ELLIPSE')print('pressed') ;
-__p += '"\n            title="Ellipse" data-state="ELLIPSE">\n        <span class="glyphicon"></span></button>\n</div>\n\n\n<div class="btn-group">\n    <button type="button" class="shape-color btn btn-default dropdown-toggle" title="Label Color"\n        data-toggle="dropdown">\n        <span data-color="' +
+__p += '"\n            title="Ellipse" data-state="ELLIPSE">\n        <span class="glyphicon ellipse-icon"></span></button>\n</div>\n\n\n<div class="btn-group">\n    <button type="button" class="shape-color btn btn-default dropdown-toggle" title="Label Color"\n        data-toggle="dropdown">\n        <span data-color="' +
 ((__t = ( color )) == null ? '' : __t) +
 '" style="background-color:#' +
 ((__t = ( color )) == null ? '' : __t) +
@@ -720,7 +932,7 @@ __p += '"\n            title="Ellipse" data-state="ELLIPSE">\n        <span clas
  _.each([1,2,3,4,5,7,10,15,20,30],function(p){
             print ("<li><a href='#'>"+p+"<span title='Line Width: "+p+"' data-line-width='"+p+"' class='linewidthOption' style='height:"+p+"px'></span></a></li>")
         }); ;
-__p += '\n\n    </ul>\n</div>\n\n\n<div class="btn-group">\n    <button type="button" class="btn btn-default" title="Delete, Copy, Paste etc"\n        data-toggle="dropdown">\n        <span>Edit</span>\n        <span class="caret"></span>\n    </button>\n    <ul class="dropdown-menu" role="menu">\n        <li ';
+__p += '\n\n    </ul>\n</div>\n\n\n<div class="btn-group">\n    <button type="button" class="line-width btn btn-default dropdown-toggle" title="Delete, Copy, Paste etc"\n        data-toggle="dropdown">\n        <span>Edit</span>\n        <span class="caret"></span>\n    </button>\n    <ul class="dropdown-menu" role="menu">\n        <li ';
  if (!sel) print('class="disabled"') ;
 __p += ' >\n            <a href="#" class="copyShape">\n                Copy Shape   &nbsp&nbsp&nbsp ' +
 ((__t = ( cmdKey )) == null ? '' : __t) +
@@ -732,7 +944,25 @@ __p += ' >\n            <a href="#" class="pasteShape">\n                Paste S
  if (!sel) print('class="disabled"') ;
 __p += ' >\n            <a href="#" class="deleteShape">\n                Delete Shape    &nbsp&nbsp&nbsp Del\n            </a>\n        </li>\n        <li>\n            <a href="#" class="selectAll">\n                Select All Shapes    &nbsp&nbsp ' +
 ((__t = ( cmdKey )) == null ? '' : __t) +
-'A\n            </a>\n        </li>\n    </ul>\n</div>\n\n';
+'A\n            </a>\n        </li>\n    </ul>\n</div>\n\n\n<div class="btn-group"\n    ';
+ if (omeroRoiCount > 0) { ;
+__p += '\n        title="Load ' +
+((__t = (omeroRoiCount)) == null ? '' : __t) +
+' ROIs from OMERO"\n    ';
+ } else { ;
+__p += '\n        title="This image has no ROIs on the OMERO server"\n    ';
+ } ;
+__p += '>\n    <button class="loadRois btn btn-success"\n        ';
+ if (omeroRoiCount == 0) { ;
+__p += '\n            disabled=\'disabled\'\n        ';
+ } ;
+__p += '\n    >\n        ';
+ if (roisLoaded) {;
+__p += '\n            Refresh ROIs\n        ';
+ } else { ;
+__p += '\n            Load ROIs\n        ';
+ } ;
+__p += '\n    </button>\n</div>\n';
 
 }
 return __p
