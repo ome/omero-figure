@@ -12,4 +12,4 @@ before_install:
   - git clone --depth=50 --branch=web-apps git://github.com/jburel/omero-test-infra .omero
 
 script:
-  - ACTION=echo .omero/docker app scripts
+  - .omero/docker app scripts
