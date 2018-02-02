@@ -12,5 +12,4 @@ before_install:
   - git clone --depth=50 --branch=web-apps git://github.com/jburel/omero-test-infra .omero
 
 script:
-  - APP_BUILD=false .omero/app-docker
-  - SET_UP=false DIR_SCRIPTS=omero_figure/scripts/omero .omero/scripts-docker
+  - ACTION=echo .omero/docker app scripts
