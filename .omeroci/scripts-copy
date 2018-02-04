@@ -5,9 +5,10 @@ set -u
 set -x
 
 export TARGET=${TARGET:-..}
-export OMERO_DIST=${OMERO_DIST:-/opt/omero/server/OMERO.server/}
+export OMERO_DIST=${OMERO_DIST:-/opt/omero/server/OMERO.server}
 
 rm -rf $OMERO_DIST/lib/scripts/omero
 
 cd $TARGET
+cd omero_figure/scripts
 cp -r omero $OMERO_DIST/lib/scripts/
