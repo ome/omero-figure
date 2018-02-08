@@ -62,7 +62,6 @@ class TestFigureScripts(ScriptTest):
             "Figure_JSON": omero.rtypes.rstring(json),
             "Export_Option": omero.rtypes.rstring(export_option),
             "Figure_Name": omero.rtypes.rstring(figure_name),
-            "Figure_URI": omero.rtypes.rstring(uri),
             "Webclient_URI": omero.rtypes.rstring(uri)
         }
         ann = run_script(client, id, args, "New_Figure")
