@@ -100,6 +100,12 @@ class PyTest(test_command):
         errno = pytest.main(self.test_args)
         sys.exit(errno)
 
+        os.environ.setdefault("DJANGO_SETTINGS_MODULE", "omeroweb.settings")
+
+        import django
+        if django.VERSION > (1, 7):
+            django.setup()
+
 
 cmdclass['test'] = PyTest
 
