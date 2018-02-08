@@ -51,6 +51,7 @@ class PyTest(test_command):
         ('test-no-capture', 's', "don't suppress test output"),
         ('test-failfast', 'x', "Exit on first error"),
         ('test-verbose', 'v', "more verbose output"),
+        ('test-string=', 'k', "filter tests by string"),
         ('test-quiet', 'q', "less verbose output"),
         ('junitxml=', None, "create junit-xml style report file at 'path'"),
         ('pdb', None, "fallback to pdb on error"),
