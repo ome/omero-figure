@@ -4,8 +4,7 @@ title:  "Release: 3.2.1"
 date:   2018-02-12
 ---
 
-We are pleased to announce the release of OMERO.figure 3.2.1, a bug-fix
-release:
+Today we are releasing OMERO.figure 3.2.1, a bug-fix release:
 
 - fix error when exporting un-saved Figures
   ([PR #269](https://github.com/ome/omero-figure/pull/269))
