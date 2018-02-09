@@ -95,12 +95,13 @@ class PyTest(test_command):
     def run_tests(self):
         if self.test_pythonpath is not None:
             sys.path.insert(0, self.test_pythonpath)
+
+        os.environ.setdefault("DJANGO_SETTINGS_MODULE", "omeroweb.settings")
+
         # import here, cause outside the eggs aren't loaded
         import pytest
         errno = pytest.main(self.test_args)
         sys.exit(errno)
-
-        os.environ.setdefault("DJANGO_SETTINGS_MODULE", "omeroweb.settings")
 
         import django
         if django.VERSION > (1, 7):
