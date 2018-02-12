@@ -1,3 +1,8 @@
+3.2.1 (February 2018)
+---------------------
+
+- Fix exporting of unsaved figures (PR #269)
+
 3.2.0 (January 2018)
 --------------------
 
