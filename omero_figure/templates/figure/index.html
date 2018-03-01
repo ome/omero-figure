@@ -49,7 +49,7 @@
         ACTIVITIES_JSON_URL = "{% url 'activities_json' %}",
         WEBGATEWAYINDEX = "{% url 'webgateway' %}",
         WEBINDEX_URL = "{% url 'webindex' %}",
-        ROIS_JSON_URL = WEBGATEWAYINDEX + "get_rois_json/",
+        ROIS_JSON_URL = "{% url 'api_rois' '0' %}",
         USER_FULL_NAME = "{{ userFullName }}";
 
     $(document).ready(function() {
@@ -661,7 +661,7 @@
                     </button>
                 </form>
 
-                <div class="navbar-header figure-title">
+                <div class="navbar-header figure-title" title="Edit Name">
                     <!-- Figure Title will be added here -->
                 </div>
 

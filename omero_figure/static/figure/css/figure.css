@@ -125,6 +125,16 @@
         position: absolute;
         right: 450px;
         text-align: center;
+        height: 100%;
+    }
+    .figure-title:hover {
+        color: #eee;
+        text-decoration: underline;
+    }
+    /* when editing name */
+    .figure-title input {
+        width: 75%;
+        text-align: center;
     }
 
     /* -- Legend -- */
