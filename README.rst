@@ -10,7 +10,7 @@ OMERO.figure
 
 An OMERO.web app for creating figures from images in OMERO.
 
-For full details see `SUPPORT.md <./SUPPORT.md>`_.
+For full details see `SUPPORT.md <https://github.com/ome/omero-figure/blob/master/SUPPORT.md>`_.
 
 Requirements
 ============
