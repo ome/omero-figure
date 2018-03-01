@@ -959,6 +959,9 @@
     .polygon-icon{
         background-image: url("../images/polygon-icon-16.png");
     }
+    .polyline-icon{
+        background-image: url("../images/polyline-icon-16.png");
+    }
     .linewidthOption {
         display: inline-block;
         width: 25px;
