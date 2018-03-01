@@ -138,7 +138,19 @@ module.exports = function (grunt) {
             src: ['omero_figure/static/figure/3rdparty/**',
                   'omero_figure/static/figure/css/**',
                   'omero_figure/static/figure/images/**',
-                  'omero_figure/static/figure/templates.js'], dest: 'demo/'},
+                  'omero_figure/static/figure/templates.js'],
+            dest: 'demo/'
+          },
+        ]
+      },
+      shapeEditor: {
+        files: [
+          {
+            expand: true,
+            cwd: 'node_modules/ome-shape-editor/dist/js',
+            src: 'shape-editor.js',
+            dest: 'omero_figure/static/figure/3rdparty/shape-editor-3.1.0'
+          },
         ]
       },
     },
