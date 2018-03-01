@@ -107,20 +107,20 @@ Install Node from https://nodejs.org, then:
 
 Install Grunt CLI as described on http://gruntjs.com/using-the-cli.
 
-To compile jst templates:
+To build various resources into ``omero_figure/static``  run:
 
 ::
 
-	$ grunt jst
+    $ grunt build
 
-To concatenate js files into a single figure.js file that is used in the app:
+This will concatenate js files into a single figure.js file,
+compile the underscore templates into templates.js and also
+copy the shape-editor.js from node_modules.
 
-::
-
-    $ grunt concat
-
-During development, you'll want to have both of these run whenever the relevant files are edited.
-This can be achieved with:
+During development, you will want to peform the concatenation
+(``concat``) and template compilation (``jst``) tasks whenever
+the JavaScript or template files change. This can be achieved
+with:
 
 ::
 

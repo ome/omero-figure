@@ -169,4 +169,9 @@ module.exports = function (grunt) {
   grunt.registerTask('demo', [
       'concat', 'jst', 'replace', 'copy'
   ]);
+
+  // Single task required in order to build OMERO.figure.
+  grunt.registerTask('build', [
+      'concat', 'jst', 'copy:shapeEditor'
+  ]);
 };
