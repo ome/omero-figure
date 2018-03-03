@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 #
-# Copyright (C) 2016 University of Dundee & Open Microscopy Environment.
+# Copyright (C) 2018 University of Dundee & Open Microscopy Environment.
 # All rights reserved. Use is subject to license terms supplied in LICENSE.txt
 #
 # This program is free software; you can redistribute it and/or modify
