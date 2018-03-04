@@ -364,7 +364,7 @@ def list_web_figures(request, conn=None, **kwargs):
         }
         rsp.append(fig_file)
 
-    return HttpResponse(json.dumps(rsp), content_type='json')
+    return HttpResponse(json.dumps(rsp), content_type='application/json')
 
 
 def default_thumbnail(size=(120, 120)):
@@ -421,7 +421,7 @@ def unit_conversion(request, value, from_unit, to_unit, conn=None, **kwargs):
            'unit': str(to_value.getUnit()),
            'symbol': to_value.getSymbol()}
 
-    return HttpResponse(json.dumps(rsp), content_type='json')
+    return HttpResponse(json.dumps(rsp), content_type='application/json')
 
 
 @login_required()
