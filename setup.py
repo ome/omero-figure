@@ -51,6 +51,7 @@ class PyTest(test_command):
         ('test-no-capture', 's', "don't suppress test output"),
         ('test-failfast', 'x', "Exit on first error"),
         ('test-verbose', 'v', "more verbose output"),
+        ('test-string=', 'k', "filter tests by string"),
         ('test-quiet', 'q', "less verbose output"),
         ('junitxml=', None, "create junit-xml style report file at 'path'"),
         ('pdb', None, "fallback to pdb on error"),
@@ -94,10 +95,17 @@ class PyTest(test_command):
     def run_tests(self):
         if self.test_pythonpath is not None:
             sys.path.insert(0, self.test_pythonpath)
+
+        os.environ.setdefault("DJANGO_SETTINGS_MODULE", "omeroweb.settings")
+
         # import here, cause outside the eggs aren't loaded
         import pytest
         errno = pytest.main(self.test_args)
         sys.exit(errno)
+
+        import django
+        if django.VERSION > (1, 7):
+            django.setup()
 
 
 cmdclass['test'] = PyTest
