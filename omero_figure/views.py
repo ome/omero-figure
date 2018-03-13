@@ -26,10 +26,9 @@ import time
 from omeroweb.webgateway.marshal import imageMarshal
 from omeroweb.webgateway.views import _get_prepared_image
 from omeroweb.webclient.views import run_script
-from django.core.urlresolvers import reverse
+from django.core.urlresolvers import reverse, NoReverseMatch
 from omero.rtypes import wrap, rlong, rstring, unwrap
 import omero
-from omero.gateway import OriginalFileWrapper
 
 from cStringIO import StringIO
 
@@ -40,70 +39,16 @@ import logging
 
 try:
     from PIL import Image
-except:
+except ImportError:
     try:
         import Image
-    except:
+    except ImportError:
         pass
 
 logger = logging.getLogger(__name__)
 
 JSON_FILEANN_NS = "omero.web.figure.json"
 SCRIPT_PATH = "/omero/figure_scripts/Figure_To_Pdf.py"
-
-
-def create_original_file_from_file_obj(
-        conn, fo, path, name, file_size, mimetype=None, ns=None):
-    """
-    This is a copy of the same method from Blitz Gateway, but fixes a bug
-    where the conn.SERVICE_OPTS are not passed in the API calls.
-    Once this is fixed in OMERO-5 (and we don't need to work with OMERO-4)
-    then we can revert to using the BlitzGateway for this method again.
-    """
-    raw_file_store = conn.createRawFileStore()
-
-    # create original file, set name, path, mimetype
-    original_file = omero.model.OriginalFileI()
-    original_file.setName(rstring(name))
-    original_file.setPath(rstring(path))
-    if mimetype:
-        original_file.mimetype = rstring(mimetype)
-    original_file.setSize(rlong(file_size))
-    # set sha1  # ONLY for OMERO-4
-    try:
-        import hashlib
-        hash_sha1 = hashlib.sha1
-    except:
-        import sha
-        hash_sha1 = sha.new
-    try:
-        fo.seek(0)
-        h = hash_sha1()
-        h.update(fo.read())
-        original_file.setSha1(rstring(h.hexdigest()))
-    except:
-        pass       # OMERO-5 doesn't need this
-    upd = conn.getUpdateService()
-    original_file = upd.saveAndReturnObject(original_file, conn.SERVICE_OPTS)
-
-    # upload file
-    fo.seek(0)
-    raw_file_store.setFileId(original_file.getId().getValue(),
-                             conn.SERVICE_OPTS)
-    buf = 10000
-    for pos in range(0, long(file_size), buf):
-        block = None
-        if file_size-pos < buf:
-            block_size = file_size-pos
-        else:
-            block_size = buf
-        fo.seek(pos)
-        block = fo.read(block_size)
-        raw_file_store.write(block, pos, block_size, conn.SERVICE_OPTS)
-    # https://github.com/openmicroscopy/openmicroscopy/pull/2006
-    original_file = raw_file_store.save(conn.SERVICE_OPTS)
-    raw_file_store.close()
-    return OriginalFileWrapper(conn, original_file)
 
 
 @login_required()
@@ -116,7 +61,8 @@ def index(request, file_id=None, conn=None, **kwargs):
     script_service = conn.getScriptService()
     sid = script_service.getScriptID(SCRIPT_PATH)
     script_missing = sid <= 0
-    user_full_name = conn.getUser().getFullName()
+    user = conn.getUser()
+    user_full_name = "%s %s" % (user.firstName, user.lastName)
 
     context = {'scriptMissing': script_missing,
                'userFullName': user_full_name,
@@ -282,44 +228,42 @@ def save_web_figure(request, conn=None, **kwargs):
         # pretty-print json
         figure_json = json.dumps(json_data, sort_keys=True,
                                  indent=2, separators=(',', ': '))
-    except:
+    except Exception:
         pass
 
     file_id = request.POST.get('fileId')
 
+    if 'figureName' in json_data and len(json_data['figureName']) > 0:
+        figure_name = json_data['figureName']
+    else:
+        n = datetime.now()
+        # time-stamp name by default: WebFigure_2013-10-29_22-43-53.json
+        figure_name = "Figure_%s-%s-%s_%s-%s-%s.json" % \
+            (n.year, n.month, n.day, n.hour, n.minute, n.second)
+
+    # we store json in description field...
+    description = {}
+    if first_img_id is not None:
+        # We duplicate the figure name here for quicker access when
+        # listing files
+        # (use this instead of file name because it supports unicode)
+        description['name'] = figure_name
+        description['imageId'] = first_img_id
+        if 'baseUrl' in panel:
+            description['baseUrl'] = panel['baseUrl']
+    desc = json.dumps(description)
+
     if file_id is None:
         # Create new file
-        if 'figureName' in json_data and len(json_data['figureName']) > 0:
-            figure_name = json_data['figureName']
-        else:
-            n = datetime.now()
-            # time-stamp name by default: WebFigure_2013-10-29_22-43-53.json
-            figure_name = "Figure_%s-%s-%s_%s-%s-%s.json" % \
-                (n.year, n.month, n.day, n.hour, n.minute, n.second)
-        # we store json in description field...
-        description = {}
-        if first_img_id is not None:
-            # We duplicate the figure name here for quicker access when
-            # listing files
-            # (use this instead of file name because it supports unicode)
-            description['name'] = figure_name
-            description['imageId'] = first_img_id
-            if 'baseUrl' in panel:
-                description['baseUrl'] = panel['baseUrl']
-
         # Try to set Group context to the same as first image
         curr_gid = conn.SERVICE_OPTS.getOmeroGroup()
-        try:
-            conn.SERVICE_OPTS.setOmeroGroup('-1')
-            i = conn.getObject("Image", first_img_id)
-            if i is not None:
-                gid = i.getDetails().getGroup().getId().getValue()
-                conn.SERVICE_OPTS.setOmeroGroup(gid)
-            else:
-                # Don't leave as -1
-                conn.SERVICE_OPTS.setOmeroGroup(curr_gid)
-        except:
-            # revert back
+        conn.SERVICE_OPTS.setOmeroGroup('-1')
+        i = conn.getObject("Image", first_img_id)
+        if i is not None:
+            gid = i.getDetails().getGroup().getId()
+            conn.SERVICE_OPTS.setOmeroGroup(gid)
+        else:
+            # Don't leave as -1
             conn.SERVICE_OPTS.setOmeroGroup(curr_gid)
         file_size = len(figure_json)
         f = StringIO()
@@ -327,12 +271,11 @@ def save_web_figure(request, conn=None, **kwargs):
         # Can't use unicode for file name
         figure_name = unicodedata.normalize(
             'NFKD', figure_name).encode('ascii', 'ignore')
-        orig_file = create_original_file_from_file_obj(
-            conn, f, '', figure_name, file_size, mimetype="application/json")
+        orig_file = conn.createOriginalFileFromFileObj(
+            f, '', figure_name, file_size, mimetype="application/json")
         fa = omero.model.FileAnnotationI()
         fa.setFile(omero.model.OriginalFileI(orig_file.getId(), False))
         fa.setNs(wrap(JSON_FILEANN_NS))
-        desc = json.dumps(description)
         fa.setDescription(wrap(desc))
         fa = update.saveAndReturnObject(fa, conn.SERVICE_OPTS)
         file_id = fa.getId().getValue()
@@ -345,7 +288,12 @@ def save_web_figure(request, conn=None, **kwargs):
         if fa is None:
             return Http404("Couldn't find FileAnnotation of ID: %s" % file_id)
         conn.SERVICE_OPTS.setOmeroGroup(fa.getDetails().group.id.val)
+        # Update description
+        fa._obj.setDescription(wrap(desc))
+        update.saveAndReturnObject(fa._obj, conn.SERVICE_OPTS)
         orig_file = fa._obj.file
+        # Update name and size
+        orig_file.setName(rstring(figure_name))
         size = len(figure_json)
         orig_file.setSize(rlong(size))
         orig_file = update.saveAndReturnObject(
@@ -379,14 +327,14 @@ def save_web_figure(request, conn=None, **kwargs):
             for i in conn.getObjects("Image", image_ids):
                 if not i.canAnnotate():
                     continue
-                l = omero.model.ImageAnnotationLinkI()
-                l.parent = omero.model.ImageI(i.getId(), False)
-                l.child = omero.model.FileAnnotationI(file_id, False)
-                links.append(l)
+                link = omero.model.ImageAnnotationLinkI()
+                link.parent = omero.model.ImageI(i.getId(), False)
+                link.child = omero.model.FileAnnotationI(file_id, False)
+                links.append(link)
             # Don't want to fail at this point due to strange permissions combo
             try:
                 update.saveArray(links, conn.SERVICE_OPTS)
-            except:
+            except Exception:
                 pass
 
     return HttpResponse(str(file_id))
@@ -417,7 +365,7 @@ def load_web_figure(request, file_id, conn=None, **kwargs):
                 json_data['figureName'] = description['name']
             else:
                 json_data['figureName'] = json_file.getName()
-    except:
+    except ValueError:
         # If the json failed to parse, return the string anyway
         return HttpResponse(figure_json, content_type='json')
 
@@ -454,7 +402,7 @@ def make_web_figure(request, conn=None, **kwargs):
             figure_url = reverse('load_figure', args=[figure_dict['fileId']])
             figure_url = request.build_absolute_uri(figure_url)
             input_map['Figure_URI'] = wrap(figure_url)
-        except:
+        except NoReverseMatch:
             pass
 
     rsp = run_script(request, conn, sid, input_map, scriptName='Figure.pdf')
@@ -497,7 +445,7 @@ def list_web_figures(request, conn=None, **kwargs):
         }
         rsp.append(fig_file)
 
-    return HttpResponse(json.dumps(rsp), content_type='json')
+    return HttpResponse(json.dumps(rsp), content_type='application/json')
 
 
 def default_thumbnail(size=(120, 120)):
@@ -554,7 +502,7 @@ def unit_conversion(request, value, from_unit, to_unit, conn=None, **kwargs):
            'unit': str(to_value.getUnit()),
            'symbol': to_value.getSymbol()}
 
-    return HttpResponse(json.dumps(rsp), content_type='json')
+    return HttpResponse(json.dumps(rsp), content_type='application/json')
 
 
 @login_required()
