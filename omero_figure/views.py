@@ -64,11 +64,11 @@ def index(request, file_id=None, conn=None, **kwargs):
     user = conn.getUser()
     user_full_name = "%s %s" % (user.firstName, user.lastName)
     max_w, max_h = conn.getMaxPlaneSize()
-    maxPlaneSize = max_w * max_h
+    max_plane_size = max_w * max_h
 
     context = {'scriptMissing': script_missing,
                'userFullName': user_full_name,
-               'maxPlaneSize': maxPlaneSize,
+               'maxPlaneSize': max_plane_size,
                'version': utils.__version__}
     return render(request, "figure/index.html", context)
 
