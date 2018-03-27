@@ -50,7 +50,9 @@
         WEBGATEWAYINDEX = "{% url 'webgateway' %}",
         WEBINDEX_URL = "{% url 'webindex' %}",
         ROIS_JSON_URL = WEBGATEWAYINDEX + "get_rois_json/",
-        USER_FULL_NAME = "{{ userFullName }}";
+        USER_FULL_NAME = "{{ userFullName }}",
+        // Images larger than this are 'big' tiled images
+        MAX_PLANE_SIZE = "{{ maxPlaneSize }}";
 
     $(document).ready(function() {
 
