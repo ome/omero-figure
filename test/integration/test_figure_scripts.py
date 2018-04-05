@@ -38,17 +38,18 @@ name = "Figure_To_Pdf.py"
 class TestFigureScripts(ScriptTest):
     """Test exporting a figure containing a big and a regular image."""
 
-    def import_pyramid(self, tmpdir, name=None, thumb=False):
+    def import_pyramid(self, client, tmpdir, name=None, thumb=False):
         if name is None:
             name = "test&sizeX=20000&sizeY=10000.fake"
         fakefile = tmpdir.join(name)
         fakefile.write('')
-        pixels = self.import_image(filename=str(fakefile), skip="checksum")[0]
+        pixels = self.import_image(str(fakefile), client=client,
+                                   skip="checksum")[0]
         id = long(float(pixels))
         assert id >= 0
         # wait for the pyramid to be generated
         self.wait_for_pyramid(id)
-        query_service = self.client.sf.getQueryService()
+        query_service = client.sf.getQueryService()
         image = query_service.findByQuery(
             """select i from Image i left outer join fetch i.pixels as p
                where p.id = :id""",
@@ -92,7 +93,7 @@ class TestFigureScripts(ScriptTest):
         image = self.create_test_image(size_x, size_y, size_z, size_c,
                                        size_t, session)
 
-        big_image = self.import_pyramid(tmpdir)
+        big_image = self.import_pyramid(client, tmpdir)
 
         figure_name = "test_export_figure_as_%s" % export_option
         json = create_figure([image, big_image])
