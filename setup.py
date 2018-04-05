@@ -147,6 +147,7 @@ class Grunt(Command):
         self.spawn(['grunt', 'jst'])
         self.spawn(['grunt', 'concat'])
         self.spawn(['grunt', 'jshint', '--force'])
+        self.spawn(['grunt', 'copy:shapeEditor'])
 
 
 cmdclass['grunt'] = Grunt
