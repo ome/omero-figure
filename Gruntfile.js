@@ -138,7 +138,19 @@ module.exports = function (grunt) {
             src: ['omero_figure/static/figure/3rdparty/**',
                   'omero_figure/static/figure/css/**',
                   'omero_figure/static/figure/images/**',
-                  'omero_figure/static/figure/templates.js'], dest: 'demo/'},
+                  'omero_figure/static/figure/templates.js'],
+            dest: 'demo/'
+          },
+        ]
+      },
+      shapeEditor: {
+        files: [
+          {
+            expand: true,
+            cwd: 'node_modules/@openmicroscopy/shape-editor/dist/js',
+            src: 'shape-editor.js',
+            dest: 'omero_figure/static/figure/3rdparty/shape-editor-3.1.1'
+          },
         ]
       },
     },
@@ -156,5 +168,10 @@ module.exports = function (grunt) {
   // then copies over other static js, css and images to demo/static/figure/..
   grunt.registerTask('demo', [
       'concat', 'jst', 'replace', 'copy'
+  ]);
+
+  // Single task required in order to build OMERO.figure.
+  grunt.registerTask('build', [
+      'concat', 'jst', 'copy:shapeEditor'
   ]);
 };
