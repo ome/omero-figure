@@ -115,13 +115,13 @@ def get_panel_json(image, index, page_x):
     size_x = pix.getSizeX().val
     size_y = pix.getSizeY().val
     # shapes coordinates are Image coordinates
+    # Red Line diagonal from corner to corner
+    # Arrow from other corner to centre
     shapes = [{"type": "Rectangle", "x": size_x/4, "y": size_y/4,
                "width": size_x/2, "height": size_y/2,
                "strokeWidth": 4, "strokeColor": "#FFFFFF"},
-               # Red Line diagonal from corner to corner
               {"type": "Line", "x1": 0, "x2": size_x, "y1": 0,
                "y2": size_y, "strokeWidth": 5, "strokeColor": "#FF0000"},
-               # Arrow from other corner to centre
               {"type": "Arrow", "x1": 0, "x2": size_x/2, "y1": size_y,
                "y2": size_y/2, "strokeWidth": 10, "strokeColor": "#FFFF00"},
               {"type": "Ellipse", "x": size_x/2, "y": size_y/2,
