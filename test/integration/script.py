@@ -144,9 +144,9 @@ def check_file_annotation(client, file_annotation,
     name and number of objects linked to the original file.
     """
     assert file_annotation is not None
-    id = file_annotation.getValue().getId().getValue()
+    id = file_annotation.getId().getValue()
     assert id > 0
-    orig_file = file_annotation.getValue().getFile()
+    orig_file = file_annotation.getFile()
     assert orig_file.getSize().getValue() > 0
     assert orig_file.getName().getValue() is not None
 

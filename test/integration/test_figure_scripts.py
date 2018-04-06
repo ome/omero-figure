@@ -28,8 +28,7 @@ from script import ScriptTest
 from script import run_script
 from script import check_file_annotation
 from omero.sys import ParametersI
-import time
-
+from omero.model import Image
 
 path = "/omero/figure_scripts/"
 name = "Figure_To_Pdf.py"
@@ -38,46 +37,10 @@ name = "Figure_To_Pdf.py"
 class TestFigureScripts(ScriptTest):
     """Test exporting a figure containing a big and a regular image."""
 
-    def import_pyramid(self, client, tmpdir, name=None, thumb=False):
-        if name is None:
-            name = "test&sizeX=20000&sizeY=10000.fake"
-        fakefile = tmpdir.join(name)
-        fakefile.write('')
-        pixels = self.import_image(str(fakefile), client=client,
-                                   skip="checksum")[0]
-        id = long(float(pixels))
-        assert id >= 0
-        # wait for the pyramid to be generated
-        self.wait_for_pyramid(id)
-        query_service = client.sf.getQueryService()
-        image = query_service.findByQuery(
-            """select i from Image i left outer join fetch i.pixels as p
-               where p.id = :id""",
-            ParametersI().addId(id))
-        return image
-
-    def wait_for_pyramid(self, id):
-        store = self.client.sf.createRawPixelsStore()
-        not_ready = True
-        count = 0
-        elapse_time = 1  # time in seconds
-        try:
-            # Do not wait more than 60 seconds
-            while not_ready and count < 60:
-                try:
-                    store.setPixelsId(id, True)
-                    # No exception. The pyramid is now ready
-                    not_ready = False
-                except Exception:
-                    # try again in elapse_time
-                    time.sleep(elapse_time)
-                    count = count + elapse_time
-        finally:
-            store.close()
-
     @pytest.mark.parametrize("export_option", ["PDF", "TIFF", "PDF_IMAGES",
-                                               "TIFF_IMAGES"])
+-                                              "TIFF_IMAGES", "OMERO"])
     def test_export_figure_as(self, export_option, tmpdir):
+        """Create images, add to figure and export as TIFF, PNG etc."""
         id = super(TestFigureScripts, self).get_script_by_name(path, name)
         assert id > 0
         client, user = self.new_client_and_user()
@@ -93,7 +56,12 @@ class TestFigureScripts(ScriptTest):
         image = self.create_test_image(size_x, size_y, size_z, size_c,
                                        size_t, session)
 
-        big_image = self.import_pyramid(client, tmpdir)
+        image_id = self.import_pyramid(tmpdir, client=client)
+        query_service = client.sf.getQueryService()
+        big_image = query_service.findByQuery(
+            """select i from Image i left outer join fetch i.pixels as p
+               where i.id = :id""",
+            ParametersI().addId(image_id))
 
         figure_name = "test_export_figure_as_%s" % export_option
         json = create_figure([image, big_image])
@@ -104,14 +72,14 @@ class TestFigureScripts(ScriptTest):
             "Figure_Name": omero.rtypes.rstring(figure_name),
             "Webclient_URI": omero.rtypes.rstring(uri)
         }
-        ann = run_script(client, id, args, "New_Figure")
+        robj = run_script(client, id, args, "New_Figure")
+        ann = robj.getValue()
         # New image is returned when it is an OMERO image
         if export_option is "OMERO":
-            assert isinstance(ann, "Image")
+            assert isinstance(ann, Image)
         else:
             c = self.new_client(user=user)
             check_file_annotation(c, ann, link_count=2)
-        assert False
 
 
 def create_figure(images):
