@@ -43,7 +43,10 @@ class TestFigureScripts(ScriptTest):
         """Create images, add to figure and export as TIFF, PNG etc."""
         id = super(TestFigureScripts, self).get_script_by_name(path, name)
         assert id > 0
-        client, user = self.new_client_and_user()
+        # client, user = self.new_client_and_user()
+        # Temp workaround for openmicroscopy/openmicroscopy/pull/5720
+        client = self.client
+        user = self.user
         script_service = client.sf.getScriptService()
         assert script_service.getParams(id) is not None
         # create an image
