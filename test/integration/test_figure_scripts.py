@@ -38,7 +38,7 @@ class TestFigureScripts(ScriptTest):
     """Test exporting a figure containing a big and a regular image."""
 
     @pytest.mark.parametrize("export_option", ["PDF", "TIFF", "PDF_IMAGES",
--                                              "TIFF_IMAGES", "OMERO"])
+                                               "TIFF_IMAGES", "OMERO"])
     def test_export_figure_as(self, export_option, tmpdir):
         """Create images, add to figure and export as TIFF, PNG etc."""
         id = super(TestFigureScripts, self).get_script_by_name(path, name)
@@ -89,16 +89,17 @@ def create_figure(images):
                    "paper_height": 842,
                    "page_size": "A4",
                    }
-    panels = [get_panel_json(image, idx) for idx, image in enumerate(images)]
+    panels = []
+    for idx, image in enumerate(images):
+        panels.append(get_panel_json(image, 0, 50 + (idx * 300)))
+        panels.append(get_panel_json(image, 1, 50 + (idx * 300)))
     figure_json['panels'] = panels
     json_string = json.dumps(figure_json)
     return json_string
 
 
-def get_panel_json(image, index):
+def get_panel_json(image, index, page_x):
     """Create a panel."""
-    print "get_panel_json", type(image), index
-
     channel = {'emissionWave': "400",
                'label': "DAPI",
                'color': "0000FF",
@@ -110,15 +111,23 @@ def get_panel_json(image, index):
                           'end': 255},
                }
 
-    shapes = [{"type": "Rectangle", "x": 287, "y": 184.7, "width": 187,
-               "height": 230,  "strokeWidth": 4, "strokeColor": "#FFFFFF"},
-              {"type": "Arrow", "x1": 659, "x2": 408.7, "y1": 465.6,
-               "y2": 323.9, "strokeWidth": 10, "strokeColor": "#FFFF00"},
-              {"type": "Ellipse", "x": 235, "y": 231, "radiusX": 139,
-               "radiusY": 69, "rotation": -32.3, "strokeWidth": 10,
-               "strokeColor": "#00FF00"}]
-
     pix = image.getPrimaryPixels()
+    size_x = pix.getSizeX().val
+    size_y = pix.getSizeY().val
+    # shapes coordinates are Image coordinates
+    shapes = [{"type": "Rectangle", "x": size_x/4, "y": size_y/4,
+               "width": size_x/2, "height": size_y/2,
+               "strokeWidth": 4, "strokeColor": "#FFFFFF"},
+               # Red Line diagonal from corner to corner
+              {"type": "Line", "x1": 0, "x2": size_x, "y1": 0,
+               "y2": size_y, "strokeWidth": 5, "strokeColor": "#FF0000"},
+               # Arrow from other corner to centre
+              {"type": "Arrow", "x1": 0, "x2": size_x/2, "y1": size_y,
+               "y2": size_y/2, "strokeWidth": 10, "strokeColor": "#FFFF00"},
+              {"type": "Ellipse", "x": size_x/2, "y": size_y/2,
+               "radiusX": size_x/3, "radiusY": size_y/2, "rotation": 45,
+               "strokeWidth": 10, "strokeColor": "#00FF00"}]
+
     img_json = {
         "labels": [],
         "channels": [channel],
@@ -126,17 +135,17 @@ def get_panel_json(image, index):
         "width": 100 * (index + 1),
         "sizeT": pix.getSizeT().val,
         "sizeZ": pix.getSizeZ().val,
-        "orig_width": pix.getSizeX().val,
-        "orig_height": pix.getSizeY().val,
+        "orig_width": size_x,
+        "orig_height": size_y,
         "dx": 0,
         "dy": 0,
         "rotation": 100 * index,
         "imageId": image.getId().getValue(),
         "name": "test_image",
-        "zoom": 100 + (index * 100),
+        "zoom": 100 + (index * 50),
         "shapes": shapes,
         "y": index * 200,
-        "x": 50,
+        "x": page_x,
         "theZ": 0,
         "theT": 0
     }
