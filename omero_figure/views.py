@@ -124,7 +124,7 @@ def img_data_json(request, image_id, conn=None, **kwargs):
 
 
 @login_required()
-def render_scaled_region(request, z, t, iid, conn=None, **kwargs):
+def render_scaled_region(request, iid, z, t, conn=None, **kwargs):
 
     region = request.GET.get('region')
     logger.debug("Rendering region: %s, Image: %s" % (region, iid))
