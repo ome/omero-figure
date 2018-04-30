@@ -420,11 +420,11 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                    <h4 class="modal-title" id="addImagesLabel">Export as json</h4>
+                    <h4 class="modal-title" id="addImagesLabel">Export as JSON</h4>
                 </div>
                 <form class="addImagesForm" role="form">
                     <div class="modal-body">
-                        <p>The current Figure is entirely defined by the json data below.
+                        <p>The current Figure is entirely defined by the JSON data below.
                         </p>
                         <div class="form-group" style="margin-top: 15px; margin-bottom: 0px">
                             <textarea class="form-control" rows="15"></textarea>
@@ -443,11 +443,11 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                    <h4 class="modal-title" id="addImagesLabel">Import from json</h4>
+                    <h4 class="modal-title" id="addImagesLabel">Import from JSON</h4>
                 </div>
                 <form class="importJsonForm" role="form">
                     <div class="modal-body">
-                        <p>Paste the json data for the Figure into the text box below.
+                        <p>Paste the JSON data for the Figure into the text box below.
                         </p>
                         <div class="form-group" style="margin-top: 15px; margin-bottom: 0px">
                             <textarea class="form-control" rows="15"></textarea>
@@ -588,22 +588,30 @@
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown">File <b class="caret"></b></a>
                         <ul class="active dropdown-menu">
                             <li class="new_figure">
-                                <a href="#">New ⌘N</a>
+                                <a href="#">
+                                    New
+                                </a>
                             </li>
                             <li class="open_figure">
-                                <a href="#">Open ⌘O</a>
+                                <a href="#">
+                                    <span class="pull-right">Ctrl+O</span>
+                                    Open...
+                                </a>
                             </li>
                             <li class="save_figure disabled">
-                                <a href="#">Save ⌘S</a>
+                                <a href="#">
+                                    <span class="pull-right">Ctrl+S</span>
+                                    Save
+                                </a>
                             </li>
                             <li class="save_as">
-                                <a href="#">Save A Copy...</a>
+                                <a href="#">Save a Copy...</a>
                             </li>
                             <li class="export_json">
-                                <a href="#">Export as json</a>
+                                <a href="#">Export as JSON...</a>
                             </li>
                             <li class="import_json">
-                                <a href="#">Import from json</a>
+                                <a href="#">Import from JSON...</a>
                             </li>
                             <li class="delete_figure">
                                 <a href="#">Delete</a>
@@ -623,16 +631,28 @@
                         <ul class="active dropdown-menu">
                             <!-- We add <a> to undo/redo to enable. See undo.js -->
                             <li class="undo disabled">
-                                <a href="#">Undo ⌘Z</a>
+                                <a href="#">
+                                    <span class="pull-right">Ctrl+Z</span>
+                                    Undo
+                                </a>
                             </li>
                             <li class="redo disabled">
-                                <a href="#">Redo ⌘Y</a>
+                                <a href="#">
+                                    <span class="pull-right">Ctrl+Y</span>
+                                    Redo
+                                </a>
                             </li>
                             <li class="copy disabled">
-                                <a href="#">Copy ⌘C</a>
+                                <a href="#">
+                                    <span class="pull-right">Ctrl+C</span>
+                                    Copy
+                                </a>
                             </li>
                             <li class="paste disabled">
-                                <a href="#">Paste ⌘V</a>
+                                <a href="#">
+                                    <span class="pull-right">Ctrl+V</span>
+                                    Paste
+                                </a>
                             </li>
 
                          </ul>
