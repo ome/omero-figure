@@ -24,6 +24,7 @@ import json
 import time
 
 from omeroweb.webgateway.marshal import imageMarshal
+from omeroweb.webgateway.views import _get_prepared_image
 from omeroweb.webclient.views import run_script
 from django.core.urlresolvers import reverse, NoReverseMatch
 from omero.rtypes import wrap, rlong, rstring, unwrap
@@ -34,6 +35,7 @@ from cStringIO import StringIO
 from omeroweb.webclient.decorators import login_required
 
 from . import utils
+import logging
 
 try:
     from PIL import Image
@@ -42,6 +44,8 @@ except ImportError:
         import Image
     except ImportError:
         pass
+
+logger = logging.getLogger(__name__)
 
 JSON_FILEANN_NS = "omero.web.figure.json"
 SCRIPT_PATH = "/omero/figure_scripts/Figure_To_Pdf.py"
@@ -59,9 +63,12 @@ def index(request, file_id=None, conn=None, **kwargs):
     script_missing = sid <= 0
     user = conn.getUser()
     user_full_name = "%s %s" % (user.firstName, user.lastName)
+    max_w, max_h = conn.getMaxPlaneSize()
+    max_plane_size = max_w * max_h
 
     context = {'scriptMissing': script_missing,
                'userFullName': user_full_name,
+               'maxPlaneSize': max_plane_size,
                'version': utils.__version__}
     return render(request, "figure/index.html", context)
 
@@ -114,6 +121,83 @@ def img_data_json(request, image_id, conn=None, **kwargs):
     rv['deltaT'] = time_list
 
     return HttpResponse(json.dumps(rv), content_type='json')
+
+
+@login_required()
+def render_scaled_region(request, iid, z, t, conn=None, **kwargs):
+
+    region = request.GET.get('region')
+    logger.debug("Rendering region: %s, Image: %s" % (region, iid))
+
+    x, y, width, height = [float(r) for r in region.split(',')]
+    max_size = request.GET.get('max_size', 2000)
+    max_size = int(max_size)
+
+    pi = _get_prepared_image(request, iid, conn=conn)
+    if pi is None:
+        raise Http404
+    image, compress_quality = pi
+
+    size_x = image.getSizeX()
+    size_y = image.getSizeY()
+
+    scale_levels = image.getZoomLevelScaling()
+    if scale_levels is None:
+        # Not a big image - can load at full size
+        level = None
+    else:
+        # Pick zoom such that returned image is below MAX size
+        max_level = len(scale_levels.keys()) - 1
+        longest_side = max(width, height)
+
+        # start small, and go until we reach target size
+        zm = max_level
+        while zm > 0 and scale_levels[zm - 1] * longest_side < max_size:
+            zm = zm - 1
+
+        level = max_level - zm
+
+        # We need to use final rendered jpeg coordinates
+        # Convert from original image coordinates by scaling
+        scale = scale_levels[zm]
+        x = int(x * scale)
+        y = int(y * scale)
+        width = int(width * scale)
+        height = int(height * scale)
+        size_x = int(size_x * scale)
+        size_y = int(size_y * scale)
+
+    canvas = None
+    # Coordinates below are all final jpeg coordinates & sizes
+    if x < 0 or y < 0 or (x + width) > size_x or (y + height) > size_y:
+        # If we're outside the bounds of the image...
+        # Need to render reduced region and paste on to full size image
+        canvas = Image.new("RGBA", (width, height), (221, 221, 221))
+        paste_x = 0
+        paste_y = 0
+        if x < 0:
+            paste_x = -x
+            width = width + x
+            x = 0
+        if y < 0:
+            paste_y = -y
+            height = height + y
+            y = 0
+
+    # Render the region...
+    jpeg_data = image.renderJpegRegion(z, t, x, y, width, height, level=level,
+                                       compression=compress_quality)
+
+    # paste to canvas if needed
+    if canvas is not None:
+        i = StringIO(jpeg_data)
+        to_paste = Image.open(i)
+        canvas.paste(to_paste, (paste_x, paste_y))
+        rv = StringIO()
+        canvas.save(rv, 'jpeg', quality=90)
+        jpeg_data = rv.getvalue()
+
+    return HttpResponse(jpeg_data, content_type='image/jpeg')
 
 
 @login_required(setGroupContext=True)

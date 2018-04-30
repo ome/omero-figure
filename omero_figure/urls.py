@@ -56,6 +56,11 @@ urlpatterns = patterns(
         {'_defcb': views.default_thumbnail},
         name="figure_render_thumbnail"),
 
+    # Region defined by ?region=x,y,w,h
+    url(r'^render_scaled_region/(?P<iid>[0-9]+)/(?P<z>[0-9]+)/(?P<t>[0-9]+)/$',
+        views.render_scaled_region,
+        name="figure_render_scaled_region"),
+
     # Delete file annotations of saved Figures - 'POST' with 'fileId' of file
     # annotation
     url(r'^delete_web_figure/$', views.delete_web_figure,

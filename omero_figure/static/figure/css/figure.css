@@ -737,9 +737,20 @@
         100% { -webkit-transform: rotate(360deg); transform:rotate(360deg); }
     }
 
-    .navbar-right .glyphicon-refresh {
+    .navbar-right .glyphicon-refresh, .imgContainer .glyphicon-refresh {
         animation: spin 2s linear infinite;
-        padding: 2px 2px 5px 2px;
+        padding: 1px 2px 5px 2px;
+    }
+
+    .imgContainer .glyphicon-refresh {
+        font-size: 50px;
+        left: 50%;
+        top: 50%;
+        display: block;
+        margin-left: -25px;
+        margin-top: -25px;
+        color: #bbb;
+        padding: 1px 2px 9px 2px;
     }
 
     .colorpicker span,

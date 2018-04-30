@@ -138,15 +138,15 @@ def points_to_string(points):
 
 
 def check_file_annotation(client, file_annotation,
-                          parent_type="Image", is_linked=True):
+                          parent_type="Image", link_count=0):
     """
     Check validity of file annotation. If hasFileAnnotation, check the size,
     name and number of objects linked to the original file.
     """
     assert file_annotation is not None
-    id = file_annotation.getValue().getId().getValue()
+    id = file_annotation.getId().getValue()
     assert id > 0
-    orig_file = file_annotation.getValue().getFile()
+    orig_file = file_annotation.getFile()
     assert orig_file.getSize().getValue() > 0
     assert orig_file.getName().getValue() is not None
 
@@ -155,7 +155,4 @@ def check_file_annotation(client, file_annotation,
     wrapper = conn.getObject("FileAnnotation", id)
     links = sum(1 for i in wrapper.getParentLinks(parent_type))
     conn.close()
-    if is_linked:
-        assert links == 1
-    else:
-        assert links == 0
+    assert links == link_count
