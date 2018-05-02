@@ -739,7 +739,7 @@
 
     .navbar-right .glyphicon-refresh, .imgContainer .glyphicon-refresh {
         animation: spin 2s linear infinite;
-        padding: 1px 2px 5px 2px;
+        padding: 1px 2px 2px 2px;
     }
 
     .imgContainer .glyphicon-refresh {
