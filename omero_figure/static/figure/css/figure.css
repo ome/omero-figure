@@ -973,15 +973,6 @@
     .polyline-icon{
         background-image: url("../images/polyline-icon-16.png");
     }
-    .linewidthOption {
-        display: inline-block;
-        width: 25px;
-        background: black;
-        margin: 0 5px;
-    }
-    .line-width .linewidthOption {
-        max-height: 15px;
-    }
     .roiModalRoiItem {
         cursor: pointer;
     }
