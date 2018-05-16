@@ -1,3 +1,14 @@
+4.0.0 (May 2018)
+----------------
+
+- Support for big (tiled) Images (PR #243)
+- Allow loading Polygons from OMERO to add to images (PR #253)
+- Started using test_infra to test listing of figure files (PR #270)
+- Open-with Figure and adding Images now preserves the order of images (PR #275)
+- Add label of T-index to time-lapse images (PR #276)
+- Show a spinner while loading new images (PR #279)
+- Stroke-width of ROIs are now based on page points, not on panel pixel sizes (PR #281)
+
 3.2.1 (February 2018)
 ---------------------
 
