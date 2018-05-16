@@ -149,7 +149,7 @@ module.exports = function (grunt) {
             expand: true,
             cwd: 'node_modules/@openmicroscopy/shape-editor/dist/js',
             src: 'shape-editor.js',
-            dest: 'omero_figure/static/figure/3rdparty/shape-editor-3.1.1'
+            dest: 'omero_figure/static/figure/3rdparty/shape-editor-4.0.0'
           },
         ]
       },
