@@ -5,7 +5,7 @@
 - Allow loading Polygons from OMERO to add to images (PR #253)
 - Started using test_infra to test listing of figure files (PR #270)
 - Open-with Figure and adding Images now preserves the order of images (PR #275)
-- Add label of T-index to time-lapse images (PR #276)
+- Support for adding label of T-index to time-lapse images (PR #276)
 - Show a spinner while loading new images (PR #279)
 - Stroke-width of ROIs are now based on page points, not on panel pixel sizes (PR #281)
 
