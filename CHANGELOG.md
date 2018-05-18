@@ -14,6 +14,9 @@ Developers:
 - Breaking change in figure JSON model. Stroke-widths changed (see above) and export-dpi renamed to min-export-dpi
 - Updated to use shape-editor 4.0.0 to support Polygons and Polylines (PR #253) and not scale stroke-width.
 
+This release also upgrades the required version of OMERO
+to 5.4.0 or newer.
+
 3.2.1 (February 2018)
 ---------------------
 
