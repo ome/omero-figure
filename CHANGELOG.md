@@ -4,8 +4,8 @@
 - Support for big (tiled) Images. This is a major change (PR #243)
 - Allow loading Polygons and Polylines from OMERO to add to Images (PR #253)
 - Open-with Figure and adding Images now preserves the order of Images (PR #275)
-- Support for adding label of T-index to time-lapse images (PR #276)
-- Show a spinner while loading new images (PR #279)
+- Support for adding label of T-index to time-lapse Images (PR #276)
+- Show a spinner while loading new Images (PR #279)
 - Stroke-width of ROIs are now based on page points, not on panel pixel sizes (PR #281)
 
 Developers:
