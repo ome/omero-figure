@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Release: 4.0.0"
-date:   2018-05-21
+date:   2018-05-22
 ---
 
 We are pleased to announce the release of OMERO.figure 4.0.0.
@@ -9,7 +9,7 @@ We are pleased to announce the release of OMERO.figure 4.0.0.
 This is a major release that adds support for "big" tiled Images.
 It includes changes to the way ROI stroke-widths are displayed. 
 Previously, ROI stroke-widths were measured in image pixels so that
-stroke-widths decreased as an image panel was zoomed out.
+lines appear thinner as an image panel was zoomed out.
 However, this meant that lines of similar width can appear at different
 thicknesses on different images. It also meant that on "big" Images that
 were zoomed out a long way, lines would disappear completely.
