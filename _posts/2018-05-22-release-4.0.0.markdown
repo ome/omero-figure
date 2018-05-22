@@ -7,6 +7,9 @@ date:   2018-05-22
 We are pleased to announce the release of OMERO.figure 4.0.0.
 
 This is a major release that adds support for "big" tiled Images.
+This means that OMERO.figure can now handle WSI image data or other images with
+large XY sizes.
+
 It includes changes to the way ROI stroke-widths are displayed. 
 Previously, ROI stroke-widths were measured in image pixels so that
 lines appeared thinner as an image panel was zoomed out.
