@@ -1,3 +1,22 @@
+4.0.0 (May 2018)
+----------------
+
+- Support for big (tiled) Images. This is a major change (PR #243)
+- Allow loading Polygons and Polylines from OMERO to add to Images (PR #253)
+- Open-with Figure and adding Images now preserves the order of Images (PR #275)
+- Support for adding label of T-index to time-lapse Images (PR #276)
+- Show a spinner while loading new Images (PR #279)
+- Stroke-width of ROIs are now based on page points, not on panel pixel sizes (PR #281)
+
+Developers:
+
+- Use test_infra to test listing of figure files (PR #270)
+- Breaking change in figure JSON model. Stroke-widths changed (see above) and export-dpi renamed to min-export-dpi
+- Use shape-editor 4.0.0 to support Polygons and Polylines (PR #253) and not scale stroke-width
+
+This release also upgrades the required version of OMERO
+to 5.4.0 or newer.
+
 3.2.1 (February 2018)
 ---------------------
 
