@@ -15,10 +15,7 @@ For full details see `SUPPORT.md <https://github.com/ome/omero-figure/blob/maste
 Requirements
 ============
 
-* OMERO 5.3.0 or newer.
-
-To be able to export the figure as TIFF with italic or bold label, it is necessary
-to use OMERO 5.3.2 or newer.
+* OMERO 5.4.0 or newer.
 
 
 Installing from PyPI
