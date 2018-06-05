@@ -2005,12 +2005,18 @@ class OmeroExport(TiffExport):
 
         # Try to get a Dataset
         dataset = None
-        for panel in self.figure_json['panels']:
-            parent = self.conn.getObject('Image', panel['imageId']).getParent()
-            if parent is not None and parent.OMERO_CLASS == 'Dataset':
-                if parent.canLink():
-                    dataset = parent
-                    break
+
+        dataset_id = self.script_params.get('Dataset_ID')
+        if dataset_id:
+            self.conn.SERVICE_OPTS.setOmeroGroup(-1)
+            dataset = self.conn.getObject("Dataset", dataset_id)
+        else:
+            for panel in self.figure_json['panels']:
+                parent = self.conn.getObject('Image', panel['imageId']).getParent()
+                if parent is not None and parent.OMERO_CLASS == 'Dataset':
+                    if parent.canLink():
+                        dataset = parent
+                        break
 
         # Need to specify group for new image
         group_id = self.conn.getEventContext().groupId
@@ -2097,7 +2103,10 @@ def run_script():
                        description="Name of the Pdf Figure"),
 
         scripts.String("Figure_URI",
-                       description="URL to the Figure")
+                       description="URL to the Figure"),
+
+        scripts.Long("Dataset_ID",
+                       description="Dataset to add the new Image")
     )
 
     try:
