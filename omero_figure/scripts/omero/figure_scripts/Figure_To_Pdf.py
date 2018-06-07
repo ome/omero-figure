@@ -20,12 +20,53 @@ import logging
 import omero.scripts as scripts
 from omero.gateway import BlitzGateway
 from omero.rtypes import rstring, robject
+from omero.model import ImageI, ImageAnnotationLinkI
+import json
 
 logger = logging.getLogger('figure_to_pdf')
 
-from omero_figure.figure_export import FigureExport, \
-                                       TiffExport, \
-                                       OmeroExport
+from omero_figure.export import FigureExport, \
+                                TiffExport, \
+                                OmeroExport
+
+def create_file_annotation(conn, output_file, image_ids):
+    """Create a FileAnnotation in OMERO from the local file, link to images."""
+    file_ext = output_file.split(".")[-1]
+    # get Group for first image
+    group_id = conn.getObject("Image", image_ids[0]).getDetails().group.id.val
+    conn.SERVICE_OPTS.setOmeroGroup(group_id)
+
+    ns = "omero.web.figure.%s" % file_ext
+    if file_ext == 'zip':
+        mimetype = "application/zip"
+    elif file_ext == 'pdf':
+        mimetype = "application/pdf"
+    elif file_ext == 'tiff':
+        mimetype = "image/tiff"
+
+    file_ann = conn.createFileAnnfromLocalFile(
+        output_file,
+        mimetype=mimetype,
+        ns=ns)
+
+    links = []
+    for image in conn.getObjects("Image", image_ids):
+        if image.canLink():
+            link = ImageAnnotationLinkI()
+            link.parent = ImageI(image.id, False)
+            link.child = file_ann._obj
+            links.append(link)
+    if len(links) > 0:
+        # Don't want to fail at this point due to strange permissions combo
+        try:
+            links = conn.getUpdateService().saveAndReturnArray(
+                links, conn.SERVICE_OPTS)
+        except Exception:
+            logger.error("Failed to attach figure: %s to images %s"
+                         % (file_ann, image_ids))
+
+    return file_ann
+
 
 def export_figure(conn, script_params):
     """Main function to perform figure export."""
@@ -33,6 +74,11 @@ def export_figure(conn, script_params):
     conn.SERVICE_OPTS.setOmeroGroup(-1)
 
     export_option = script_params['Export_Option']
+
+    # Since unicode can't be wrapped by rstring - convert to unicode
+    figure_json_string = script_params['Figure_JSON']
+    figure_json_string = figure_json_string.decode('utf8')
+    script_params['Figure_JSON'] = figure_json_string
 
     if export_option == 'PDF':
         fig_export = FigureExport(conn, script_params)
@@ -44,7 +90,30 @@ def export_figure(conn, script_params):
         fig_export = TiffExport(conn, script_params, export_images=True)
     elif export_option == 'OMERO':
         fig_export = OmeroExport(conn, script_params)
-    return fig_export.build_figure()
+
+    result = fig_export.build_figure()
+
+    if export_option == 'OMERO':
+        # result is a list of new Image IDs
+        if len(result) == 0:
+            return
+        # Return first Image
+        return conn.getObject("Image", result[0])
+
+    # result is a file object...
+    file_data = result.getvalue()
+    result.close()
+
+
+    file_name = fig_export.get_export_file_name()
+    with open(file_name,'wb') as out:
+        out.write(file_data)
+
+    # get Image IDs
+    figure_json = json.loads(figure_json_string)
+    image_ids = [p['imageId'] for p in figure_json['panels']]
+
+    return create_file_annotation(conn, file_name, image_ids)
 
 
 def run_script():
@@ -84,14 +153,14 @@ def run_script():
                 script_params[key] = client.getInput(key, unwrap=True)
 
         # call the main script - returns a file annotation wrapper
-        file_annotation = export_figure(conn, script_params)
+        obj_wrapper = export_figure(conn, script_params)
 
-        # return this file_annotation to the client.
+        # return this obj_wrapper to the client.
         client.setOutput("Message", rstring("Figure created"))
-        if file_annotation is not None:
+        if obj_wrapper is not None:
             client.setOutput(
                 "New_Figure",
-                robject(file_annotation._obj))
+                robject(obj_wrapper._obj))
 
     finally:
         client.closeSession()

@@ -33,9 +33,9 @@ from omero.testlib import ITest
 from omero.gateway import BlitzGateway
 from test_figure_scripts import create_figure
 
-from omero_figure.figure_export import FigureExport, \
-                                       TiffExport, \
-                                       OmeroExport
+from omero_figure.export import FigureExport, \
+                                TiffExport, \
+                                OmeroExport
 
 class TestExportNoScript(ITest):
     """Test exporting a figure containing a regular image."""
