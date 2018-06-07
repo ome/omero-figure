@@ -20,20 +20,27 @@
 """Tools for drawing Shapes to PDF or TIFF figures."""
 
 from PIL import Image, ImageDraw
-from math import atan, sin, cos, sqrt, radians
+from math import atan2, atan, sin, cos, sqrt, radians
 
 
 def scale_to_export_dpi(pixels):
     """
+    Scale from 72 to 300 dpi.
+
     Original figure coordinates assume 72 dpi figure, but we want to
     export at 300 dpi, so everything needs scaling accordingly
     """
     return pixels * 300/72
 
 class ShapeToPdfExport(object):
+    """Class for drawing vector shapes onto ReportLab PDF canvas."""
 
     def __init__(self, canvas, panel, page, crop, page_height):
+        """
+        Constructor. Takes ReportLab canvas and draws shapes from panel JSON.
 
+        Page specifies which page we're on and crop is {x, y, width, height}.
+        """
         self.canvas = canvas
         self.panel = panel
         self.page = page
@@ -60,7 +67,7 @@ class ShapeToPdfExport(object):
 
     @staticmethod
     def get_rgb(color):
-        # Convert from E.g. '#ff0000' to (255, 0, 0)
+        """Convert from E.g. '#ff0000' to (255, 0, 0)."""
         red = int(color[1:3], 16)
         green = int(color[3:5], 16)
         blue = int(color[5:7], 16)
@@ -69,6 +76,7 @@ class ShapeToPdfExport(object):
     def panel_to_page_coords(self, shape_x, shape_y):
         """
         Convert coordinate from the image onto the PDF page.
+
         Handles zoom, offset & rotation of panel, rotating the
         x, y point around the centre of the cropped region
         and scaling appropriately.
@@ -114,6 +122,7 @@ class ShapeToPdfExport(object):
         return {'x': shape_x, 'y': shape_y, 'inPanel': in_panel}
 
     def draw_rectangle(self, shape):
+        """Draw a rectangle shape onto the canvas."""
         top_left = self.panel_to_page_coords(shape['x'], shape['y'])
 
         # Don't draw if all corners are outside the panel
@@ -158,6 +167,7 @@ class ShapeToPdfExport(object):
             self.canvas.restoreState()
 
     def draw_line(self, shape):
+        """Draw a line shape onto the canvas."""
         start = self.panel_to_page_coords(shape['x1'], shape['y1'])
         end = self.panel_to_page_coords(shape['x2'], shape['y2'])
         x1 = start['x']
@@ -182,6 +192,7 @@ class ShapeToPdfExport(object):
         self.canvas.drawPath(p, fill=1, stroke=1)
 
     def draw_arrow(self, shape):
+        """Draw an arrow shape onto the canvas."""
         start = self.panel_to_page_coords(shape['x1'], shape['y1'])
         end = self.panel_to_page_coords(shape['x2'], shape['y2'])
         x1 = start['x']
@@ -239,6 +250,7 @@ class ShapeToPdfExport(object):
         self.canvas.drawPath(p, fill=1, stroke=1)
 
     def draw_polygon(self, shape, closed=True):
+        """Draw a polygon shape onto the canvas."""
         polygon_in_viewport = False
         points = []
         for point in shape['points'].split(" "):
@@ -276,9 +288,11 @@ class ShapeToPdfExport(object):
         self.canvas.drawPath(p, fill=0, stroke=1)
 
     def draw_polyline(self, shape):
+        """Draw a polyline shape onto the canvas."""
         self.draw_polygon(shape, False)
 
     def draw_ellipse(self, shape):
+        """Draw an ellipse shape onto the canvas."""
         stroke_width = shape['strokeWidth']
         c = self.panel_to_page_coords(shape['x'], shape['y'])
         cx = c['x']
@@ -321,11 +335,12 @@ class ShapeToPdfExport(object):
 class ShapeToPilExport(object):
     """
     Class for drawing panel shapes onto a PIL image.
+
     We get a PIL image, the panel dict, and crop coordinates
     """
 
     def __init__(self, pil_img, panel, crop):
-
+        """Constructor. Takes PIL image draws shapes from panel JSON."""
         self.pil_img = pil_img
         self.panel = panel
         # The crop region on the original image coordinates...
@@ -351,6 +366,7 @@ class ShapeToPilExport(object):
     def get_panel_coords(self, shape_x, shape_y):
         """
         Convert coordinate from the image onto the panel.
+
         Handles zoom, offset & rotation of panel, rotating the
         x, y point around the centre of the cropped region
         and scaling appropriately
@@ -383,7 +399,7 @@ class ShapeToPilExport(object):
         return {'x': shape_x, 'y': shape_y}
 
     def draw_arrow(self, shape):
-
+        """Draw an arrow onto the image."""
         start = self.get_panel_coords(shape['x1'], shape['y1'])
         end = self.get_panel_coords(shape['x2'], shape['y2'])
         x1 = start['x']
@@ -426,6 +442,7 @@ class ShapeToPilExport(object):
         self.draw.polygon(points, fill=rgb, outline=rgb)
 
     def draw_polygon(self, shape, closed=True):
+        """Draw a polygon onto the image."""
         points = []
         for point in shape['points'].split(" "):
             # Older polygons/polylines may be 'x,y,'
@@ -454,9 +471,11 @@ class ShapeToPilExport(object):
                                point[0] + r, point[1] + r), fill=rgb)
 
     def draw_polyline(self, shape):
+        """Draw a polyline onto the image."""
         self.draw_polygon(shape, False)
 
     def draw_line(self, shape):
+        """Draw a line onto the image."""
         start = self.get_panel_coords(shape['x1'], shape['y1'])
         end = self.get_panel_coords(shape['x2'], shape['y2'])
         x1 = start['x']
@@ -469,6 +488,7 @@ class ShapeToPilExport(object):
         self.draw.line([(x1, y1), (x2, y2)], fill=rgb, width=int(stroke_width))
 
     def draw_rectangle(self, shape):
+        """Draw a rectangle onto the image."""
         # clockwise list of corner points on the OUTSIDE of thick line
         w = scale_to_export_dpi(shape.get('strokeWidth', 2))
         cx = shape['x'] + (shape['width']/2)
@@ -502,7 +522,7 @@ class ShapeToPilExport(object):
                            mask=temp_rect)
 
     def draw_ellipse(self, shape):
-
+        """Draw an ellipse onto the image."""
         w = int(scale_to_export_dpi(shape.get('strokeWidth', 2)))
         ctr = self.get_panel_coords(shape['x'], shape['y'])
         cx = ctr['x']
