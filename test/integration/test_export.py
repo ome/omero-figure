@@ -21,14 +21,7 @@
 
 """Integration tests for testing the export of figures in PDF, TIFF, etc."""
 
-import omero
 import pytest
-import json
-from script import ScriptTest
-from script import run_script
-from script import check_file_annotation
-from omero.sys import ParametersI
-from omero.model import Image
 from omero.testlib import ITest
 from omero.gateway import BlitzGateway
 from test_figure_scripts import create_figure
@@ -40,15 +33,18 @@ from omero_figure.export import FigureExport, \
 class TestExportNoScript(ITest):
     """Test exporting a figure containing a regular image."""
 
-    @pytest.mark.parametrize("export_option", ["PDF"])
-    def test_export_no_script(self, export_option):
+    @pytest.mark.parametrize("export_options",
+                             [["PDF", "pdf"], ["PDF_IMAGES", "zip"],
+                              ["TIFF", "tiff"], ["TIFF_IMAGES", "zip"],
+                              ["OMERO", ""]])
+    def test_export_no_script(self, export_options):
         """Create image, add to figure and export as TIFF, PNG etc."""
         client = self.client
-        user = self.user
         # create an image
         session = client.getSession()
         image = self.create_test_image(100, 100, 1, 1, 1, session)
 
+        export_option = export_options[0]
         figure_name = "test_export_no_script_%s" % export_option
         json = create_figure([image])
         uri = "https://www.openmicroscopy.org/"
@@ -70,3 +66,16 @@ class TestExportNoScript(ITest):
         elif export_option == 'OMERO':
             fig_export = OmeroExport(conn, script_params)
         result = fig_export.build_figure()
+
+        if export_option == 'OMERO':
+            # Expect a single image (single page figure)
+            assert len(result) == 1
+        else:
+            # File object should contain data
+            file_data = result.getvalue()
+            result.close()
+            assert len(file_data) > 0
+
+            # Check file name
+            file_name = fig_export.get_export_file_name()
+            assert file_name.endswith(export_options[1])
