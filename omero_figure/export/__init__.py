@@ -169,7 +169,6 @@ class FigureExport(object):
                         shape['strokeWidth'] = stroke_width
         return figure_json
 
-
     def get_export_file_name(self):
         """
         Get the name of the file to write the figure to.
@@ -184,7 +183,6 @@ class FigureExport(object):
             return self.get_zip_name()
         else:
             return self.get_figure_file_name()
-
 
     def get_zip_name(self):
         """Return name for zip file."""
@@ -321,14 +319,12 @@ class FigureExport(object):
 
         return self.file_object
 
-
     def get_exported_file_name(self):
         """Return name of pdf/tiff or zip returned from build_figure()."""
         if self.create_zip:
             return self.get_zip_name()
         else:
             return self.get_figure_file_name()
-
 
     def apply_rdefs(self, image, channels):
         """Apply the channel levels and colors to the image."""

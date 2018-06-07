@@ -23,11 +23,13 @@ from omero.rtypes import rstring, robject
 from omero.model import ImageI, ImageAnnotationLinkI
 import json
 
+from omero_figure.export import FigureExport, \
+    TiffExport, \
+    OmeroExport
+
+
 logger = logging.getLogger('figure_to_pdf')
 
-from omero_figure.export import FigureExport, \
-                                TiffExport, \
-                                OmeroExport
 
 def create_file_annotation(conn, output_file, image_ids):
     """Create a FileAnnotation in OMERO from the local file, link to images."""
@@ -104,9 +106,8 @@ def export_figure(conn, script_params):
     file_data = result.getvalue()
     result.close()
 
-
     file_name = fig_export.get_export_file_name()
-    with open(file_name,'wb') as out:
+    with open(file_name, 'wb') as out:
         out.write(file_data)
 
     # get Image IDs

@@ -27,8 +27,9 @@ from omero.gateway import BlitzGateway
 from test_figure_scripts import create_figure
 
 from omero_figure.export import FigureExport, \
-                                TiffExport, \
-                                OmeroExport
+    TiffExport, \
+    OmeroExport
+
 
 class TestExportNoScript(ITest):
     """Test exporting a figure containing a regular image."""
@@ -50,7 +51,7 @@ class TestExportNoScript(ITest):
         uri = "https://www.openmicroscopy.org/"
         script_params = {
             "Figure_JSON": json,
-            "Export_Option": export_option,   # TODO - shouldn't need to include this
+            "Export_Option": export_option,   # TODO - shouldn't need this
             "Figure_Name": figure_name,
             "Webclient_URI": uri
         }

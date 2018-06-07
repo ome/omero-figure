@@ -32,6 +32,7 @@ def scale_to_export_dpi(pixels):
     """
     return pixels * 300/72
 
+
 class ShapeToPdfExport(object):
     """Class for drawing vector shapes onto ReportLab PDF canvas."""
 
