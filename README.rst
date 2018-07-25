@@ -82,7 +82,7 @@ Now install the script's dependencies:
 
     $ yum install python-reportlab
 
-* Optional: Figure legends can be formatted using Markdown syntax. To see this correctly in the exported PDF info page, we need `Python Markdown <https://pythonhosted.org/Markdown/index.html>`_. For example, install on CentOS 7:
+* Optional: Figure legends can be formatted using Markdown syntax. To see this correctly in the exported PDF info page, we need `Python Markdown <https://python-markdown.github.io/>`_. For example, install on CentOS 7:
 
 ::
 
