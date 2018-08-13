@@ -457,7 +457,7 @@ def default_thumbnail(size=(120, 120)):
         size = (size, size)
     if len(size) == 1:
         size = (size[0], size[0])
-    img = Image.new("RGBA", size, (238, 238, 238))
+    img = Image.new("RGB", size, (238, 238, 238))
     f = StringIO()
     img.save(f, "PNG")
     f.seek(0)
