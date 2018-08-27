@@ -172,7 +172,7 @@ def render_scaled_region(request, iid, z, t, conn=None, **kwargs):
     if x < 0 or y < 0 or (x + width) > size_x or (y + height) > size_y:
         # If we're outside the bounds of the image...
         # Need to render reduced region and paste on to full size image
-        canvas = Image.new("RGBA", (width, height), (221, 221, 221))
+        canvas = Image.new("RGB", (width, height), (221, 221, 221))
         paste_x = 0
         paste_y = 0
         if x < 0:
@@ -457,7 +457,7 @@ def default_thumbnail(size=(120, 120)):
         size = (size, size)
     if len(size) == 1:
         size = (size[0], size[0])
-    img = Image.new("RGBA", size, (238, 238, 238))
+    img = Image.new("RGB", size, (238, 238, 238))
     f = StringIO()
     img.save(f, "PNG")
     f.seek(0)
