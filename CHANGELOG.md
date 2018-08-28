@@ -1,3 +1,12 @@
+4.0.1 (August 2018)
+-------------------
+
+- Fix rendering of big tiled images using Pillow 4.2 (PR #300)
+- Fix scalebar length on exported TIFF figures for big images (PR #304)
+- Z and T slider usability improvements (PR #303)
+- Fix dropdown choosers for labels on touch-enabled Windows machines (PR #301)
+- Export handles missing dx and dy attributes. Thanks to David Pinto (PR #294)
+
 4.0.0 (May 2018)
 ----------------
 
