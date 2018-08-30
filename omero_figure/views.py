@@ -16,12 +16,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from django.http import Http404, HttpResponse
+from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from datetime import datetime
 import unicodedata
 import json
 import time
+import re
 
 from omeroweb.webgateway.marshal import imageMarshal
 from omeroweb.webgateway.views import _get_prepared_image
@@ -532,3 +533,45 @@ def roi_count(request, image_id, conn=None, **kwargs):
         shape_count = count[0][0].getValue()
         rv['shape'] = shape_count
     return HttpResponse(json.dumps(rv), content_type="application/json")
+
+
+@login_required()
+def figure_image_viewer(request, iid, conn=None, **kwargs):
+    """
+    For an Image created from figure export, the image viewer opens the figure.
+
+    To set figure as default viewer:
+    $ bin/omero config set omero.web.viewer.view \
+                                    omero_figure.views.figure_image_viewer
+    We have to check the image description for the figure URL.
+    If no figure/file/id URL is found in description, try to open
+    image in iviewer (if installed).
+    Otherwise just use webgateway viewer.
+    """
+
+    image = conn.getObject('Image', iid)
+    description = image.getDescription()
+
+    url = None
+    m = re.search(r'figure/file/(?P<file_id>[0-9]+)/', description)
+    if m:
+        file_id = m.group('file_id')
+        url = reverse('load_figure', kwargs={'file_id': file_id})
+
+    if url is None:
+        # If not a figure image, use iviewer (if installed)
+        dataset = request.GET.get('dataset')
+
+        try:
+            # Add image and dataset to iviewer URL:
+            # e.g. /iviewer/?images=6951&dataset=601
+            url = reverse('omero_iviewer_index')
+            url = url + "?images=%s" % iid
+            if dataset is not None:
+                url = url + "&dataset=%s" % dataset
+        except NoReverseMatch:
+            # iviewer not installed
+            # Don't use webclient viewer as it will redirect again!
+            url = reverse('webgateway_full_viewer', kwargs={'iid': iid})
+
+    return HttpResponseRedirect(url)
