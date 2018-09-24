@@ -2012,7 +2012,8 @@ class OmeroExport(TiffExport):
             dataset = self.conn.getObject("Dataset", dataset_id)
         else:
             for panel in self.figure_json['panels']:
-                parent = self.conn.getObject('Image', panel['imageId']).getParent()
+                parent = self.conn.getObject('Image',
+                                             panel['imageId']).getParent()
                 if parent is not None and parent.OMERO_CLASS == 'Dataset':
                     if parent.canLink():
                         dataset = parent
@@ -2106,7 +2107,7 @@ def run_script():
                        description="URL to the Figure"),
 
         scripts.Long("Dataset_ID",
-                       description="Dataset to add the new Image")
+                     description="Dataset to add the new Image")
     )
 
     try:
