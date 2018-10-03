@@ -1,3 +1,8 @@
+4.0.2 (October 2018)
+--------------------
+
+- Add new functionalities to the script used to export PDF/TIFF so that other tools can use the script. The changes are not yet used by OMERO.figure. Thanks to Andreas Knab (PR #306)
+
 4.0.1 (August 2018)
 -------------------
 
