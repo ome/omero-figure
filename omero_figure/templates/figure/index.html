@@ -595,9 +595,21 @@
                 </div>
                 <form class="labelsFromMapAnnsForm" role="form">
                     <div class="modal-body">
-                        <p>Choose Key (brackets are numbers of images with this key-value):</p>
+                        <p>Choose Key
+                            <small class="text-muted">(shows numbers of images)</small>:</p>
                         <select>
                         </select>
+                        <div class="checkbox">
+                            <label>
+                                Include Key in Label
+                                <input name="includeKey" type="checkbox" checked>
+                            </label>
+                        </div>
+                        <hr>
+                        <h5>Example Label</h5>
+                        <div id="exampleLabelFromMap" class="well"
+                            style="background-color: transparent; margin: 0">
+                        </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
