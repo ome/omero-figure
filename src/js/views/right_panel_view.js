@@ -266,6 +266,7 @@
             // For the Label Text, handle this differently...
             if ($a.attr('data-label')) {
                 $('.new-label-form .label-text', this.$el).val( $a.attr('data-label') );
+                return;
             }
             // All others, we take the <span> from the <a> and place it in the <button>
             if ($span.length === 0) $span = $a;  // in case we clicked on <span>
@@ -325,6 +326,15 @@
                             color: color
                     });
                 });
+                return false;
+            }
+
+            if (label_text == '[key-values]') {
+                // Load Map Annotations for this image and create labels
+                $("#labelsFromMapAnns").modal("show", {
+                    position:position,
+                    size:font_size,
+                    color: color});
                 return false;
             }
 
