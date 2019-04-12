@@ -1,1 +1,1588 @@
-{"version":1,"panels":[{"labels":[{"color":"000000","text":"DNA","position":"top","size":"10"},{"color":"000000","text":"Control siRNA","position":"leftvert","size":"10"}],"height":75.16804761992246,"channels":[{"metalabel":"","color":"FFFFFF","emissionWave":457,"label":"457","window":{"max":2377,"min":75,"end":2060,"start":190},"active":true},{"metalabel":"","color":"FF0000","emissionWave":617,"label":"617","window":{"max":5853,"min":47,"end":2151,"start":337},"active":false},{"metalabel":"","color":"FF0000","emissionWave":685,"label":"685","window":{"max":5892,"min":4,"end":3021,"start":298},"active":false}],"deltaT":[],"selected":false,"baseUrl":"http://jcb-dataviewer.rupress.org/jcb","width":78.3773707967566,"sizeT":1,"sizeZ":35,"dx":0,"dy":0,"rotation":0,"imageId":127,"pixel_size_y":0.06631,"pixel_size_x":0.06631,"datasetId":134,"datasetName":"Figure 5","name":"Control siRNA Aurora B","orig_width":340,"zoom":100,"orig_height":328,"theZ":16,"y":77.58632573688713,"x":80.72887374011736,"theT":0,"scalebar":{"show":true,"length":5,"position":"bottomleft","color":"FFFFFF"},"pixel_size_x_symbol":"µm","pixel_size_x_unit":"MICROMETER"},{"labels":[{"color":"000000","text":"Bod1 siRNA","position":"leftvert","size":10}],"height":75.1680476199225,"channels":[{"metalabel":"","color":"FFFFFF","emissionWave":457,"label":"457","window":{"max":2758,"min":6,"end":1966,"start":143},"active":true},{"metalabel":"","color":"FF0000","emissionWave":617,"label":"617","window":{"max":7132,"min":3,"end":1874,"start":359},"active":false},{"metalabel":"","color":"FF0000","emissionWave":685,"label":"685","window":{"max":10656,"min":0,"end":3330,"start":532},"active":false}],"deltaT":[],"selected":false,"baseUrl":"http://jcb-dataviewer.rupress.org/jcb","width":78.3773707967566,"sizeT":1,"sizeZ":33,"dx":0,"dy":0,"rotation":0,"imageId":125,"pixel_size_y":0.06631,"pixel_size_x":0.06631,"datasetId":134,"datasetName":"Figure 5","name":"Aurora B, Bod1 siRNA","orig_width":371,"zoom":100,"orig_height":353,"theZ":21,"y":156.67324189664743,"x":80.72887374011736,"theT":0,"pixel_size_x_symbol":"µm","pixel_size_x_unit":"MICROMETER"},{"labels":[{"text":"Control siRNA","size":"10","position":"leftvert","color":"000000"}],"height":75.16804761992239,"channels":[{"metalabel":"","color":"0000FF","emissionWave":457,"label":"457","window":{"max":2270,"min":68,"end":1857,"start":178},"active":true},{"metalabel":"","color":"00FF00","emissionWave":528,"label":"528","window":{"max":8916,"min":0,"end":2340,"start":445},"active":true},{"metalabel":"","color":"FF0000","emissionWave":617,"label":"617","window":{"max":4168,"min":68,"end":1349,"start":273},"active":true}],"deltaT":[],"selected":false,"baseUrl":"http://jcb-dataviewer.rupress.org/jcb","width":78.37737079675657,"sizeT":1,"sizeZ":57,"dx":0,"dy":0,"rotation":0,"imageId":128,"pixel_size_y":0.06289698,"pixel_size_x":0.06289698,"datasetId":134,"datasetName":"Figure 5","name":"Control siRNA Phospho H3","orig_width":359,"zoom":100,"orig_height":334,"theZ":28,"y":77.58632573688713,"x":429.91383108649507,"theT":0,"scalebar":{"show":true,"length":5,"position":"bottomleft","color":"FFFFFF"},"pixel_size_x_symbol":"µm","pixel_size_x_unit":"MICROMETER"},{"labels":[{"text":"Bod1 siRNA","size":"10","position":"leftvert","color":"000000"},{"text":"DNA","size":"6","position":"bottomright","color":"0000FF"},{"text":"Phospho-H3","size":"6","position":"bottomright","color":"00FF00"},{"text":"AuroraB","size":"6","position":"bottomright","color":"FF0000"}],"height":75.16804761992246,"channels":[{"metalabel":"","color":"0000FF","emissionWave":457,"label":"457","window":{"max":2175,"min":66,"end":1674,"start":171},"active":true},{"metalabel":"","color":"00FF00","emissionWave":528,"label":"528","window":{"max":9949,"min":3,"end":2613,"start":500},"active":true},{"metalabel":"","color":"FF0000","emissionWave":617,"label":"617","window":{"max":6748,"min":46,"end":1805,"start":381},"active":true}],"deltaT":[],"selected":false,"baseUrl":"http://jcb-dataviewer.rupress.org/jcb","width":78.37737079675645,"sizeT":1,"sizeZ":51,"dx":0,"dy":0,"rotation":0,"imageId":126,"pixel_size_y":0.06289698,"pixel_size_x":0.06289698,"datasetId":134,"datasetName":"Figure 5","name":"Phospho H3 Bod1 siRNA","orig_width":323,"zoom":100,"orig_height":281,"theZ":25,"y":156.67324189664743,"x":429.9138310864951,"theT":0,"pixel_size_x_symbol":"µm","pixel_size_x_unit":"MICROMETER"},{"labels":[{"color":"000000","text":"AuroraB","position":"top","size":"10"}],"height":75.16804761992246,"channels":[{"metalabel":"","color":"0000FF","emissionWave":457,"label":"457","window":{"max":2377,"min":75,"end":2060,"start":190},"active":false},{"metalabel":"","color":"FFFFFF","emissionWave":617,"label":"617","window":{"max":5853,"min":47,"end":2151,"start":337},"active":true},{"metalabel":"","color":"FF0000","emissionWave":685,"label":"685","window":{"max":5892,"min":4,"end":3021,"start":298},"active":false}],"deltaT":[],"selected":false,"baseUrl":"http://jcb-dataviewer.rupress.org/jcb","width":78.37737079675651,"sizeT":1,"sizeZ":35,"dx":0,"dy":0,"rotation":0,"imageId":127,"pixel_size_y":0.06631,"pixel_size_x":0.06631,"datasetId":134,"datasetName":"Figure 5","name":"Control siRNA Aurora B","orig_width":340,"zoom":100,"orig_height":328,"theZ":16,"y":77.58632573688713,"x":163.0251130767118,"theT":0,"pixel_size_x_symbol":"µm","pixel_size_x_unit":"MICROMETER"},{"labels":[],"height":75.1680476199225,"channels":[{"metalabel":"","color":"0000FF","emissionWave":457,"label":"457","window":{"max":2758,"min":6,"end":1966,"start":143},"active":false},{"metalabel":"","color":"FFFFFF","emissionWave":617,"label":"617","window":{"max":7132,"min":3,"end":2223,"start":359},"active":true},{"metalabel":"","color":"FF0000","emissionWave":685,"label":"685","window":{"max":10656,"min":0,"end":3330,"start":532},"active":false}],"deltaT":[],"selected":false,"baseUrl":"http://jcb-dataviewer.rupress.org/jcb","width":78.37737079675651,"sizeT":1,"sizeZ":33,"dx":0,"dy":0,"rotation":0,"imageId":125,"pixel_size_y":0.06631,"pixel_size_x":0.06631,"datasetId":134,"datasetName":"Figure 5","name":"Aurora B, Bod1 siRNA","orig_width":371,"zoom":100,"orig_height":353,"theZ":21,"y":156.67324189664743,"x":163.0251130767118,"theT":0,"pixel_size_x_symbol":"µm","pixel_size_x_unit":"MICROMETER"},{"labels":[{"color":"000000","text":"tubulin","position":"top","size":"10"}],"height":75.16804761992246,"channels":[{"metalabel":"","color":"0000FF","emissionWave":457,"label":"457","window":{"max":2377,"min":75,"end":2060,"start":190},"active":false},{"metalabel":"","color":"FF0000","emissionWave":617,"label":"617","window":{"max":5853,"min":47,"end":2151,"start":337},"active":false},{"metalabel":"","color":"FFFFFF","emissionWave":685,"label":"685","window":{"max":5892,"min":4,"end":3021,"start":298},"active":true}],"deltaT":[],"selected":false,"baseUrl":"http://jcb-dataviewer.rupress.org/jcb","width":78.37737079675674,"sizeT":1,"sizeZ":35,"dx":0,"dy":0,"rotation":0,"imageId":127,"pixel_size_y":0.06631,"pixel_size_x":0.06631,"datasetId":134,"datasetName":"Figure 5","name":"Control siRNA Aurora B","orig_width":340,"zoom":100,"orig_height":328,"theZ":16,"y":77.58632573688713,"x":245.32135241330613,"theT":0,"pixel_size_x_symbol":"µm","pixel_size_x_unit":"MICROMETER"},{"labels":[],"height":75.1680476199225,"channels":[{"metalabel":"","color":"0000FF","emissionWave":457,"label":"457","window":{"max":2758,"min":6,"end":1966,"start":143},"active":false},{"metalabel":"","color":"FF0000","emissionWave":617,"label":"617","window":{"max":7132,"min":3,"end":1874,"start":359},"active":false},{"metalabel":"","color":"FFFFFF","emissionWave":685,"label":"685","window":{"max":10656,"min":0,"end":3330,"start":532},"active":true}],"deltaT":[],"selected":false,"baseUrl":"http://jcb-dataviewer.rupress.org/jcb","width":78.37737079675674,"sizeT":1,"sizeZ":33,"dx":0,"dy":0,"rotation":0,"imageId":125,"pixel_size_y":0.06631,"pixel_size_x":0.06631,"datasetId":134,"datasetName":"Figure 5","name":"Aurora B, Bod1 siRNA","orig_width":371,"zoom":100,"orig_height":353,"theZ":21,"y":156.67324189664743,"x":245.32135241330613,"theT":0,"pixel_size_x_symbol":"µm","pixel_size_x_unit":"MICROMETER"},{"labels":[{"color":"000000","text":"merged","position":"top","size":"10"}],"height":75.16804761992246,"channels":[{"metalabel":"","color":"0000FF","emissionWave":457,"label":"457","window":{"max":2377,"min":75,"end":2060,"start":190},"active":true},{"metalabel":"","color":"00FF00","emissionWave":617,"label":"617","window":{"max":5853,"min":47,"end":2151,"start":337},"active":true},{"metalabel":"","color":"FF0000","emissionWave":685,"label":"685","window":{"max":5892,"min":4,"end":3021,"start":298},"active":true}],"deltaT":[],"selected":false,"baseUrl":"http://jcb-dataviewer.rupress.org/jcb","width":78.37737079675651,"sizeT":1,"sizeZ":35,"dx":0,"dy":0,"rotation":0,"imageId":127,"pixel_size_y":0.06631,"pixel_size_x":0.06631,"datasetId":134,"datasetName":"Figure 5","name":"Control siRNA Aurora B","orig_width":340,"zoom":100,"orig_height":328,"theZ":16,"y":77.58632573688713,"x":327.6175917499007,"theT":0,"pixel_size_x_symbol":"µm","pixel_size_x_unit":"MICROMETER"},{"labels":[],"height":75.1680476199225,"channels":[{"metalabel":"","color":"0000FF","emissionWave":457,"label":"457","window":{"max":2758,"min":6,"end":1966,"start":143},"active":true},{"metalabel":"","color":"00FF00","emissionWave":617,"label":"617","window":{"max":7132,"min":3,"end":1874,"start":359},"active":true},{"metalabel":"","color":"FF0000","emissionWave":685,"label":"685","window":{"max":10656,"min":0,"end":3330,"start":532},"active":true}],"deltaT":[],"selected":false,"baseUrl":"http://jcb-dataviewer.rupress.org/jcb","width":78.37737079675657,"sizeT":1,"sizeZ":33,"dx":0,"dy":0,"rotation":0,"imageId":125,"pixel_size_y":0.06631,"pixel_size_x":0.06631,"datasetId":134,"datasetName":"Figure 5","name":"Aurora B, Bod1 siRNA","orig_width":371,"zoom":100,"orig_height":353,"theZ":21,"y":156.67324189664743,"x":327.6175917499007,"theT":0,"pixel_size_x_symbol":"µm","pixel_size_x_unit":"MICROMETER"},{"imageId":130,"name":"Control siRNA","width":113.75694630020921,"height":122.3118279569893,"sizeZ":28,"theZ":14,"sizeT":1,"theT":0,"channels":[{"metalabel":"","color":"0000FF","emissionWave":457,"label":"457","window":{"max":1994,"end":1731,"start":484,"min":60},"active":true},{"metalabel":"","color":"00FF00","emissionWave":528,"label":"528","window":{"max":9149,"end":2725,"start":1021,"min":141},"active":true},{"metalabel":"","color":"FF0000","emissionWave":617,"label":"617","window":{"max":8083,"end":4009,"start":2504,"min":567},"active":true}],"orig_width":355,"orig_height":381,"x":80.71057565459141,"y":257.45865833170376,"datasetName":"Figure 5","datasetId":134,"pixel_size_x":0.06289698,"pixel_size_y":0.06289698,"deltaT":[],"baseUrl":"http://jcb-dataviewer.rupress.org/jcb","zoom":100,"dx":0,"dy":0,"labels":[{"text":"Control siRNA","size":12,"position":"top","color":"000000"}],"rotation":0,"selected":false,"scalebar":{"show":true,"length":5,"position":"bottomleft","color":"FFFFFF"},"pixel_size_x_symbol":"µm","pixel_size_x_unit":"MICROMETER","shapes":[{"type":"Rectangle","x":92.99529863128384,"y":37.47571735887558,"width":39.08772782706538,"height":41.639685954306195,"strokeWidth":"5","strokeColor":"#FFFFFF","id":-9865922906901688},{"type":"Line","x1":63.153523697364406,"x2":299.11174410509955,"y1":230.4062622804943,"y2":113.81514160843695,"strokeWidth":"5","strokeColor":"#FFFFFF","id":-24361917516216636}]},{"imageId":129,"name":"Bod1 siRNA","width":113.7569463002092,"height":122.3118279569893,"sizeZ":42,"theZ":16,"sizeT":1,"theT":0,"channels":[{"metalabel":"","color":"0000FF","emissionWave":457,"label":"457","window":{"max":1617,"end":1311,"start":467,"min":64},"active":true},{"metalabel":"","color":"00FF00","emissionWave":528,"label":"528","window":{"max":7713,"end":2394,"start":1080,"min":108},"active":true},{"metalabel":"","color":"FF0000","emissionWave":617,"label":"617","window":{"max":9511,"end":3584,"start":2182,"min":536},"active":true}],"orig_width":377,"orig_height":389,"x":200.15536926981108,"y":257.45865833170376,"datasetName":"Figure 5","datasetId":134,"pixel_size_x":0.06289698,"pixel_size_y":0.06289698,"deltaT":[],"baseUrl":"http://jcb-dataviewer.rupress.org/jcb","zoom":100,"dx":0,"dy":0,"labels":[{"text":"DAPI","size":"10","position":"bottomright","color":"0000FF"},{"text":"HEC1","size":"10","position":"bottomright","color":"00FF00"},{"text":"MCAK","size":"10","position":"bottomright","color":"FF0000"},{"text":"Bod1 siRNA","size":"12","position":"top","color":"000000"}],"rotation":0,"selected":false,"pixel_size_x_symbol":"µm","pixel_size_x_unit":"MICROMETER","shapes":[{"type":"Rectangle","x":179.28257135855642,"y":72.13208099523919,"width":39.08772782706538,"height":41.639685954306195,"strokeWidth":"5","strokeColor":"#FFFFFF","id":-9865922906901688},{"type":"Rectangle","x":86.6298440858292,"y":222.0738991770574,"width":39.08772782706538,"height":41.639685954306195,"strokeWidth":"5","strokeColor":"#FFFFFF","id":-9865922906901688},{"type":"Line","x1":101.67045454545455,"x2":279.1959090909091,"y1":130.84545454545454,"y2":287.1527272727273,"strokeWidth":"5","strokeColor":"#FFFFFF","id":-1903470300603658}]},{"imageId":130,"name":"Control siRNA","width":38.57808932590323,"height":41.096774193548356,"sizeZ":28,"theZ":14,"sizeT":1,"theT":0,"channels":[{"metalabel":"","color":"0000FF","emissionWave":457,"label":"457","window":{"max":1994,"end":1731,"start":484,"min":60},"active":false},{"metalabel":"","color":"00FF00","emissionWave":528,"label":"528","window":{"max":9149,"end":2725,"start":1021,"min":141},"active":true},{"metalabel":"","color":"FF0000","emissionWave":617,"label":"617","window":{"max":8083,"end":4009,"start":2504,"min":567},"active":true}],"orig_width":355,"orig_height":381,"x":120.4162423360979,"y":383.39733886975415,"datasetName":"Figure 5","datasetId":134,"pixel_size_x":0.06289698,"pixel_size_y":0.06289698,"deltaT":[],"baseUrl":"http://jcb-dataviewer.rupress.org/jcb","zoom":908.2134463548648,"dx":64.5,"dy":132.5,"labels":[],"rotation":0,"selected":false,"pixel_size_x_symbol":"µm","pixel_size_x_unit":"MICROMETER"},{"imageId":129,"name":"Bod1 siRNA","width":38.57808932590323,"height":41.096774193548356,"sizeZ":42,"theZ":16,"sizeT":1,"theT":0,"channels":[{"metalabel":"","color":"0000FF","emissionWave":457,"label":"457","window":{"max":1617,"end":1311,"start":467,"min":64},"active":false},{"metalabel":"","color":"00FF00","emissionWave":528,"label":"528","window":{"max":7713,"end":2394,"start":1080,"min":108},"active":true},{"metalabel":"","color":"FF0000","emissionWave":617,"label":"617","window":{"max":9511,"end":3584,"start":2182,"min":536},"active":true}],"orig_width":377,"orig_height":389,"x":217.9147845006889,"y":383.39733886975415,"datasetName":"Figure 5","datasetId":134,"pixel_size_x":0.06289698,"pixel_size_y":0.06289698,"deltaT":[],"baseUrl":"http://jcb-dataviewer.rupress.org/jcb","zoom":934.204932349571,"dx":82.5,"dy":-48.5,"labels":[],"rotation":0,"selected":false,"pixel_size_x_symbol":"µm","pixel_size_x_unit":"MICROMETER"},{"imageId":129,"name":"Bod1 siRNA","width":38.57808932590323,"height":41.096774193548356,"sizeZ":42,"theZ":16,"sizeT":1,"theT":0,"channels":[{"metalabel":"","color":"0000FF","emissionWave":457,"label":"457","window":{"max":1617,"end":1311,"start":467,"min":64},"active":false},{"metalabel":"","color":"00FF00","emissionWave":528,"label":"528","window":{"max":7713,"end":2394,"start":1080,"min":108},"active":true},{"metalabel":"","color":"FF0000","emissionWave":617,"label":"617","window":{"max":9511,"end":3584,"start":2182,"min":536},"active":true}],"orig_width":377,"orig_height":389,"x":259.1709971230864,"y":383.39733886975415,"datasetName":"Figure 5","datasetId":134,"pixel_size_x":0.06289698,"pixel_size_y":0.06289698,"deltaT":[],"baseUrl":"http://jcb-dataviewer.rupress.org/jcb","zoom":934.204932349571,"dx":-10.5,"dy":101.5,"labels":[],"rotation":0,"selected":false,"pixel_size_x_symbol":"µm","pixel_size_x_unit":"MICROMETER"},{"imageId":132,"name":"Control siRNA","width":113.75694630020921,"height":122.3118279569893,"sizeZ":64,"theZ":17,"sizeT":1,"theT":0,"channels":[{"metalabel":"","color":"0000FF","emissionWave":457,"label":"457","window":{"max":2485,"end":1915,"start":606,"min":86},"active":true},{"metalabel":"","color":"00FF00","emissionWave":528,"label":"528","window":{"max":9102,"end":4377,"start":458,"min":4},"active":true},{"metalabel":"","color":"FF0000","emissionWave":685,"label":"685","window":{"max":6190,"end":1898,"start":739,"min":121},"active":true}],"orig_width":351,"orig_height":365,"x":80.71057565459141,"y":451.1619334143204,"datasetName":"Figure 5","datasetId":134,"pixel_size_x":0.06289698,"pixel_size_y":0.06289698,"deltaT":[],"baseUrl":"http://jcb-dataviewer.rupress.org/jcb","zoom":100,"dx":0,"dy":0,"labels":[{"text":"Control siRNA","size":12,"position":"top","color":"000000"},{"text":"P-MCAK","size":"10","position":"topleft","color":"FF0000"},{"text":"ACA","size":"10","position":"topleft","color":"00FF00"},{"text":"DAPI","size":10,"position":"topleft","color":"0000FF"}],"rotation":0,"selected":false,"scalebar":{"show":true,"length":5,"position":"bottomleft","color":"FFFFFF"},"pixel_size_x_symbol":"µm","pixel_size_x_unit":"MICROMETER","shapes":[{"type":"Line","x1":65.48224431818181,"x2":281.1640625,"y1":207.71818181818182,"y2":221.65454545454546,"strokeWidth":"5","strokeColor":"#FFFFFF","id":-4579615299589932},{"type":"Rectangle","x":158.03166226764728,"y":111.13935372251194,"width":39.08772782706538,"height":41.639685954306195,"strokeWidth":"5","strokeColor":"#FFFFFF","id":-9865922906901688}]},{"imageId":131,"name":"Bod1 siRNA","width":113.7569463002092,"height":122.3118279569893,"sizeZ":64,"theZ":32,"sizeT":1,"theT":0,"channels":[{"metalabel":"","color":"0000FF","emissionWave":457,"label":"457","window":{"max":2086,"end":1518,"start":695,"min":111},"active":true},{"metalabel":"","color":"00FF00","emissionWave":528,"label":"528","window":{"max":8840,"end":3649,"start":446,"min":5},"active":true},{"metalabel":"","color":"FF0000","emissionWave":685,"label":"685","window":{"max":3975,"end":1359,"start":825,"min":127},"active":true}],"orig_width":346,"orig_height":348,"x":200.15536926981108,"y":451.1619334143204,"datasetName":"Figure 5","datasetId":134,"pixel_size_x":0.06289698,"pixel_size_y":0.06289698,"deltaT":[],"baseUrl":"http://jcb-dataviewer.rupress.org/jcb","zoom":100,"dx":0,"dy":0,"labels":[{"text":"Bod1 siRNA","size":12,"position":"top","color":"000000"}],"rotation":0,"selected":false,"pixel_size_x_symbol":"µm","pixel_size_x_unit":"MICROMETER","shapes":[{"type":"Line","x1":74.43443181818182,"x2":301.58352272727274,"y1":223.35272727272726,"y2":112.62545454545455,"strokeWidth":"5","strokeColor":"#FFFFFF","id":-631107178516686},{"type":"Rectangle","x":151.83893499492007,"y":258.930262813421,"width":39.08772782706538,"height":41.639685954306195,"strokeWidth":"5","strokeColor":"#FFFFFF","id":-9865922906901688}]},{"imageId":132,"name":"Control siRNA","width":42.25219307122726,"height":45.01075268817192,"sizeZ":64,"theZ":17,"sizeT":1,"theT":0,"channels":[{"metalabel":"","color":"0000FF","emissionWave":457,"label":"457","window":{"max":2485,"end":1915,"start":606,"min":86},"active":false},{"metalabel":"","color":"00FF00","emissionWave":528,"label":"528","window":{"max":9102,"end":4377,"start":458,"min":4},"active":true},{"metalabel":"","color":"FF0000","emissionWave":685,"label":"685","window":{"max":6190,"end":1898,"start":739,"min":121},"active":true}],"orig_width":351,"orig_height":365,"x":118.48664598206653,"y":577.2745096136008,"datasetName":"Figure 5","datasetId":134,"pixel_size_x":0.06289698,"pixel_size_y":0.06289698,"deltaT":[],"baseUrl":"http://jcb-dataviewer.rupress.org/jcb","zoom":876.5676100452273,"dx":-2.5,"dy":50.5,"labels":[],"rotation":0,"selected":false,"pixel_size_x_symbol":"µm","pixel_size_x_unit":"MICROMETER"},{"imageId":131,"name":"Bod1 siRNA","width":42.252193071227474,"height":45.01075268817215,"sizeZ":64,"theZ":32,"sizeT":1,"theT":0,"channels":[{"metalabel":"","color":"0000FF","emissionWave":457,"label":"457","window":{"max":2086,"end":1518,"start":695,"min":111},"active":false},{"metalabel":"","color":"00FF00","emissionWave":528,"label":"528","window":{"max":8840,"end":3649,"start":446,"min":5},"active":true},{"metalabel":"","color":"FF0000","emissionWave":685,"label":"685","window":{"max":3975,"end":1359,"start":825,"min":127},"active":true}],"orig_width":346,"orig_height":348,"x":241.14927988865966,"y":576.7104650936988,"datasetName":"Figure 5","datasetId":134,"pixel_size_x":0.06289698,"pixel_size_y":0.06289698,"deltaT":[],"baseUrl":"http://jcb-dataviewer.rupress.org/jcb","zoom":835.7411734129838,"dx":2,"dy":-106,"labels":[],"rotation":0,"selected":false,"pixel_size_x_symbol":"µm","pixel_size_x_unit":"MICROMETER"}],"paper_width":612,"paper_height":792,"page_size":"A4","page_count":1,"paper_spacing":50,"page_col_count":1,"height_mm":297,"width_mm":210,"orientation":"vertical","legend":"**MCAK is not efficiently phosphorylated in Bod1siRNA cells.** Data from [JCB DataViewer](http://jcb-dataviewer.rupress.org/jcb/browse/105/134/). (A) Aurora B is not delocalized in Bod1-depleted cells. Phospho-Ser10-histone H3 staining in control and Bod1 siRNA cells indicating Aurora B activity. (B–E) Cells were transfected with control or Bod1 siRNA. After 72 h, cells were treated with monastrol for 3 h and released into media containing MG132 for 1 h before fixing. (B and C) Cells were stained for total MCAK population, and levels at kinetochores were quantified. Boxed areas are magnified below the main images. (D and E) Cells were stained for phospho-Ser92-MCAK, and levels at aligned and unaligned kinetochores were quantified. Dashed lines indicate orientation of the metaphase plate. Error bars represent SD. Bars, 5 μm.","legend_collapsed":true,"figureName":"Porter et al, Bod1: 2007","fileId":1}
+{
+  "version": 1,
+  "panels": [
+    {
+      "labels": [
+        {
+          "color": "000000",
+          "text": "DNA",
+          "position": "top",
+          "size": "10"
+        },
+        {
+          "color": "000000",
+          "text": "Control siRNA",
+          "position": "leftvert",
+          "size": "10"
+        }
+      ],
+      "height": 75.16804761992246,
+      "channels": [
+        {
+          "metalabel": "",
+          "color": "FFFFFF",
+          "emissionWave": 457,
+          "label": "457",
+          "window": {
+            "max": 2377,
+            "min": 75,
+            "end": 2060,
+            "start": 190
+          },
+          "active": true
+        },
+        {
+          "metalabel": "",
+          "color": "FF0000",
+          "emissionWave": 617,
+          "label": "617",
+          "window": {
+            "max": 5853,
+            "min": 47,
+            "end": 2151,
+            "start": 337
+          },
+          "active": false
+        },
+        {
+          "metalabel": "",
+          "color": "FF0000",
+          "emissionWave": 685,
+          "label": "685",
+          "window": {
+            "max": 5892,
+            "min": 4,
+            "end": 3021,
+            "start": 298
+          },
+          "active": false
+        }
+      ],
+      "deltaT": [],
+      "selected": false,
+      "baseUrl": "https://omero.lifesci.dundee.ac.uk/webgateway",
+      "width": 78.3773707967566,
+      "sizeT": 1,
+      "sizeZ": 35,
+      "dx": 0,
+      "dy": 0,
+      "rotation": 0,
+      "imageId": 3989236,
+      "pixel_size_y": 0.06631,
+      "pixel_size_x": 0.06631,
+      "datasetId": 134,
+      "datasetName": "Figure 5",
+      "name": "Control siRNA Aurora B",
+      "orig_width": 340,
+      "zoom": 100,
+      "orig_height": 328,
+      "theZ": 16,
+      "y": 77.58632573688713,
+      "x": 80.72887374011736,
+      "theT": 0,
+      "scalebar": {
+        "show": true,
+        "length": 5,
+        "position": "bottomleft",
+        "color": "FFFFFF"
+      },
+      "pixel_size_x_symbol": "µm",
+      "pixel_size_x_unit": "MICROMETER"
+    },
+    {
+      "labels": [
+        {
+          "color": "000000",
+          "text": "Bod1 siRNA",
+          "position": "leftvert",
+          "size": 10
+        }
+      ],
+      "height": 75.1680476199225,
+      "channels": [
+        {
+          "metalabel": "",
+          "color": "FFFFFF",
+          "emissionWave": 457,
+          "label": "457",
+          "window": {
+            "max": 2758,
+            "min": 6,
+            "end": 1966,
+            "start": 143
+          },
+          "active": true
+        },
+        {
+          "metalabel": "",
+          "color": "FF0000",
+          "emissionWave": 617,
+          "label": "617",
+          "window": {
+            "max": 7132,
+            "min": 3,
+            "end": 1874,
+            "start": 359
+          },
+          "active": false
+        },
+        {
+          "metalabel": "",
+          "color": "FF0000",
+          "emissionWave": 685,
+          "label": "685",
+          "window": {
+            "max": 10656,
+            "min": 0,
+            "end": 3330,
+            "start": 532
+          },
+          "active": false
+        }
+      ],
+      "deltaT": [],
+      "selected": false,
+      "baseUrl": "https://omero.lifesci.dundee.ac.uk/webgateway",
+      "width": 78.3773707967566,
+      "sizeT": 1,
+      "sizeZ": 33,
+      "dx": 0,
+      "dy": 0,
+      "rotation": 0,
+      "imageId": 3989232,
+      "pixel_size_y": 0.06631,
+      "pixel_size_x": 0.06631,
+      "datasetId": 134,
+      "datasetName": "Figure 5",
+      "name": "Aurora B, Bod1 siRNA",
+      "orig_width": 371,
+      "zoom": 100,
+      "orig_height": 353,
+      "theZ": 21,
+      "y": 156.67324189664743,
+      "x": 80.72887374011736,
+      "theT": 0,
+      "pixel_size_x_symbol": "µm",
+      "pixel_size_x_unit": "MICROMETER"
+    },
+    {
+      "labels": [
+        {
+          "text": "Control siRNA",
+          "size": "10",
+          "position": "leftvert",
+          "color": "000000"
+        }
+      ],
+      "height": 75.16804761992239,
+      "channels": [
+        {
+          "metalabel": "",
+          "color": "0000FF",
+          "emissionWave": 457,
+          "label": "457",
+          "window": {
+            "max": 2270,
+            "min": 68,
+            "end": 1857,
+            "start": 178
+          },
+          "active": true
+        },
+        {
+          "metalabel": "",
+          "color": "00FF00",
+          "emissionWave": 528,
+          "label": "528",
+          "window": {
+            "max": 8916,
+            "min": 0,
+            "end": 2340,
+            "start": 445
+          },
+          "active": true
+        },
+        {
+          "metalabel": "",
+          "color": "FF0000",
+          "emissionWave": 617,
+          "label": "617",
+          "window": {
+            "max": 4168,
+            "min": 68,
+            "end": 1349,
+            "start": 273
+          },
+          "active": true
+        }
+      ],
+      "deltaT": [],
+      "selected": false,
+      "baseUrl": "https://omero.lifesci.dundee.ac.uk/webgateway",
+      "width": 78.37737079675657,
+      "sizeT": 1,
+      "sizeZ": 57,
+      "dx": 0,
+      "dy": 0,
+      "rotation": 0,
+      "imageId": 3989235,
+      "pixel_size_y": 0.06289698,
+      "pixel_size_x": 0.06289698,
+      "datasetId": 134,
+      "datasetName": "Figure 5",
+      "name": "Control siRNA Phospho H3",
+      "orig_width": 359,
+      "zoom": 100,
+      "orig_height": 334,
+      "theZ": 28,
+      "y": 77.58632573688713,
+      "x": 429.91383108649507,
+      "theT": 0,
+      "scalebar": {
+        "show": true,
+        "length": 5,
+        "position": "bottomleft",
+        "color": "FFFFFF"
+      },
+      "pixel_size_x_symbol": "µm",
+      "pixel_size_x_unit": "MICROMETER"
+    },
+    {
+      "labels": [
+        {
+          "text": "Bod1 siRNA",
+          "size": "10",
+          "position": "leftvert",
+          "color": "000000"
+        },
+        {
+          "text": "DNA",
+          "size": "6",
+          "position": "bottomright",
+          "color": "0000FF"
+        },
+        {
+          "text": "Phospho-H3",
+          "size": "6",
+          "position": "bottomright",
+          "color": "00FF00"
+        },
+        {
+          "text": "AuroraB",
+          "size": "6",
+          "position": "bottomright",
+          "color": "FF0000"
+        }
+      ],
+      "height": 75.16804761992246,
+      "channels": [
+        {
+          "metalabel": "",
+          "color": "0000FF",
+          "emissionWave": 457,
+          "label": "457",
+          "window": {
+            "max": 2175,
+            "min": 66,
+            "end": 1674,
+            "start": 171
+          },
+          "active": true
+        },
+        {
+          "metalabel": "",
+          "color": "00FF00",
+          "emissionWave": 528,
+          "label": "528",
+          "window": {
+            "max": 9949,
+            "min": 3,
+            "end": 2613,
+            "start": 500
+          },
+          "active": true
+        },
+        {
+          "metalabel": "",
+          "color": "FF0000",
+          "emissionWave": 617,
+          "label": "617",
+          "window": {
+            "max": 6748,
+            "min": 46,
+            "end": 1805,
+            "start": 381
+          },
+          "active": true
+        }
+      ],
+      "deltaT": [],
+      "selected": false,
+      "baseUrl": "https://omero.lifesci.dundee.ac.uk/webgateway",
+      "width": 78.37737079675645,
+      "sizeT": 1,
+      "sizeZ": 51,
+      "dx": 0,
+      "dy": 0,
+      "rotation": 0,
+      "imageId": 3989231,
+      "pixel_size_y": 0.06289698,
+      "pixel_size_x": 0.06289698,
+      "datasetId": 134,
+      "datasetName": "Figure 5",
+      "name": "Phospho H3 Bod1 siRNA",
+      "orig_width": 323,
+      "zoom": 100,
+      "orig_height": 281,
+      "theZ": 25,
+      "y": 156.67324189664743,
+      "x": 429.9138310864951,
+      "theT": 0,
+      "pixel_size_x_symbol": "µm",
+      "pixel_size_x_unit": "MICROMETER"
+    },
+    {
+      "labels": [
+        {
+          "color": "000000",
+          "text": "AuroraB",
+          "position": "top",
+          "size": "10"
+        }
+      ],
+      "height": 75.16804761992246,
+      "channels": [
+        {
+          "metalabel": "",
+          "color": "0000FF",
+          "emissionWave": 457,
+          "label": "457",
+          "window": {
+            "max": 2377,
+            "min": 75,
+            "end": 2060,
+            "start": 190
+          },
+          "active": false
+        },
+        {
+          "metalabel": "",
+          "color": "FFFFFF",
+          "emissionWave": 617,
+          "label": "617",
+          "window": {
+            "max": 5853,
+            "min": 47,
+            "end": 2151,
+            "start": 337
+          },
+          "active": true
+        },
+        {
+          "metalabel": "",
+          "color": "FF0000",
+          "emissionWave": 685,
+          "label": "685",
+          "window": {
+            "max": 5892,
+            "min": 4,
+            "end": 3021,
+            "start": 298
+          },
+          "active": false
+        }
+      ],
+      "deltaT": [],
+      "selected": false,
+      "baseUrl": "https://omero.lifesci.dundee.ac.uk/webgateway",
+      "width": 78.37737079675651,
+      "sizeT": 1,
+      "sizeZ": 35,
+      "dx": 0,
+      "dy": 0,
+      "rotation": 0,
+      "imageId": 3989236,
+      "pixel_size_y": 0.06631,
+      "pixel_size_x": 0.06631,
+      "datasetId": 134,
+      "datasetName": "Figure 5",
+      "name": "Control siRNA Aurora B",
+      "orig_width": 340,
+      "zoom": 100,
+      "orig_height": 328,
+      "theZ": 16,
+      "y": 77.58632573688713,
+      "x": 163.0251130767118,
+      "theT": 0,
+      "pixel_size_x_symbol": "µm",
+      "pixel_size_x_unit": "MICROMETER"
+    },
+    {
+      "labels": [],
+      "height": 75.1680476199225,
+      "channels": [
+        {
+          "metalabel": "",
+          "color": "0000FF",
+          "emissionWave": 457,
+          "label": "457",
+          "window": {
+            "max": 2758,
+            "min": 6,
+            "end": 1966,
+            "start": 143
+          },
+          "active": false
+        },
+        {
+          "metalabel": "",
+          "color": "FFFFFF",
+          "emissionWave": 617,
+          "label": "617",
+          "window": {
+            "max": 7132,
+            "min": 3,
+            "end": 2223,
+            "start": 359
+          },
+          "active": true
+        },
+        {
+          "metalabel": "",
+          "color": "FF0000",
+          "emissionWave": 685,
+          "label": "685",
+          "window": {
+            "max": 10656,
+            "min": 0,
+            "end": 3330,
+            "start": 532
+          },
+          "active": false
+        }
+      ],
+      "deltaT": [],
+      "selected": false,
+      "baseUrl": "https://omero.lifesci.dundee.ac.uk/webgateway",
+      "width": 78.37737079675651,
+      "sizeT": 1,
+      "sizeZ": 33,
+      "dx": 0,
+      "dy": 0,
+      "rotation": 0,
+      "imageId": 3989232,
+      "pixel_size_y": 0.06631,
+      "pixel_size_x": 0.06631,
+      "datasetId": 134,
+      "datasetName": "Figure 5",
+      "name": "Aurora B, Bod1 siRNA",
+      "orig_width": 371,
+      "zoom": 100,
+      "orig_height": 353,
+      "theZ": 21,
+      "y": 156.67324189664743,
+      "x": 163.0251130767118,
+      "theT": 0,
+      "pixel_size_x_symbol": "µm",
+      "pixel_size_x_unit": "MICROMETER"
+    },
+    {
+      "labels": [
+        {
+          "color": "000000",
+          "text": "tubulin",
+          "position": "top",
+          "size": "10"
+        }
+      ],
+      "height": 75.16804761992246,
+      "channels": [
+        {
+          "metalabel": "",
+          "color": "0000FF",
+          "emissionWave": 457,
+          "label": "457",
+          "window": {
+            "max": 2377,
+            "min": 75,
+            "end": 2060,
+            "start": 190
+          },
+          "active": false
+        },
+        {
+          "metalabel": "",
+          "color": "FF0000",
+          "emissionWave": 617,
+          "label": "617",
+          "window": {
+            "max": 5853,
+            "min": 47,
+            "end": 2151,
+            "start": 337
+          },
+          "active": false
+        },
+        {
+          "metalabel": "",
+          "color": "FFFFFF",
+          "emissionWave": 685,
+          "label": "685",
+          "window": {
+            "max": 5892,
+            "min": 4,
+            "end": 3021,
+            "start": 298
+          },
+          "active": true
+        }
+      ],
+      "deltaT": [],
+      "selected": false,
+      "baseUrl": "https://omero.lifesci.dundee.ac.uk/webgateway",
+      "width": 78.37737079675674,
+      "sizeT": 1,
+      "sizeZ": 35,
+      "dx": 0,
+      "dy": 0,
+      "rotation": 0,
+      "imageId": 3989236,
+      "pixel_size_y": 0.06631,
+      "pixel_size_x": 0.06631,
+      "datasetId": 134,
+      "datasetName": "Figure 5",
+      "name": "Control siRNA Aurora B",
+      "orig_width": 340,
+      "zoom": 100,
+      "orig_height": 328,
+      "theZ": 16,
+      "y": 77.58632573688713,
+      "x": 245.32135241330613,
+      "theT": 0,
+      "pixel_size_x_symbol": "µm",
+      "pixel_size_x_unit": "MICROMETER"
+    },
+    {
+      "labels": [],
+      "height": 75.1680476199225,
+      "channels": [
+        {
+          "metalabel": "",
+          "color": "0000FF",
+          "emissionWave": 457,
+          "label": "457",
+          "window": {
+            "max": 2758,
+            "min": 6,
+            "end": 1966,
+            "start": 143
+          },
+          "active": false
+        },
+        {
+          "metalabel": "",
+          "color": "FF0000",
+          "emissionWave": 617,
+          "label": "617",
+          "window": {
+            "max": 7132,
+            "min": 3,
+            "end": 1874,
+            "start": 359
+          },
+          "active": false
+        },
+        {
+          "metalabel": "",
+          "color": "FFFFFF",
+          "emissionWave": 685,
+          "label": "685",
+          "window": {
+            "max": 10656,
+            "min": 0,
+            "end": 3330,
+            "start": 532
+          },
+          "active": true
+        }
+      ],
+      "deltaT": [],
+      "selected": false,
+      "baseUrl": "https://omero.lifesci.dundee.ac.uk/webgateway",
+      "width": 78.37737079675674,
+      "sizeT": 1,
+      "sizeZ": 33,
+      "dx": 0,
+      "dy": 0,
+      "rotation": 0,
+      "imageId": 3989232,
+      "pixel_size_y": 0.06631,
+      "pixel_size_x": 0.06631,
+      "datasetId": 134,
+      "datasetName": "Figure 5",
+      "name": "Aurora B, Bod1 siRNA",
+      "orig_width": 371,
+      "zoom": 100,
+      "orig_height": 353,
+      "theZ": 21,
+      "y": 156.67324189664743,
+      "x": 245.32135241330613,
+      "theT": 0,
+      "pixel_size_x_symbol": "µm",
+      "pixel_size_x_unit": "MICROMETER"
+    },
+    {
+      "labels": [
+        {
+          "color": "000000",
+          "text": "merged",
+          "position": "top",
+          "size": "10"
+        }
+      ],
+      "height": 75.16804761992246,
+      "channels": [
+        {
+          "metalabel": "",
+          "color": "0000FF",
+          "emissionWave": 457,
+          "label": "457",
+          "window": {
+            "max": 2377,
+            "min": 75,
+            "end": 2060,
+            "start": 190
+          },
+          "active": true
+        },
+        {
+          "metalabel": "",
+          "color": "00FF00",
+          "emissionWave": 617,
+          "label": "617",
+          "window": {
+            "max": 5853,
+            "min": 47,
+            "end": 2151,
+            "start": 337
+          },
+          "active": true
+        },
+        {
+          "metalabel": "",
+          "color": "FF0000",
+          "emissionWave": 685,
+          "label": "685",
+          "window": {
+            "max": 5892,
+            "min": 4,
+            "end": 3021,
+            "start": 298
+          },
+          "active": true
+        }
+      ],
+      "deltaT": [],
+      "selected": false,
+      "baseUrl": "https://omero.lifesci.dundee.ac.uk/webgateway",
+      "width": 78.37737079675651,
+      "sizeT": 1,
+      "sizeZ": 35,
+      "dx": 0,
+      "dy": 0,
+      "rotation": 0,
+      "imageId": 3989236,
+      "pixel_size_y": 0.06631,
+      "pixel_size_x": 0.06631,
+      "datasetId": 134,
+      "datasetName": "Figure 5",
+      "name": "Control siRNA Aurora B",
+      "orig_width": 340,
+      "zoom": 100,
+      "orig_height": 328,
+      "theZ": 16,
+      "y": 77.58632573688713,
+      "x": 327.6175917499007,
+      "theT": 0,
+      "pixel_size_x_symbol": "µm",
+      "pixel_size_x_unit": "MICROMETER"
+    },
+    {
+      "labels": [],
+      "height": 75.1680476199225,
+      "channels": [
+        {
+          "metalabel": "",
+          "color": "0000FF",
+          "emissionWave": 457,
+          "label": "457",
+          "window": {
+            "max": 2758,
+            "min": 6,
+            "end": 1966,
+            "start": 143
+          },
+          "active": true
+        },
+        {
+          "metalabel": "",
+          "color": "00FF00",
+          "emissionWave": 617,
+          "label": "617",
+          "window": {
+            "max": 7132,
+            "min": 3,
+            "end": 1874,
+            "start": 359
+          },
+          "active": true
+        },
+        {
+          "metalabel": "",
+          "color": "FF0000",
+          "emissionWave": 685,
+          "label": "685",
+          "window": {
+            "max": 10656,
+            "min": 0,
+            "end": 3330,
+            "start": 532
+          },
+          "active": true
+        }
+      ],
+      "deltaT": [],
+      "selected": false,
+      "baseUrl": "https://omero.lifesci.dundee.ac.uk/webgateway",
+      "width": 78.37737079675657,
+      "sizeT": 1,
+      "sizeZ": 33,
+      "dx": 0,
+      "dy": 0,
+      "rotation": 0,
+      "imageId": 3989232,
+      "pixel_size_y": 0.06631,
+      "pixel_size_x": 0.06631,
+      "datasetId": 134,
+      "datasetName": "Figure 5",
+      "name": "Aurora B, Bod1 siRNA",
+      "orig_width": 371,
+      "zoom": 100,
+      "orig_height": 353,
+      "theZ": 21,
+      "y": 156.67324189664743,
+      "x": 327.6175917499007,
+      "theT": 0,
+      "pixel_size_x_symbol": "µm",
+      "pixel_size_x_unit": "MICROMETER"
+    },
+    {
+      "imageId": 3989234,
+      "name": "Control siRNA",
+      "width": 113.75694630020921,
+      "height": 122.3118279569893,
+      "sizeZ": 28,
+      "theZ": 14,
+      "sizeT": 1,
+      "theT": 0,
+      "channels": [
+        {
+          "metalabel": "",
+          "color": "0000FF",
+          "emissionWave": 457,
+          "label": "457",
+          "window": {
+            "max": 1994,
+            "end": 1731,
+            "start": 484,
+            "min": 60
+          },
+          "active": true
+        },
+        {
+          "metalabel": "",
+          "color": "00FF00",
+          "emissionWave": 528,
+          "label": "528",
+          "window": {
+            "max": 9149,
+            "end": 2725,
+            "start": 1021,
+            "min": 141
+          },
+          "active": true
+        },
+        {
+          "metalabel": "",
+          "color": "FF0000",
+          "emissionWave": 617,
+          "label": "617",
+          "window": {
+            "max": 8083,
+            "end": 4009,
+            "start": 2504,
+            "min": 567
+          },
+          "active": true
+        }
+      ],
+      "orig_width": 355,
+      "orig_height": 381,
+      "x": 80.71057565459141,
+      "y": 257.45865833170376,
+      "datasetName": "Figure 5",
+      "datasetId": 134,
+      "pixel_size_x": 0.06289698,
+      "pixel_size_y": 0.06289698,
+      "deltaT": [],
+      "baseUrl": "https://omero.lifesci.dundee.ac.uk/webgateway",
+      "zoom": 100,
+      "dx": 0,
+      "dy": 0,
+      "labels": [
+        {
+          "text": "Control siRNA",
+          "size": 12,
+          "position": "top",
+          "color": "000000"
+        }
+      ],
+      "rotation": 0,
+      "selected": false,
+      "scalebar": {
+        "show": true,
+        "length": 5,
+        "position": "bottomleft",
+        "color": "FFFFFF"
+      },
+      "pixel_size_x_symbol": "µm",
+      "pixel_size_x_unit": "MICROMETER",
+      "shapes": [
+        {
+          "type": "Rectangle",
+          "x": 92.99529863128384,
+          "y": 37.47571735887558,
+          "width": 39.08772782706538,
+          "height": 41.639685954306195,
+          "strokeWidth": "5",
+          "strokeColor": "#FFFFFF",
+          "id": -9865922906901688
+        },
+        {
+          "type": "Line",
+          "x1": 63.153523697364406,
+          "x2": 299.11174410509955,
+          "y1": 230.4062622804943,
+          "y2": 113.81514160843695,
+          "strokeWidth": "5",
+          "strokeColor": "#FFFFFF",
+          "id": -24361917516216636
+        }
+      ]
+    },
+    {
+      "imageId": 3989233,
+      "name": "Bod1 siRNA",
+      "width": 113.7569463002092,
+      "height": 122.3118279569893,
+      "sizeZ": 42,
+      "theZ": 16,
+      "sizeT": 1,
+      "theT": 0,
+      "channels": [
+        {
+          "metalabel": "",
+          "color": "0000FF",
+          "emissionWave": 457,
+          "label": "457",
+          "window": {
+            "max": 1617,
+            "end": 1311,
+            "start": 467,
+            "min": 64
+          },
+          "active": true
+        },
+        {
+          "metalabel": "",
+          "color": "00FF00",
+          "emissionWave": 528,
+          "label": "528",
+          "window": {
+            "max": 7713,
+            "end": 2394,
+            "start": 1080,
+            "min": 108
+          },
+          "active": true
+        },
+        {
+          "metalabel": "",
+          "color": "FF0000",
+          "emissionWave": 617,
+          "label": "617",
+          "window": {
+            "max": 9511,
+            "end": 3584,
+            "start": 2182,
+            "min": 536
+          },
+          "active": true
+        }
+      ],
+      "orig_width": 377,
+      "orig_height": 389,
+      "x": 200.15536926981108,
+      "y": 257.45865833170376,
+      "datasetName": "Figure 5",
+      "datasetId": 134,
+      "pixel_size_x": 0.06289698,
+      "pixel_size_y": 0.06289698,
+      "deltaT": [],
+      "baseUrl": "https://omero.lifesci.dundee.ac.uk/webgateway",
+      "zoom": 100,
+      "dx": 0,
+      "dy": 0,
+      "labels": [
+        {
+          "text": "DAPI",
+          "size": "10",
+          "position": "bottomright",
+          "color": "0000FF"
+        },
+        {
+          "text": "HEC1",
+          "size": "10",
+          "position": "bottomright",
+          "color": "00FF00"
+        },
+        {
+          "text": "MCAK",
+          "size": "10",
+          "position": "bottomright",
+          "color": "FF0000"
+        },
+        {
+          "text": "Bod1 siRNA",
+          "size": "12",
+          "position": "top",
+          "color": "000000"
+        }
+      ],
+      "rotation": 0,
+      "selected": false,
+      "pixel_size_x_symbol": "µm",
+      "pixel_size_x_unit": "MICROMETER",
+      "shapes": [
+        {
+          "type": "Rectangle",
+          "x": 179.28257135855642,
+          "y": 72.13208099523919,
+          "width": 39.08772782706538,
+          "height": 41.639685954306195,
+          "strokeWidth": "5",
+          "strokeColor": "#FFFFFF",
+          "id": -9865922906901688
+        },
+        {
+          "type": "Rectangle",
+          "x": 86.6298440858292,
+          "y": 222.0738991770574,
+          "width": 39.08772782706538,
+          "height": 41.639685954306195,
+          "strokeWidth": "5",
+          "strokeColor": "#FFFFFF",
+          "id": -9865922906901688
+        },
+        {
+          "type": "Line",
+          "x1": 101.67045454545455,
+          "x2": 279.1959090909091,
+          "y1": 130.84545454545454,
+          "y2": 287.1527272727273,
+          "strokeWidth": "5",
+          "strokeColor": "#FFFFFF",
+          "id": -1903470300603658
+        }
+      ]
+    },
+    {
+      "imageId": 3989234,
+      "name": "Control siRNA",
+      "width": 38.57808932590323,
+      "height": 41.096774193548356,
+      "sizeZ": 28,
+      "theZ": 14,
+      "sizeT": 1,
+      "theT": 0,
+      "channels": [
+        {
+          "metalabel": "",
+          "color": "0000FF",
+          "emissionWave": 457,
+          "label": "457",
+          "window": {
+            "max": 1994,
+            "end": 1731,
+            "start": 484,
+            "min": 60
+          },
+          "active": false
+        },
+        {
+          "metalabel": "",
+          "color": "00FF00",
+          "emissionWave": 528,
+          "label": "528",
+          "window": {
+            "max": 9149,
+            "end": 2725,
+            "start": 1021,
+            "min": 141
+          },
+          "active": true
+        },
+        {
+          "metalabel": "",
+          "color": "FF0000",
+          "emissionWave": 617,
+          "label": "617",
+          "window": {
+            "max": 8083,
+            "end": 4009,
+            "start": 2504,
+            "min": 567
+          },
+          "active": true
+        }
+      ],
+      "orig_width": 355,
+      "orig_height": 381,
+      "x": 120.4162423360979,
+      "y": 383.39733886975415,
+      "datasetName": "Figure 5",
+      "datasetId": 134,
+      "pixel_size_x": 0.06289698,
+      "pixel_size_y": 0.06289698,
+      "deltaT": [],
+      "baseUrl": "https://omero.lifesci.dundee.ac.uk/webgateway",
+      "zoom": 908.2134463548648,
+      "dx": 64.5,
+      "dy": 132.5,
+      "labels": [],
+      "rotation": 0,
+      "selected": false,
+      "pixel_size_x_symbol": "µm",
+      "pixel_size_x_unit": "MICROMETER"
+    },
+    {
+      "imageId": 3989233,
+      "name": "Bod1 siRNA",
+      "width": 38.57808932590323,
+      "height": 41.096774193548356,
+      "sizeZ": 42,
+      "theZ": 16,
+      "sizeT": 1,
+      "theT": 0,
+      "channels": [
+        {
+          "metalabel": "",
+          "color": "0000FF",
+          "emissionWave": 457,
+          "label": "457",
+          "window": {
+            "max": 1617,
+            "end": 1311,
+            "start": 467,
+            "min": 64
+          },
+          "active": false
+        },
+        {
+          "metalabel": "",
+          "color": "00FF00",
+          "emissionWave": 528,
+          "label": "528",
+          "window": {
+            "max": 7713,
+            "end": 2394,
+            "start": 1080,
+            "min": 108
+          },
+          "active": true
+        },
+        {
+          "metalabel": "",
+          "color": "FF0000",
+          "emissionWave": 617,
+          "label": "617",
+          "window": {
+            "max": 9511,
+            "end": 3584,
+            "start": 2182,
+            "min": 536
+          },
+          "active": true
+        }
+      ],
+      "orig_width": 377,
+      "orig_height": 389,
+      "x": 217.9147845006889,
+      "y": 383.39733886975415,
+      "datasetName": "Figure 5",
+      "datasetId": 134,
+      "pixel_size_x": 0.06289698,
+      "pixel_size_y": 0.06289698,
+      "deltaT": [],
+      "baseUrl": "https://omero.lifesci.dundee.ac.uk/webgateway",
+      "zoom": 934.204932349571,
+      "dx": 82.5,
+      "dy": -48.5,
+      "labels": [],
+      "rotation": 0,
+      "selected": false,
+      "pixel_size_x_symbol": "µm",
+      "pixel_size_x_unit": "MICROMETER"
+    },
+    {
+      "imageId": 3989233,
+      "name": "Bod1 siRNA",
+      "width": 38.57808932590323,
+      "height": 41.096774193548356,
+      "sizeZ": 42,
+      "theZ": 16,
+      "sizeT": 1,
+      "theT": 0,
+      "channels": [
+        {
+          "metalabel": "",
+          "color": "0000FF",
+          "emissionWave": 457,
+          "label": "457",
+          "window": {
+            "max": 1617,
+            "end": 1311,
+            "start": 467,
+            "min": 64
+          },
+          "active": false
+        },
+        {
+          "metalabel": "",
+          "color": "00FF00",
+          "emissionWave": 528,
+          "label": "528",
+          "window": {
+            "max": 7713,
+            "end": 2394,
+            "start": 1080,
+            "min": 108
+          },
+          "active": true
+        },
+        {
+          "metalabel": "",
+          "color": "FF0000",
+          "emissionWave": 617,
+          "label": "617",
+          "window": {
+            "max": 9511,
+            "end": 3584,
+            "start": 2182,
+            "min": 536
+          },
+          "active": true
+        }
+      ],
+      "orig_width": 377,
+      "orig_height": 389,
+      "x": 259.1709971230864,
+      "y": 383.39733886975415,
+      "datasetName": "Figure 5",
+      "datasetId": 134,
+      "pixel_size_x": 0.06289698,
+      "pixel_size_y": 0.06289698,
+      "deltaT": [],
+      "baseUrl": "https://omero.lifesci.dundee.ac.uk/webgateway",
+      "zoom": 934.204932349571,
+      "dx": -10.5,
+      "dy": 101.5,
+      "labels": [],
+      "rotation": 0,
+      "selected": false,
+      "pixel_size_x_symbol": "µm",
+      "pixel_size_x_unit": "MICROMETER"
+    },
+    {
+      "imageId": 3989230,
+      "name": "Control siRNA",
+      "width": 113.75694630020921,
+      "height": 122.3118279569893,
+      "sizeZ": 64,
+      "theZ": 17,
+      "sizeT": 1,
+      "theT": 0,
+      "channels": [
+        {
+          "metalabel": "",
+          "color": "0000FF",
+          "emissionWave": 457,
+          "label": "457",
+          "window": {
+            "max": 2485,
+            "end": 1915,
+            "start": 606,
+            "min": 86
+          },
+          "active": true
+        },
+        {
+          "metalabel": "",
+          "color": "00FF00",
+          "emissionWave": 528,
+          "label": "528",
+          "window": {
+            "max": 9102,
+            "end": 4377,
+            "start": 458,
+            "min": 4
+          },
+          "active": true
+        },
+        {
+          "metalabel": "",
+          "color": "FF0000",
+          "emissionWave": 685,
+          "label": "685",
+          "window": {
+            "max": 6190,
+            "end": 1898,
+            "start": 739,
+            "min": 121
+          },
+          "active": true
+        }
+      ],
+      "orig_width": 351,
+      "orig_height": 365,
+      "x": 80.71057565459141,
+      "y": 451.1619334143204,
+      "datasetName": "Figure 5",
+      "datasetId": 134,
+      "pixel_size_x": 0.06289698,
+      "pixel_size_y": 0.06289698,
+      "deltaT": [],
+      "baseUrl": "https://omero.lifesci.dundee.ac.uk/webgateway",
+      "zoom": 100,
+      "dx": 0,
+      "dy": 0,
+      "labels": [
+        {
+          "text": "Control siRNA",
+          "size": 12,
+          "position": "top",
+          "color": "000000"
+        },
+        {
+          "text": "P-MCAK",
+          "size": "10",
+          "position": "topleft",
+          "color": "FF0000"
+        },
+        {
+          "text": "ACA",
+          "size": "10",
+          "position": "topleft",
+          "color": "00FF00"
+        },
+        {
+          "text": "DAPI",
+          "size": 10,
+          "position": "topleft",
+          "color": "0000FF"
+        }
+      ],
+      "rotation": 0,
+      "selected": false,
+      "scalebar": {
+        "show": true,
+        "length": 5,
+        "position": "bottomleft",
+        "color": "FFFFFF"
+      },
+      "pixel_size_x_symbol": "µm",
+      "pixel_size_x_unit": "MICROMETER",
+      "shapes": [
+        {
+          "type": "Line",
+          "x1": 65.48224431818181,
+          "x2": 281.1640625,
+          "y1": 207.71818181818182,
+          "y2": 221.65454545454546,
+          "strokeWidth": "5",
+          "strokeColor": "#FFFFFF",
+          "id": -4579615299589932
+        },
+        {
+          "type": "Rectangle",
+          "x": 158.03166226764728,
+          "y": 111.13935372251194,
+          "width": 39.08772782706538,
+          "height": 41.639685954306195,
+          "strokeWidth": "5",
+          "strokeColor": "#FFFFFF",
+          "id": -9865922906901688
+        }
+      ]
+    },
+    {
+      "imageId": 3989229,
+      "name": "Bod1 siRNA",
+      "width": 113.7569463002092,
+      "height": 122.3118279569893,
+      "sizeZ": 64,
+      "theZ": 32,
+      "sizeT": 1,
+      "theT": 0,
+      "channels": [
+        {
+          "metalabel": "",
+          "color": "0000FF",
+          "emissionWave": 457,
+          "label": "457",
+          "window": {
+            "max": 2086,
+            "end": 1518,
+            "start": 695,
+            "min": 111
+          },
+          "active": true
+        },
+        {
+          "metalabel": "",
+          "color": "00FF00",
+          "emissionWave": 528,
+          "label": "528",
+          "window": {
+            "max": 8840,
+            "end": 3649,
+            "start": 446,
+            "min": 5
+          },
+          "active": true
+        },
+        {
+          "metalabel": "",
+          "color": "FF0000",
+          "emissionWave": 685,
+          "label": "685",
+          "window": {
+            "max": 3975,
+            "end": 1359,
+            "start": 825,
+            "min": 127
+          },
+          "active": true
+        }
+      ],
+      "orig_width": 346,
+      "orig_height": 348,
+      "x": 200.15536926981108,
+      "y": 451.1619334143204,
+      "datasetName": "Figure 5",
+      "datasetId": 134,
+      "pixel_size_x": 0.06289698,
+      "pixel_size_y": 0.06289698,
+      "deltaT": [],
+      "baseUrl": "https://omero.lifesci.dundee.ac.uk/webgateway",
+      "zoom": 100,
+      "dx": 0,
+      "dy": 0,
+      "labels": [
+        {
+          "text": "Bod1 siRNA",
+          "size": 12,
+          "position": "top",
+          "color": "000000"
+        }
+      ],
+      "rotation": 0,
+      "selected": false,
+      "pixel_size_x_symbol": "µm",
+      "pixel_size_x_unit": "MICROMETER",
+      "shapes": [
+        {
+          "type": "Line",
+          "x1": 74.43443181818182,
+          "x2": 301.58352272727274,
+          "y1": 223.35272727272726,
+          "y2": 112.62545454545455,
+          "strokeWidth": "5",
+          "strokeColor": "#FFFFFF",
+          "id": -631107178516686
+        },
+        {
+          "type": "Rectangle",
+          "x": 151.83893499492007,
+          "y": 258.930262813421,
+          "width": 39.08772782706538,
+          "height": 41.639685954306195,
+          "strokeWidth": "5",
+          "strokeColor": "#FFFFFF",
+          "id": -9865922906901688
+        }
+      ]
+    },
+    {
+      "imageId": 3989230,
+      "name": "Control siRNA",
+      "width": 42.25219307122726,
+      "height": 45.01075268817192,
+      "sizeZ": 64,
+      "theZ": 17,
+      "sizeT": 1,
+      "theT": 0,
+      "channels": [
+        {
+          "metalabel": "",
+          "color": "0000FF",
+          "emissionWave": 457,
+          "label": "457",
+          "window": {
+            "max": 2485,
+            "end": 1915,
+            "start": 606,
+            "min": 86
+          },
+          "active": false
+        },
+        {
+          "metalabel": "",
+          "color": "00FF00",
+          "emissionWave": 528,
+          "label": "528",
+          "window": {
+            "max": 9102,
+            "end": 4377,
+            "start": 458,
+            "min": 4
+          },
+          "active": true
+        },
+        {
+          "metalabel": "",
+          "color": "FF0000",
+          "emissionWave": 685,
+          "label": "685",
+          "window": {
+            "max": 6190,
+            "end": 1898,
+            "start": 739,
+            "min": 121
+          },
+          "active": true
+        }
+      ],
+      "orig_width": 351,
+      "orig_height": 365,
+      "x": 118.48664598206653,
+      "y": 577.2745096136008,
+      "datasetName": "Figure 5",
+      "datasetId": 134,
+      "pixel_size_x": 0.06289698,
+      "pixel_size_y": 0.06289698,
+      "deltaT": [],
+      "baseUrl": "https://omero.lifesci.dundee.ac.uk/webgateway",
+      "zoom": 876.5676100452273,
+      "dx": -2.5,
+      "dy": 50.5,
+      "labels": [],
+      "rotation": 0,
+      "selected": false,
+      "pixel_size_x_symbol": "µm",
+      "pixel_size_x_unit": "MICROMETER"
+    },
+    {
+      "imageId": 3989229,
+      "name": "Bod1 siRNA",
+      "width": 42.252193071227474,
+      "height": 45.01075268817215,
+      "sizeZ": 64,
+      "theZ": 32,
+      "sizeT": 1,
+      "theT": 0,
+      "channels": [
+        {
+          "metalabel": "",
+          "color": "0000FF",
+          "emissionWave": 457,
+          "label": "457",
+          "window": {
+            "max": 2086,
+            "end": 1518,
+            "start": 695,
+            "min": 111
+          },
+          "active": false
+        },
+        {
+          "metalabel": "",
+          "color": "00FF00",
+          "emissionWave": 528,
+          "label": "528",
+          "window": {
+            "max": 8840,
+            "end": 3649,
+            "start": 446,
+            "min": 5
+          },
+          "active": true
+        },
+        {
+          "metalabel": "",
+          "color": "FF0000",
+          "emissionWave": 685,
+          "label": "685",
+          "window": {
+            "max": 3975,
+            "end": 1359,
+            "start": 825,
+            "min": 127
+          },
+          "active": true
+        }
+      ],
+      "orig_width": 346,
+      "orig_height": 348,
+      "x": 241.14927988865966,
+      "y": 576.7104650936988,
+      "datasetName": "Figure 5",
+      "datasetId": 134,
+      "pixel_size_x": 0.06289698,
+      "pixel_size_y": 0.06289698,
+      "deltaT": [],
+      "baseUrl": "https://omero.lifesci.dundee.ac.uk/webgateway",
+      "zoom": 835.7411734129838,
+      "dx": 2,
+      "dy": -106,
+      "labels": [],
+      "rotation": 0,
+      "selected": false,
+      "pixel_size_x_symbol": "µm",
+      "pixel_size_x_unit": "MICROMETER"
+    }
+  ],
+  "paper_width": 612,
+  "paper_height": 792,
+  "page_size": "A4",
+  "page_count": 1,
+  "paper_spacing": 50,
+  "page_col_count": 1,
+  "height_mm": 297,
+  "width_mm": 210,
+  "orientation": "vertical",
+  "legend": "**MCAK is not efficiently phosphorylated in Bod1siRNA cells.** Data from [JCB DataViewer](http://jcb.rupress.org/jcb-dataviewer). (A) Aurora B is not delocalized in Bod1-depleted cells. Phospho-Ser10-histone H3 staining in control and Bod1 siRNA cells indicating Aurora B activity. (B–E) Cells were transfected with control or Bod1 siRNA. After 72 h, cells were treated with monastrol for 3 h and released into media containing MG132 for 1 h before fixing. (B and C) Cells were stained for total MCAK population, and levels at kinetochores were quantified. Boxed areas are magnified below the main images. (D and E) Cells were stained for phospho-Ser92-MCAK, and levels at aligned and unaligned kinetochores were quantified. Dashed lines indicate orientation of the metaphase plate. Error bars represent SD. Bars, 5 μm.",
+  "legend_collapsed": true,
+  "figureName": "Porter et al, Bod1: 2007",
+  "fileId": 1
+}
