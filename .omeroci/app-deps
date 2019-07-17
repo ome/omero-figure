@@ -3,5 +3,5 @@
 set -e
 set -u
 yum -y install https://rpm.nodesource.com/pub_6.x/el/7/x86_64/nodesource-release-el7-1.noarch.rpm
-yum -y install npm
+yum -y install nodejs
 npm install -g grunt
