@@ -789,6 +789,9 @@
 
     .channel-btn {
         width: 59px;
+        padding-left: 6px;
+        padding-right: 6px;
+        overflow: hidden;
     }
 
     .lutPreview {
