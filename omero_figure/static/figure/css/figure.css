@@ -794,6 +794,10 @@
         overflow: hidden;
     }
 
+    .font-white {
+        color: white;
+    }
+
     .lutPreview {
         width: 100%;
         height: 45px;
