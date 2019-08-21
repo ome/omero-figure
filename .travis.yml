@@ -13,3 +13,10 @@ before_install:
 
 script:
   - .omero/docker app
+
+deploy:
+  provider: pypi
+  user: $PYPI_USER
+  password: $PYPI_PASSWORD
+  on:
+    tags: true
