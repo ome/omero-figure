@@ -105,7 +105,7 @@ After upgrading OMERO.figure with:
     $ pip install -U omero-figure
 
 You need to update the Figure export script using one of the 2 options described
-above. If using *Option1*, you need to *replace* the existing script:
+above. If using *Option 1*, you need to *replace* the existing script:
 
 ::
 
