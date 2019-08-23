@@ -95,6 +95,28 @@ Now install the script's dependencies:
 
     $ yum install python-markdown
 
+Upgrading OMERO.figure
+----------------------
+
+After upgrading OMERO.figure with:
+
+::
+
+    $ pip install -U omero-figure
+
+You need to update the Figure export script using one of the 2 options described
+above. If using *Option1*, you need to *replace* the existing script:
+
+::
+
+    # Get the ID of the existing Figure_To_Pdf script:
+    $ path/to/OMERO.server/bin/omero script list
+
+    # Replace the script
+    $ cd omero_figure/scripts
+    $ path/to/OMERO.server/bin/omero script replace <SCRIPT_ID> omero/figure_scripts/Figure_To_Pdf.py
+
+
 Development
 ===========
 
