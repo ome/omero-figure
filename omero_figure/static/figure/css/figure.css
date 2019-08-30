@@ -564,9 +564,9 @@
     }
     .ch_slider {
         height: 12px !important;
-        width: 170px !important;
+        width: 144px !important;
         top: -2px;
-        left: 104px;
+        left: 130px;
         position: absolute !important;
     }
     .ch_start, .ch_end {
@@ -592,7 +592,7 @@
         margin: 0;
     }
     .ch_start {
-        left: 54px;
+        left: 80px;
         text-align: right;
         width: 30px;
     }
@@ -785,6 +785,17 @@
         background-image: url('../images/luts_10.png');   /* each lut is 10px high */
         background-size: 100% 1950px;  /* height is stretched 5x (50px per LUT) */
         background-repeat: no-repeat;
+    }
+
+    .channel-btn {
+        width: 59px;
+        padding-left: 6px;
+        padding-right: 6px;
+        overflow: hidden;
+    }
+
+    .font-white {
+        color: white;
     }
 
     .lutPreview {
