@@ -61,7 +61,7 @@ This section assumes that an OMERO.server is already installed.
 
 Figures can be exported as PDF or TIFF files using a script that runs on the OMERO.server. This script needs to be uploaded to the OMERO.server and its dependencies installed on the OMERO.server machine.
 
-The script can be uploaded using two alternative workflows, both of which require you to be an admin.
+The script can be uploaded using two alternative workflows, both of which require you to have the correct admin privileges.
 To find where OMERO.figure has been installed using pip, run:
 
 ::
