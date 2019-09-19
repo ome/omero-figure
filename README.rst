@@ -61,7 +61,7 @@ This section assumes that an OMERO.server is already installed.
 
 Figures can be exported as PDF or TIFF files using a script that runs on the OMERO.server. This script needs to be uploaded to the OMERO.server and its dependencies installed on the OMERO.server machine.
 
-The script can be uploaded using two alternative workflows, both of which require you to be an admin.
+The script can be uploaded using two alternative workflows, both of which require you to have the correct admin privileges.
 To find where OMERO.figure has been installed using pip, run:
 
 ::
@@ -94,6 +94,28 @@ Now install the script's dependencies:
 ::
 
     $ yum install python-markdown
+
+Upgrading OMERO.figure
+----------------------
+
+After upgrading OMERO.figure with:
+
+::
+
+    $ pip install -U omero-figure
+
+You need to update the Figure export script using one of the 2 options described
+above. If using *Option 1*, you need to *replace* the existing script:
+
+::
+
+    # Get the ID of the existing Figure_To_Pdf script:
+    $ path/to/OMERO.server/bin/omero script list
+
+    # Replace the script
+    $ cd omero_figure/scripts
+    $ path/to/OMERO.server/bin/omero script replace <SCRIPT_ID> omero/figure_scripts/Figure_To_Pdf.py
+
 
 Development
 ===========
