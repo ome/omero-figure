@@ -1,4 +1,4 @@
-4.1.0 (August 2019)
+4.1.0 (September 2019)
 -------------------
 
 - Creation of figure labels from Map Annotations (PR #323)
