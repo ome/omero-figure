@@ -1,3 +1,10 @@
+4.1.0 (September 2019)
+-------------------
+
+- Creation of figure labels from Map Annotations (PR #323)
+- Improve Description of Images created by export of figure (PR #329)
+- Show channel names in the Preview panel (PR #333)
+
 4.0.2 (October 2018)
 --------------------
 
