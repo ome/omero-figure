@@ -16,7 +16,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import django
 from omeroweb.webgateway import views as webgateway_views
 from . import views
 from django.conf.urls import url
