@@ -30,7 +30,7 @@ from django.core.urlresolvers import reverse, NoReverseMatch
 from omero.rtypes import wrap, rlong, rstring, unwrap
 import omero
 
-from cStringIO import StringIO
+from io import StringIO
 
 from omeroweb.webclient.decorators import login_required
 
@@ -352,7 +352,7 @@ def load_web_figure(request, file_id, conn=None, **kwargs):
     file_ann = conn.getObject("FileAnnotation", file_id)
     if file_ann is None:
         raise Http404("Figure File-Annotation %s not found" % file_id)
-    figure_json = "".join(list(file_ann.getFileInChunks()))
+    figure_json = b"".join(list(file_ann.getFileInChunks()))
     figure_json = figure_json.decode('utf8')
     json_file = file_ann.getFile()
     owner_id = json_file.getDetails().getOwner().getId()
