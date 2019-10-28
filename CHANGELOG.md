@@ -1,5 +1,5 @@
-4.1.0 (September 2019)
--------------------
+4.1.0 (October 2019)
+--------------------
 
 - Creation of figure labels from Map Annotations (PR #323)
 - Improve Description of Images created by export of figure (PR #329)
