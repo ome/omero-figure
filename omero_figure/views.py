@@ -30,7 +30,7 @@ from django.core.urlresolvers import reverse, NoReverseMatch
 from omero.rtypes import wrap, rlong, rstring, unwrap
 import omero
 
-from io import StringIO
+from io import BytesIO
 
 from omeroweb.webclient.decorators import login_required
 
@@ -190,10 +190,10 @@ def render_scaled_region(request, iid, z, t, conn=None, **kwargs):
 
     # paste to canvas if needed
     if canvas is not None:
-        i = StringIO(jpeg_data)
+        i = BytesIO(jpeg_data)
         to_paste = Image.open(i)
         canvas.paste(to_paste, (paste_x, paste_y))
-        rv = StringIO()
+        rv = BytesIO()
         canvas.save(rv, 'jpeg', quality=90)
         jpeg_data = rv.getvalue()
 
@@ -215,8 +215,6 @@ def save_web_figure(request, conn=None, **kwargs):
     figure_json = request.POST.get('figureJSON')
     if figure_json is None:
         return HttpResponse("No 'figureJSON' in POST")
-    # See https://github.com/will-moore/figure/issues/16
-    figure_json = figure_json.encode('utf8')
 
     image_ids = []
     first_img_id = None
@@ -225,7 +223,7 @@ def save_web_figure(request, conn=None, **kwargs):
         for panel in json_data['panels']:
             image_ids.append(panel['imageId'])
         if len(image_ids) > 0:
-            first_img_id = long(image_ids[0])
+            first_img_id = int(image_ids[0])
         # remove duplicates
         image_ids = list(set(image_ids))
         # pretty-print json
@@ -233,6 +231,9 @@ def save_web_figure(request, conn=None, **kwargs):
                                  indent=2, separators=(',', ': '))
     except Exception:
         pass
+
+    # See https://github.com/will-moore/figure/issues/16
+    figure_json = figure_json.encode('utf8')
 
     file_id = request.POST.get('fileId')
 
@@ -269,11 +270,8 @@ def save_web_figure(request, conn=None, **kwargs):
             # Don't leave as -1
             conn.SERVICE_OPTS.setOmeroGroup(curr_gid)
         file_size = len(figure_json)
-        f = StringIO()
+        f = BytesIO()
         f.write(figure_json)
-        # Can't use unicode for file name
-        figure_name = unicodedata.normalize(
-            'NFKD', figure_name).encode('ascii', 'ignore')
         orig_file = conn.createOriginalFileFromFileObj(
             f, '', figure_name, file_size, mimetype="application/json")
         fa = omero.model.FileAnnotationI()
@@ -458,7 +456,7 @@ def default_thumbnail(size=(120, 120)):
     if len(size) == 1:
         size = (size[0], size[0])
     img = Image.new("RGB", size, (238, 238, 238))
-    f = StringIO()
+    f = BytesIO()
     img.save(f, "PNG")
     f.seek(0)
     return f.read()
