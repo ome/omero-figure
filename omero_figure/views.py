@@ -19,7 +19,6 @@
 from django.http import Http404, HttpResponse
 from django.shortcuts import render
 from datetime import datetime
-import unicodedata
 import json
 import time
 
