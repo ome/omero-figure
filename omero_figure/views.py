@@ -391,7 +391,7 @@ def make_web_figure(request, conn=None, **kwargs):
     webclient_uri = request.build_absolute_uri(reverse('webindex'))
 
     input_map = {
-        'Figure_JSON': wrap(figure_json.encode('utf8')),
+        'Figure_JSON': wrap(figure_json),
         'Export_Option': wrap(str(export_option)),
         'Webclient_URI': wrap(webclient_uri)}
 
