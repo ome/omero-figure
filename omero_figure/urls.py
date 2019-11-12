@@ -16,18 +16,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import django
 from omeroweb.webgateway import views as webgateway_views
 from . import views
-if django.VERSION < (1, 6):
-    from django.conf.urls.defaults import url, patterns
-else:
-    from django.conf.urls import url, patterns
+from django.conf.urls import url
 
 
-urlpatterns = patterns(
-
-    'django.views.generic.simple',
+urlpatterns = [
 
     # index 'home page' of the figure app
     url(r'^$', views.index, name='figure_index'),
@@ -76,4 +70,4 @@ urlpatterns = patterns(
 
     url(r'^roiCount/(?P<image_id>[0-9]+)/$', views.roi_count,
         name='figure_roiCount'),
-)
+]
