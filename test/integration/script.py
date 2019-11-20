@@ -77,7 +77,7 @@ def run_script(client, script_id, args, key=None):
                 while cnt < file_size:
                     block = store.read(cnt, block_size)
                     cnt = cnt + block_size
-                    print (block)
+                    print(block)
         finally:
             store.close()
 
