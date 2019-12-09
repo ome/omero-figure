@@ -20,7 +20,7 @@ import json
 import os
 
 
-__version__ = "4.0.2"
+__version__ = "4.2.dev1"
 
 
 def read_file(fname, content_type=None):

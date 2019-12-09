@@ -19,7 +19,6 @@
 from django.http import Http404, HttpResponse
 from django.shortcuts import render
 from datetime import datetime
-import unicodedata
 import json
 import time
 
@@ -30,7 +29,7 @@ from django.core.urlresolvers import reverse, NoReverseMatch
 from omero.rtypes import wrap, rlong, rstring, unwrap
 import omero
 
-from cStringIO import StringIO
+from io import BytesIO
 
 from omeroweb.webclient.decorators import login_required
 
@@ -190,10 +189,10 @@ def render_scaled_region(request, iid, z, t, conn=None, **kwargs):
 
     # paste to canvas if needed
     if canvas is not None:
-        i = StringIO(jpeg_data)
+        i = BytesIO(jpeg_data)
         to_paste = Image.open(i)
         canvas.paste(to_paste, (paste_x, paste_y))
-        rv = StringIO()
+        rv = BytesIO()
         canvas.save(rv, 'jpeg', quality=90)
         jpeg_data = rv.getvalue()
 
@@ -215,8 +214,6 @@ def save_web_figure(request, conn=None, **kwargs):
     figure_json = request.POST.get('figureJSON')
     if figure_json is None:
         return HttpResponse("No 'figureJSON' in POST")
-    # See https://github.com/will-moore/figure/issues/16
-    figure_json = figure_json.encode('utf8')
 
     image_ids = []
     first_img_id = None
@@ -225,7 +222,7 @@ def save_web_figure(request, conn=None, **kwargs):
         for panel in json_data['panels']:
             image_ids.append(panel['imageId'])
         if len(image_ids) > 0:
-            first_img_id = long(image_ids[0])
+            first_img_id = int(image_ids[0])
         # remove duplicates
         image_ids = list(set(image_ids))
         # pretty-print json
@@ -233,6 +230,9 @@ def save_web_figure(request, conn=None, **kwargs):
                                  indent=2, separators=(',', ': '))
     except Exception:
         pass
+
+    # See https://github.com/will-moore/figure/issues/16
+    figure_json = figure_json.encode('utf8')
 
     file_id = request.POST.get('fileId')
 
@@ -269,11 +269,8 @@ def save_web_figure(request, conn=None, **kwargs):
             # Don't leave as -1
             conn.SERVICE_OPTS.setOmeroGroup(curr_gid)
         file_size = len(figure_json)
-        f = StringIO()
+        f = BytesIO()
         f.write(figure_json)
-        # Can't use unicode for file name
-        figure_name = unicodedata.normalize(
-            'NFKD', figure_name).encode('ascii', 'ignore')
         orig_file = conn.createOriginalFileFromFileObj(
             f, '', figure_name, file_size, mimetype="application/json")
         fa = omero.model.FileAnnotationI()
@@ -352,7 +349,7 @@ def load_web_figure(request, file_id, conn=None, **kwargs):
     file_ann = conn.getObject("FileAnnotation", file_id)
     if file_ann is None:
         raise Http404("Figure File-Annotation %s not found" % file_id)
-    figure_json = "".join(list(file_ann.getFileInChunks()))
+    figure_json = b"".join(list(file_ann.getFileInChunks()))
     figure_json = figure_json.decode('utf8')
     json_file = file_ann.getFile()
     owner_id = json_file.getDetails().getOwner().getId()
@@ -394,7 +391,7 @@ def make_web_figure(request, conn=None, **kwargs):
     webclient_uri = request.build_absolute_uri(reverse('webindex'))
 
     input_map = {
-        'Figure_JSON': wrap(figure_json.encode('utf8')),
+        'Figure_JSON': wrap(figure_json),
         'Export_Option': wrap(str(export_option)),
         'Webclient_URI': wrap(webclient_uri)}
 
@@ -458,7 +455,7 @@ def default_thumbnail(size=(120, 120)):
     if len(size) == 1:
         size = (size[0], size[0])
     img = Image.new("RGB", size, (238, 238, 238))
-    f = StringIO()
+    f = BytesIO()
     img.save(f, "PNG")
     f.seek(0)
     return f.read()
@@ -489,10 +486,10 @@ def unit_conversion(request, value, from_unit, to_unit, conn=None, **kwargs):
         from_unit = getattr(UnitsLength, str(from_unit))
         to_unit = getattr(UnitsLength, str(to_unit))
         value = float(value)
-    except ImportError, ex:
+    except ImportError as ex:
         error = ("Failed to import omero.model.enums.UnitsLength."
                  " Requires OMERO 5.1")
-    except AttributeError, ex:
+    except AttributeError as ex:
         error = ex.message
 
     if error:
