@@ -59,7 +59,8 @@ Enabling figure export
 
 This section assumes that an OMERO.server is already installed.
 
-Figures can be exported as PDF or TIFF files using a script that runs on the OMERO.server. This script needs to be uploaded to the OMERO.server and its dependencies installed on the OMERO.server machine.
+Figures can be exported as PDF or TIFF files using a script that runs on the OMERO.server. This script needs to be uploaded to the OMERO.server and its dependencies
+installed in the OMERO.server virtual environment.
 
 The script can be uploaded using two alternative workflows, both of which require you to have the correct admin privileges.
 To find where OMERO.figure has been installed using pip, run:
@@ -68,7 +69,7 @@ To find where OMERO.figure has been installed using pip, run:
 
     $ pip show omero-figure
 
-The command will display the absolute path to the directory where the application is installed e.g. ``~/<virtualenv_name>/lib/python2.7/site-packages``. Go to that directory. 
+The command will display the absolute path to the directory where the application is installed e.g. ``~/<virtualenv_name>/lib/python3.6/site-packages``. Go to that directory.
 
 *Option 1*: Connect to the OMERO server and upload script via the CLI. It is important to be in the correct directory when uploading so that the script is uploaded with the full path: ``omero/figure_scripts/Figure_To_Pdf.py``:
 
@@ -83,17 +84,18 @@ The command will display the absolute path to the directory where the applicatio
 Now install the script's dependencies:
 
 
-* Install `reportlab <https://bitbucket.org/rptlab/reportlab>`_ PDF python package from distribution packages. For example, install on CentOS 7:
+* Install `reportlab <https://bitbucket.org/rptlab/reportlab>`_ PDF python package from distribution packages.
+  This needs to be installed in the virtual environment where the server is run.
 
 ::
 
-    $ yum install python-reportlab
+    $ pip install reportlab
 
-* Optional: Figure legends can be formatted using Markdown syntax. To see this correctly in the exported PDF info page, we need `Python Markdown <https://python-markdown.github.io/>`_. For example, install on CentOS 7:
+* Optional: Figure legends can be formatted using Markdown syntax. To see this correctly in the exported PDF info page, we need `Python Markdown <https://python-markdown.github.io/>`_:
 
 ::
 
-    $ yum install python-markdown
+    $ pip install markdown
 
 Upgrading OMERO.figure
 ----------------------
