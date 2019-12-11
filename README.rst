@@ -33,13 +33,13 @@ Add figure custom app to your installed web apps:
 
 ::
 
-    $ bin/omero config append omero.web.apps '"omero_figure"'
+    $ omero config append omero.web.apps '"omero_figure"'
 
 Display a link to 'Figure' at the top of the webclient:
 
 ::
 
-    $ bin/omero config append omero.web.ui.top_links '["Figure", "figure_index",
+    $ omero config append omero.web.ui.top_links '["Figure", "figure_index",
       {"title": "Open Figure in new tab", "target": "_blank"}]' 
 
 
@@ -48,7 +48,7 @@ the webclient tree:
 
 ::
 
-    $ bin/omero config append omero.web.open_with '["omero_figure", "new_figure",
+    $ omero config append omero.web.open_with '["omero_figure", "new_figure",
       {"supported_objects":["images"], "target": "_blank", "label": "OMERO.figure"}]'
 
 Now restart OMERO.web as normal.
@@ -76,7 +76,7 @@ The command will display the absolute path to the directory where the applicatio
 ::
 
     $ cd omero_figure/scripts
-    $ path/to/OMERO.server/bin/omero script upload omero/figure_scripts/Figure_To_Pdf.py --official
+    $ omero script upload omero/figure_scripts/Figure_To_Pdf.py --official
 
 *Option 2*: Alternatively, before starting the OMERO.server, copy the script from the figure install
 ``/omero_figure/scripts/omero/figure_scripts/Figure_To_Pdf.py`` to the OMERO.server ``path/to/OMERO.server/lib/scripts/omero/figure_scripts``. Then restart the OMERO.server.
