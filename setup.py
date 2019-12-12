@@ -225,5 +225,5 @@ setup(name="omero-figure",
       include_package_data=True,
       zip_safe=False,
       cmdclass=cmdclass,
-      tests_require=['pytest'],
+      tests_require=['pytest', 'numpy'],
       )
