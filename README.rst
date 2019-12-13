@@ -84,7 +84,7 @@ The command will display the absolute path to the directory where the applicatio
 Now install the script's dependencies:
 
 
-* Install `reportlab <https://bitbucket.org/rptlab/reportlab>`_ PDF python package from distribution packages.
+* Install `reportlab <https://bitbucket.org/rptlab/reportlab>`_ PDF python package.
   This needs to be installed in the virtual environment where the server is run.
 
 ::
