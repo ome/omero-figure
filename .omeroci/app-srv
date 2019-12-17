@@ -1,19 +1,20 @@
 #!/bin/bash
 
+source /infra/utils
+
 set -e
 set -u
 set -x
+set -o pipefail
 
-/opt/omero/server/venv3/bin/pip install reportlab
-/opt/omero/server/venv3/bin/pip install markdown
+pip3 install reportlab markdown
 rm -rf $OMERO_DIST/lib/scripts/omero
 
 cd $TARGET
 cd omero_figure/scripts
 cp -r omero $OMERO_DIST/lib/scripts/
 
-export ICE_CONFIG=${OMERO_DIST}/etc/ice.config
-export ROOTPASS=$(cat $ICE_CONFIG | grep omero.rootpass | cut -f2 -d=)
-export PATH=$PATH:$OMERO_DIST/bin
-omero login -w $ROOTPASS root@omero
-omero script list
+su - omero-server <<EOF
+/opt/omero/server/venv3/bin/omero login -w omero root@omero
+/opt/omero/server/venv3/bin/omero script list
+EOF
