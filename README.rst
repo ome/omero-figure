@@ -15,7 +15,7 @@ For full details see `SUPPORT.md <https://github.com/ome/omero-figure/blob/maste
 Requirements
 ============
 
-* OMERO 5.4.0 or newer.
+* OMERO 5.6.0 or newer.
 
 
 Installing from PyPI
@@ -196,4 +196,4 @@ OMERO.figure is released under the AGPL.
 Copyright
 ---------
 
-2016, The Open Microscopy Environment
+2016-2020, The Open Microscopy Environment
