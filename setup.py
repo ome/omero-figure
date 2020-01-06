@@ -114,7 +114,7 @@ def require_npm(command, strict=False):
             if strict or not os.path.exists(
                     'omero_figure/static/figure/figure.js'):
                 self.spawn(['npm', 'install'])
-                self.spawn(['npm', 'install', '-g', 'grunt'])
+                self.spawn(['sudo', 'npm', 'install', '-g', 'grunt'])
                 self.spawn(['grunt', 'jst'])
                 self.spawn(['grunt', 'concat'])
                 self.spawn(['grunt', 'jshint', '--force'])
