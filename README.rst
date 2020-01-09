@@ -15,7 +15,7 @@ For full details see `SUPPORT.md <https://github.com/ome/omero-figure/blob/maste
 Requirements
 ============
 
-* OMERO 5.6.0 or newer.
+* OMERO.web 5.6.0 or newer.
 
 
 Installing from PyPI
