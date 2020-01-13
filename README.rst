@@ -13,13 +13,13 @@ An OMERO.web app for creating figures from images in OMERO.
 For full details see `SUPPORT.md <https://github.com/ome/omero-figure/blob/master/SUPPORT.md>`_.
 
 Requirements
-============
+-----------
 
 * OMERO.web 5.6.0 or newer.
 
 
 Installing from PyPI
-====================
+--------------------
 
 This section assumes that an OMERO.web is already installed.
 
@@ -120,7 +120,7 @@ above. If using *Option 1*, you need to *replace* the existing script:
 
 
 Development
-===========
+-----------
 
 We use Grunt for various tools.
 See http://figure.openmicroscopy.org/2014/05/01/testing-with-jshint-jasmine-grunt.html
