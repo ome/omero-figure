@@ -1,39 +1,45 @@
+4.2.0 (January 2020)
+--------------------
+
+- Drop support for Python 2
+- Fix export of rectangles ([#342](https://github.com/ome/omero-figure/pull/342))
+
 4.1.0 (October 2019)
 --------------------
 
-- Creation of figure labels from Map Annotations (PR #323)
-- Improve Description of Images created by export of figure (PR #329)
-- Show channel names in the Preview panel (PR #333)
+- Creation of figure labels from Map Annotations ([#323](https://github.com/ome/omero-figure/pull/323))
+- Improve Description of Images created by export of figure ([#329](https://github.com/ome/omero-figure/pull/329))
+- Show channel names in the Preview panel ([#333](https://github.com/ome/omero-figure/pull/333))
 
 4.0.2 (October 2018)
 --------------------
 
-- Add new functionalities to the script used to export PDF/TIFF so that other tools can use the script. The changes are not yet used by OMERO.figure. Thanks to Andreas Knab (PR #306)
+- Add new functionalities to the script used to export PDF/TIFF so that other tools can use the script. The changes are not yet used by OMERO.figure. Thanks to Andreas Knab ([#306](https://github.com/ome/omero-figure/pull/306))
 
 4.0.1 (August 2018)
 -------------------
 
-- Fix rendering of big tiled images using Pillow 4.2 (PR #300)
-- Fix scalebar length on exported TIFF figures for big images (PR #304)
-- Z and T slider usability improvements (PR #303)
-- Fix dropdown choosers for labels on touch-enabled Windows machines (PR #301)
-- Export handles missing dx and dy attributes. Thanks to David Pinto (PR #294)
+- Fix rendering of big tiled images using Pillow 4.2 ([#300](https://github.com/ome/omero-figure/pull/300))
+- Fix scalebar length on exported TIFF figures for big images ([#304](https://github.com/ome/omero-figure/pull/304))
+- Z and T slider usability improvements ([#303](https://github.com/ome/omero-figure/pull/303))
+- Fix dropdown choosers for labels on touch-enabled Windows machines ([#301](https://github.com/ome/omero-figure/pull/301))
+- Export handles missing dx and dy attributes. Thanks to David Pinto ([#294](https://github.com/ome/omero-figure/pull/294))
 
 4.0.0 (May 2018)
 ----------------
 
-- Support for big (tiled) Images. This is a major change (PR #243)
-- Allow loading Polygons and Polylines from OMERO to add to Images (PR #253)
-- Open-with Figure and adding Images now preserves the order of Images (PR #275)
-- Support for adding label of T-index to time-lapse Images (PR #276)
-- Show a spinner while loading new Images (PR #279)
-- Stroke-width of ROIs are now based on page points, not on panel pixel sizes (PR #281)
+- Support for big (tiled) Images. This is a major change ([#243](https://github.com/ome/omero-figure/pull/243))
+- Allow loading Polygons and Polylines from OMERO to add to Images ([#253](https://github.com/ome/omero-figure/pull/253))
+- Open-with Figure and adding Images now preserves the order of Images ([#275](https://github.com/ome/omero-figure/pull/275))
+- Support for adding label of T-index to time-lapse Images ([#276](https://github.com/ome/omero-figure/pull/276))
+- Show a spinner while loading new Images ([#279](https://github.com/ome/omero-figure/pull/279))
+- Stroke-width of ROIs are now based on page points, not on panel pixel sizes ([#281](https://github.com/ome/omero-figure/pull/281))
 
 Developers:
 
-- Use test_infra to test listing of figure files (PR #270)
+- Use test_infra to test listing of figure files ([#270](https://github.com/ome/omero-figure/pull/270))
 - Breaking change in figure JSON model. Stroke-widths changed (see above) and export-dpi renamed to min-export-dpi
-- Use shape-editor 4.0.0 to support Polygons and Polylines (PR #253) and not scale stroke-width
+- Use shape-editor 4.0.0 to support Polygons and Polylines ([#253](https://github.com/ome/omero-figure/pull/253)) and not scale stroke-width
 
 This release also upgrades the required version of OMERO
 to 5.4.0 or newer.
@@ -41,17 +47,17 @@ to 5.4.0 or newer.
 3.2.1 (February 2018)
 ---------------------
 
-- Fix exporting of unsaved figures (PR #269)
+- Fix exporting of unsaved figures ([#269](https://github.com/ome/omero-figure/pull/269))
 
 3.2.0 (January 2018)
 --------------------
 
- - Cropping of the page to fit around image panels (PR #252)
- - Creation of new labels from Tags on the image (PR #254)
- - Allow renaming of saved figures (PR #251)
- - Fix export of multi-page PDF info section with ReportLab 3.4.0 (PR #260)
- - Fix display of Z and T index ranges in crop dialog (PR #258)
- - Fix listing of files in the Files > Open dialog when user has middle name (PR #247)
+ - Cropping of the page to fit around image panels ([#252](https://github.com/ome/omero-figure/pull/252))
+ - Creation of new labels from Tags on the image ([#254](https://github.com/ome/omero-figure/pull/254))
+ - Allow renaming of saved figures ([#251](https://github.com/ome/omero-figure/pull/251))
+ - Fix export of multi-page PDF info section with ReportLab 3.4.0 ([#260](https://github.com/ome/omero-figure/pull/260))
+ - Fix display of Z and T index ranges in crop dialog ([#258](https://github.com/ome/omero-figure/pull/258))
+ - Fix listing of files in the Files > Open dialog when user has middle name ([#247](https://github.com/ome/omero-figure/pull/247))
 
 3.1.2 (October 2017)
 --------------------
@@ -70,27 +76,27 @@ to 5.4.0 or newer.
 3.1.0 (June 2017)
 -----------------
 
-- Add support for italics and bold in panel labels using markdown syntax (PR #209)
-- Allow export of a figure as new OMERO Images (one per page) (PR #210)
-- Allow to change the background colour of the pages (PR #211)
-- Make the json file human readable (PR #212)
-- Fix slider range issue when min pixel intensity is greater than 9999 (PR #213)
-- Allow to script various changes to the figure from the browser devtools console (PR #216)
-- Add support for Reverse Intensity (PR #219)
-- Remove unused dependencies (PR #223)
+- Add support for italics and bold in panel labels using markdown syntax ([#209](https://github.com/ome/omero-figure/pull/209))
+- Allow export of a figure as new OMERO Images (one per page) ([#210](https://github.com/ome/omero-figure/pull/210))
+- Allow to change the background colour of the pages ([#211](https://github.com/ome/omero-figure/pull/211))
+- Make the json file human readable ([#212](https://github.com/ome/omero-figure/pull/212))
+- Fix slider range issue when min pixel intensity is greater than 9999 ([#213](https://github.com/ome/omero-figure/pull/213))
+- Allow to script various changes to the figure from the browser devtools console ([#216](https://github.com/ome/omero-figure/pull/216))
+- Add support for Reverse Intensity ([#219](https://github.com/ome/omero-figure/pull/219))
+- Remove unused dependencies ([#223](https://github.com/ome/omero-figure/pull/223))
 
 3.0.0 (April 2017)
 ------------------
 
-- Load ROIs from OMERO to add new Shapes to your figure (PR #190)
+- Load ROIs from OMERO to add new Shapes to your figure ([#190](https://github.com/ome/omero-figure/pull/190))
 - Shapes can be selected to add to the image within the figure
-- Set an explicit x, y, width and height for selected panels (PR #169)
-- When resizing panels, you can enforce the current aspect ratio (PR #193)
+- Set an explicit x, y, width and height for selected panels ([#169](https://github.com/ome/omero-figure/pull/169))
+- When resizing panels, you can enforce the current aspect ratio ([#193](https://github.com/ome/omero-figure/pull/193))
 - Choose look-up tables from those provided by OMERO
 - Can render each channel with a different look-up table
 - Additional look-up tables can be added to the OMERO.server
 - Support for the new 'open-with' functionality
-- Rendering setting inputs for channels allow entering of numbers instead of only using sliders (PR #166)
+- Rendering setting inputs for channels allow entering of numbers instead of only using sliders ([#166](https://github.com/ome/omero-figure/pull/166))
 - flake8 and pep8 compatible
 - Use valid SPDX license expression
 
@@ -109,10 +115,10 @@ to 5.4.0 or newer.
 1.2.1 (April 2016)
 ------------------
 
-- Faster listing of files in File > Open dialog #145
-- Improved filtering of listed files by name #147
-- Fix a bug in rotating labels when exporting as TIFF #140
-- Fix pixel sizes for images with custom pixel size units (not microns) #144
+- Faster listing of files in File > Open dialog [#145](https://github.com/ome/omero-figure/pull/145)
+- Improved filtering of listed files by name [#147](https://github.com/ome/omero-figure/pull/147)
+- Fix a bug in rotating labels when exporting as TIFF [#140](https://github.com/ome/omero-figure/pull/140)
+- Fix pixel sizes for images with custom pixel size units (not microns) [#144](https://github.com/ome/omero-figure/pull/144)
 
 1.2.0 (November 2015)
 ---------------------

@@ -13,7 +13,7 @@ An OMERO.web app for creating figures from images in OMERO.
 For full details see `SUPPORT.md <https://github.com/ome/omero-figure/blob/master/SUPPORT.md>`_.
 
 Requirements
------------
+------------
 
 * OMERO.web 5.6.0 or newer.
 
