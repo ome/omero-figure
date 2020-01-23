@@ -13,13 +13,13 @@ An OMERO.web app for creating figures from images in OMERO.
 For full details see `SUPPORT.md <https://github.com/ome/omero-figure/blob/master/SUPPORT.md>`_.
 
 Requirements
-============
+------------
 
-* OMERO 5.4.0 or newer.
+* OMERO.web 5.6.0 or newer.
 
 
 Installing from PyPI
-====================
+--------------------
 
 This section assumes that an OMERO.web is already installed.
 
@@ -33,13 +33,13 @@ Add figure custom app to your installed web apps:
 
 ::
 
-    $ bin/omero config append omero.web.apps '"omero_figure"'
+    $ omero config append omero.web.apps '"omero_figure"'
 
 Display a link to 'Figure' at the top of the webclient:
 
 ::
 
-    $ bin/omero config append omero.web.ui.top_links '["Figure", "figure_index",
+    $ omero config append omero.web.ui.top_links '["Figure", "figure_index",
       {"title": "Open Figure in new tab", "target": "_blank"}]' 
 
 
@@ -48,7 +48,7 @@ the webclient tree:
 
 ::
 
-    $ bin/omero config append omero.web.open_with '["omero_figure", "new_figure",
+    $ omero config append omero.web.open_with '["omero_figure", "new_figure",
       {"supported_objects":["images"], "target": "_blank", "label": "OMERO.figure"}]'
 
 Now restart OMERO.web as normal.
@@ -59,7 +59,8 @@ Enabling figure export
 
 This section assumes that an OMERO.server is already installed.
 
-Figures can be exported as PDF or TIFF files using a script that runs on the OMERO.server. This script needs to be uploaded to the OMERO.server and its dependencies installed on the OMERO.server machine.
+Figures can be exported as PDF or TIFF files using a script that runs on the OMERO.server. This script needs to be uploaded to the OMERO.server and its dependencies
+installed in the OMERO.server virtual environment.
 
 The script can be uploaded using two alternative workflows, both of which require you to have the correct admin privileges.
 To find where OMERO.figure has been installed using pip, run:
@@ -68,14 +69,14 @@ To find where OMERO.figure has been installed using pip, run:
 
     $ pip show omero-figure
 
-The command will display the absolute path to the directory where the application is installed e.g. ``~/<virtualenv_name>/lib/python2.7/site-packages``. Go to that directory. 
+The command will display the absolute path to the directory where the application is installed e.g. ``~/<virtualenv_name>/lib/python3.6/site-packages``. Go to that directory.
 
-*Option 1*: Connect to the OMERO server and upload script via the CLI. It is important to be in the correct directory when uploading so that the script is uploaded with the full path: ``omero/figure_scripts/Figure_To_Pdf.py``:
+*Option 1*: Connect to the OMERO server and upload the script via the CLI. It is important to be in the correct directory when uploading so that the script is uploaded with the full path: ``omero/figure_scripts/Figure_To_Pdf.py``:
 
 ::
 
     $ cd omero_figure/scripts
-    $ path/to/OMERO.server/bin/omero script upload omero/figure_scripts/Figure_To_Pdf.py --official
+    $ omero script upload omero/figure_scripts/Figure_To_Pdf.py --official
 
 *Option 2*: Alternatively, before starting the OMERO.server, copy the script from the figure install
 ``/omero_figure/scripts/omero/figure_scripts/Figure_To_Pdf.py`` to the OMERO.server ``path/to/OMERO.server/lib/scripts/omero/figure_scripts``. Then restart the OMERO.server.
@@ -83,17 +84,18 @@ The command will display the absolute path to the directory where the applicatio
 Now install the script's dependencies:
 
 
-* Install `reportlab <https://bitbucket.org/rptlab/reportlab>`_ PDF python package from distribution packages. For example, install on CentOS 7:
+* Install `reportlab <https://bitbucket.org/rptlab/reportlab>`_ PDF python package.
+  This needs to be installed in the virtual environment where the server is run.
 
 ::
 
-    $ yum install python-reportlab
+    $ pip install reportlab
 
-* Optional: Figure legends can be formatted using Markdown syntax. To see this correctly in the exported PDF info page, we need `Python Markdown <https://python-markdown.github.io/>`_. For example, install on CentOS 7:
+* Optional: Figure legends can be formatted using Markdown syntax. To see this correctly in the exported PDF info page, we need `Python Markdown <https://python-markdown.github.io/>`_:
 
 ::
 
-    $ yum install python-markdown
+    $ pip install markdown
 
 Upgrading OMERO.figure
 ----------------------
@@ -118,7 +120,7 @@ above. If using *Option 1*, you need to *replace* the existing script:
 
 
 Development
-===========
+-----------
 
 We use Grunt for various tools.
 See http://figure.openmicroscopy.org/2014/05/01/testing-with-jshint-jasmine-grunt.html
@@ -185,6 +187,23 @@ It is also possible to run the demo in docker without installing anything locall
     $ docker build -t figure-demo .
     $ docker run -ti --rm -p 8000:8000 figure-demo
 
+Release process
+---------------
+
+This repository uses `bump2version <https://pypi.org/project/bump2version/>`_ to manage version numbers.
+To tag a release run::
+
+    $ bumpversion release
+
+This will remove the ``.dev0`` suffix from the current version, commit, and tag the release.
+
+To switch back to a development version run::
+
+    $ bumpversion --no-tag [major|minor|patch]
+
+specifying ``major``, ``minor`` or ``patch`` depending on whether the development branch will be a `major, minor or patch release <https://semver.org/>`_. This will also add the ``.dev0`` suffix.
+
+Remember to ``git push`` all commits and tags.
 
 License
 -------
@@ -194,4 +213,4 @@ OMERO.figure is released under the AGPL.
 Copyright
 ---------
 
-2016, The Open Microscopy Environment
+2016-2020, The Open Microscopy Environment

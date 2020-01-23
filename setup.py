@@ -22,10 +22,10 @@
 
 import os
 import sys
-import setuptools.command.install
-import setuptools.command.develop
-import setuptools.command.sdist
-from distutils.core import Command
+from setuptools.command.build_py import build_py
+from setuptools.command.install import install
+from setuptools.command.sdist import sdist
+from setuptools.command.develop import develop
 from setuptools import setup, find_packages
 from setuptools.command.test import test as test_command
 import omero_figure.utils as utils
@@ -36,9 +36,6 @@ DESCRIPTION = "OMERO figure creation app"
 AUTHOR = "The Open Microscopy Team"
 LICENSE = "AGPL-3.0"
 HOMEPAGE = "https://github.com/ome/omero-figure"
-
-
-cmdclass = {}
 
 
 class PyTest(test_command):
@@ -108,87 +105,21 @@ class PyTest(test_command):
             django.setup()
 
 
-cmdclass['test'] = PyTest
-
-
-class NpmInstall(Command):
-
-    def initialize_options(self):
-        pass
-
-    def finalize_options(self):
-        pass
-
-    def run(self):
-        self.spawn(['npm', 'install'])
-
-
-cmdclass['npm_install'] = NpmInstall
-
-
-class Grunt(Command):
-
-    sub_commands = [
-        ('npm_install', None)
-    ]
-
-    def initialize_options(self):
-        pass
-
-    def finalize_options(self):
-        pass
-
-    def run(self):
-        if not os.path.isdir('src'):
-            return
-        for command in self.get_sub_commands():
-            self.run_command(command)
-
-        self.spawn(['grunt', 'jst'])
-        self.spawn(['grunt', 'concat'])
-        self.spawn(['grunt', 'jshint', '--force'])
-        self.spawn(['grunt', 'copy:shapeEditor'])
-
-
-cmdclass['grunt'] = Grunt
-
-
-class Sdist(setuptools.command.sdist.sdist):
-
-    def run(self):
-        if os.path.isdir('src'):
-            self.run_command('grunt')
-        setuptools.command.sdist.sdist.run(self)
-
-
-cmdclass['sdist'] = Sdist
-
-
-class Install(setuptools.command.install.install):
-
-    def run(self):
-        if os.path.isdir('src'):
-            self.run_command('grunt')
-        setuptools.command.install.install.run(self)
-
-
-cmdclass['install'] = Install
-
-
-class Develop(setuptools.command.develop.develop):
-
-    sub_commands = setuptools.command.develop.develop.sub_commands + [
-        ('grunt', None)
-    ]
-
-    def run(self):
-        if os.path.isdir('src'):
-            for command in self.get_sub_commands():
-                self.run_command(command)
-        setuptools.command.develop.develop.run(self)
-
-
-cmdclass['develop'] = Develop
+def require_npm(command, strict=False):
+    """
+    Decorator to run NPM prerequisites
+    """
+    class WrappedCommand(command):
+        def run(self):
+            if strict or not os.path.exists(
+                    'omero_figure/static/figure/figure.js'):
+                self.spawn(['npm', 'install'])
+                self.spawn(['grunt', 'jst'])
+                self.spawn(['grunt', 'concat'])
+                self.spawn(['grunt', 'jshint', '--force'])
+                self.spawn(['grunt', 'copy:shapeEditor'])
+            command.run(self)
+    return WrappedCommand
 
 
 setup(name="omero-figure",
@@ -205,7 +136,7 @@ setup(name="omero-figure",
           'Natural Language :: English',
           'Operating System :: OS Independent',
           'Programming Language :: JavaScript',
-          'Programming Language :: Python :: 2',
+          'Programming Language :: Python :: 3',
           'Topic :: Internet :: WWW/HTTP',
           'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
           'Topic :: Internet :: WWW/HTTP :: WSGI',
@@ -221,9 +152,16 @@ setup(name="omero-figure",
       url=HOMEPAGE,
       download_url='%s/archive/v%s.tar.gz' % (HOMEPAGE, VERSION),
       keywords=['OMERO.web', 'figure'],
-      install_requires=[],
+      install_requires=['omero-web>=5.6.0'],
+      python_requires='>=3',
       include_package_data=True,
       zip_safe=False,
-      cmdclass=cmdclass,
-      tests_require=['pytest'],
+      cmdclass={
+        'build_py': require_npm(build_py),
+        'install': require_npm(install),
+        'sdist': require_npm(sdist, True),
+        'develop': require_npm(develop),
+        'test': PyTest
+      },
+      tests_require=['pytest', 'numpy'],
       )
