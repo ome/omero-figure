@@ -67,7 +67,7 @@ def index(request, file_id=None, conn=None, **kwargs):
     max_plane_size = max_w * max_h
     is_public_user = False
     if (hasattr(settings, 'PUBLIC_USER')
-        and settings.PUBLIC_USER == user.getOmeName()):
+            and settings.PUBLIC_USER == user.getOmeName()):
         is_public_user = True
 
     context = {'scriptMissing': script_missing,
