@@ -123,7 +123,8 @@ def require_npm(command, strict=False):
 
 
 setup(name="omero-figure",
-      packages=find_packages(exclude=['ez_setup']),
+      packages=['', 'omero_figure'],
+      package_dir={"": "src"},
       version=VERSION,
       description=DESCRIPTION,
       long_description=utils.read_file('README.rst'),
