@@ -492,7 +492,7 @@ def unit_conversion(request, value, from_unit, to_unit, conn=None, **kwargs):
         from_unit = getattr(UnitsLength, str(from_unit))
         to_unit = getattr(UnitsLength, str(to_unit))
         value = float(value)
-    except ImportError as ex:
+    except ImportError:
         error = ("Failed to import omero.model.enums.UnitsLength."
                  " Requires OMERO 5.1")
     except AttributeError as ex:

@@ -26,7 +26,7 @@ from setuptools.command.build_py import build_py
 from setuptools.command.install import install
 from setuptools.command.sdist import sdist
 from setuptools.command.develop import develop
-from setuptools import setup, find_packages
+from setuptools import setup
 from setuptools.command.test import test as test_command
 import src.omero_figure.utils as utils
 

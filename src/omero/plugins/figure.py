@@ -82,10 +82,10 @@ class FigureControl(BaseControl):
 
         cli = CLI()
         cli.loadplugins()
-        CONFIG_XML = os.path.join(OMERODIR, 'etc', 'grid', 'config.xml')
-        if os.path.exists(CONFIG_XML):
-            CONFIG_XML = ConfigXml(CONFIG_XML, read_only=True)
-            CUSTOM_SETTINGS = CONFIG_XML.as_map()
+        config_path = os.path.join(OMERODIR, 'etc', 'grid', 'config.xml')
+        if os.path.exists(config_path):
+            config_xml = ConfigXml(config_path, read_only=True)
+            custom_settings = config_xml.as_map()
 
             # config omero.web.apps
             to_set = {
@@ -104,7 +104,7 @@ class FigureControl(BaseControl):
             for key, value in to_set.items():
                 json_value = json.dumps(value)
                 print("setting %s" % key)
-                if not self.is_in_settings(CUSTOM_SETTINGS, key, json_value):
+                if not self.is_in_settings(custom_settings, key, json_value):
                     cli.invoke(["config", "append", key,
                                 json_value], strict=True)
 

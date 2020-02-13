@@ -2130,7 +2130,7 @@ class TiffExport(FigureExport):
         elif align == "center":
             x = x - (temp_label.size[0] / 2)
         elif align == "right":
-                x = x - temp_label.size[0]
+            x = x - temp_label.size[0]
         x = int(round(x))
         y = int(round(y))
         # Use label as mask, so transparent part is not pasted
