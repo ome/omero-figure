@@ -28,7 +28,7 @@ from setuptools.command.sdist import sdist
 from setuptools.command.develop import develop
 from setuptools import setup, find_packages
 from setuptools.command.test import test as test_command
-import omero_figure.utils as utils
+import src.omero_figure.utils as utils
 
 VERSION = utils.__version__
 
