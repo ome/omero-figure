@@ -267,7 +267,9 @@ def save_web_figure(request, conn=None, **kwargs):
         # Try to set Group context to the same as first image
         curr_gid = conn.SERVICE_OPTS.getOmeroGroup()
         conn.SERVICE_OPTS.setOmeroGroup('-1')
-        i = conn.getObject("Image", first_img_id)
+        i = None
+        if first_img_id:
+            i = conn.getObject("Image", first_img_id)
         if i is not None:
             gid = i.getDetails().getGroup().getId()
             conn.SERVICE_OPTS.setOmeroGroup(gid)
