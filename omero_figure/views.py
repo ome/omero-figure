@@ -27,6 +27,8 @@ from omeroweb.webgateway.views import _get_prepared_image
 from omeroweb.webclient.views import run_script
 from django.core.urlresolvers import reverse, NoReverseMatch
 from omero.rtypes import wrap, rlong, rstring, unwrap
+from omero.model import LengthI
+from omero.model.enums import UnitsLength
 import omero
 
 from io import BytesIO
@@ -50,6 +52,22 @@ JSON_FILEANN_NS = "omero.web.figure.json"
 SCRIPT_PATH = "/omero/figure_scripts/Figure_To_Pdf.py"
 
 
+def getLengthUnits():
+    # Create a dict we can use for scalebar unit conversions
+    unit_symbols = {}
+    for name in LengthI.SYMBOLS.keys():
+        if name in ("PIXEL", "REFERENCEFRAME"):
+            continue
+        klass = getattr(UnitsLength, name)
+        unit = LengthI(1, klass)
+        to_microns = LengthI(unit, UnitsLength.MICROMETER)
+        unit_symbols[name] = {
+            'symbol': unit.getSymbol(),
+            'microns': to_microns.getValue()
+        }
+    return unit_symbols
+
+
 @login_required()
 def index(request, file_id=None, conn=None, **kwargs):
     """
@@ -64,10 +82,12 @@ def index(request, file_id=None, conn=None, **kwargs):
     user_full_name = "%s %s" % (user.firstName, user.lastName)
     max_w, max_h = conn.getMaxPlaneSize()
     max_plane_size = max_w * max_h
+    length_units = getLengthUnits()
 
     context = {'scriptMissing': script_missing,
                'userFullName': user_full_name,
                'maxPlaneSize': max_plane_size,
+               'lengthUnits': json.dumps(length_units),
                'version': utils.__version__}
     return render(request, "figure/index.html", context)
 
