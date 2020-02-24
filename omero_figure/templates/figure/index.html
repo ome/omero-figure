@@ -50,6 +50,7 @@
         ROIS_JSON_URL = "{% url 'api_rois' '0' %}",
         USER_FULL_NAME = "{{ userFullName }}",
         LENGTH_UNITS = {{ lengthUnits|safe }},
+        IS_PUBLIC_USER = {% if isPublicUser %}true{% else %}false{% endif %},
         // Images larger than this are 'big' tiled images
         MAX_PLANE_SIZE = "{{ maxPlaneSize }}";
 

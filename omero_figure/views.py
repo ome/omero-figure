@@ -17,6 +17,7 @@
 #
 
 from django.http import Http404, HttpResponse
+from django.conf import settings
 from django.shortcuts import render
 from datetime import datetime
 import json
@@ -83,11 +84,16 @@ def index(request, file_id=None, conn=None, **kwargs):
     max_w, max_h = conn.getMaxPlaneSize()
     max_plane_size = max_w * max_h
     length_units = getLengthUnits()
+    is_public_user = False
+    if (hasattr(settings, 'PUBLIC_USER')
+            and settings.PUBLIC_USER == user.getOmeName()):
+        is_public_user = True
 
     context = {'scriptMissing': script_missing,
                'userFullName': user_full_name,
                'maxPlaneSize': max_plane_size,
                'lengthUnits': json.dumps(length_units),
+               'isPublicUser': is_public_user,
                'version': utils.__version__}
     return render(request, "figure/index.html", context)
 
@@ -281,7 +287,9 @@ def save_web_figure(request, conn=None, **kwargs):
         # Try to set Group context to the same as first image
         curr_gid = conn.SERVICE_OPTS.getOmeroGroup()
         conn.SERVICE_OPTS.setOmeroGroup('-1')
-        i = conn.getObject("Image", first_img_id)
+        i = None
+        if first_img_id:
+            i = conn.getObject("Image", first_img_id)
         if i is not None:
             gid = i.getDetails().getGroup().getId()
             conn.SERVICE_OPTS.setOmeroGroup(gid)

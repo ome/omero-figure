@@ -26,6 +26,7 @@ urlpatterns = [
     # index 'home page' of the figure app
     url(r'^$', views.index, name='figure_index'),
     url(r'^new/$', views.index, name='new_figure'),
+    url(r'^open/$', views.index, name='open_figure'),
     url(r'^file/(?P<file_id>[0-9]+)/$', views.index, name='load_figure'),
 
     url(r'^imgData/(?P<image_id>[0-9]+)/$', views.img_data_json,
