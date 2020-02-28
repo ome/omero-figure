@@ -53,7 +53,7 @@ JSON_FILEANN_NS = "omero.web.figure.json"
 SCRIPT_PATH = "/omero/figure_scripts/Figure_To_Pdf.py"
 
 
-def getLengthUnits():
+def get_length_units():
     # Create a dict we can use for scalebar unit conversions
     unit_symbols = {}
     for name in LengthI.SYMBOLS.keys():
@@ -83,7 +83,7 @@ def index(request, file_id=None, conn=None, **kwargs):
     user_full_name = "%s %s" % (user.firstName, user.lastName)
     max_w, max_h = conn.getMaxPlaneSize()
     max_plane_size = max_w * max_h
-    length_units = getLengthUnits()
+    length_units = get_length_units()
     is_public_user = False
     if (hasattr(settings, 'PUBLIC_USER')
             and settings.PUBLIC_USER == user.getOmeName()):
