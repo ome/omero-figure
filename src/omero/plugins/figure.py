@@ -72,15 +72,17 @@ class FigureControl(BaseControl):
         parser.add_login_arguments()
         sub = parser.sub()
         parser.add(sub, self.install, INSTALL_HELP)
+        parser.add(sub, self.config, INSTALL_HELP)
+        parser.add(sub, self.script, INSTALL_HELP)
 
     @gateway_required
     def install(self, args):
 
-        self.figure_config(args)
+        self.config(args)
         self.script(args)
 
     @gateway_required
-    def figure_config(self, args):
+    def config(self, args):
 
         cli = CLI()
         cli.loadplugins()
