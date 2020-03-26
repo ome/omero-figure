@@ -21,11 +21,13 @@
 from functools import wraps
 import os
 import json
+import sys
 
 from omero.cli import CLI
 from omero.cli import BaseControl
 from omero.config import ConfigXml
 
+import omero_figure
 from omero.gateway import BlitzGateway
 from omero.model import OriginalFileI
 import omero_figure.utils as utils
@@ -117,9 +119,10 @@ class FigureControl(BaseControl):
     @gateway_required
     def script(self, args):
 
-        script_text = utils.read_file(
-            "./src/omero_figure/scripts/omero/figure_scripts/Figure_To_Pdf.py"
-        )
+        script_path = os.path.dirname(os.path.abspath(omero_figure.__file__))
+        path_to_script = os.path.join(
+            script_path, "scripts/omero/figure_scripts/Figure_To_Pdf.py")
+        script_text = utils.read_file(path_to_script)
 
         script_service = self.conn.getScriptService()
         script_path = "/omero/figure_scripts/Figure_To_Pdf.py"
