@@ -123,7 +123,7 @@ def require_npm(command, strict=False):
 
 
 setup(name="omero-figure",
-      packages=['', 'omero_figure'],
+      packages=['', 'omero_figure', 'omero.plugins'],
       package_dir={"": "src"},
       version=VERSION,
       description=DESCRIPTION,
