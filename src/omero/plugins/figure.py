@@ -21,7 +21,6 @@
 from functools import wraps
 import os
 import json
-import sys
 
 from omero.cli import CLI
 from omero.cli import BaseControl
