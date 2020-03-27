@@ -29,8 +29,7 @@ from omero.config import ConfigXml
 import omero_figure
 from omero.gateway import BlitzGateway
 from omero.model import OriginalFileI
-# import omero_figure.utils as utils
-from pkg_resources import resource_string
+import omero_figure.utils as utils
 
 HELP = "CLI tool for OMERO.figure to aid install"
 INSTALL_HELP = "Install figure export script"
@@ -121,7 +120,10 @@ class FigureControl(BaseControl):
     @gateway_required
     def script(self, args):
 
-        script_text = resource_string(__name__, 'Figure_To_Pdf.py')
+        script_path = os.path.dirname(os.path.abspath(omero_figure.__file__))
+        path_to_script = os.path.join(
+            script_path, "scripts/omero/figure_scripts/Figure_To_Pdf.py")
+        script_text = utils.read_file(path_to_script)
 
         script_service = self.conn.getScriptService()
         script_path = "/omero/figure_scripts/Figure_To_Pdf.py"
