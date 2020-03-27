@@ -1,3 +1,4 @@
 include README.rst
 include LICENSE
 recursive-include src/omero_figure *
+include src/omero/plugins/Figure_To_Pdf.py
