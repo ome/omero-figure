@@ -106,8 +106,10 @@ class FigureControl(BaseControl):
             }
             for key, value in to_set.items():
                 json_value = json.dumps(value)
-                print("setting %s" % key)
+                print("check config %s" % key)
+                cli.invoke(["config", "get", key], strict=True)
                 if not self.is_in_settings(custom_settings, key, json_value):
+                    print("config append %s: %s" % (key, json_value))
                     cli.invoke(["config", "append", key,
                                 json_value], strict=True)
 
