@@ -1,6 +1,6 @@
 
 #
-# Copyright (c) 2014 University of Dundee.
+# Copyright (c) 2014-2020 University of Dundee.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -16,7 +16,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from django.http import Http404, HttpResponse
+from django.http import Http404, HttpResponse, \
+    JsonResponse
 from django.conf import settings
 from django.shortcuts import render
 from datetime import datetime
@@ -35,6 +36,7 @@ import omero
 from io import BytesIO
 
 from omeroweb.webclient.decorators import login_required
+from .utils import get_timestamps
 
 from . import utils
 import logging
@@ -126,26 +128,22 @@ def img_data_json(request, image_id, conn=None, **kwargs):
     size_t = image.getSizeT()
     time_list = []
     if size_t > 1:
-        params = omero.sys.ParametersI()
-        params.addLong('pid', image.getPixelsId())
-        query = "from PlaneInfo as Info where"\
-            " Info.theZ=0 and Info.theC=0 and pixels.id=:pid"
-        info_list = conn.getQueryService().findAllByQuery(
-            query, params, conn.SERVICE_OPTS)
-        timemap = {}
-        for info in info_list:
-            t_index = info.theT.getValue()
-            if info.deltaT is not None:
-                # planeInfo.deltaT gives number only (no units)
-                # Therefore compatible with OMERO 5.0 and 5.1
-                delta_t = int(round(info.deltaT.getValue()))
-                timemap[t_index] = delta_t
-        for t in range(image.getSizeT()):
-            if t in timemap:
-                time_list.append(timemap[t])
+        time_list = get_timestamps(conn, image)
     rv['deltaT'] = time_list
 
     return HttpResponse(json.dumps(rv), content_type='json')
+
+
+@login_required()
+def timestamps(request, conn=None, **kwargs):
+
+    iids = request.GET.getlist('image')
+    data = {}
+    for iid in iids:
+        image = conn.getObject('Image', iid)
+        if image is not None:
+            data[image.id] = get_timestamps(conn, image)
+    return JsonResponse(data)
 
 
 @login_required()
