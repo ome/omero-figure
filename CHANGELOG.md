@@ -1,3 +1,13 @@
+
+4.2.1 (May 2020)
+----------------
+
+- Add support for time-stamps in milliseconds([#378](https://github.com/ome/omero-figure/pull/378))
+- Show other users' files to Public user ([#362](https://github.com/ome/omero-figure/pull/362))
+- Fix saving of Figures with no panels ([#363](https://github.com/ome/omero-figure/pull/363))
+- Fix enable of Save when nudge panels ([#376](https://github.com/ome/omero-figure/pull/376))
+- Fix channel label mismatch between panels ([#377](https://github.com/ome/omero-figure/pull/377))
+
 4.2.0 (January 2020)
 --------------------
 
