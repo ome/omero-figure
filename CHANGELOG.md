@@ -1,5 +1,5 @@
 
-4.2.1 (May 2020)
+4.3.0 (May 2020)
 ----------------
 
 - Add support for time-stamps in milliseconds([#378](https://github.com/ome/omero-figure/pull/378))
