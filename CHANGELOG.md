@@ -7,6 +7,7 @@
 - Fix saving of Figures with no panels ([#363](https://github.com/ome/omero-figure/pull/363))
 - Fix enable of Save when nudge panels ([#376](https://github.com/ome/omero-figure/pull/376))
 - Fix channel label mismatch between panels ([#377](https://github.com/ome/omero-figure/pull/377))
+- PDF Scalebar info ignores hidden scalebars ([#381](https://github.com/ome/omero-figure/pull/381))
 
 4.2.0 (January 2020)
 --------------------
