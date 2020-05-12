@@ -97,7 +97,7 @@ class FigureControl(BaseControl):
                     "Figure",
                     "figure_index",
                     {"title": "Open Figure in new tab", "target": "_blank"}],
-                'append omero.web.open_with': [
+                'omero.web.open_with': [
                     "omero_figure",
                     "new_figure",
                     {"supported_objects": ["images"],
