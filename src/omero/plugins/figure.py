@@ -112,8 +112,6 @@ class FigureControl(BaseControl):
                     print("config append %s: %s" % (key, json_value))
                     cli.invoke(["config", "append", key,
                                 json_value], strict=True)
-                    # check settings were updated
-                    cli.invoke(["config", "get", key], strict=True)
 
     def is_in_settings(self, settings, key, value):
         values = settings.get(key)
