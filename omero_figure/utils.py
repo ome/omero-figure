@@ -18,8 +18,6 @@
 
 import json
 import os
-from omero.sys import ParametersI
-from omero.gateway import PlaneInfoWrapper
 
 __version__ = "4.2.1.dev0"
 
@@ -32,26 +30,3 @@ def read_file(fname, content_type=None):
         else:
             data = f.read()
     return data
-
-
-def get_timestamps(conn, image):
-
-    params = ParametersI()
-    params.addLong('pid', image.getPixelsId())
-    query = "from PlaneInfo as Info where"\
-        " Info.theZ=0 and Info.theC=0 and pixels.id=:pid"
-    info_list = conn.getQueryService().findAllByQuery(
-        query, params, conn.SERVICE_OPTS)
-    timemap = {}
-    for info in info_list:
-        t_index = info.theT.getValue()
-        if info.deltaT is not None:
-            # Use wrapper to help unit conversion
-            plane_info = PlaneInfoWrapper(conn, info)
-            delta_t = plane_info.getDeltaT('SECOND')
-            timemap[t_index] = delta_t.getValue()
-    time_list = []
-    for t in range(image.getSizeT()):
-        if t in timemap:
-            time_list.append(timemap[t])
-    return time_list
