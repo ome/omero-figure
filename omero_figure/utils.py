@@ -21,7 +21,7 @@ import os
 from omero.sys import ParametersI
 from omero.gateway import PlaneInfoWrapper
 
-__version__ = "4.2.1.dev0"
+__version__ = "4.3.0"
 
 
 def read_file(fname, content_type=None):
