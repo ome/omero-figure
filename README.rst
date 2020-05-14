@@ -116,11 +116,11 @@ above. If using *Option 1*, you need to *replace* the existing script:
 ::
 
     # Get the ID of the existing Figure_To_Pdf script:
-    $ path/to/OMERO.server/bin/omero script list
+    $ omero script list
 
     # Replace the script
     $ cd omero_figure/scripts
-    $ path/to/OMERO.server/bin/omero script replace <SCRIPT_ID> omero/figure_scripts/Figure_To_Pdf.py
+    $ omero script replace <SCRIPT_ID> omero/figure_scripts/Figure_To_Pdf.py
 
 
 Development
