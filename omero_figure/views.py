@@ -36,7 +36,7 @@ import omero
 from io import BytesIO
 
 from omeroweb.webclient.decorators import login_required
-from .utils import get_timestamps
+from .omeroutils import get_timestamps
 
 from . import utils
 import logging
