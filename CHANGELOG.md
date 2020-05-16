@@ -1,3 +1,14 @@
+4.3.0 (May 2020)
+----------------
+
+- Add support for timestamps in milliseconds ([#378](https://github.com/ome/omero-figure/pull/378))
+- Show other users' files to Public user ([#362](https://github.com/ome/omero-figure/pull/362))
+- Fix saving of Figures with no panels ([#363](https://github.com/ome/omero-figure/pull/363))
+- Fix enable of Save when nudge panels ([#376](https://github.com/ome/omero-figure/pull/376))
+- Fix channel label mismatch between panels ([#377](https://github.com/ome/omero-figure/pull/377))
+- PDF Scalebar info ignores hidden scalebars ([#381](https://github.com/ome/omero-figure/pull/381))
+- Fix formatting of negative timestamps ([#383](https://github.com/ome/omero-figure/pull/383))
+
 4.2.0 (January 2020)
 --------------------
 

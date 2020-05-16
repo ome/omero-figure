@@ -1,6 +1,6 @@
 
 #
-# Copyright (c) 2014 University of Dundee.
+# Copyright (c) 2014-2020 University of Dundee.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -68,6 +68,9 @@ urlpatterns = [
         '(?P<to_unit>[A-Z]+)/$',
         views.unit_conversion, name='unit_conversion'),
 
+    # Get timestamps in seconds for images
+    # Use query ?image=1&image=2
+    url(r'^timestamps/$', views.timestamps, name='figure_timestamps'),
 
     url(r'^roiCount/(?P<image_id>[0-9]+)/$', views.roi_count,
         name='figure_roiCount'),

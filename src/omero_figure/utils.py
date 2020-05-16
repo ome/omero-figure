@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2017 University of Dundee.
+# Copyright (c) 2017-2020 University of Dundee.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -19,8 +19,7 @@
 import json
 import os
 
-
-__version__ = "4.2.1.dev0"
+__version__ = "4.3.1.dev0"
 
 
 def read_file(fname, content_type=None):

@@ -101,6 +101,7 @@
         // and transform it to latest version
         version_transform: function(json) {
             var v = json.version || 0;
+            var self = this;
 
             // In version 1, we have pixel_size_x and y.
             // Earlier versions only have pixel_size.
@@ -194,6 +195,30 @@
                         p.scalebar.units = units;
                     }
                 });
+
+                // Re-load timestamp info with no rounding (previous versions rounded to secs)
+                // Find IDs of images with deltaT
+                var iids = [];
+                _.each(json.panels, function(p){
+                    if (p.deltaT && iids.indexOf(p.imageId) == -1) {
+                        iids.push(p.imageId)
+                    }
+                });
+                console.log('Load timestamps for images', iids);
+                if (iids.length > 0) {
+                    var tsUrl = BASE_WEBFIGURE_URL + 'timestamps/';
+                    tsUrl += '?image=' + iids.join('&image=');
+                    $.getJSON(tsUrl, function(data){
+                        // Update all panels
+                        // NB: By the time that this callback runs, the panels will have been created
+                        self.panels.forEach(function(p){
+                            var iid = p.get('imageId');
+                            if (data[iid] && data[iid].length > 0) {
+                                p.set('deltaT', data[iid]);
+                            }
+                        });
+                    });
+                }
             }
 
             return json;
@@ -472,7 +497,7 @@
 
             selected.forEach(function(p){
                 pos = p.get(axis);
-                p.set(axis, pos + delta);
+                p.save(axis, pos + delta);
             });
         },
 
@@ -485,7 +510,7 @@
             var min_x = Math.min.apply(window, x_vals);
 
             selected.forEach(function(p){
-                p.set('x', min_x);
+                p.save('x', min_x);
             });
         },
 
@@ -498,7 +523,7 @@
             var min_y = Math.min.apply(window, y_vals);
 
             selected.forEach(function(p){
-                p.set('y', min_y);
+                p.save('y', min_y);
             });
         },
 

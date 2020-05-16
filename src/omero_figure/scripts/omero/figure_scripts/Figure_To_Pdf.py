@@ -1089,19 +1089,29 @@ class FigureExport(object):
     def get_time_label_text(self, delta_t, format):
         """ Gets the text for 'live' time-stamp labels """
         # format of "secs" by default
-        text = "%s secs" % delta_t
-        if format == "mins":
-            text = "%s mins" % int(round(float(delta_t) / 60))
+        is_negative = delta_t < 0
+        delta_t = abs(delta_t)
+        text = "%d s" % int(round(delta_t))
+        if format == "milliseconds":
+            text = "%s ms" % int(round(delta_t * 1000))
+        elif format == "mins":
+            text = "%s mins" % int(round(delta_t / 60))
+        elif format == "mins:secs":
+            m = int(delta_t // 60)
+            s = round(delta_t % 60)
+            text = "%s:%02d" % (m, s)
         elif format == "hrs:mins":
-            h = (delta_t / 3600)
-            m = int(round((float(delta_t) % 3600) / 60))
+            h = int(delta_t // 3600)
+            m = int(round((delta_t % 3600) / 60))
             text = "%s:%02d" % (h, m)
         elif format == "hrs:mins:secs":
-            h = (delta_t / 3600)
-            m = (delta_t % 3600) / 60
-            s = delta_t % 60
+            h = int(delta_t // 3600)
+            m = (delta_t % 3600) // 60
+            s = round(delta_t % 60)
             text = "%s:%02d:%02d" % (h, m, s)
-        return text
+        if text in ["0 s", "0:00", "0 mins", "0:00:00"]:
+            is_negative = False
+        return ('-' if is_negative else '') + text
 
     def add_rois(self, panel, page):
         """
@@ -1736,8 +1746,8 @@ class FigureExport(object):
         for p in panels_json:
             iid = p['imageId']
             # list unique scalebar lengths
-            if 'scalebar' in p:
-                sb_length = p['scalebar']['length']
+            if 'scalebar' in p and p['scalebar'].get('show'):
+                sb_length = p['scalebar'].get('length')
                 symbol = u"\u00B5m"
                 if 'pixel_size_x_symbol' in p:
                     symbol = p['pixel_size_x_symbol']
