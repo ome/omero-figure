@@ -198,26 +198,26 @@ Versions history
 
 New in version 5:
 
-    - 'scalebar': added 'pixel_size_x_unit': "MICROMETER". 
-    - 'panel': `deltaT` values loaded with rounding to integer seconds
+- `scalebar`: added 'pixel_size_x_unit': "MICROMETER". 
+- 'panel': `deltaT` values loaded with rounding to integer seconds
 
 New in version 4:
 
-    - 'shape': 'lineWidth' renamed to 'strokeWidth'
+- 'shape': 'lineWidth' renamed to 'strokeWidth'
 
 New in version 3:
 
-    - 'panel': rename 'export_dpi' attr to 'min_export_dpi'
-    - 'shape': 'strokeWidth' defined in 'page' units, not in panel pixel units.
+- 'panel': rename 'export_dpi' attr to 'min_export_dpi'
+- 'shape': 'strokeWidth' defined in 'page' units, not in panel pixel units.
       This means that zooming a panel doesn't change the thickness of shape
       lines on the page.
 
 New in version 2:
 
-    - 'shape': Ellipse uses x, y, radiusX, radiusY, instead of cx, cy, rx, ry.
+- 'shape': Ellipse uses x, y, radiusX, radiusY, instead of cx, cy, rx, ry.
 
 New in version 1:
 
-    - 'panel': uses 'pixel_size_x' and 'pixel_size_y', instead of only 'pixel_size'.
+- 'panel': uses 'pixel_size_x' and 'pixel_size_y', instead of only 'pixel_size'.
 
 
