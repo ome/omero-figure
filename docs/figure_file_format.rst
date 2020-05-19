@@ -52,7 +52,6 @@ This is an example of a minimal OMERO.figure JSON file::
                 {
                     "label": "528.0",
                     "color": "00FF00",
-                    "inverted": false,
                     "window": {
                         "min": 0,
                         "max": 1542.5,
@@ -62,76 +61,83 @@ This is an example of a minimal OMERO.figure JSON file::
                     "active": true
                 }
             ],
-            // viewport percent zoom and offset from centre
-            "zoom": 150,
-            "dx": 16.96,
-            "dy": -22.42,
-            // labels on the panel
-            "labels": [
-                {
-                    "text": "GFP-INCENP",
-                    "size": 12,
-                    // positions are: top, left, right, leftvert, bottom, topleft, topright, bottomleft, bottomright
-                    "position": "top",
-                    "color": "00FF00"
-                },
-                {
-                    // 'live' timestamps, 'time' one of: index (show 1-based T index), milliseconds,
-                    // secs, mins:secs, mins, hrs:mins, hrs:mins:secs,
-                    "time": "milliseconds",
-                    "size": "12",
-                    "position": "topleft",
-                    "color": "FFFFFF"
-                }
-            ],
-            // panel rotation in degrees clockwise
-            "rotation": 0,
-            // scalebar 
-            "scalebar": {
-                "show": true,
-                "length": 10,
-                "units": "MICROMETER",
-                "position": "bottomright",  // topright, topleft, bottomleft
-                "color": "FFFFFF",
-                "show_label": true,
-                "font_size": "14"
-            },
-            // See other shapes below
-            "shapes": [
-                {
-                    "type": "Rectangle",
-                    "x": 54.1,
-                    "y": 89.4,
-                    "width": 64.3,
-                    "height": 58.18,
-                    "strokeWidth": 2,
-                    "strokeColor": "#FFFF00",
-                }
-            ],
-
-            // Other metadata you probably don't want to edit
+            // Image metadata
             "imageId": 1267,
             "name": "U20S-RCC1.11_R3D_FRAP.dv",
             "sizeZ": 1,
             "sizeT": 64,
             "orig_width": 200,
             "orig_height": 200,
-            "pixel_size_x": 0.107,
-            "pixel_size_y": 0.1071987971663475,
-            "pixel_size_x_symbol": "µm",
-            "pixel_size_x_unit": "MICROMETER",
-            "deltaT": [
-                -0.9399999380111694,
-                -0.6109999418258667,
-                -0.2799999713897705,
-                0.05000007152557373,
-                0.33000004291534424,
-                0.659000039100647
-            ],
+        }
+    ],
+    }
+
+
+Optional settings for each panel::
+
+    // pixel size x allows user to add scalebar
+    "pixel_size_x": 0.107,
+    "pixel_size_y": 0.107,          // not used yet
+    "pixel_size_x_symbol": 'µm',    // µm by default
+    // options are omero.model.LengthI.SYMBOLS.keys()
+    "pixel_size_x_unit": 'MICROMETER',
+
+    // show a scalebar
+    "scalebar": {
+        "show": true,
+        "length": 10,
+        "units": "MICROMETER",
+        "position": "bottomright",  // topright, topleft, bottomleft
+        "color": "FFFFFF",
+        "show_label": true,
+        "font_size": "14"
+    },
+
+    // Timestamps in seconds, 1 per T-index. Used for time-stamp labels and T-slider
+    "deltaT": [
+        -0.94, -0.61, -0.28, 0.05, 0.33, 0.65
+    ],
+
+    // labels on the panel
+    // positions are: top, left, right, leftvert, bottom, topleft, topright, bottomleft, bottomright
+    "labels": [
+        {
+            "text": "GFP-INCENP",
+            "size": 12,
+            "position": "top",
+            "color": "00FF00"
+        },
+        {
+            // 'live' timestamps, 'time' one of: index (show 1-based T index), milliseconds,
+            // secs, mins:secs, mins, hrs:mins, hrs:mins:secs,
+            "time": "milliseconds",
+            "size": "12",
+            "position": "topleft",
+            "color": "FFFFFF"
         }
     ],
 
-    }
+    // Shapes on the image. More details below
+    "shapes": [
+        {
+            "type": "Rectangle",
+            "x": 54.1,
+            "y": 89.4,
+            "width": 64.3,
+            "height": 58.18,
+            "strokeWidth": 2,
+            "strokeColor": "#FFFF00",
+        }
+    ],
+
+    // viewport percent zoom and offset from centre
+    zoom: 100,
+    dx: 0,
+    dy: 0,
+
+    // panel rotation in degrees clockwise
+    rotation: 0,
+
 
 Optional settings for the top-level figure object. If not specified,
 the following defaults will be used::
@@ -165,6 +171,8 @@ that lines will not appear thicker on a panel when it is zoomed in. Supported Sh
         "y": 89.4,
         "width": 64.3,
         "height": 58.18,
+        "strokeWidth": 2,
+        "strokeColor": "#FFFFFF",
     },
     {
         "type", "Ellipse",
