@@ -25,7 +25,7 @@ the file, particularly since they may not recognize the file.
 JSON format
 -----------
 
-The JSON data format consists of a single 'Figure' object, with a list of 'panels'.
+The JSON data format consists of a single object that represents the figure and contains a list of 'panels'.
 There are a number of versions of the format, with minor differences between them. If you
 open an older version in the OMERO.figure app, it will handle the update and the file will
 be saved using the latest version.
@@ -76,13 +76,15 @@ This is an example of a minimal OMERO.figure JSON file::
                     "color": "00FF00"
                 },
                 {
-                    // 'live' timestamps, 'time' one of: secs, mins 
+                    // 'live' timestamps, 'time' one of: index (show 1-based T index), milliseconds,
+                    // secs, mins:secs, mins, hrs:mins, hrs:mins:secs,
                     "time": "milliseconds",
                     "size": "12",
                     "position": "topleft",
                     "color": "FFFFFF"
                 }
             ],
+            // panel rotation in degrees clockwise
             "rotation": 0,
             // scalebar 
             "scalebar": {
@@ -131,7 +133,7 @@ This is an example of a minimal OMERO.figure JSON file::
 
     }
 
-Optional settings for the top-level figure JSON. If not specified,
+Optional settings for the top-level figure object. If not specified,
 the following defaults will be used::
 
     // options: A0, A1, A2, A3, A4, letter, mm] - used for paper setup menu
@@ -154,7 +156,8 @@ A0: :841 x 1189, letter: :216 x 280.
 To convert mm to points (for paper_width and paper_height) multiply by 72 (dpi) / 25.4 (mm per inch).
 
 
-Shapes on a panel use the Image coordinates. Supported Shapes are::
+Shapes on a panel use the Image coordinates. However, 'strokeWidth' uses Page units (points), so
+that lines will not appear thicker on a panel when it is zoomed in. Supported Shapes are::
 
     {
         "type": "Rectangle",
