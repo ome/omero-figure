@@ -20,7 +20,7 @@ in the File > Open listing of files::
 
 In general, OMERO.figure FileAnnotations are *not* linked to any Images because this would
 display them in the client UI alongside a delete button, allowing the user to accidentally delete
-the file, particularly since they may not recognise the file.
+the file, particularly since they may not recognize the file.
 
 JSON format
 -----------
@@ -219,5 +219,4 @@ New in version 2:
 New in version 1:
 
 - 'panel': uses 'pixel_size_x' and 'pixel_size_y', instead of only 'pixel_size'.
-
 
