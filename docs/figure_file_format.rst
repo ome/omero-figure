@@ -193,7 +193,7 @@ Shapes on a panel use the Image coordinates. Supported Shapes are::
     }
 
 
-Versions history
+Version history
 ----------------
 
 New in version 5:
@@ -219,4 +219,3 @@ New in version 2:
 New in version 1:
 
 - 'panel': uses 'pixel_size_x' and 'pixel_size_y', instead of only 'pixel_size'.
-
