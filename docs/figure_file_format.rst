@@ -7,7 +7,7 @@ OMERO.figure files are JSON data, stored in OMERO as OriginalFiles linked to Fil
 File Annotations
 ----------------
 
-The FileAnnotations are identified as OMERO.figure files using a namespace of ```omero.web.figure.json```.
+The FileAnnotations are identified as OMERO.figure files using a namespace of ``omero.web.figure.json``.
 
 The description of the FileAnnotation can be used to specify an Image to show as a thumbnail
 in the File > Open listing of files::
@@ -25,7 +25,7 @@ the file, particularly since they may not recognize the file.
 JSON format
 -----------
 
-The JSON data format consists of a single object that represents the figure and contains a list of 'panels'.
+The JSON data format consists of a single object that represents the figure and contains a list of ``panels``.
 There are a number of versions of the format, with minor differences between them. If you
 open an older version in the OMERO.figure app, it will handle the update and the file will
 be saved using the latest version.
@@ -162,7 +162,7 @@ A0: :841 x 1189, letter: :216 x 280.
 To convert mm to points (for paper_width and paper_height) multiply by 72 (dpi) / 25.4 (mm per inch).
 
 
-Shapes on a panel use the Image coordinates. However, 'strokeWidth' uses Page units (points), so
+Shapes on a panel use the Image coordinates. However, ``strokeWidth`` uses Page units (points), so
 that lines will not appear thicker on a panel when it is zoomed in. Supported Shapes are::
 
     {
