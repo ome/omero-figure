@@ -7,7 +7,7 @@ OMERO.figure files are JSON data, stored in OMERO as OriginalFiles linked to Fil
 File Annotations
 ----------------
 
-The FileAnnotations are identified as OMERO.figure files using a namespace of ``omero.web.figure.json``.
+The FileAnnotations are identified as OMERO.figure files using the namespace ``omero.web.figure.json``.
 
 The description of the FileAnnotation can be used to specify an Image to show as a thumbnail
 in the File > Open listing of files::
@@ -142,7 +142,7 @@ Optional settings for each panel::
 Optional settings for the top-level figure object. If not specified,
 the following defaults will be used::
 
-    // options: A0, A1, A2, A3, A4, letter, mm] - used for paper setup menu
+    // options: A0, A1, A2, A3, A4, letter, mm - used for paper setup menu
     'page_size': 'A4',
     // define the actual size (should correspond to 'page_size')
     // These are used unless page_size is 'mm'
@@ -157,8 +157,9 @@ the following defaults will be used::
     'legend': '',       // Figure legend in markdown format.
     'legend_collapsed': true,   // collapse or expand legend
 
-Sizes in mm: A4: 210 x 297, A3:297 x 420, A2: :420 x 594, A1: :594 x 841,
-A0: :841 x 1189, letter: :216 x 280.
+NB: Sizes in mm should correspond to page_size.
+A4: 210 x 297, A3: 297 x 420, A2: 420 x 594, A1: 594 x 841,
+A0: 841 x 1189, letter: 216 x 280.
 To convert mm to points (for paper_width and paper_height) multiply by 72 (dpi) / 25.4 (mm per inch).
 
 
