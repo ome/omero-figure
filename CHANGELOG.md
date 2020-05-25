@@ -1,3 +1,9 @@
+4.3.1 (May 2020)
+----------------
+
+- Add OMERO.figure JSON documentation ([#391](https://github.com/ome/omero-figure/pull/391))
+
+
 4.3.0 (May 2020)
 ----------------
 
