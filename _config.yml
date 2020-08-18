@@ -1,4 +1,6 @@
 name: Your New Jekyll Site
+plugins:
+  - jekyll-redirect-from
 markdown: kramdown
 highlighter: rouge
 
