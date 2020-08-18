@@ -1,0 +1,29 @@
+---
+layout: post
+title:  "Release: 1.0.0-beta2"
+date:   2014-06-25
+---
+
+This release of OMERO.figure includes a number of minor bug fixes and
+some small feature additions. The following are the most significant:
+
+
+New Features:
+
+  - When a figure panel is selected, the Info tab at the right will contain a
+    link to the image in webclient, so that you can find where every image comes from.
+  - The list of files in the File > Open dialog can now be searched by text entered into a filter field.
+    You can also choose to only show files owened by a particular user.
+
+
+Bug Fixes:
+
+  - Installation of OMERO.figure with OMERO.web deployed under a url prefix, 
+    E.g. server/omero/webclient was not working previously but has not been fixed and tested (see previous blog post).
+  - If a panel was stretched vertically, and the viewer was zoomed and panned off-centre,
+    the offset was displayed incorrectly in the figure.
+    In this rare scenario, the bug in the web viewer
+    was only noticeable when the figure was exported to PDF. The fix means that affected figures will
+    appear differently when OMERO.figure is updated.
+
+Grab the release from the OMERO.figure [1.0.0-beta2 download page](http://downloads.openmicroscopy.org/figure/1.0.0-beta2/).

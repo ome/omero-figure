@@ -1,0 +1,5 @@
+name: Your New Jekyll Site
+markdown: kramdown
+highlighter: rouge
+
+baseurl: ''
