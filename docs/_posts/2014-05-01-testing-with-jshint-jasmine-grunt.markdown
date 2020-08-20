@@ -1,6 +1,8 @@
 ---
 layout: post
 title:  "Dev: Testing with jshint, jasmine and grunt"
+redirect_to:
+  - https://github.com/ome/omero-figure/blob/master/docs/_posts/2014-05-01-testing-with-jshint-jasmine-grunt.markdown
 ---
 
 

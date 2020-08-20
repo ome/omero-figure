@@ -1,6 +1,8 @@
 ---
 layout: post
 title:  "Why I created OMERO.figure"
+redirect_to:
+  - https://github.com/ome/omero-figure/blob/master/docs/_posts/2014-03-26-why-I-created-omero-figure.markdown
 ---
 
 I used to be a biologist in the lab a (good) few years ago now,

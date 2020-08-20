@@ -2,6 +2,8 @@
 layout: post
 title:  "Customizing Bootstrap colorpicker"
 date:   2015-02-24
+redirect_to:
+  - https://github.com/ome/omero-figure/blob/master/docs/_posts/2015-02-24-customizing-bootstrap-colorpicker.md
 ---
 
 When looking to add a color-picker to OMERO.figure [as requested](https://github.com/will-moore/figure/issues/36),

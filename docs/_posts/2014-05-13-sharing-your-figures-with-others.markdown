@@ -2,6 +2,8 @@
 layout: post
 title:  "Sharing your Figures with others"
 date:   2014-05-13
+redirect_to:
+  - https://github.com/ome/omero-figure/blob/master/docs/_posts/2014-05-13-sharing-your-figures-with-others.markdown
 ---
 
 

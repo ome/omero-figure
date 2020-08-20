@@ -1,6 +1,8 @@
 ---
 layout: post
 title:  "Key features of OMERO.figure"
+redirect_to:
+  - https://github.com/ome/omero-figure/blob/master/docs/_posts/2014-04-05-key-features-of-omero-figure.markdown
 ---
 
 The two main goals of OMERO.figure were to make it

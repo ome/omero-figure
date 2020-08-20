@@ -2,6 +2,8 @@
 layout: post
 title:  "Release: 1.2.1"
 date:   2016-04-20
+redirect_to:
+  - https://www.openmicroscopy.org/2016/04/18/figure-1-2-1.html
 ---
 
 We are pleased to announce the release of OMERO.figure 1.2.1.

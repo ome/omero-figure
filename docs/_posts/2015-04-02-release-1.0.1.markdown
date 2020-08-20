@@ -2,6 +2,8 @@
 layout: post
 title:  "Release: 1.0.1"
 date:   2015-04-02
+redirect_to:
+  - https://www.openmicroscopy.org/2015/04/02/figure-1-0-1.html
 ---
 
 This release allows OMERO.figure to be used with the latest 5.1.0 OMERO release.

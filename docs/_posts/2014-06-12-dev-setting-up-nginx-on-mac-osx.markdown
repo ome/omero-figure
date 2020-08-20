@@ -2,6 +2,8 @@
 layout: post
 title:  "Dev: Setting up nginx on Mac OSX"
 date:   2014-06-12
+redirect_to:
+  - https://github.com/ome/omero-figure/blob/master/docs/_posts/2014-06-12-dev-setting-up-nginx-on-mac-osx.markdown
 ---
 
 

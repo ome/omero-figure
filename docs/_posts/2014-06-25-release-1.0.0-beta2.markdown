@@ -2,6 +2,8 @@
 layout: post
 title:  "Release: 1.0.0-beta2"
 date:   2014-06-25
+redirect_to:
+  - https://github.com/ome/omero-figure/blob/master/docs/_posts/2014-06-25-release-1.0.0-beta2.markdown
 ---
 
 This release of OMERO.figure includes a number of minor bug fixes and

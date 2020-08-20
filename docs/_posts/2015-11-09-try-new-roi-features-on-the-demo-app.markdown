@@ -2,6 +2,8 @@
 layout: post
 title:  "Try new ROI features on the demo app"
 date:   2015-11-09
+redirect_to:
+  - https://github.com/ome/omero-figure/blob/master/docs/_posts/2015-11-09-try-new-roi-features-on-the-demo-app.markdown
 ---
 
 As you may have heard, we are currently adding ROI support to OMERO.figure, allowing

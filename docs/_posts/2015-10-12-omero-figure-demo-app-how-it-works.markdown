@@ -2,6 +2,8 @@
 layout: post
 title:  "OMERO.figure demo app: How it works and how to use it"
 date:   2015-10-12
+redirect_to:
+  - https://github.com/ome/omero-figure/blob/master/docs/_posts/2015-10-12-omero-figure-demo-app-how-it-works.markdown
 ---
 
 If you want to try using OMERO.figure without installing the app or the OMERO server,

@@ -1,7 +1,9 @@
 ---
 layout: post
 title:  "Quality figures from OMERO.figure"
-date: 2015-04-30  
+date: 2015-04-30
+redirect_to:
+  - https://github.com/ome/omero-figure/blob/master/docs/_posts/2015-04-30-quality-figures-from-omero-figure.markdown
 ---
 
 

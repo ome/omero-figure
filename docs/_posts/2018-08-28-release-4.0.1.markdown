@@ -2,6 +2,8 @@
 layout: post
 title:  "Release: 4.0.1"
 date:   2018-08-28
+redirect_to:
+  - https://www.openmicroscopy.org/2018/08/28/figure-4-0-1.html
 ---
 
 We are pleased to announce the release of OMERO.figure 4.0.1, a bug-fix release.

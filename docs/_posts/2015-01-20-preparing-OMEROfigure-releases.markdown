@@ -2,6 +2,8 @@
 layout: post
 title:  "Preparing for OMERO.figure releases"
 date:   2015-01-20
+redirect_to:
+  - https://github.com/ome/omero-figure/blob/master/docs/_posts/2015-01-20-preparing-OMEROfigure-releases.markdown
 ---
 
 I don't have a fixed release timetable for OMERO.figure, but I try to

@@ -2,6 +2,8 @@
 layout: post
 title:  "Status update: Summer 2015"
 date:   2015-08-03
+redirect_to:
+  - https://github.com/ome/omero-figure/blob/master/docs/_posts/2015-08-03-status-update-summer-2015.markdown
 ---
 
 Since the 1.1.1 release in May, a couple of developments in the OMERO.figure

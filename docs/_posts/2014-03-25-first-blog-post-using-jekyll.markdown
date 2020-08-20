@@ -2,6 +2,8 @@
 layout: post
 title:  "First blog post using Jekyll"
 date:   2014-03-25
+redirect_to:
+  - https://github.com/ome/omero-figure/blob/master/docs/_posts/2014-03-25-first-blog-post-using-jekyll.markdown
 ---
 
 Who knows if this blog is going to turn into anything worth reading,
