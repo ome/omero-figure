@@ -3,3 +3,5 @@ markdown: kramdown
 highlighter: rouge
 
 baseurl: ''
+plugins:
+  - jekyll-redirect-from
