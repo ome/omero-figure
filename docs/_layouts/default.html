@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="Figure : An OMERO.web app for creating Figures from images in OMERO" />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="{{ site.baseurl }}/css/stylesheet.css">
+
+    <style type"text/css">
+      p, li {
+        font-size: 18px;
+      }
+      h1, h2, h3, h4, h5, #project_title {
+        font-weight: 400;
+      }
+      h1 {
+        font-size: 32px;
+      }
+      h2 {
+        font-size: 22px;
+      }
+      h2>a {
+        font-size: 30px;
+      }
+      li {
+        padding-bottom: 8px;
+      }
+      #main_content {
+        padding-top: 20px;
+      }
+      #forkme_banner {
+        background: #0090FF;
+        padding: 10px 30px;
+        font-size: 20px;
+      }
+      code {
+        display: block;
+      }
+      .demo-table {
+        width: 100%;
+        border: 0px solid #373737;
+      }
+      .demo-table td {
+        border: 0px solid #373737;
+        text-align: center;
+      }
+      .demo-table img {
+        height: 250px;
+      }
+    </style>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-1.11.2.min.js"></script>
+
+    <!-- Google Analytics -->
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-49056175-1', 'auto');
+      ga('send', 'pageview');
+    </script>
+
+    <title>Figure</title>
+  </head>
+
+  <body>
+
+    <a href="https://github.com/ome/omero-figure">
+      <img style="position: absolute; top: 0; right: 0; border: 0; box-shadow: none; margin: 0; padding: 0" src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png" alt="Fork me on GitHub">
+    </a>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner" style="padding: 20px 10px 5px;">
+          <a id="forkme_banner" href="{{ site.baseurl }}/demo/#file/1">Try the DEMO!</a>
+
+          <h1 id="project_title">OMERO.figure</h1>
+          <!-- <h2 id="project_tagline">Makes figure creation fun!</h2> -->
+
+          <nav style="margin-top: 5px; color:#bbbbbb">
+            <a href="{{ site.baseurl }}/">Home</a> |
+            <a href="{{ site.baseurl }}/blog/">Blog</a> |
+            <a href="http://help.openmicroscopy.org/figure.html">User Manual</a> |
+            <a href="{{ site.baseurl }}/videos.html">Videos</a> |
+            <a href="{{ site.baseurl }}/#install">Install</a>
+          </nav>
+
+        </header>
+    </div>
+
+    {% if page.url == '/index.html' %}
+      {% include github_ticker.html %}
+    {% endif %}
+
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+
+    {{ content }}
+
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">
+          <!-- <span style="padding-right: 20px; position: relative; top: -5px;"> -->
+            Twitter: <a href="https://twitter.com/openmicroscopy">
+              @openmicroscopy
+            </a> <br>
+            GitHub:
+            <a href="https://github.com/ome//omero-figure">OMERO.figure</a>
+          <!-- </span> -->
+        <!-- <a href="https://twitter.com/will_j_moore" class="twitter-follow-button" data-show-count="false" data-show-screen-name="false">Follow @will_j_moore</a> -->
+<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
+        </p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
+

@@ -1,0 +1,78 @@
+---
+layout: post
+title:  "Release: 1.1.0"
+date:   2015-04-20
+redirect_to:
+  - https://www.openmicroscopy.org/2015/04/20/figure-1-1-0.html
+---
+
+I am pleased to announce release of OMERO.figure 1.1.0.
+This release adds a number of features to the editing and export
+of figures.
+
+Watch a demonstration of these new features or read their description below:
+
+<iframe width="640" height="360" src="//www.youtube.com/embed/rJxxC3HeDmY?rel=0" frameborder="0" allowfullscreen></iframe>
+
+Multiple page figures:
+
+  - Under File > Page Setup you can choose up to 10 pages for the figure.
+  - Pages are laid out in a grid on the canvas and image panels can be dragged across the canvas onto the chosen page.
+  - Export will generate a multi-page PDF document or multiple TIFF images.
+
+Crop to region or ROI:
+
+  - A crop button beside the panel zoom slider launches a crop dialog.
+  - The crop region can be manually chosen by dragging to select an area of the displayed image.
+  - Alternatively, existing Rectangular ROIs on the image will be loaded from OMERO and can be picked as a crop region.
+
+Set dpi of panel images:
+
+  - On the 'Info' tab, you can set a minimum resolution for image panels when they are embedded
+    within the PDF figure on export. For example, 300 dpi is required by many journals.
+  - The Info tab will then display the 'current' dpi in the figure alongside the export dpi.
+  - When the figure is exported as PDF, the resolution of these panels will be boosted if it is
+    less than the chosen export dpi.
+  - Additional pixels will be created in the image and the data resampled using a bicubic filter. 
+
+Export of figures as TIFFs:
+
+  - You can now choose to export the figure as a TIFF image at 300 dpi.
+  - This matches the submission format for many journals and allows easy embedding in presentations.
+  - Images are resampled using a bicubic filter to match the final figure dpi.
+  - Multi-page figures will be exported as multiple TIFFs in a zip file.
+  - A PDF info page is also included if your export is in a zip.
+
+Export of panel images alongside figure:
+
+  - An additional export option allows the constituant images within a figure to be exported alongside
+    the figure as TIFFs.
+  - For each image panel, the full sized TIFF of the image is exported, as well as the cropped and rotated TIFF
+    that is embedded within the PDF or TIFF figure.
+  - If images are resampled to increase their dpi, they will be saved before and after resampling.
+  - This provides greater clarity as to the processing steps used in generating the figure and the TIFF images
+    could also be used for creating figures in other applications.
+
+Figure legend:
+
+  - Legends can be added to figures and will be included in the info PDF page when the figure is exported.
+  - You can use Markdown syntax to add simple formatting, such as bold and italics. Other formatting is
+    supported in the web view, but may not be displayed properly in the exported PDF info page.
+
+Other features:
+
+  - When multiple panels are selected, they can be automatically resized to "Align their Magnification" such
+    that features appear the same size in all panels.
+  - Labels can be added to Scalebars to indicate their length.
+  - A color picker allows any color to be chosen for image channels and labels.
+  - Units support: If used with OMERO 5.1, the pixel size units in imported images will be used for scale bar labels.
+  - Unicode support: Figures can now contain special characters.
+  - Figure export errors are now handled with an error button which displays the error in a new browser tab. 
+
+Bug fixes:
+
+  - Fix label & scalebar colors in PDF figure export
+
+
+Grab the release from the OMERO.figure [1.1.0 download page](http://downloads.openmicroscopy.org/figure/1.1.0/).
+
