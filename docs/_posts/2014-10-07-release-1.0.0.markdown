@@ -1,0 +1,54 @@
+---
+layout: post
+title:  "Release: 1.0.0"
+date:   2014-10-06
+redirect_to:
+  - https://www.openmicroscopy.org/2014/10/07/figure-1-0-0.html
+---
+
+I am pleased to announce release of OMERO.figure 1.0.0.
+This release adds support for maximum-intensity Z-projection, as well as
+a number of other features and minor bug fixes.
+A video of this release can be found here:
+
+<iframe width="640" height="360" src="//www.youtube.com/embed/P0MMKtIKdFY?rel=0" frameborder="0" allowfullscreen></iframe>
+
+We have decided to remove the beta flag from OMERO.figure with this release,
+since it has been in use on our production OMERO
+server since its first release in March of this year.
+During that time, there have only been minor bug reports and the file format has remained
+very stable.
+
+Maximum-Intensity projection:
+
+  - For Z-stack images, you can click a button (below the channel buttons) to turn on Z-projection.
+    The range of Z-indices can then be chosen using a 2-handled Z-slider.
+  - Initially, the Z-range is only 5 slices and is centered on the current Z-index.
+    This allows you include objects just above and below the current position in the projection,
+    without losing your place in the Z-stack.
+  - If you want a projection of the entire Z-stack, you can simply drag the sliders to
+    the full range.
+
+Increment Z and T indices:
+
+  - Small arrow buttons at the ends of the Z and T sliders now allow you to increment the Z or T index of
+    all the selected panels by 1 at a time.
+  - This is particularly useful if you want to 'play' through a
+    movie of several selected panels at once. 
+
+Other Features:
+
+  - Exported PDF figures now contain the url of the source OMERO.figure file so that you can always return
+    to the original figure.
+  - When you go to open a figure (File > Open), only figures owned by you are initially displayed in the list. You can
+    find files belonging to collaborators in your OMERO groups by using the 'Owner' drop-down chooser.
+
+
+Bug Fixes:
+
+  - Editing of timestamp labels previously caused all selected labels to show the same text. This
+    has now been fixed.
+  - Exported PDFs are now named according to the figure name, instead of a timestamp-based name.
+
+
+Grab the release from the OMERO.figure [1.0.0 download page](http://downloads.openmicroscopy.org/figure/1.0.0/).

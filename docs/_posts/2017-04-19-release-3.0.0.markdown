@@ -1,0 +1,54 @@
+---
+layout: post
+title:  "Release: 3.0.0"
+date:   2017-04-19
+redirect_to:
+  - https://www.openmicroscopy.org/2017/04/19/figure-3-0-0.html
+---
+
+We are pleased to announce the release of OMERO.figure 3.0.0.
+This release builds on the previously unannounced 2.0 release in which the installation of
+OMERO.figure was moved to [PyPI](https://pypi.python.org/pypi?:action=display&name=omero-figure).
+Previous installation of OMERO.figure should first be removed before installing from PyPI.
+
+Installation is now much simpler. Principally the install is done via [pip](https://pypi.python.org/pypi/pip),
+with some additional configuration settings.
+
+ 	$ pip install omero-figure
+
+For full details see our install and upgrade documentation.
+
+The script used to export a figure as PDF or TIFF still requires to be uploaded to the OMERO.server.
+This is not available via pip
+
+This change means that OMERO.figure now requires OMERO 5.3.0.
+
+Additional features new in OMERO.figure 3.0.0
+
+Load ROIs from OMERO to add new Shapes to your figure ([PR #190](https://github.com/ome/omero-figure/pull/190)):
+
+ - In the 'Edit ROIs' dialog, ROIs can be loaded from OMERO and shown on the image.
+ - Shapes can be selected to add to the image within the figure.
+
+Set the position and size of figure panels:
+
+ - Set an explicit x, y, width and height for selected panels ([PR #169](https://github.com/ome/omero-figure/pull/169)).
+ - When resizing panels, you can enforce the current aspect ratio ([PR #193](https://github.com/ome/omero-figure/pull/193)).
+
+Look-up table support ([PR #160](https://github.com/ome/omero-figure/pull/160)):
+
+ - Choose look-up tables from those provided by OMERO.
+ - Can render each channel with a different look-up table.
+ - Additional look-up tables can be added to the OMERO.server.
+
+
+OMERO.figure supports the new 'open-with' functionality.
+
+ - Select Images in webclient, right-click on the tree and Open with... OMERO.figure to open images in a new figure.
+ - Other apps added to the open_with configuration can be opened directly from
+   within OMERO.figure. This will be used for the new OMERO.iviewer app, to be released shortly.
+
+Other features:
+
+ - Rendering setting inputs for channels allow entering of numbers
+ instead of only using sliders ([PR #166](https://github.com/ome/omero-figure/pull/166)).
