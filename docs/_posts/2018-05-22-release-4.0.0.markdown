@@ -1,0 +1,43 @@
+---
+layout: post
+title:  "Release: 4.0.0"
+date:   2018-05-22
+redirect_to:
+  - https://www.openmicroscopy.org/2018/05/22/figure-4-0-0.html
+---
+
+We are pleased to announce the release of OMERO.figure 4.0.0.
+
+This is a major release that adds support for "big" tiled Images.
+This means that OMERO.figure can now handle WSI image data or other images with
+large XY sizes.
+
+It includes changes to the way ROI stroke-widths are displayed. 
+Previously, ROI stroke-widths were measured in image pixels so that
+lines appeared thinner as an image panel was zoomed out.
+However, this meant that lines of similar width can appear at different
+thicknesses on different images. It also meant that on "big" Images that
+were zoomed out a long way, lines would disappear completely.
+
+Now, stroke-widths are measured by page points so all lines of a
+similar stroke-width will appear the same thickness on the page,
+independent of the size or zoom of the panel they are on.
+
+When older figures are opened with OMERO.figure 4.0.0, stroke-widths
+will be updated so that the appearance of ROI lines remains the same.
+
+Other features:
+
+* Allow loading Polygons and Polylines from OMERO to add to Images
+* Open-with Figure and adding Images now preserves the order of Images
+* Support for adding label of T-index to time-lapse Images
+* Show a spinner while loading new Images
+
+For developers:
+
+* Use test_infra to test listing of figure files
+* Breaking change in figure JSON model. Stroke-widths changed (see above) and export-dpi renamed to min-export-dpi
+* Use shape-editor 4.0.0 to support Polygons and Polylines and not scale stroke-width
+
+This release also upgrades the required version of OMERO
+to 5.4.0 or newer.

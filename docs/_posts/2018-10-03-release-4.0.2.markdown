@@ -1,0 +1,11 @@
+---
+layout: post
+title:  "Release: 4.0.2"
+date:   2018-10-03
+redirect_to:
+  - https://www.openmicroscopy.org/2018/10/03/figure-4-0-2.html
+---
+
+We are pleased to announce the release of OMERO.figure 4.0.2.
+
+- Add new functionalities to the script used to export PDF/TIFF so that other tools can use the script. The changes are not yet used by OMERO.figure. Thanks to Andreas Knab ([PR #306](https://github.com/ome/omero-figure/pull/306))

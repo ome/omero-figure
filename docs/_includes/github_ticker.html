@@ -1,0 +1,154 @@
+    
+    <script>
+      $(function(){
+
+        // var now = Date();
+
+        // function msToTime(s) {
+        //   var ms = s % 1000;
+        //   s = (s - ms) / 1000;
+        //   var secs = s % 60;
+        //   s = (s - secs) / 60;
+        //   var mins = s % 60;
+        //   var hrs = (s - mins) / 60;
+
+        //   return hrs + ':' + mins + ':' + secs + '.' + ms;
+        // }
+
+        // Thu Jan 15 2015 23:52:19 GMT+0000 (GMT)  -->  Thu Jan 15 2015
+        var formatDate = function formatDate(d) {
+          d = new Date(d);
+          return ("" + d).split(" ").slice(1,4).join(" ");
+        }
+
+        var $tickerList = $("#github_ticker ul.commits");
+        var scrollTicker = function scrollTicker() {
+          var t = parseInt($tickerList.css('top'), 10);
+          t -= 40;
+          if (t < -240) t = 0;
+          $tickerList.css('top', t + "px");
+          setTimeout(scrollTicker, 4000);
+        }
+
+        // Get commits data from github, add to page then scroll through.
+        $.ajax({
+            url: "https://api.github.com/repos/ome/omero-figure/commits",
+            jsonp: "callback",
+            success: function( data ) {
+              var commit, message, date, html = "";
+              for (var i=0; i<data.length; i++) {
+                commit = data[i];
+                message = commit.commit.message;
+                date = commit.commit.author.date;
+                // Ignore merge commits.
+                if (message.slice(0, 18) == "Merge pull request") {
+                  continue;
+                }
+                html += "<li>" + formatDate(date) + " <span class='message'>" + message + "</span></li>";
+              }
+              $(html).appendTo("#github_ticker ul.commits");
+              setTimeout(scrollTicker, 4000);
+            }
+        });
+
+        // On hover over the ticket, wait before showing
+        var $github_ticker = $("#github_ticker"),
+            hoverTimeout;
+        $github_ticker.hover(
+          function() {
+            if (hoverTimeout) {
+              clearTimeout(hoverTimeout);
+            }
+            hoverTimeout = setTimeout(function(){
+              $github_ticker.addClass("hover");
+            }, 1000);
+          },
+          function(){
+            if (hoverTimeout) {
+              clearTimeout(hoverTimeout);
+            }
+            $github_ticker.removeClass("hover");
+          });
+      });
+    </script>
+
+    <style type="text/css">
+      .ticker_container {
+        height: 40px;
+        background: white;
+      }
+      .github_ticker {
+        height: 40px;
+        overflow: hidden;
+        top: 0px;
+        width: 100%;
+        padding: 0;
+      }
+      .github_ticker.hover {
+        overflow: visible;
+      }
+      .github_ticker ul {
+        font: 13px/1.4 Helvetica, arial, freesans, clean, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol";
+        position: relative;
+        top: 0px;
+        background: white;
+        display: table;
+        table-layout: fixed;
+        width: 100%;
+        color: #999;
+        -webkit-transition: top 1s;
+        transition: top 1s;
+        padding-left: 0px;
+        z-index: 1;
+      }
+      .ticker_title {
+      	right: 100%;
+      	text-align: right;
+      }
+      .ticker_title_right {
+      	left: 101%;
+      	text-align: left;
+      }
+      .ticker_title_right li {
+      	opacity: 0;
+      	-webkit-transition: opacity 1s;
+        transition: opacity 1s;
+      }
+      .ticker_container:hover .ticker_title_right li {
+      	opacity: 1.0;
+      }
+      .github_ticker li {
+        list-style: none;
+        display: block;
+        height: 40px;
+        box-sizing: border-box;
+        font-size: 15px;
+        padding: 9px
+      }
+      ul.commits {
+      	border-bottom: 1px solid #e5e5e5;
+      }
+      .github_ticker li .message {
+        color: #333;
+        font-weight: bold;
+        margin-left: 10px;
+      }
+
+    </style>
+
+    <div class="ticker_container outer">
+      <div id="github_ticker" class="github_ticker inner">
+        <ul class="commits"></ul>
+        <ul class="ticker_title"><li>Recent GitHub Commits:</li></ul>
+      </div>
+      <div class="github_ticker inner" style="top: -40px; overflow: visible" title="Recent commits to OMERO.figure on GitHub">
+        <ul class="ticker_title">
+        	<li>Recent GitHub Commits:
+        </li></ul>
+      </div>
+      <div class="github_ticker inner" style="top: -80px; overflow: visible" title="Recent commits to OMERO.figure on GitHub">
+        <ul class="ticker_title_right">
+          <li><a href="https://github.com/ome/omero-figure/commits/master">See all commits</a></li>
+        </ul>
+      </div>
+    </div>
