@@ -1,3 +1,11 @@
+4.3.2 (September 2020)
+----------------------
+
+- Replace cgi.escape by html.escape ([#396](https://github.com/ome/omero-figure/pull/396)). Thanks to 
+Damien Goutte-Gattat.
+- Re-organise github-pages prior to migraton to master ([#399](https://github.com/ome/omero-figure/pull/399))
+- Merge github-pages into master ([#400](https://github.com/ome/omero-figure/pull/400))
+
 4.3.1 (May 2020)
 ----------------
 
