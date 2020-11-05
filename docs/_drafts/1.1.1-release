@@ -1,0 +1,16 @@
+---
+layout: post
+title:  "Release: 1.1.1"
+date:   2015-04-20
+---
+
+I am pleased to announce release of OMERO.figure 1.1.1 which
+is a point release that contains a small number of bug fixes and
+minor feature improvements.
+
+ - Fixes a bug with exporting a figure before saving it
+ - Fixes a bug with layout of newly-added big images
+ - Figure legend can now be accessed under File menu
+ - Add a README.txt file to zip files when exported with images
+ - Crop dialog is initially populated with current crop region
+ - Slight increase in scalebar thickness to improve visibility

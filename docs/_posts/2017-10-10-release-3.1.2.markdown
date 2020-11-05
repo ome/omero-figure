@@ -1,0 +1,17 @@
+---
+layout: post
+title:  "Release: 3.1.2"
+date:   2017-10-10
+redirect_to:
+  - https://www.openmicroscopy.org/2017/10/10/figure-3-1-2.html
+---
+
+We are pleased to announce the release of OMERO.figure 3.1.2.
+This is a bug fixing release
+
+Bug fixes include:
+
+ - Fix display of channel buttons in IE11 ([PR #241](https://github.com/ome/omero-figure/pull/241)).
+ - Add IDR figure to demo ([PR #242](https://github.com/ome/omero-figure/pull/242)).
+ - Remove extra computation when converting radians and degrees (thanks to https://github.com/carandraug) ([PR #236](https://github.com/ome/omero-figure/pull/236)).
+ 

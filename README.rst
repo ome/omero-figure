@@ -2,8 +2,8 @@
     :target: https://forum.image.sc/tag/omero-figure
     :alt: Image.sc forum
 
-.. image:: https://travis-ci.org/ome/omero-figure.svg?branch=master
-    :target: https://travis-ci.org/ome/omero-figure
+.. image:: https://github.com/ome/omero-figure/workflows/OMERO/badge.svg
+    :target: https://github.com/ome/omero-figure/actions
 
 .. image:: https://badge.fury.io/py/omero-figure.svg
     :target: https://badge.fury.io/py/omero-figure
