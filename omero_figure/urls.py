@@ -64,7 +64,7 @@ urlpatterns = [
     # Converts Lengths of value in 'fromUnit' to 'toUnit'.
     # E.g. unit_conversion/1.12/MICROMETER/ANGSTROM/.
     # Returns result as json with keys of 'value', 'unit' and 'symbol'
-    re_path(r'unit_conversion/<int:value>)/<str:from_unit>/'
+    path(r'unit_conversion/<int:value>)/<str:from_unit>/'
         '<str:to_unit>/',
         views.unit_conversion, name='unit_conversion'),
 
