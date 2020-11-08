@@ -1,4 +1,3 @@
-
 #
 # Copyright (c) 2014-2020 University of Dundee.
 #
@@ -22,56 +21,47 @@ from django.urls import re_path, path
 
 
 urlpatterns = [
-
     # index 'home page' of the figure app
-    path(r'', views.index, name='figure_index'),
-    path(r'new/', views.index, name='new_figure'),
-    path(r'open/', views.index, name='open_figure'),
-    path(r'file/<int:file_id>/', views.index, name='load_figure'),
-
-    path(r'imgData/<int:image_id>/', views.img_data_json,
-        name='figure_imgData'),
-
+    path(r"", views.index, name="figure_index"),
+    path(r"new/", views.index, name="new_figure"),
+    path(r"open/", views.index, name="open_figure"),
+    path(r"file/<int:file_id>/", views.index, name="load_figure"),
+    path(r"imgData/<int:image_id>/", views.img_data_json, name="figure_imgData"),
     # Send json to OMERO to create pdf using scripting service
-    path(r'make_web_figure/', views.make_web_figure, name='make_web_figure'),
-
+    path(r"make_web_figure/", views.make_web_figure, name="make_web_figure"),
     # Save json to file annotation
-    path(r'save_web_figure/', views.save_web_figure, name='save_web_figure'),
-
+    path(r"save_web_figure/", views.save_web_figure, name="save_web_figure"),
     # Get json from file (file annotation Id)
-    path(r'load_web_figure/<int:file_id>/', views.load_web_figure,
-        name='load_web_figure'),
-
+    path(
+        r"load_web_figure/<int:file_id>/", views.load_web_figure, name="load_web_figure"
+    ),
     # List file annotations of saved Figures
-    path(r'list_web_figures/', views.list_web_figures,
-        name='list_web_figures'),
-
-    path(r'render_thumbnail/<int:iid>/',
+    path(r"list_web_figures/", views.list_web_figures, name="list_web_figures"),
+    path(
+        r"render_thumbnail/<int:iid>/",
         webgateway_views.render_thumbnail,
-        {'_defcb': views.default_thumbnail},
-        name="figure_render_thumbnail"),
-
+        {"_defcb": views.default_thumbnail},
+        name="figure_render_thumbnail",
+    ),
     # Region defined by ?region=x,y,w,h
-    path(r'render_scaled_region/<int:iid>/<int:z>/<int:t>/',
+    path(
+        r"render_scaled_region/<int:iid>/<int:z>/<int:t>/",
         views.render_scaled_region,
-        name="figure_render_scaled_region"),
-
+        name="figure_render_scaled_region",
+    ),
     # Delete file annotations of saved Figures - 'POST' with 'fileId' of file
     # annotation
-    path(r'delete_web_figure/', views.delete_web_figure,
-        name='delete_web_figure'),
-
+    path(r"delete_web_figure/", views.delete_web_figure, name="delete_web_figure"),
     # Converts Lengths of value in 'fromUnit' to 'toUnit'.
     # E.g. unit_conversion/1.12/MICROMETER/ANGSTROM/.
     # Returns result as json with keys of 'value', 'unit' and 'symbol'
-    path(r'unit_conversion/<int:value>)/<str:from_unit>/'
-        '<str:to_unit>/',
-        views.unit_conversion, name='unit_conversion'),
-
+    path(
+        r"unit_conversion/<int:value>)/<str:from_unit>/" "<str:to_unit>/",
+        views.unit_conversion,
+        name="unit_conversion",
+    ),
     # Get timestamps in seconds for images
     # Use query ?image=1&image=2
-    path(r'timestamps/', views.timestamps, name='figure_timestamps'),
-
-    path(r'roiCount/<int:image_id>/', views.roi_count,
-        name='figure_roiCount'),
+    path(r"timestamps/", views.timestamps, name="figure_timestamps"),
+    path(r"roiCount/<int:image_id>/", views.roi_count, name="figure_roiCount"),
 ]
