@@ -6,11 +6,15 @@
 #
 # 1. Set up the stage variable depending on the plugin. Supported stages
 # are: app, cli, scripts, lib, srv
+#
+# 2. Adjust the cron schedule as necessary
 
 name: OMERO
 on:
   push:
   pull_request:
+  schedule:
+    - cron: '0 0 * * 0'
 
 jobs:
   test:
