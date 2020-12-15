@@ -525,7 +525,7 @@
     </div>
     <!-- File Open Modal -->
     <div class="modal" id="openFigureModal" tabindex="-1" role="dialog" aria-labelledby="addImagesLabel" aria-hidden="true">
-        <div class="modal-dialog" style="width:800px">
+        <div class="modal-dialog" style="width:850px">
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
@@ -536,8 +536,8 @@
                         <table class="table table-condensed">
                             <thead>
                                 <tr>
-                                    <th style="width:10%"></th>
-                                    <th style="width:50%">
+                                    <th style="width:7%"></th>
+                                    <th style="width:47%">
                                         <form class="form-inline" role="form">
                                             <div class="form-group">
                                                 <label class="col-sm-2 control-label">Name</label>
@@ -553,7 +553,7 @@
                                             </div>
                                         </form>
                                     </th>
-                                    <th style="width:25%">
+                                    <th style="width:22%">
                                         Created
                                         <button type="button" class="btn btn-link btn-sm sort-created sort table-sort-btn">
                                             <span class="glyphicon glyphicon-chevron-up"></span>
@@ -562,13 +562,23 @@
                                             <span class="glyphicon glyphicon-chevron-down"></span>
                                         </button>
                                     </th>
-                                    <th style="width:15%">
+                                    <th style="width:12%">
                                         <div class="btn-group" title="Filter files by owner">
-                                            <button id="file-owner-btn" type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                                                 <b>Owner</b> <span class="caret"></span>
                                             </button>
                                             <ul id="owner-menu" class="dropdown-menu pull-right" role="menu">
                                                 <!-- owners added here -->
+                                            </ul>
+                                        </div>
+                                    </th>
+                                    <th style="width:12%">
+                                        <div class="btn-group" title="Filter files by group">
+                                            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                                <b>Group</b> <span class="caret"></span>
+                                            </button>
+                                            <ul id="group-menu" class="dropdown-menu pull-right" role="menu">
+                                                <!-- groups added here -->
                                             </ul>
                                         </div>
                                     </th>
