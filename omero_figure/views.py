@@ -446,8 +446,11 @@ def list_web_figures(request, conn=None, **kwargs):
                 o.lastName as lastName,
                 e.time as time,
                 f.name as name,
+                g.id as group_id,
+                g.name as group_name,
                 obj as obj_details_permissions)
             from FileAnnotation obj
+            join obj.details.group as g
             join obj.details.owner as o
             join obj.details.creationEvent as e
             join obj.file.details as p
@@ -466,6 +469,10 @@ def list_web_figures(request, conn=None, **kwargs):
             'name': unwrap(fa['name']),
             'description': unwrap(fa['desc']),
             'ownerFullName': "%s %s" % (first_name, last_name),
+            'group': {
+                'id': fa['group_id'],
+                'name': fa['group_name']
+            },
             'creationDate': time.mktime(date.timetuple()),
             'canEdit': fa['obj_details_permissions'].get('canEdit')
         }
