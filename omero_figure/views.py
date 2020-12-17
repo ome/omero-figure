@@ -96,6 +96,7 @@ def index(request, file_id=None, conn=None, **kwargs):
 
     context = {'scriptMissing': script_missing,
                'userFullName': user_full_name,
+               'userId': user.id,
                'maxPlaneSize': max_plane_size,
                'lengthUnits': json.dumps(length_units),
                'isPublicUser': is_public_user,
@@ -386,6 +387,10 @@ def load_web_figure(request, file_id, conn=None, **kwargs):
         # parse the json, so we can add info...
         json_data = json.loads(figure_json)
         json_data['canEdit'] = owner_id == conn.getUserId()
+        json_data['group'] = {
+            'id': file_ann.getDetails().group.id.val,
+            'name': file_ann.getDetails().group.name.val
+        }
         # Figure name may not be populated: check in description...
         if 'figureName' not in json_data:
             desc = file_ann.getDescription()
