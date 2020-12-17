@@ -602,3 +602,29 @@ def chgrp(request, conn=None, **kwargs):
         rv['parameters'] = ", ".join(params)
         rv['error'] = "%s %s" % (rsp.name, ", ".join(params))
     return JsonResponse(rv)
+
+
+@login_required()
+def images_details(request, conn=None, **kwargs):
+
+    imgs = request.GET.get('image', '')
+    img_ids = [int(i) for i in imgs.split(',') if len(i) > 0]
+
+    data = []
+    for image in conn.getObjects('Image', img_ids):
+        details = image.getDetails()
+        data.append({
+            'id': image.id,
+            'name': image.name,
+            'group': {
+                'id': details.group.id.val,
+                'name': details.group.name.val
+            },
+            'owner': {
+                'id': details.owner.id.val,
+                'firstName': details.owner.firstName.val,
+                'lastName': details.owner.lastName.val
+            }
+        })
+
+    return JsonResponse({'data': data})
