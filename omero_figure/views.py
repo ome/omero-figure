@@ -18,9 +18,11 @@
 
 from django.http import Http404, HttpResponse, \
     JsonResponse
+from django.views.decorators.http import require_POST
 from django.conf import settings
 from django.shortcuts import render
 from datetime import datetime
+import traceback
 import json
 import time
 
@@ -31,6 +33,7 @@ from django.core.urlresolvers import reverse, NoReverseMatch
 from omero.rtypes import wrap, rlong, rstring, unwrap
 from omero.model import LengthI
 from omero.model.enums import UnitsLength
+from omero.cmd import ERR, OK
 import omero
 
 from io import BytesIO
@@ -562,3 +565,35 @@ def roi_count(request, image_id, conn=None, **kwargs):
         shape_count = count[0][0].getValue()
         rv['shape'] = shape_count
     return HttpResponse(json.dumps(rv), content_type="application/json")
+
+
+@require_POST
+@login_required()
+def chgrp(request, conn=None, **kwargs):
+
+    group_id = int(request.POST.get("group_id"))
+    ann_id = int(request.POST.get("ann_id"))
+
+    handle = None
+    rsp = None
+    rv = {}
+    try:
+        handle = conn.chgrpObjects('Annotation', [ann_id], group_id)
+        conn.c.waitOnCmd(
+            handle, loops=10, ms=500,
+            failonerror=True, failontimeout=False, closehandle=False)
+        rsp = handle.getResponse()
+    except:
+        rv['error'] = traceback.format_exc()
+    finally:
+        if handle is not None:
+            handle.close()
+
+    if isinstance(rsp, OK):
+        rv['success'] = True
+    elif isinstance(rsp, ERR):
+        rv['name'] = rsp.name,
+        params = ["%s: %s" % (k, v) for k, v in rsp.parameters.items()]
+        rv['parameters'] = ", ".join(params)
+        rv['error'] = "%s %s" % (rsp.name, ", ".join(params))
+    return JsonResponse(rv)

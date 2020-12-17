@@ -74,4 +74,7 @@ urlpatterns = [
 
     url(r'^roiCount/(?P<image_id>[0-9]+)/$', views.roi_count,
         name='figure_roiCount'),
+
+    # POST to change figure to new group with ann_id and group_id
+    url(r'chgrp/$', views.chgrp, name='figure_chgrp')
 ]
