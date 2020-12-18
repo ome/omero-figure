@@ -588,7 +588,7 @@ def chgrp(request, conn=None, **kwargs):
             handle, loops=10, ms=500,
             failonerror=True, failontimeout=False, closehandle=False)
         rsp = handle.getResponse()
-    except:
+    except Exception:
         rv['error'] = traceback.format_exc()
     finally:
         if handle is not None:
