@@ -19,7 +19,7 @@ module.exports = function (grunt) {
     jst: {
       compile: {
         files: {
-          "omero_figure/static/figure/templates.js": [
+          "src/omero_figure/static/figure/templates.js": [
             "src/templates/*.html",
             "src/templates/**/*.html"
           ]
@@ -57,7 +57,7 @@ module.exports = function (grunt) {
             'src/js/models/*.js',
             'src/js/views/*.js',
             'src/js/app.js'],
-        dest: 'omero_figure/static/figure/figure.js',
+        dest: 'src/omero_figure/static/figure/figure.js',
       },
     },
     replace: {
@@ -149,7 +149,7 @@ module.exports = function (grunt) {
             expand: true,
             cwd: 'node_modules/@openmicroscopy/shape-editor/dist/js',
             src: 'shape-editor.js',
-            dest: 'omero_figure/static/figure/3rdparty/shape-editor-4.0.0'
+            dest: 'src/omero_figure/static/figure/3rdparty/shape-editor-4.0.0'
           },
         ]
       },

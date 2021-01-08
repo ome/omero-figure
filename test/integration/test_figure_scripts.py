@@ -78,7 +78,7 @@ class TestFigureScripts(ScriptTest):
         robj = run_script(client, id, args, "New_Figure")
         ann = robj.getValue()
         # New image is returned when it is an OMERO image
-        if export_option is "OMERO":
+        if export_option == "OMERO":
             assert isinstance(ann, Image)
         else:
             c = self.new_client(user=user)

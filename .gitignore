@@ -7,7 +7,7 @@ demo/index.html
 node_modules/
 _site
 dist
-omero_figure.egg-info
-omero_figure/static/figure/figure.js
-omero_figure/static/figure/templates.js
-omero_figure/static/figure/3rdparty/shape-editor*
+src/omero_figure.egg-info
+src/omero_figure/static/figure/figure.js
+src/omero_figure/static/figure/templates.js
+src/omero_figure/static/figure/3rdparty/shape-editor*
