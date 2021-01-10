@@ -101,7 +101,7 @@ class PyTest(test_command):
         sys.exit(errno)
 
         import django
-        if django.VERSION > (1, 7):
+        if django.VERSION > (2, 1):
             django.setup()
 
 
