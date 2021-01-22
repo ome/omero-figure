@@ -47,12 +47,15 @@
         ACTIVITIES_JSON_URL = "{% url 'activities_json' %}",
         WEBGATEWAYINDEX = "{% url 'webgateway' %}",
         WEBINDEX_URL = "{% url 'webindex' %}",
+        WEBLOGIN_URL = "{% url 'weblogin' %}",
         ROIS_JSON_URL = "{% url 'api_rois' '0' %}",
         USER_FULL_NAME = "{{ userFullName }}",
         LENGTH_UNITS = {{ lengthUnits|safe }},
         IS_PUBLIC_USER = {% if isPublicUser %}true{% else %}false{% endif %},
         // Images larger than this are 'big' tiled images
         MAX_PLANE_SIZE = "{{ maxPlaneSize }}";
+
+    var LOCAL_STORAGE_RECOVERED_FIGURE = "recoveredFigure";
 
     $(document).ready(function() {
 
@@ -659,6 +662,9 @@
                             </li>
                             <li class="save_as">
                                 <a href="#">Save a Copy...</a>
+                            </li>
+                            <li class="local_storage" title="Open or Clear recovered data from local storage">
+                                <a href="#">Local storage...</a>
                             </li>
                             <li class="export_json">
                                 <a href="#">Export as JSON...</a>
