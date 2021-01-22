@@ -227,7 +227,7 @@ def render_scaled_region(request, iid, z, t, conn=None, **kwargs):
     return HttpResponse(jpeg_data, content_type='image/jpeg')
 
 
-@login_required(setGroupContext=True)
+@login_required()
 def save_web_figure(request, conn=None, **kwargs):
     """
     Saves 'figureJSON' in POST as an original file. If 'fileId' is specified
@@ -288,7 +288,6 @@ def save_web_figure(request, conn=None, **kwargs):
         # Create new file
         # Try to set Group context to the same as first image
         curr_gid = conn.SERVICE_OPTS.getOmeroGroup()
-        conn.SERVICE_OPTS.setOmeroGroup('-1')
         i = None
         if first_img_id:
             i = conn.getObject("Image", first_img_id)
@@ -312,8 +311,6 @@ def save_web_figure(request, conn=None, **kwargs):
 
     else:
         # Update existing Original File
-        conn.SERVICE_OPTS.setOmeroGroup('-1')
-        # Following seems to work OK with group -1 (regardless of group ctx)
         fa = conn.getObject("FileAnnotation", file_id)
         if fa is None:
             return Http404("Couldn't find FileAnnotation of ID: %s" % file_id)
