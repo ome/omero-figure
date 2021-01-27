@@ -75,4 +75,11 @@ urlpatterns = [
 
     url(r'^roiCount/(?P<image_id>[0-9]+)/$', views.roi_count,
         name='figure_roiCount'),
+
+    # POST to change figure to new group with ann_id and group_id
+    url(r'chgrp/$', views.chgrp, name='figure_chgrp'),
+
+    # Get group and owner info for multiple images. ?image=1,2,3
+    url(r'images_details/', views.images_details,
+        name="figure_images_details")
 ]

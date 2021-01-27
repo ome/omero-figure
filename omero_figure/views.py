@@ -18,9 +18,11 @@
 
 from django.http import Http404, HttpResponse, \
     JsonResponse
+from django.views.decorators.http import require_POST
 from django.conf import settings
 from django.shortcuts import render
 from datetime import datetime
+import traceback
 import json
 import time
 
@@ -31,6 +33,7 @@ from django.core.urlresolvers import reverse, NoReverseMatch
 from omero.rtypes import wrap, rlong, rstring, unwrap
 from omero.model import LengthI
 from omero.model.enums import UnitsLength
+from omero.cmd import ERR, OK
 import omero
 
 from io import BytesIO
@@ -93,6 +96,7 @@ def index(request, file_id=None, conn=None, **kwargs):
 
     context = {'scriptMissing': script_missing,
                'userFullName': user_full_name,
+               'userId': user.id,
                'maxPlaneSize': max_plane_size,
                'lengthUnits': json.dumps(length_units),
                'isPublicUser': is_public_user,
@@ -380,6 +384,10 @@ def load_web_figure(request, file_id, conn=None, **kwargs):
         # parse the json, so we can add info...
         json_data = json.loads(figure_json)
         json_data['canEdit'] = owner_id == conn.getUserId()
+        json_data['group'] = {
+            'id': file_ann.getDetails().group.id.val,
+            'name': file_ann.getDetails().group.name.val
+        }
         # Figure name may not be populated: check in description...
         if 'figureName' not in json_data:
             desc = file_ann.getDescription()
@@ -443,8 +451,11 @@ def list_web_figures(request, conn=None, **kwargs):
                 o.lastName as lastName,
                 e.time as time,
                 f.name as name,
+                g.id as group_id,
+                g.name as group_name,
                 obj as obj_details_permissions)
             from FileAnnotation obj
+            join obj.details.group as g
             join obj.details.owner as o
             join obj.details.creationEvent as e
             join obj.file.details as p
@@ -463,6 +474,10 @@ def list_web_figures(request, conn=None, **kwargs):
             'name': unwrap(fa['name']),
             'description': unwrap(fa['desc']),
             'ownerFullName': "%s %s" % (first_name, last_name),
+            'group': {
+                'id': fa['group_id'],
+                'name': fa['group_name']
+            },
             'creationDate': time.mktime(date.timetuple()),
             'canEdit': fa['obj_details_permissions'].get('canEdit')
         }
@@ -552,3 +567,61 @@ def roi_count(request, image_id, conn=None, **kwargs):
         shape_count = count[0][0].getValue()
         rv['shape'] = shape_count
     return HttpResponse(json.dumps(rv), content_type="application/json")
+
+
+@require_POST
+@login_required()
+def chgrp(request, conn=None, **kwargs):
+
+    group_id = int(request.POST.get("group_id"))
+    ann_id = int(request.POST.get("ann_id"))
+
+    handle = None
+    rsp = None
+    rv = {}
+    try:
+        handle = conn.chgrpObjects('Annotation', [ann_id], group_id)
+        conn.c.waitOnCmd(
+            handle, loops=10, ms=500,
+            failonerror=True, failontimeout=False, closehandle=False)
+        rsp = handle.getResponse()
+    except Exception:
+        rv['error'] = traceback.format_exc()
+    finally:
+        if handle is not None:
+            handle.close()
+
+    if isinstance(rsp, OK):
+        rv['success'] = True
+    elif isinstance(rsp, ERR):
+        rv['name'] = rsp.name,
+        params = ["%s: %s" % (k, v) for k, v in rsp.parameters.items()]
+        rv['parameters'] = ", ".join(params)
+        rv['error'] = "%s %s" % (rsp.name, ", ".join(params))
+    return JsonResponse(rv)
+
+
+@login_required()
+def images_details(request, conn=None, **kwargs):
+
+    imgs = request.GET.get('image', '')
+    img_ids = [int(i) for i in imgs.split(',') if len(i) > 0]
+
+    data = []
+    for image in conn.getObjects('Image', img_ids):
+        details = image.getDetails()
+        data.append({
+            'id': image.id,
+            'name': image.name,
+            'group': {
+                'id': details.group.id.val,
+                'name': details.group.name.val
+            },
+            'owner': {
+                'id': details.owner.id.val,
+                'firstName': details.owner.firstName.val,
+                'lastName': details.owner.lastName.val
+            }
+        })
+
+    return JsonResponse({'data': data})
