@@ -580,10 +580,12 @@ def roi_rectangles(request, image_id, conn=None, **kwargs):
     and shapes.class = Rectangle"""
     params = omero.sys.ParametersI()
     params.addLong('image_id', image_id)
-    result = conn.getQueryService().projection(count_query, params, conn.SERVICE_OPTS)
-    totalCount = result[0][0].val
+    result = conn.getQueryService().projection(count_query, params,
+                                               conn.SERVICE_OPTS)
+    total_count = result[0][0].val
 
-    return JsonResponse({'data': json_data, 'meta': {'totalCount': totalCount}})
+    return JsonResponse({'data': json_data,
+                         'meta': {'totalCount': total_count}})
 
 
 @login_required()
