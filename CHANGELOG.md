@@ -4,6 +4,7 @@
 - Move Figures to different Groups in OMERO ([#416](https://github.com/ome/omero-figure/pull/416))
 - Fix handling of rotation when cropping panels ([#410](https://github.com/ome/omero-figure/pull/410))
 - Handle Save errors and recover from local storage ([#415](https://github.com/ome/omero-figure/pull/415))
+- Support loading larger numbers of ROIs from OMERO ([#422](https://github.com/ome/omero-figure/pull/422))
 - Fix duplicate labels from Key-Value pairs ([#414](https://github.com/ome/omero-figure/pull/414))
 - Show scalebar label by default ([#413](https://github.com/ome/omero-figure/pull/413))
 - Fix scalebar units in exported PDF info page ([#400](https://github.com/ome/omero-figure/pull/400))
