@@ -32,8 +32,10 @@
     <link rel="stylesheet" href="{% static 'figure/3rdparty/bootstrap-colorpicker/css/bootstrap-colorpicker.min.css' %}">
     <link rel="stylesheet" href="{% static 'figure/css/figure.css' %}?version={{ version }}">
 
-    {% include "webgateway/base/includes/script_src_jquery.html" %}
-    {% include "webgateway/base/includes/jquery-ui.html" %}
+    <!-- Currently we use jQuery 1.11.1 and jQuery-UI 1.10.4 -->
+    <script src="{% static 'figure/3rdparty/jquery-1.11.1/jquery.min.js' %}"></script>
+    <script src="{% static 'figure/3rdparty/jquery-ui-1.10.4/jquery-ui.min.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'figure/3rdparty/jquery-ui-1.10.4/css/jquery.ui.base.css' %}">
 
     <script>
 
@@ -1028,6 +1030,7 @@
     </div>
 
 
+    <script src="{% static 'figure/3rdparty/ome.csrf.js' %}"></script>
     <script src="{% static 'figure/3rdparty/json2.js' %}"></script>
     <script src="{% static 'figure/3rdparty/underscore-1.3.3.js' %}"></script>
     <script src="{% static 'figure/3rdparty/backbone-1.0.0.js' %}"></script>
