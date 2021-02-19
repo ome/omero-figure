@@ -35,6 +35,7 @@ from omero.model import LengthI
 from omero.model.enums import UnitsLength
 from omero.cmd import ERR, OK
 import omero
+from omero_marshal import get_encoder
 
 from io import BytesIO
 
@@ -541,6 +542,50 @@ def unit_conversion(request, value, from_unit, to_unit, conn=None, **kwargs):
            'symbol': to_value.getSymbol()}
 
     return HttpResponse(json.dumps(rsp), content_type='application/json')
+
+
+@login_required()
+def roi_rectangles(request, image_id, conn=None, **kwargs):
+    """
+    Load ROIs that have Rectangles and marshal with omero_marshal
+
+    Returns similar JSON to /api/ rois, with meta.totalCount
+    Supports pagination with ?offset and ?limit
+    """
+
+    params = omero.sys.ParametersI()
+    params.addLong('image_id', image_id)
+    limit = request.GET.get('limit')
+    offset = request.GET.get('offset', 0)
+    if limit is not None:
+        params.page(int(offset), int(limit))
+    query = """select roi from Roi roi join fetch
+    roi.details.owner as owner join fetch roi.details.creationEvent
+    left outer join fetch roi.shapes as shapes
+    where roi.image.id = :image_id
+    and shapes.class = Rectangle
+    order by roi.id"""
+
+    rois = conn.getQueryService().findAllByQuery(
+        query, params, conn.SERVICE_OPTS)
+
+    json_data = []
+    for roi in rois:
+        encoder = get_encoder(roi.__class__)
+        json_data.append(encoder.encode(roi))
+
+    count_query = """select count(distinct roi) from Roi roi
+    left outer join roi.shapes as shapes
+    where roi.image.id = :image_id
+    and shapes.class = Rectangle"""
+    params = omero.sys.ParametersI()
+    params.addLong('image_id', image_id)
+    result = conn.getQueryService().projection(count_query, params,
+                                               conn.SERVICE_OPTS)
+    total_count = result[0][0].val
+
+    return JsonResponse({'data': json_data,
+                         'meta': {'totalCount': total_count}})
 
 
 @login_required()

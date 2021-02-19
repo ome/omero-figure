@@ -153,13 +153,16 @@
                                 </div>
                             </div>
                         </div>
-                        <div id="roiModalSidebar" class="col-xs-4"
-                                style="padding:0; height:600px; overflow-y:auto">
-                            <div id="roiModalRoiList">
-                                <table style="width: 100%" class="table table-hover table-condensed"></table>
+                        <div id="roiModalSidebar" class="col-xs-4" style="padding: 0">
+                            <span id="roiPageControls" style="color: #999; line-height: 30px;">
+                            </span>
+                            <div style="clear:both; padding: 5px"></div>
+                            <div style="padding:0; height:550px; overflow-y:auto">
+                                <div id="roiModalRoiList">
+                                    <table style="width: 100%" class="table table-hover table-condensed"></table>
+                                </div>
+                                <p id="roiModalTip" style="position:absolute; top:0"></p>
                             </div>
-                              <p id="roiModalTip"></p>
-                            <p id="roiModalTip"></p>
                         </div>
                     </div>
                     <div class="modal-footer" style="margin-top: 0">
@@ -311,8 +314,9 @@
                                 <!-- ROIs loaded here... -->
                                 </tbody>
                             </table>
-                            <!-- Additional message depends on whether we have any ROIs or not -->
-                            <p id='cropRoiMessage'></p>
+                            <button style="float: right" class="btn btn-sm btn-default loadRoiRects">Load More...</button>
+                            <!-- Additional message/status -->
+                            <p style="color: #999; margin: 10px" id='cropRoiMessage'></p>
                         </div>
                         <div class="col-xs-8">
                             <div id="cropViewer">
