@@ -32,8 +32,10 @@
     <link rel="stylesheet" href="{% static 'figure/3rdparty/bootstrap-colorpicker/css/bootstrap-colorpicker.min.css' %}">
     <link rel="stylesheet" href="{% static 'figure/css/figure.css' %}?version={{ version }}">
 
-    {% include "webgateway/base/includes/script_src_jquery.html" %}
-    {% include "webgateway/base/includes/jquery-ui.html" %}
+    <!-- Currently we use jQuery 1.11.1 and jQuery-UI 1.10.4 -->
+    <script src="{% static 'figure/3rdparty/jquery-1.11.1/jquery.min.js' %}"></script>
+    <script src="{% static 'figure/3rdparty/jquery-ui-1.10.4/jquery-ui.min.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'figure/3rdparty/jquery-ui-1.10.4/css/jquery.ui.base.css' %}">
 
     <script>
 
@@ -44,15 +46,20 @@
         LIST_WEBFIGURES_URL = "{% url 'list_web_figures' %}",
         DELETE_WEBFIGURE_URL = "{% url 'delete_web_figure' %}",
         MAKE_WEBFIGURE_URL = "{% url 'make_web_figure' %}",
+        API_BASE_URL_V0 = "{% url 'api_base' '0' %}",
         ACTIVITIES_JSON_URL = "{% url 'activities_json' %}",
         WEBGATEWAYINDEX = "{% url 'webgateway' %}",
         WEBINDEX_URL = "{% url 'webindex' %}",
+        WEBLOGIN_URL = "{% url 'weblogin' %}",
         ROIS_JSON_URL = "{% url 'api_rois' '0' %}",
         USER_FULL_NAME = "{{ userFullName }}",
+        USER_ID = {{ userId }},
         LENGTH_UNITS = {{ lengthUnits|safe }},
         IS_PUBLIC_USER = {% if isPublicUser %}true{% else %}false{% endif %},
         // Images larger than this are 'big' tiled images
         MAX_PLANE_SIZE = "{{ maxPlaneSize }}";
+
+    var LOCAL_STORAGE_RECOVERED_FIGURE = "recoveredFigure" + USER_ID;
 
     $(document).ready(function() {
 
@@ -146,13 +153,16 @@
                                 </div>
                             </div>
                         </div>
-                        <div id="roiModalSidebar" class="col-xs-4"
-                                style="padding:0; height:600px; overflow-y:auto">
-                            <div id="roiModalRoiList">
-                                <table style="width: 100%" class="table table-hover table-condensed"></table>
+                        <div id="roiModalSidebar" class="col-xs-4" style="padding: 0">
+                            <span id="roiPageControls" style="color: #999; line-height: 30px;">
+                            </span>
+                            <div style="clear:both; padding: 5px"></div>
+                            <div style="padding:0; height:550px; overflow-y:auto">
+                                <div id="roiModalRoiList">
+                                    <table style="width: 100%" class="table table-hover table-condensed"></table>
+                                </div>
+                                <p id="roiModalTip" style="position:absolute; top:0"></p>
                             </div>
-                              <p id="roiModalTip"></p>
-                            <p id="roiModalTip"></p>
                         </div>
                     </div>
                     <div class="modal-footer" style="margin-top: 0">
@@ -191,6 +201,26 @@
                 <form class="paperSetupForm" role="form">
                     <div class="modal-body">
                         <!-- Content added from paper_setup_modal_template -->
+                    </div>
+                    <div class="modal-footer" style="margin-top: 0">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">OK</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- chgrp Modal -->
+    <div class="modal" id="chgrpModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title">Move Figure to Group</h4>
+                </div>
+                <form class="chgrpForm" role="form">
+                    <div class="modal-body">
+                        <!-- Content added -->
                     </div>
                     <div class="modal-footer" style="margin-top: 0">
                         <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
@@ -284,8 +314,9 @@
                                 <!-- ROIs loaded here... -->
                                 </tbody>
                             </table>
-                            <!-- Additional message depends on whether we have any ROIs or not -->
-                            <p id='cropRoiMessage'></p>
+                            <button style="float: right" class="btn btn-sm btn-default loadRoiRects">Load More...</button>
+                            <!-- Additional message/status -->
+                            <p style="color: #999; margin: 10px" id='cropRoiMessage'></p>
                         </div>
                         <div class="col-xs-8">
                             <div id="cropViewer">
@@ -525,7 +556,7 @@
     </div>
     <!-- File Open Modal -->
     <div class="modal" id="openFigureModal" tabindex="-1" role="dialog" aria-labelledby="addImagesLabel" aria-hidden="true">
-        <div class="modal-dialog" style="width:800px">
+        <div class="modal-dialog" style="width:850px">
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
@@ -536,8 +567,8 @@
                         <table class="table table-condensed">
                             <thead>
                                 <tr>
-                                    <th style="width:10%"></th>
-                                    <th style="width:50%">
+                                    <th style="width:7%"></th>
+                                    <th style="width:47%">
                                         <form class="form-inline" role="form">
                                             <div class="form-group">
                                                 <label class="col-sm-2 control-label">Name</label>
@@ -553,7 +584,7 @@
                                             </div>
                                         </form>
                                     </th>
-                                    <th style="width:25%">
+                                    <th style="width:22%">
                                         Created
                                         <button type="button" class="btn btn-link btn-sm sort-created sort table-sort-btn">
                                             <span class="glyphicon glyphicon-chevron-up"></span>
@@ -562,13 +593,23 @@
                                             <span class="glyphicon glyphicon-chevron-down"></span>
                                         </button>
                                     </th>
-                                    <th style="width:15%">
+                                    <th style="width:12%">
                                         <div class="btn-group" title="Filter files by owner">
-                                            <button id="file-owner-btn" type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                                                 <b>Owner</b> <span class="caret"></span>
                                             </button>
                                             <ul id="owner-menu" class="dropdown-menu pull-right" role="menu">
                                                 <!-- owners added here -->
+                                            </ul>
+                                        </div>
+                                    </th>
+                                    <th style="width:12%">
+                                        <div class="btn-group" title="Filter files by group">
+                                            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                                <b>Group</b> <span class="caret"></span>
+                                            </button>
+                                            <ul id="group-menu" class="dropdown-menu pull-right" role="menu">
+                                                <!-- groups added here -->
                                             </ul>
                                         </div>
                                     </th>
@@ -660,6 +701,9 @@
                             <li class="save_as">
                                 <a href="#">Save a Copy...</a>
                             </li>
+                            <li class="local_storage" title="Open or Clear recovered data from local storage">
+                                <a href="#">Local storage...</a>
+                            </li>
                             <li class="export_json">
                                 <a href="#">Export as JSON...</a>
                             </li>
@@ -668,6 +712,9 @@
                             </li>
                             <li class="delete_figure">
                                 <a href="#">Delete</a>
+                            </li>
+                            <li class="chgrp_figure">
+                                <a href="#">Move Figure to Group...</a>
                             </li>
                             <li class="paper_setup">
                                 <a href="#">Paper Setup...</a>
@@ -987,6 +1034,7 @@
     </div>
 
 
+    <script src="{% static 'figure/3rdparty/ome.csrf.js' %}"></script>
     <script src="{% static 'figure/3rdparty/json2.js' %}"></script>
     <script src="{% static 'figure/3rdparty/underscore-1.3.3.js' %}"></script>
     <script src="{% static 'figure/3rdparty/backbone-1.0.0.js' %}"></script>

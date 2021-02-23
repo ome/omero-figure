@@ -18,9 +18,11 @@
 
 from django.http import Http404, HttpResponse, \
     JsonResponse
+from django.views.decorators.http import require_POST
 from django.conf import settings
 from django.shortcuts import render
 from datetime import datetime
+import traceback
 import json
 import time
 
@@ -31,7 +33,9 @@ from django.core.urlresolvers import reverse, NoReverseMatch
 from omero.rtypes import wrap, rlong, rstring, unwrap
 from omero.model import LengthI
 from omero.model.enums import UnitsLength
+from omero.cmd import ERR, OK
 import omero
+from omero_marshal import get_encoder
 
 from io import BytesIO
 
@@ -93,6 +97,7 @@ def index(request, file_id=None, conn=None, **kwargs):
 
     context = {'scriptMissing': script_missing,
                'userFullName': user_full_name,
+               'userId': user.id,
                'maxPlaneSize': max_plane_size,
                'lengthUnits': json.dumps(length_units),
                'isPublicUser': is_public_user,
@@ -223,7 +228,7 @@ def render_scaled_region(request, iid, z, t, conn=None, **kwargs):
     return HttpResponse(jpeg_data, content_type='image/jpeg')
 
 
-@login_required(setGroupContext=True)
+@login_required()
 def save_web_figure(request, conn=None, **kwargs):
     """
     Saves 'figureJSON' in POST as an original file. If 'fileId' is specified
@@ -284,7 +289,6 @@ def save_web_figure(request, conn=None, **kwargs):
         # Create new file
         # Try to set Group context to the same as first image
         curr_gid = conn.SERVICE_OPTS.getOmeroGroup()
-        conn.SERVICE_OPTS.setOmeroGroup('-1')
         i = None
         if first_img_id:
             i = conn.getObject("Image", first_img_id)
@@ -308,8 +312,6 @@ def save_web_figure(request, conn=None, **kwargs):
 
     else:
         # Update existing Original File
-        conn.SERVICE_OPTS.setOmeroGroup('-1')
-        # Following seems to work OK with group -1 (regardless of group ctx)
         fa = conn.getObject("FileAnnotation", file_id)
         if fa is None:
             return Http404("Couldn't find FileAnnotation of ID: %s" % file_id)
@@ -383,6 +385,10 @@ def load_web_figure(request, file_id, conn=None, **kwargs):
         # parse the json, so we can add info...
         json_data = json.loads(figure_json)
         json_data['canEdit'] = owner_id == conn.getUserId()
+        json_data['group'] = {
+            'id': file_ann.getDetails().group.id.val,
+            'name': file_ann.getDetails().group.name.val
+        }
         # Figure name may not be populated: check in description...
         if 'figureName' not in json_data:
             desc = file_ann.getDescription()
@@ -446,8 +452,11 @@ def list_web_figures(request, conn=None, **kwargs):
                 o.lastName as lastName,
                 e.time as time,
                 f.name as name,
+                g.id as group_id,
+                g.name as group_name,
                 obj as obj_details_permissions)
             from FileAnnotation obj
+            join obj.details.group as g
             join obj.details.owner as o
             join obj.details.creationEvent as e
             join obj.file.details as p
@@ -466,6 +475,10 @@ def list_web_figures(request, conn=None, **kwargs):
             'name': unwrap(fa['name']),
             'description': unwrap(fa['desc']),
             'ownerFullName': "%s %s" % (first_name, last_name),
+            'group': {
+                'id': fa['group_id'],
+                'name': fa['group_name']
+            },
             'creationDate': time.mktime(date.timetuple()),
             'canEdit': fa['obj_details_permissions'].get('canEdit')
         }
@@ -532,6 +545,50 @@ def unit_conversion(request, value, from_unit, to_unit, conn=None, **kwargs):
 
 
 @login_required()
+def roi_rectangles(request, image_id, conn=None, **kwargs):
+    """
+    Load ROIs that have Rectangles and marshal with omero_marshal
+
+    Returns similar JSON to /api/ rois, with meta.totalCount
+    Supports pagination with ?offset and ?limit
+    """
+
+    params = omero.sys.ParametersI()
+    params.addLong('image_id', image_id)
+    limit = request.GET.get('limit')
+    offset = request.GET.get('offset', 0)
+    if limit is not None:
+        params.page(int(offset), int(limit))
+    query = """select roi from Roi roi join fetch
+    roi.details.owner as owner join fetch roi.details.creationEvent
+    left outer join fetch roi.shapes as shapes
+    where roi.image.id = :image_id
+    and shapes.class = Rectangle
+    order by roi.id"""
+
+    rois = conn.getQueryService().findAllByQuery(
+        query, params, conn.SERVICE_OPTS)
+
+    json_data = []
+    for roi in rois:
+        encoder = get_encoder(roi.__class__)
+        json_data.append(encoder.encode(roi))
+
+    count_query = """select count(distinct roi) from Roi roi
+    left outer join roi.shapes as shapes
+    where roi.image.id = :image_id
+    and shapes.class = Rectangle"""
+    params = omero.sys.ParametersI()
+    params.addLong('image_id', image_id)
+    result = conn.getQueryService().projection(count_query, params,
+                                               conn.SERVICE_OPTS)
+    total_count = result[0][0].val
+
+    return JsonResponse({'data': json_data,
+                         'meta': {'totalCount': total_count}})
+
+
+@login_required()
 def roi_count(request, image_id, conn=None, **kwargs):
     """
     Get the counts of ROIs and Shapes on the image
@@ -555,3 +612,61 @@ def roi_count(request, image_id, conn=None, **kwargs):
         shape_count = count[0][0].getValue()
         rv['shape'] = shape_count
     return HttpResponse(json.dumps(rv), content_type="application/json")
+
+
+@require_POST
+@login_required()
+def chgrp(request, conn=None, **kwargs):
+
+    group_id = int(request.POST.get("group_id"))
+    ann_id = int(request.POST.get("ann_id"))
+
+    handle = None
+    rsp = None
+    rv = {}
+    try:
+        handle = conn.chgrpObjects('Annotation', [ann_id], group_id)
+        conn.c.waitOnCmd(
+            handle, loops=10, ms=500,
+            failonerror=True, failontimeout=False, closehandle=False)
+        rsp = handle.getResponse()
+    except Exception:
+        rv['error'] = traceback.format_exc()
+    finally:
+        if handle is not None:
+            handle.close()
+
+    if isinstance(rsp, OK):
+        rv['success'] = True
+    elif isinstance(rsp, ERR):
+        rv['name'] = rsp.name,
+        params = ["%s: %s" % (k, v) for k, v in rsp.parameters.items()]
+        rv['parameters'] = ", ".join(params)
+        rv['error'] = "%s %s" % (rsp.name, ", ".join(params))
+    return JsonResponse(rv)
+
+
+@login_required()
+def images_details(request, conn=None, **kwargs):
+
+    imgs = request.GET.get('image', '')
+    img_ids = [int(i) for i in imgs.split(',') if len(i) > 0]
+
+    data = []
+    for image in conn.getObjects('Image', img_ids):
+        details = image.getDetails()
+        data.append({
+            'id': image.id,
+            'name': image.name,
+            'group': {
+                'id': details.group.id.val,
+                'name': details.group.name.val
+            },
+            'owner': {
+                'id': details.owner.id.val,
+                'firstName': details.owner.firstName.val,
+                'lastName': details.owner.lastName.val
+            }
+        })
+
+    return JsonResponse({'data': data})

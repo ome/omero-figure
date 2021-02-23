@@ -26,6 +26,7 @@ urlpatterns = [
     # index 'home page' of the figure app
     url(r'^$', views.index, name='figure_index'),
     url(r'^new/$', views.index, name='new_figure'),
+    url(r'^recover/$', views.index, name='recover_figure'),
     url(r'^open/$', views.index, name='open_figure'),
     url(r'^file/(?P<file_id>[0-9]+)/$', views.index, name='load_figure'),
 
@@ -74,4 +75,14 @@ urlpatterns = [
 
     url(r'^roiCount/(?P<image_id>[0-9]+)/$', views.roi_count,
         name='figure_roiCount'),
+
+    url(r'^roiRectangles/(?P<image_id>[0-9]+)/$', views.roi_rectangles,
+        name='figure_roiRectangles'),
+
+    # POST to change figure to new group with ann_id and group_id
+    url(r'chgrp/$', views.chgrp, name='figure_chgrp'),
+
+    # Get group and owner info for multiple images. ?image=1,2,3
+    url(r'images_details/', views.images_details,
+        name="figure_images_details")
 ]
