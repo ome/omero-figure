@@ -27,7 +27,7 @@ var RoiModalView = Backbone.View.extend({
             // Then listen for selection events etc coming from RoiLoaderView
             this.Rois = new RoiList();
             this.listenTo(this.Rois, "change:selection", this.showTempShape);  // mouseover shape
-            this.listenTo(this.Rois, "shape_add", this.addShapeFromOmero);
+            this.listenTo(this.Rois, "shape_add", this.addShapesFromOmero);
             this.listenTo(this.Rois, "shape_click", this.showShapePlane);
 
             // We manually bind Mousetrap keyboardEvents to body so as
@@ -112,6 +112,36 @@ var RoiModalView = Backbone.View.extend({
             "click .roisJumpPage": "roisJumpPage",
             "click .revert_theZ": "revertTheZ",
             "click .revert_theT": "revertTheT",
+            "click .addAllShapesToView": "addAllShapesToView",
+        },
+
+        addAllShapesToView: function() {
+            var $btn = $("button.addAllShapesToView");
+            var btnText = $btn.text();
+            $btn.prop('disabled', true).text("Adding...");
+            // Need setTimeout to allow $btn to update first
+            setTimeout(()=> {
+                var currZ = this.m.get("theZ");
+                var currT = this.m.get("theT");
+                // collection
+                var self = this;
+                var to_add = [];
+                this.Rois.forEach(function(roi) {
+                    roi.shapes.forEach(function(shape) {
+                        var z = shape.get("theZ");
+                        var t = shape.get("theT");
+                        var p = shape.get("points");
+                        var id = shape.get("id");
+                        if ((z === undefined || z == currZ) && (t === undefined || t == currT)) {
+                            to_add.push(shape.toJSON());
+                        }
+                    });
+                });
+                if (to_add.length > 0) {
+                    self.Rois.trigger('shape_add', to_add, true);
+                }
+                $btn.removeProp('disabled').text(btnText);
+            }, 10);
         },
 
         revertTheZ: function() {
@@ -204,18 +234,16 @@ var RoiModalView = Backbone.View.extend({
             }
         },
 
-        addShapeFromOmero: function(args) {
+        addShapesFromOmero: function(shapes, ignore_warning) {
 
-            var shapeJson = args[0],
-                shape;
             // Remove the temp shape
             this.shapeManager.deleteShapesByIds([this.TEMP_SHAPE_ID]);
 
             // Paste (will offset if shape exists)
             var viewport = this.m.getViewportAsRect();
-            shape = this.shapeManager.pasteShapesJson([shapeJson], viewport);
-            if (!shape) {
-                alert("Couldn't add shape outside of current view. Try zooming out.");
+            var newShapes = this.shapeManager.pasteShapesJson(shapes, viewport);
+            if (newShapes.length == 0 && !ignore_warning) {
+                alert("Couldn't add shape outside of current view. Try zooming out in the Preview panel.");
             }
         },
 
