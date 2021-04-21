@@ -138,7 +138,10 @@ var RoiModalView = Backbone.View.extend({
                     });
                 });
                 if (to_add.length > 0) {
-                    self.Rois.trigger('shape_add', to_add, true);
+                    var displayMessage = true;
+                    self.Rois.trigger('shape_add', to_add, displayMessage);
+                } else {
+                    alert("No Shapes found on the current Z / T plane");
                 }
                 $btn.removeProp('disabled').text(btnText);
             }, 10);
@@ -234,16 +237,33 @@ var RoiModalView = Backbone.View.extend({
             }
         },
 
-        addShapesFromOmero: function(shapes, ignore_warning) {
+        addShapesFromOmero: function(shapes, displayMessage) {
 
             // Remove the temp shape
             this.shapeManager.deleteShapesByIds([this.TEMP_SHAPE_ID]);
 
             // Paste (will offset if shape exists)
             var viewport = this.m.getViewportAsRect();
-            var newShapes = this.shapeManager.pasteShapesJson(shapes, viewport);
-            if (newShapes.length == 0 && !ignore_warning) {
-                alert("Couldn't add shape outside of current view. Try zooming out in the Preview panel.");
+            var pastedCount = 0;
+            // Paste 1 at a time, so we know if ANY were successful
+            shapes.forEach((shape) => {
+                var success = this.shapeManager.pasteShapesJson([shape], viewport);
+                if (success) {
+                    pastedCount += 1;
+                }
+            });
+            if (displayMessage) {
+                var pageCount = Math.ceil(this.omeroRoiCount / this.roisPageSize);
+                var message = `Found ${shapes.length} Shapes on the current Z/T plane`
+                message += (pageCount > 1) ? ` from the current page of ROIs.`: '.';
+                if (pastedCount == 0) {
+                    message += ` None of these Shapes were within the current viewport. Try zooming out in the Preview panel.`
+                } else {
+                    message += ` Added ${ pastedCount } Shapes in the current viewport.`;
+                }
+                alert(message);
+            } else if (pastedCount === 0) {
+                alert("Couldn't add Shape outside of current view. Try zooming out in the Preview panel.");
             }
         },
 
