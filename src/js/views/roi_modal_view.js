@@ -137,12 +137,8 @@ var RoiModalView = Backbone.View.extend({
                         }
                     });
                 });
-                if (to_add.length > 0) {
-                    var displayMessage = true;
-                    self.Rois.trigger('shape_add', to_add, displayMessage);
-                } else {
-                    alert("No Shapes found on the current Z / T plane");
-                }
+                var displayMessage = true;
+                self.Rois.trigger('shape_add', to_add, displayMessage);
                 $btn.removeProp('disabled').text(btnText);
             }, 10);
         },
@@ -252,18 +248,29 @@ var RoiModalView = Backbone.View.extend({
                     pastedCount += 1;
                 }
             });
-            if (displayMessage) {
+            if (shapes.length == 0) {
+                figureConfirmDialog("No Shapes found", "No Shapes found on the current Z/T plane", ["OK"]);
+            } else if (displayMessage) {
+                // When using "Add All" ROIs, we give the user a message...
                 var pageCount = Math.ceil(this.omeroRoiCount / this.roisPageSize);
                 var message = `Found ${shapes.length} Shapes on the current Z/T plane`
-                message += (pageCount > 1) ? ` from the current page of ROIs.`: '.';
+                message += (pageCount > 1) ? ` from page ${ this.roisPage + 1} of ROIs.`: '.';
+                var title = "Added ROIs"
                 if (pastedCount == 0) {
-                    message += ` None of these Shapes were within the current viewport. Try zooming out in the Preview panel.`
+                    title = "No ROIs added"
+                    message += ` None of these Shapes were within the image viewport. Try zooming out in the Preview panel.`
                 } else {
-                    message += ` Added ${ pastedCount } Shapes in the current viewport.`;
+                    if (pastedCount === shapes.length) {
+                        message += ` Added all Shapes to the Image.`;
+                    } else {
+                        message += ` Added ${ pastedCount } Shapes that lie within the image viewport.`;
+                    }
                 }
-                alert(message);
+                figureConfirmDialog(title, message, ["OK"]);
             } else if (pastedCount === 0) {
-                alert("Couldn't add Shape outside of current view. Try zooming out in the Preview panel.");
+                // Always show this message if nothing got added
+                figureConfirmDialog("No ROIs added",
+                "Couldn't add Shape outside of the image viewport. Try zooming out in the Preview panel.", ["OK"]);
             }
         },
 
