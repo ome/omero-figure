@@ -277,8 +277,8 @@ var RoiModalView = Backbone.View.extend({
                         message += ` Added ${ pastedCount } Shapes that lie within the image viewport.`;
                     }
                     if (shapeChannelsInactive.length > 0) {
-                        message += ` <br>Shapes linked to inactive channel${shapeChannelsInactive.length === 1 ? '' : 's'}
-                            (${shapeChannelsInactive.map(i => i + 1).join(", ")}) were added, so these channels have been turned ON.`
+                        message += ` <br>Shapes linked to ${shapeChannelsInactive.length === 1 ? 'an inactive channel' : 'inactive channels'}
+                            (${shapeChannelsInactive.map(i => i + 1).join(", ")}) were added, so ${shapeChannelsInactive.length === 1 ? 'this channel has' : 'these channels have'} been turned ON.`
                     }
                 }
                 figureConfirmDialog(title, message, ["OK"]);
