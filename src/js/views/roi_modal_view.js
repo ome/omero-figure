@@ -27,7 +27,7 @@ var RoiModalView = Backbone.View.extend({
             // Then listen for selection events etc coming from RoiLoaderView
             this.Rois = new RoiList();
             this.listenTo(this.Rois, "change:selection", this.showTempShape);  // mouseover shape
-            this.listenTo(this.Rois, "shape_add", this.addShapesFromOmero);
+            this.listenTo(this.Rois, "addShapesFromOmero", this.addShapesFromOmero);
             this.listenTo(this.Rois, "shape_click", this.showShapePlane);
 
             // We manually bind Mousetrap keyboardEvents to body so as
@@ -138,7 +138,7 @@ var RoiModalView = Backbone.View.extend({
                     });
                 });
                 var displayMessage = true;
-                self.Rois.trigger('shape_add', to_add, displayMessage);
+                self.Rois.trigger('addShapesFromOmero', to_add, displayMessage);
                 $btn.removeProp('disabled').text(btnText);
             }, 10);
         },
@@ -234,20 +234,31 @@ var RoiModalView = Backbone.View.extend({
         },
 
         addShapesFromOmero: function(shapes, displayMessage) {
-
+            var active_chs = this.m.get("channels").map((ch, index) => ch.active ? index : "");
             // Remove the temp shape
             this.shapeManager.deleteShapesByIds([this.TEMP_SHAPE_ID]);
 
             // Paste (will offset if shape exists)
             var viewport = this.m.getViewportAsRect();
             var pastedCount = 0;
+            var shapeChannelsInactive = new Set();
             // Paste 1 at a time, so we know if ANY were successful
             shapes.forEach((shape) => {
                 var success = this.shapeManager.pasteShapesJson([shape], viewport);
                 if (success) {
                     pastedCount += 1;
+                    if (shape.theC != undefined && (!active_chs.includes(shape.theC))) {
+                        shapeChannelsInactive.add(shape.theC);
+                    }
                 }
             });
+            // If we've added any Shapes linked to an inactive channel, turn channels on, rerender and message
+            shapeChannelsInactive = [...shapeChannelsInactive];
+            shapeChannelsInactive.forEach(index => {
+                this.m.save_channel(index, 'active', true);
+            });
+            if (shapeChannelsInactive.length > 0) {this.renderImagePlane()}
+            shapeChannelsInactive.sort();
             if (shapes.length == 0) {
                 figureConfirmDialog("No Shapes found", "No Shapes found on the current Z/T plane", ["OK"]);
             } else if (displayMessage) {
@@ -264,6 +275,10 @@ var RoiModalView = Backbone.View.extend({
                         message += ` Added all Shapes to the Image.`;
                     } else {
                         message += ` Added ${ pastedCount } Shapes that lie within the image viewport.`;
+                    }
+                    if (shapeChannelsInactive.length > 0) {
+                        message += ` <br>Shapes linked to inactive channel${shapeChannelsInactive.length === 1 ? '' : 's'}
+                            (${shapeChannelsInactive.map(i => i + 1).join(", ")}) were added, so these channels have been turned ON.`
                     }
                 }
                 figureConfirmDialog(title, message, ["OK"]);
@@ -339,8 +354,11 @@ var RoiModalView = Backbone.View.extend({
 
             var theZ = this.m.get('theZ'),
                 theT = this.m.get('theT');
-            this.model.getSelected().forEach(function(panel){
-
+            this.model.getSelected().forEach(panel => {
+                // In case adding Shapes has activated any channels
+                this.m.get("channels").forEach((ch, index) => {
+                    if (ch.active) {panel.save_channel(index, 'active', true);}
+                });
                 // We use save() to notify undo/redo queue. TODO - fix!
                 panel.save({'shapes': shapesJson, 'theZ': theZ, 'theT': theT});
             });

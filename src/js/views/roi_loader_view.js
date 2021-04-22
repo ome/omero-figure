@@ -39,7 +39,7 @@ var RoiLoaderView = Backbone.View.extend({
             var shapeId = parseInt($tr.attr('data-shapeId'), 10);
             var shape = this.collection.getShape(shapeId);
             var shapeJson = shape.toJSON();
-            this.collection.trigger('shape_add', [shapeJson]);
+            this.collection.trigger('addShapesFromOmero', [shapeJson]);
         }
     },
 
