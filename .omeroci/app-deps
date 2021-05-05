@@ -3,4 +3,5 @@
 set -e
 set -u
 curl -fsSL https://rpm.nodesource.com/setup_16.x | bash -
+sudo yum install nodejs
 npm install -g grunt
