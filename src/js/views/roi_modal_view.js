@@ -277,7 +277,7 @@ var RoiModalView = Backbone.View.extend({
                         message += ` Added ${ pastedCount } Shapes that lie within the image viewport.`;
                     }
                     if (shapeChannelsInactive.length > 0) {
-                        message += ` <br>Shapes linked to ${shapeChannelsInactive.length === 1 ? 'an inactive channel' : 'inactive channels'}
+                        message += ` <br>As shapes linked to ${shapeChannelsInactive.length === 1 ? 'an inactive channel' : 'inactive channels'}
                             (${shapeChannelsInactive.map(i => i + 1).join(", ")}) were added, so ${shapeChannelsInactive.length === 1 ? 'this channel has' : 'these channels have'} been turned ON.`
                     }
                 }
@@ -285,7 +285,7 @@ var RoiModalView = Backbone.View.extend({
             } else if (pastedCount === 0) {
                 // Always show this message if nothing got added
                 figureConfirmDialog("No ROIs added",
-                "Couldn't add Shape outside of the image viewport. Try zooming out in the Preview panel.", ["OK"]);
+                "Could not add a Shape outside of the image viewport. Try zooming out in the Preview panel.", ["OK"]);
             }
         },
 
