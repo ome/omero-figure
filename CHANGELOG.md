@@ -1,3 +1,9 @@
+
+4.5.0 (May 2021)
+----------------
+
+- Support 'Add All ROIs' from OMERO ([#430](https://github.com/ome/omero-figure/pull/430))
+
 4.4.0 (February 2021)
 ----------------------
 
