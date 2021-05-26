@@ -1,3 +1,10 @@
+
+4.5.0 (May 2021)
+----------------
+
+- Support 'Add All ROIs' from OMERO ([#430](https://github.com/ome/omero-figure/pull/430))
+- Update Node.js in OMERO CI testing setup ([#435](https://github.com/ome/omero-figure/pull/435))
+
 4.4.0 (February 2021)
 ----------------------
 
