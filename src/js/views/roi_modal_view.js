@@ -118,6 +118,7 @@ var RoiModalView = Backbone.View.extend({
         addAllShapesToView: function() {
             var $btn = $("button.addAllShapesToView");
             var btnText = $btn.text();
+            var $spinner = $("#add-all-shapes-spinner").show();
             $btn.prop('disabled', true).text("Adding...");
             // Need setTimeout to allow $btn to update first
             setTimeout(()=> {
@@ -140,6 +141,7 @@ var RoiModalView = Backbone.View.extend({
                 var displayMessage = true;
                 self.Rois.trigger('addShapesFromOmero', to_add, displayMessage);
                 $btn.removeProp('disabled').text(btnText);
+                $spinner.hide();
             }, 10);
         },
 

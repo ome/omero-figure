@@ -4,11 +4,12 @@
     <th></th>
     <th style="line-height: 28px;">Z</th>
     <th style="line-height: 28px;">T</th>
-    <th>
+    <th style="position: relative;">
         <button title="Add all shapes on the current Z/T plane within the image viewport" type="button"
             class="btn btn-success btn-sm addAllShapesToView" style="padding: 3px 6px">
         Add All Shapes
         </button>
+        <span id="add-all-shapes-spinner" style="display:none; position:absolute; right:10px; top:9px" class="glyphicon glyphicon-refresh spinner"></span>
     </th>
 </tr>
 <% _.each(rois, function(roi) { %>
