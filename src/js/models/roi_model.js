@@ -28,7 +28,7 @@ var ShapeModel = Backbone.Model.extend({
             }
         });
         // Convert other attributes
-        _.each(["Points", "MarkerEnd", "MarkerStart", "X", "Y", "RadiusX", "RadiusY", "X1", "Y1", "X2", "Y2", "Width", "Height", "TheZ", "TheT"], function(attr) {
+        _.each(["Points", "MarkerEnd", "MarkerStart", "X", "Y", "RadiusX", "RadiusY", "X1", "Y1", "X2", "Y2", "Width", "Height", "TheZ", "TheT", "TheC"], function(attr) {
             if (shape[attr] !== undefined) {
                 shape[lowerFirst(attr)] = shape[attr];
                 delete shape[attr];

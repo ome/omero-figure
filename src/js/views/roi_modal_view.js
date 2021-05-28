@@ -16,7 +16,7 @@ var RoiModalView = Backbone.View.extend({
         // This gets populated when dialog loads
         omeroRoiCount: 0,
         roisLoaded: false,
-        roisPageSize: 500,
+        roisPageSize: 200,
         roisPage: 0,
 
         initialize: function() {
@@ -27,7 +27,7 @@ var RoiModalView = Backbone.View.extend({
             // Then listen for selection events etc coming from RoiLoaderView
             this.Rois = new RoiList();
             this.listenTo(this.Rois, "change:selection", this.showTempShape);  // mouseover shape
-            this.listenTo(this.Rois, "shape_add", this.addShapeFromOmero);
+            this.listenTo(this.Rois, "addShapesFromOmero", this.addShapesFromOmero);
             this.listenTo(this.Rois, "shape_click", this.showShapePlane);
 
             // We manually bind Mousetrap keyboardEvents to body so as
@@ -112,6 +112,37 @@ var RoiModalView = Backbone.View.extend({
             "click .roisJumpPage": "roisJumpPage",
             "click .revert_theZ": "revertTheZ",
             "click .revert_theT": "revertTheT",
+            "click .addAllShapesToView": "addAllShapesToView",
+        },
+
+        addAllShapesToView: function() {
+            var $btn = $("button.addAllShapesToView");
+            var btnText = $btn.text();
+            var $spinner = $("#add-all-shapes-spinner").show();
+            $btn.prop('disabled', true).text("Adding...");
+            // Need setTimeout to allow $btn to update first
+            setTimeout(()=> {
+                var currZ = this.m.get("theZ");
+                var currT = this.m.get("theT");
+                // collection
+                var self = this;
+                var to_add = [];
+                this.Rois.forEach(function(roi) {
+                    roi.shapes.forEach(function(shape) {
+                        var z = shape.get("theZ");
+                        var t = shape.get("theT");
+                        var p = shape.get("points");
+                        var id = shape.get("id");
+                        if ((z === undefined || z == currZ) && (t === undefined || t == currT)) {
+                            to_add.push(shape.toJSON());
+                        }
+                    });
+                });
+                var displayMessage = true;
+                self.Rois.trigger('addShapesFromOmero', to_add, displayMessage);
+                $btn.removeProp('disabled').text(btnText);
+                $spinner.hide();
+            }, 10);
         },
 
         revertTheZ: function() {
@@ -204,18 +235,59 @@ var RoiModalView = Backbone.View.extend({
             }
         },
 
-        addShapeFromOmero: function(args) {
-
-            var shapeJson = args[0],
-                shape;
+        addShapesFromOmero: function(shapes, displayMessage) {
+            var active_chs = this.m.get("channels").map((ch, index) => ch.active ? index : "");
             // Remove the temp shape
             this.shapeManager.deleteShapesByIds([this.TEMP_SHAPE_ID]);
 
             // Paste (will offset if shape exists)
             var viewport = this.m.getViewportAsRect();
-            shape = this.shapeManager.pasteShapesJson([shapeJson], viewport);
-            if (!shape) {
-                alert("Couldn't add shape outside of current view. Try zooming out.");
+            var pastedCount = 0;
+            var shapeChannelsInactive = new Set();
+            // Paste 1 at a time, so we know if ANY were successful
+            shapes.forEach((shape) => {
+                var success = this.shapeManager.pasteShapesJson([shape], viewport);
+                if (success) {
+                    pastedCount += 1;
+                    if (shape.theC != undefined && (!active_chs.includes(shape.theC))) {
+                        shapeChannelsInactive.add(shape.theC);
+                    }
+                }
+            });
+            // If we've added any Shapes linked to an inactive channel, turn channels on, rerender and message
+            shapeChannelsInactive = [...shapeChannelsInactive];
+            shapeChannelsInactive.forEach(index => {
+                this.m.save_channel(index, 'active', true);
+            });
+            if (shapeChannelsInactive.length > 0) {this.renderImagePlane()}
+            shapeChannelsInactive.sort();
+            if (shapes.length == 0) {
+                figureConfirmDialog("No Shapes found", "No Shapes found on the current Z/T plane", ["OK"]);
+            } else if (displayMessage) {
+                // When using "Add All" ROIs, we give the user a message...
+                var pageCount = Math.ceil(this.omeroRoiCount / this.roisPageSize);
+                var message = `Found ${shapes.length} Shapes on the current Z/T plane`
+                message += (pageCount > 1) ? ` from page ${ this.roisPage + 1} of ROIs.`: '.';
+                var title = "Added ROIs"
+                if (pastedCount == 0) {
+                    title = "No ROIs added"
+                    message += ` None of these Shapes were within the image viewport. Try zooming out in the Preview panel.`
+                } else {
+                    if (pastedCount === shapes.length) {
+                        message += ` Added all Shapes to the Image.`;
+                    } else {
+                        message += ` Added ${ pastedCount } Shapes that lie within the image viewport.`;
+                    }
+                    if (shapeChannelsInactive.length > 0) {
+                        message += ` <br>As shapes linked to ${shapeChannelsInactive.length === 1 ? 'an inactive channel' : 'inactive channels'}
+                            (${shapeChannelsInactive.map(i => i + 1).join(", ")}) were added, so ${shapeChannelsInactive.length === 1 ? 'this channel has' : 'these channels have'} been turned ON.`
+                    }
+                }
+                figureConfirmDialog(title, message, ["OK"]);
+            } else if (pastedCount === 0) {
+                // Always show this message if nothing got added
+                figureConfirmDialog("No ROIs added",
+                "Could not add a Shape outside of the image viewport. Try zooming out in the Preview panel.", ["OK"]);
             }
         },
 
@@ -284,8 +356,11 @@ var RoiModalView = Backbone.View.extend({
 
             var theZ = this.m.get('theZ'),
                 theT = this.m.get('theT');
-            this.model.getSelected().forEach(function(panel){
-
+            this.model.getSelected().forEach(panel => {
+                // In case adding Shapes has activated any channels
+                this.m.get("channels").forEach((ch, index) => {
+                    if (ch.active) {panel.save_channel(index, 'active', true);}
+                });
                 // We use save() to notify undo/redo queue. TODO - fix!
                 panel.save({'shapes': shapesJson, 'theZ': theZ, 'theT': theT});
             });
