@@ -16,7 +16,7 @@ var RoiModalView = Backbone.View.extend({
         // This gets populated when dialog loads
         omeroRoiCount: 0,
         roisLoaded: false,
-        roisPageSize: 500,
+        roisPageSize: 200,
         roisPage: 0,
 
         initialize: function() {
