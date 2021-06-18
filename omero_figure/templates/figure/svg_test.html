@@ -138,13 +138,19 @@
         // add data-sizex and data-sizey for converting to base64 via canvas
         return `<g transform="translate(${p.x},${p.y})">
           <image data-sizex="${p.orig_width}" data-sizey="${p.orig_height}" 
-          href="${imgSrc(p)}" style="width: ${p.width}px; height: ${p.height}px;"/>
+          data-href="${imgSrc(p)}"
+          style="width: ${p.width}px; height: ${p.height}px;"/>
           ${labelsSvg(p)}
           ${scalebarSvg(p)}
         </g>`
       });
 
-      return `<svg class="figure" viewBox="0 0 ${f.paper_width} ${f.paper_height}" xmlns="http://www.w3.org/2000/svg">
+      return `<svg class="figure"
+          xmlns:xlink="http://www.w3.org/1999/xlink"
+          xmlns="http://www.w3.org/2000/svg"
+          xmlns:svg="http://www.w3.org/2000/svg"
+          viewBox="0 0 ${f.paper_width} ${f.paper_height}"
+          >
         <style>
         .figure {
             border: solid black 1px;
@@ -171,35 +177,32 @@
         canvas.height = img.dataset.sizey;
         const ctx = canvas.getContext('2d');
         // Set width and height
-        console.log('img href', img.getAttribute('href'));
+        console.log('img href', img.dataset.href);
         console.log('img data-sizex', img.dataset.sizex);
 
         var img1 = new Image();
-        img1.src = img.getAttribute('href');
-        //drawing of the test image - img1
+        img1.src = img.dataset.href;
         img1.onload = function () {
-          //draw background image
           ctx.drawImage(img1, 0, 0);
-          console.log(canvas.toDataURL('image/jpeg'));
+          const imgData = canvas.toDataURL('image/jpeg');
+          console.log("imgData", imgData);
+          // Show the image on the page
+          img.setAttribute('href', imgData);
         };
       }
       // Select the image
-      const img = document.querySelector('#my-image');
       var imgs = document.querySelectorAll("#svg image");
       imgs.forEach(function (img) {
-        img.addEventListener('load', function (event) {
-          console.log('image loaded...', event.currentTarget)
-          const dataUrl = getDataUrl(event.currentTarget);
-          console.log(dataUrl);
-        });
+        getDataUrl(img);
       });
     }
 
     function downloadFigureSvg() {
-      const figureSvg = createFigureSvg();
+      let figureSvg = svgContainer.innerHTML;
+      // Seems that we need xlink:href for valid svg, but setAttribute('xlink:href', data) doesn't work
+      figureSvg = figureSvg.replaceAll(" href=", " xlink:href=");
       const fileName = (figure_json.figureName || "testFigure") + ".svg";
       downloadString(figureSvg, "text/svg", fileName);
-      alert("Downloaded " + fileName);
     }
 
     // On Page loads....
