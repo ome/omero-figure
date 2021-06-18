@@ -1,0 +1,219 @@
+<html>
+
+<body>
+
+  <!-- <textarea style="width: 100%; height: 50px;" id="figure_json_input">
+  </textarea> -->
+
+  <div id="svg">
+  </div>
+
+  <textarea style="width: 100%; height: 70px; position: fixed; bottom: 0" id="figure_svg_output">
+  </textarea>
+
+  <button style="position: fixed; bottom: 5px; right: 5px" id="download_svg">Download svg</button>
+
+  <script>
+    var FIGURE_URL = "{% url 'load_web_figure' file_id %}";
+
+    function downloadString(text, fileType, fileName) {
+      // https://gist.github.com/danallison/3ec9d5314788b337b682
+      var blob = new Blob([text], { type: fileType });
+      var a = document.createElement('a');
+      a.download = fileName;
+      a.href = URL.createObjectURL(blob);
+      a.dataset.downloadurl = [fileType, a.download, a.href].join(':');
+      a.style.display = "none";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(function () { URL.revokeObjectURL(a.href); }, 1500);
+    }
+
+    function imgSrc(panel) {
+      const c = panel.channels.map((ch, i) => {
+        const w = ch.window;
+        return `${ch.active ? '' : '-'}${i + 1}|${w.start}:${w.end}$${ch.color}`
+      }).join(",");
+      return `/webgateway/render_image/${panel.imageId}/${panel.theZ}/${panel.theT}/?c=${c}`;
+    }
+
+    const positions = {
+      "top": {},
+      "bottom": {},
+      "left": {},
+      "leftvert": {},
+      "right": {},
+      "topleft": {},
+      "topright": {},
+      "bottomleft": {},
+      "bottomright": {}
+    }
+    const textStyles = {
+      "top": { "text-anchor": "middle" },
+      "bottom": {},
+      "left": {},
+      "leftvert": { "text-anchor": "middle" },
+      "right": {},
+      "topleft": {},
+      "topright": {},
+      "bottomleft": {},
+      "bottomright": {}
+    }
+
+    function getLabelContainerStyles(pos, panel) {
+      console.log('getLabelContainerStyles', pos)
+      switch (pos) {
+        case 'top':
+          return `transform: translate(${panel.width / 2}px, -5px)`;
+        case 'leftvert':
+          return `transform: rotate(-90deg) translate(-${panel.height / 2}px, -5px)`;
+        default:
+          return ''
+      }
+    }
+
+    function labelsSvg(panel) {
+      return Object.keys(positions).map(pos => {
+        return getLabels(panel, pos);
+      }).join("");
+    }
+
+    function getLabels(panel, pos) {
+      const labs = panel.labels.filter(l => l.position === pos);
+      if (labs.length === 0) return "";
+      return `<g class="${pos}"
+        style="${getLabelContainerStyles(pos, panel)}">
+          ${labs.map((l, i) => labelSvg(l, i)).join("")}
+        </g>`;
+    }
+
+    function labelSvg(label, index) {
+      const style = textStyles[label.position];
+      style.transform = `translate(0, -${index * 20}px)`;
+      style['font-size'] = label.size;
+      return `<text
+        style="fill: #${label.color}; ${Object.keys(style).map(k => k + ':' + style[k]).join('; ')}">
+        ${label.text}
+      </text>`
+    }
+
+    function scalebarSvg(panel) {
+      if (!panel.scalebar || !panel.scalebar.show) return '';
+      if (isNaN(panel.pixel_size_x)) return '';
+      const sb = panel.scalebar;
+      const margin = 8;
+      const sbHeight = 3;
+      const textGap = 5;
+      // TODO: handle & convert units "MICROMETER"
+      const lengthPixels = sb.length / panel.pixel_size_x;
+      const ratioOfImgWidth = lengthPixels / panel.orig_width;
+      const imgDisplayWidth = panel.width * (panel.zoom / 100);
+      const sbWidth = ratioOfImgWidth * imgDisplayWidth;
+      const fontSize = parseInt(sb.font_size);    // can be string!
+      // default coords - bottomright
+      let x = panel.width - margin - sbWidth;
+      let y = panel.height - margin - sbHeight;
+      let txtX = panel.width - margin - (sbWidth / 2);
+      let txtY = panel.height - margin - sbHeight - textGap;
+      if (sb.position.includes("top")) {
+        y = margin;
+        txtY = margin + sbHeight + fontSize;
+      }
+      if (sb.position.includes("left")) {
+        x = margin;
+        txtX = margin + (sbWidth / 2);
+      };
+      const label = `<text x="${txtX}" y="${txtY}" style="fill: #${sb.color}; font-size:${fontSize}px" text-anchor="middle">${sb.length} μm</text>`
+      return `<g>
+        <rect x="${x}" y="${y}" width="${sbWidth}" height="${sbHeight}" style="fill: #${sb.color}" />
+        ${label} 
+      </g>`
+    }
+
+
+    function createFigureSvg() {
+      const f = figure_json;
+      const panels = f.panels.map(p => {
+        // add data-sizex and data-sizey for converting to base64 via canvas
+        return `<g transform="translate(${p.x},${p.y})">
+          <image data-sizex="${p.orig_width}" data-sizey="${p.orig_height}" 
+          href="${imgSrc(p)}" style="width: ${p.width}px; height: ${p.height}px;"/>
+          ${labelsSvg(p)}
+          ${scalebarSvg(p)}
+        </g>`
+      });
+
+      return `<svg class="figure" viewBox="0 0 ${f.paper_width} ${f.paper_height}" xmlns="http://www.w3.org/2000/svg">
+        <style>
+        .figure {
+            border: solid black 1px;
+        }
+        text {
+            font: normal 13px sans-serif;
+        }
+        </style>
+        ${panels}
+      </svg>`
+    }
+
+    function renderSvg() {
+      const figureSvg = createFigureSvg();
+      svgContainer.innerHTML = figureSvg;
+      figure_svg_output.value = figureSvg;
+      // listen for image loads...
+
+      function getDataUrl(img) {
+        // Create canvas
+        const canvas = document.createElement('canvas');
+        // data-sizey
+        canvas.width = img.dataset.sizex;
+        canvas.height = img.dataset.sizey;
+        const ctx = canvas.getContext('2d');
+        // Set width and height
+        console.log('img href', img.getAttribute('href'));
+        console.log('img data-sizex', img.dataset.sizex);
+
+        var img1 = new Image();
+        img1.src = img.getAttribute('href');
+        //drawing of the test image - img1
+        img1.onload = function () {
+          //draw background image
+          ctx.drawImage(img1, 0, 0);
+          console.log(canvas.toDataURL('image/jpeg'));
+        };
+      }
+      // Select the image
+      const img = document.querySelector('#my-image');
+      var imgs = document.querySelectorAll("#svg image");
+      imgs.forEach(function (img) {
+        img.addEventListener('load', function (event) {
+          console.log('image loaded...', event.currentTarget)
+          const dataUrl = getDataUrl(event.currentTarget);
+          console.log(dataUrl);
+        });
+      });
+    }
+
+    function downloadFigureSvg() {
+      const figureSvg = createFigureSvg();
+      const fileName = (figure_json.figureName || "testFigure") + ".svg";
+      downloadString(figureSvg, "text/svg", fileName);
+      alert("Downloaded " + fileName);
+    }
+
+    // On Page loads....
+    const svgContainer = document.getElementById("svg");
+    const figure_svg_output = document.getElementById("figure_svg_output");
+    document.getElementById("download_svg").addEventListener("click", downloadFigureSvg);
+
+    fetch(FIGURE_URL).then(rsp => rsp.json()).then((fj => {
+      figure_json = fj;
+      renderSvg();
+    }));
+
+  </script>
+
+</body>
+
+</html>

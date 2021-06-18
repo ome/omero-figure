@@ -30,6 +30,8 @@ urlpatterns = [
     url(r'^open/$', views.index, name='open_figure'),
     url(r'^file/(?P<file_id>[0-9]+)/$', views.index, name='load_figure'),
 
+    url(r'^svg/(?P<file_id>[0-9]+)/$', views.figure_to_svg, name='figure_to_svg'),
+
     url(r'^imgData/(?P<image_id>[0-9]+)/$', views.img_data_json,
         name='figure_imgData'),
 
