@@ -76,6 +76,11 @@ def get_length_units():
 
 
 @login_required()
+def figure_to_svg(request, file_id=None, conn=None, **kwargs):
+    return render(request, "figure/svg_test.html", {"file_id": file_id})
+
+
+@login_required()
 def index(request, file_id=None, conn=None, **kwargs):
     """
     Single page 'app' for creating a Figure, allowing you to choose images
