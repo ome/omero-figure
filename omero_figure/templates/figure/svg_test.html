@@ -15,6 +15,7 @@
 
   <script>
     var FIGURE_URL = "{% url 'load_web_figure' file_id %}";
+    var MARGIN = 5;
 
     function downloadString(text, fileType, fileName) {
       // https://gist.github.com/danallison/3ec9d5314788b337b682
@@ -49,25 +50,18 @@
       "bottomleft": {},
       "bottomright": {}
     }
-    const textStyles = {
-      "top": { "text-anchor": "middle" },
-      "bottom": {},
-      "left": {},
-      "leftvert": { "text-anchor": "middle" },
-      "right": {},
-      "topleft": {},
-      "topright": {},
-      "bottomleft": {},
-      "bottomright": {}
-    }
 
-    function getLabelContainerStyles(pos, panel) {
-      console.log('getLabelContainerStyles', pos)
+    function getLabelContainerTransform(pos, panel) {
+      console.log('getLabelContainerTransform', pos)
       switch (pos) {
         case 'top':
-          return `transform: translate(${panel.width / 2}px, -5px)`;
+          return `translate(${panel.width / 2}, -${MARGIN})`;
+        case 'topleft':
+          return `translate(${MARGIN}, ${MARGIN})`;
+        case 'bottomleft':
+          return `translate(${MARGIN}, ${panel.height - MARGIN})`;
         case 'leftvert':
-          return `transform: rotate(-90deg) translate(-${panel.height / 2}px, -5px)`;
+          return `rotate(-90) translate(-${panel.height / 2}, -${MARGIN})`;
         default:
           return ''
       }
@@ -81,21 +75,36 @@
 
     function getLabels(panel, pos) {
       const labs = panel.labels.filter(l => l.position === pos);
+      if (isLabelUpPage({position: pos})){
+        labs.reverse();
+      }
       if (labs.length === 0) return "";
-      return `<g class="${pos}"
-        style="${getLabelContainerStyles(pos, panel)}">
+      return `<text class="${pos}"
+        transform="${getLabelContainerTransform(pos, panel)}">
           ${labs.map((l, i) => labelSvg(l, i)).join("")}
-        </g>`;
+        </text>`;
+    }
+
+    function isLabelCorner(label) {
+      return label.position.includes("left") || label.position.includes("right")
+    }
+
+    function isLabelUpPage(label) {
+      return ["top", "bottomleft", "bottomright"].includes(label.position);
     }
 
     function labelSvg(label, index) {
-      const style = textStyles[label.position];
-      style.transform = `translate(0, -${index * 20}px)`;
-      style['font-size'] = label.size;
-      return `<text
+      let transform = "";
+      const dy = isLabelUpPage(label) ? "-1.2em" : "1.2em";
+      const style = {'font-size': label.size}
+      if (label.position == "top") {
+        style['text-anchor'] = "middle";
+      };
+      return `<tspan
+        x="0" dy="${dy}"
         style="fill: #${label.color}; ${Object.keys(style).map(k => k + ':' + style[k]).join('; ')}">
         ${label.text}
-      </text>`
+      </tspan>`
     }
 
     function scalebarSvg(panel) {
@@ -139,7 +148,7 @@
         return `<g transform="translate(${p.x},${p.y})">
           <image data-sizex="${p.orig_width}" data-sizey="${p.orig_height}" 
           data-href="${imgSrc(p)}"
-          style="width: ${p.width}px; height: ${p.height}px;"/>
+          width="${p.width}px" height="${p.height}px"/>
           ${labelsSvg(p)}
           ${scalebarSvg(p)}
         </g>`
