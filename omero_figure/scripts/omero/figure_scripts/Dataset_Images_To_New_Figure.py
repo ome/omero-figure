@@ -1,5 +1,4 @@
 
-import argparse
 import json
 from io import BytesIO
 
@@ -14,6 +13,7 @@ import omero.scripts as scripts
 # Usage: python Dataset_Images_To_New_Figure.py DATASET_ID FIGURE_ID
 
 JSON_FILEANN_NS = "omero.web.figure.json"
+
 
 def save_web_figure(conn, json_data):
     """
@@ -87,7 +87,7 @@ def save_web_figure(conn, json_data):
 
 def dataset_images_to_new_figure(conn, params):
     figure_ids = params["Figure_IDs"]
-    dataset_id = params["IDs"][0]    
+    dataset_id = params["IDs"][0]
 
     # Get Images by Name from Dataset
     dataset = conn.getObject("Dataset", dataset_id)
@@ -133,7 +133,8 @@ def dataset_images_to_new_figure(conn, params):
         # Save new Figure, in the appropriate group
         ann_ids.append(save_web_figure(conn, json_data))
 
-    msg = "Created %s new Figure%s" % (len(ann_ids), "s" if len(ann_ids) else "")
+    msg = "Created %s new Figure%s" % (len(ann_ids),
+                                       "s" if len(ann_ids) else "")
     if failed_to_replace:
         print("Failed to replace %s images" % failed_to_replace)
         msg += ". See info for warnings"

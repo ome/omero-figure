@@ -8,6 +8,7 @@ from omero.rtypes import rstring, rlong, robject
 
 # For an Figure (File Annotation ID) add all Images to a Dataset
 
+
 def images_to_dataset(conn, params):
     figure_ids = params["Figure_IDs"]
     dataset_id = params["IDs"][0]
@@ -17,7 +18,7 @@ def images_to_dataset(conn, params):
         return "Dataset %s not found" % dataset_id, dataset
 
     gid = dataset.getDetails().group.id.val
-    print("Dataset: %s, Group: %s", (dataset.name, gid))    
+    print("Dataset: %s, Group: %s", (dataset.name, gid))
 
     update = conn.getUpdateService()
     conn.SERVICE_OPTS.setOmeroGroup(-1)
@@ -48,8 +49,10 @@ def images_to_dataset(conn, params):
         try:
             update.saveObject(link, conn.SERVICE_OPTS)
             added_count += 1
-        except:
-            print("Failed to link Image %s to Dataset. Link exists or permissions failed" % image_id)
+        except Exception:
+            print("Image %s not linked to Dataset. "
+                  "Link exists or permissions failed"
+                  % image_id)
     return "Added %s images to Dataset" % added_count, dataset
 
 
@@ -72,7 +75,7 @@ def run_script():
         scripts.List(
             "IDs", optional=False, grouping="3",
             description="Dataset ID. Only 1 supported").ofType(rlong(0)),
-        
+
         scripts.List("Figure_IDs", optional=False, grouping="1",
                      description="Figure IDs").ofType(rlong(0)),
     )
@@ -83,7 +86,7 @@ def run_script():
 
         msg, dataset = images_to_dataset(conn, params)
         client.setOutput("Message", rstring(msg))
-        
+
         if dataset is not None:
             client.setOutput("Dataset", robject(dataset._obj))
 
