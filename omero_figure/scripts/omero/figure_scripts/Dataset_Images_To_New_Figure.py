@@ -89,6 +89,9 @@ def dataset_images_to_new_figure(conn, params):
     figure_ids = params["Figure_IDs"]
     dataset_id = params["IDs"][0]
 
+    if len(figure_ids) == 0:
+        return "Enter Figure IDs separated with a comma: '1,2'"
+
     # Get Images by Name from Dataset
     dataset = conn.getObject("Dataset", dataset_id)
     images_by_name = {}
@@ -133,11 +136,13 @@ def dataset_images_to_new_figure(conn, params):
         # Save new Figure, in the appropriate group
         ann_ids.append(save_web_figure(conn, json_data))
 
+    if len(ann_ids) == 0:
+        return "No figures created. See Info log"
     msg = "Created %s new Figure%s" % (len(ann_ids),
                                        "s" if len(ann_ids) else "")
     if failed_to_replace:
         print("Failed to replace %s images" % failed_to_replace)
-        msg += ". See info for warnings"
+        msg += ". See Info for warnings"
     return msg
 
 
@@ -168,6 +173,7 @@ def run_script():
     try:
         conn = BlitzGateway(client_obj=client)
         params = client.getInputs(unwrap=True)
+        print("params", params)
 
         msg = dataset_images_to_new_figure(conn, params)
         client.setOutput("Message", rstring(msg))
