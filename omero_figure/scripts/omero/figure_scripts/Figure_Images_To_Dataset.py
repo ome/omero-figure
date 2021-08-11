@@ -18,11 +18,13 @@ def images_to_dataset(conn, params):
         return "Dataset %s not found" % dataset_id, dataset
 
     gid = dataset.getDetails().group.id.val
-    print("Dataset: %s, Group: %s", (dataset.name, gid))
+    print("Dataset: %s, Group: %s" % (dataset.name, gid))
 
     update = conn.getUpdateService()
     conn.SERVICE_OPTS.setOmeroGroup(-1)
 
+    if len(figure_ids) == 0:
+        return "Enter Figure IDs separated with a comma: '1,2'", dataset
     image_ids = []
     for figure_id in figure_ids:
         file_ann = conn.getObject("FileAnnotation", figure_id)
@@ -36,7 +38,7 @@ def images_to_dataset(conn, params):
 
     image_ids = list(set(image_ids))
     if len(image_ids) == 0:
-        return "No Images found", dataset
+        return "No Images found. Check Info log", dataset
     print("Image IDs: %s" % image_ids)
 
     conn.SERVICE_OPTS.setOmeroGroup(gid)
@@ -83,6 +85,7 @@ def run_script():
     try:
         conn = BlitzGateway(client_obj=client)
         params = client.getInputs(unwrap=True)
+        print("params", params)
 
         msg, dataset = images_to_dataset(conn, params)
         client.setOutput("Message", rstring(msg))
