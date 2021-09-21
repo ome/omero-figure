@@ -448,6 +448,7 @@ def list_web_figures(request, conn=None, **kwargs):
     params.addString('ns', rstring(JSON_FILEANN_NS))
     q = """select new map(obj.id as id,
                 obj.description as desc,
+                o.id as owner_id,
                 o.firstName as firstName,
                 o.lastName as lastName,
                 e.time as time,
@@ -475,6 +476,11 @@ def list_web_figures(request, conn=None, **kwargs):
             'name': unwrap(fa['name']),
             'description': unwrap(fa['desc']),
             'ownerFullName': "%s %s" % (first_name, last_name),
+            'owner': {
+                'id': fa['owner_id'],
+                'firstName': fa['firstName'],
+                'lastName': fa['lastName']
+            },
             'group': {
                 'id': fa['group_id'],
                 'name': fa['group_name']
