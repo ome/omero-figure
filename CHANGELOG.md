@@ -1,3 +1,9 @@
+4.4.1 (October 2021)
+--------------------
+
+- Security vulnerability fixes for
+  [2021-SV3](https://www.openmicroscopy.org/security/advisories/2021-SV3)
+
 4.4.0 (February 2021)
 ----------------------
 
