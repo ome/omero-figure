@@ -76,6 +76,15 @@ def get_length_units():
 
 
 @login_required()
+def pdf(request, file_id, conn=None, **kwargs):
+    """
+    Figure as PDF
+    """
+    context = {'file_id': file_id}
+    return render(request, "figure/pdf.html", context)
+
+
+@login_required()
 def index(request, file_id=None, conn=None, **kwargs):
     """
     Single page 'app' for creating a Figure, allowing you to choose images
@@ -157,7 +166,7 @@ def render_scaled_region(request, iid, z, t, conn=None, **kwargs):
     region = request.GET.get('region')
     logger.debug("Rendering region: %s, Image: %s" % (region, iid))
 
-    x, y, width, height = [float(r) for r in region.split(',')]
+    x, y, width, height = [int(r) for r in region.split(',')]
     max_size = request.GET.get('max_size', 2000)
     max_size = int(max_size)
 
