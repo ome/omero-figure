@@ -80,43 +80,10 @@ const FigureExport = FigureModel.extend({
             l.text = labelText;
             let pos = l['position'];
             l['size'] = parseInt(l['size'])   // make sure 'size' is number
-            // If page is black and label is black, make label white
-            let page_color = this.get('page_color', 'ffffff').toLowerCase();
-            let label_color = l['color'].toLowerCase();
-            let label_on_page = ['left', 'right', 'top', 'bottom', 'leftvert'].includes(pos);
-            if (label_on_page) {
-                if (label_color == '000000' && page_color == '000000') {
-                    l['color'] = 'ffffff';
-                }
-                if (label_color == 'ffffff' && page_color == 'ffffff') {
-                    l['color'] = '000000'
-                }
-            }
             if (Object.keys(positions).includes(pos)) {
                 positions[pos].push(l);
             }
         });
-
-        let doc = this.doc;
-        console.log('positions', positions);
-
-        function draw_lab(label, lx, ly, options = {}) {
-            label_h = label['size']
-            color = label['color']
-            red = parseInt(color[0] + color[1], 16)
-            green = parseInt(color[2] + color[3], 16)
-            blue = parseInt(color[4] + color[5], 16)
-            fontsize = label['size']
-
-            doc.setTextColor(red, green, blue)
-            text = label['text']
-
-            console.log("draw_lab", text, fontsize, { red, green, blue }, lx, ly)
-            doc.setFontSize(parseInt(fontsize * FONT_IN_PT));
-            doc.text(text, lx, ly, options);
-            // self.draw_text(text, lx, ly, fontsize, rgb, align = align)
-            return label_h
-        }
 
         for (const [key, labels] of Object.entries(positions)) {
             // console.log(key, labels);
@@ -125,8 +92,8 @@ const FigureExport = FigureModel.extend({
                 let lx = x + spacer;
                 let ly = y + spacer;
 
-                labels.forEach(function (l) {
-                    label_h = draw_lab(l, lx, ly, { baseline: "hanging" })
+                labels.forEach(l => {
+                    label_h = this.draw_lab(l, lx, ly, { baseline: "hanging" })
                     ly += label_h + 7;
                 });
             } else if (key == 'top') {
@@ -134,8 +101,8 @@ const FigureExport = FigureModel.extend({
                 let ly = y - spacer - 2;
 
                 labels.reverse();
-                labels.forEach(function (l) {
-                    label_h = draw_lab(l, lx, ly, { align: "center" });
+                labels.forEach(l => {
+                    label_h = this.draw_lab(l, lx, ly, { align: "center" });
                     ly -= (label_h + spacer);
                 });
             } else if (key == 'left') {
@@ -144,26 +111,60 @@ const FigureExport = FigureModel.extend({
                 let total_h = labels.reduce((height, label) => height + label.size, 0);
                 total_h += spacer * (labels.length - 1);
                 let ly = y + (height - total_h) / 2;
-                labels.forEach(function (l) {
-                    label_h = draw_lab(l, lx, ly, { align: "right", baseline: "hanging" });
+                labels.forEach(l => {
+                    label_h = this.draw_lab(l, lx, ly, { align: "right", baseline: "hanging" });
                     ly += label_h + spacer;
                 });
             } else if (key == "leftvert") {
                 let lx = x - spacer;
                 let ly = y + (height / 2);
 
-                // We don't need a cell, but it gives us getTextDimensions()
-                let cell = doc.cell(0, 0, 1, 1, "");
-
                 labels.reverse();
-                labels.forEach(function (l) {
-                    doc.setFontSize(parseInt(l.size * FONT_IN_PT));     // so that we get right dimensions
-                    let text_half_width = cell.getTextDimensions(l.text).w / 2;
-                    label_h = draw_lab(l, lx, ly + text_half_width, { align: "left", angle: 90 },);
+                labels.forEach(l => {
+                    let text_half_width = this.getTextDimensions(l.text, l.size).w / 2;
+                    label_h = this.draw_lab(l, lx, ly + text_half_width, { align: "left", angle: 90 },);
                     lx -= (label_h + spacer);
                 });
             }
         }
+    },
+
+    draw_lab: function(label, lx, ly, options = {}) {
+
+        // If page is black and label is black, make label white
+        let page_color = this.get('page_color', 'ffffff').toLowerCase();
+        let color = label.color.toLowerCase();
+        let label_on_page = ['left', 'right', 'top', 'bottom', 'leftvert'].includes(label.position);
+        if (label_on_page) {
+            if (color == '000000' && page_color == '000000') {
+                color = 'ffffff';
+            } else if (color == 'ffffff' && page_color == 'ffffff') {
+                color = '000000'
+            }
+        }
+
+        label_h = label['size']
+        red = parseInt(color[0] + color[1], 16)
+        green = parseInt(color[2] + color[3], 16)
+        blue = parseInt(color[4] + color[5], 16)
+        fontsize = label['size']
+
+        this.doc.setTextColor(red, green, blue)
+        text = label['text']
+
+        this.doc.setFontSize(parseInt(fontsize * FONT_IN_PT));
+        this.doc.text(text, lx, ly, options);
+        // self.draw_text(text, lx, ly, fontsize, rgb, align = align)
+        return label_h
+    },
+
+    getTextDimensions: function(text, fontSize) {
+        // We don't need a cell, but it gives us getTextDimensions()
+        if (!this.cell) {
+            this.cell = this.doc.cell(0, 0, 1, 1, "");
+        }
+        this.doc.setFontSize(parseInt(fontSize * FONT_IN_PT));     // so that we get right dimensions
+        return this.cell.getTextDimensions(text);
     }
 
 });
