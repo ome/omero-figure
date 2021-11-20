@@ -562,7 +562,7 @@
             return this.get('orig_width') * this.get('orig_height') > MAX_PLANE_SIZE;
         },
 
-        get_img_src: function(force_no_padding) {
+        get_img_src: function(force_no_padding, render_region) {
             var chs = this.get('channels');
             var cStrings = chs.map(function(c, i){
                 return (c.active ? '' : '-') + (1+i) + "|" + c.window.start + ":" + c.window.end + "$" + c.color;
@@ -585,7 +585,7 @@
 
             // If BIG image, render scaled region
             var region = "";
-            if (this.is_big_image()) {
+            if (this.is_big_image() || render_region) {
                 baseUrl = BASE_WEBFIGURE_URL + 'render_scaled_region/';
                 var rect = this.getViewportAsRect();
                 // Render a region that is 1.5 x larger

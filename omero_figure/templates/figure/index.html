@@ -1050,8 +1050,8 @@
     <script src="{% static 'figure/templates.js' %}?version={{ version }}"></script>
 
     <!-- static/figure/js/ files are concatenated with '$ grunt concat' into static/figure.js -->
-    <script type="text/javascript" src="{% static 'figure/figure.js' %}?version={{ version }}"></script>
-
+    <script type="text/javascript" src="{% static 'figure/figure_models.js' %}?version={{ version }}"></script>
+    <script type="text/javascript" src="{% static 'figure/figure_views.js' %}?version={{ version }}"></script>
 </body>
 
 </html>

@@ -24,30 +24,6 @@ $(function(){
     window.FigureColorPicker = new ColorPickerView();
     window.FigureLutPicker = new LutPickerView();
 
-    // Override 'Backbone.sync'...
-    Backbone.ajaxSync = Backbone.sync;
-
-    // TODO: - Use the undo/redo queue instead of sync to trigger figureModel.set("unsaved", true);
-
-    // If syncOverride, then instead of actually trying to Save via ajax on model.save(attr, value)
-    // We simply set the 'unsaved' flag on the figureModel.
-    // This works for FigureModel and also for Panels collection.
-    Backbone.getSyncMethod = function(model) {
-        if(model.syncOverride || (model.collection && model.collection.syncOverride))
-        {
-            return function(method, model, options, error) {
-                figureModel.set("unsaved", true);
-            };
-        }
-        return Backbone.ajaxSync;
-    };
-
-    // Override 'Backbone.sync' to default to localSync,
-    // the original 'Backbone.sync' is still available in 'Backbone.ajaxSync'
-    Backbone.sync = function(method, model, options, error) {
-        return Backbone.getSyncMethod(model).apply(this, [method, model, options, error]);
-    };
-
 
     var view = new FigureView( {model: figureModel});   // uiState: uiState
     var svgView = new SvgView( {model: figureModel});

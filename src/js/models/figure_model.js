@@ -37,6 +37,30 @@
             // wrap selection notification in a 'debounce', so that many rapid
             // selection changes only trigger a single re-rendering 
             this.notifySelectionChange = _.debounce( this.notifySelectionChange, 10);
+
+            // Override 'Backbone.sync'...
+            Backbone.ajaxSync = Backbone.sync;
+
+            // TODO: - Use the undo/redo queue instead of sync to trigger figureModel.set("unsaved", true);
+
+            // If syncOverride, then instead of actually trying to Save via ajax on model.save(attr, value)
+            // We simply set the 'unsaved' flag on the figureModel.
+            // This works for FigureModel and also for Panels collection.
+            const figModel = this;
+            Backbone.getSyncMethod = function (model) {
+                if (model.syncOverride || (model.collection && model.collection.syncOverride)) {
+                    return function (method, model, options, error) {
+                        figModel.set("unsaved", true);
+                    };
+                }
+                return Backbone.ajaxSync;
+            };
+
+            // Override 'Backbone.sync' to default to localSync,
+            // the original 'Backbone.sync' is still available in 'Backbone.ajaxSync'
+            Backbone.sync = function (method, model, options, error) {
+                return Backbone.getSyncMethod(model).apply(this, [method, model, options, error]);
+            };
         },
 
         syncOverride: function(method, model, options, error) {
@@ -53,6 +77,10 @@
                 data.fileId = fileId;
                 self.load_from_JSON(data);
                 self.set('unsaved', false);
+
+                if (success) {
+                    success();
+                }
             });
         },
 
