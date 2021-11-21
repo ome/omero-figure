@@ -86,20 +86,40 @@ const FigureExport = FigureModel.extend({
         });
 
         for (const [key, labels] of Object.entries(positions)) {
-            // console.log(key, labels);
 
             if (key == 'topleft') {
                 let lx = x + spacer;
                 let ly = y + spacer;
-
                 labels.forEach(l => {
                     label_h = this.draw_lab(l, lx, ly, { baseline: "hanging" })
                     ly += label_h + 7;
                 });
+            } else if(key == 'topright') {
+                let lx = x + width - spacer;
+                let ly = y + spacer;
+                labels.forEach(l => {
+                    label_h = this.draw_lab(l, lx, ly, { baseline: "hanging", align: "right" })
+                    ly += label_h + 7;
+                });
+            } else if (key == 'bottomright') {
+                let lx = x + width - spacer;
+                let ly = y + height - spacer;
+                labels.reverse();
+                labels.forEach(l => {
+                    label_h = this.draw_lab(l, lx, ly, { align: "right" })
+                    ly -= label_h + 7;
+                });
+            } else if (key == 'bottomleft') {
+                let lx = x + spacer;
+                let ly = y + height - spacer;
+                labels.reverse();
+                labels.forEach(l => {
+                    label_h = this.draw_lab(l, lx, ly, {})
+                    ly -= label_h + 7;
+                });
             } else if (key == 'top') {
                 let lx = x + (width / 2);
                 let ly = y - spacer - 2;
-
                 labels.reverse();
                 labels.forEach(l => {
                     label_h = this.draw_lab(l, lx, ly, { align: "center" });
@@ -107,7 +127,6 @@ const FigureExport = FigureModel.extend({
                 });
             } else if (key == 'left') {
                 let lx = x - spacer;
-                spacer = 5;
                 let total_h = labels.reduce((height, label) => height + label.size, 0);
                 total_h += spacer * (labels.length - 1);
                 let ly = y + (height - total_h) / 2;
@@ -115,15 +134,30 @@ const FigureExport = FigureModel.extend({
                     label_h = this.draw_lab(l, lx, ly, { align: "right", baseline: "hanging" });
                     ly += label_h + spacer;
                 });
+            } else if (key == 'right') {
+                let lx = x + width + spacer;
+                let total_h = labels.reduce((height, label) => height + label.size, 0);
+                total_h += spacer * (labels.length - 1);
+                let ly = y + (height - total_h) / 2;
+                labels.forEach(l => {
+                    label_h = this.draw_lab(l, lx, ly, { baseline: "hanging" });
+                    ly += label_h + spacer;
+                });
             } else if (key == "leftvert") {
-                let lx = x - spacer;
+                let lx = x - 10;
                 let ly = y + (height / 2);
-
                 labels.reverse();
                 labels.forEach(l => {
                     let text_half_width = this.getTextDimensions(l.text, l.size).w / 2;
                     label_h = this.draw_lab(l, lx, ly + text_half_width, { align: "left", angle: 90 },);
                     lx -= (label_h + spacer);
+                });
+            } else if (key == "bottom") {
+                let lx = x + (width / 2);
+                let ly = y + height + spacer;
+                labels.forEach(l => {
+                    label_h = this.draw_lab(l, lx, ly, { align: "center", baseline: "hanging" });
+                    ly += (label_h + spacer);
                 });
             }
         }
