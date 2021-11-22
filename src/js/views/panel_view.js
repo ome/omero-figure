@@ -103,14 +103,7 @@
             // update length of scalebar
             var sb = this.model.get('scalebar');
             if (sb && sb.show) {
-                // this.$scalebar.css('width':);
-                var physical_length = sb.length;
-                // convert units
-                var pixel_unit = this.model.get('pixel_size_x_unit');
-                var scalebar_unit = sb.units;
-                var convert_factor = LENGTH_UNITS[scalebar_unit].microns / LENGTH_UNITS[pixel_unit].microns;
-                var sb_pixels = convert_factor * physical_length / this.model.get('pixel_size_x');
-                var sb_width = panel_scale * sb_pixels;
+                var sb_width = this.model.get_scalebar_display_length();
                 this.$scalebar.css('width', sb_width);
             }
         },

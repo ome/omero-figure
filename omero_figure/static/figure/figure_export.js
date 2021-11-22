@@ -28,7 +28,9 @@ const FigureExport = FigureModel.extend({
 
             this.doc.addImage(imgSrc, "JPEG", x, y, width, height);
 
-            this.draw_labels(panel);
+            this.drawLabels(panel);
+
+            this.drawScalebar(panel);
         });
 
         return this.doc.output('datauristring');
@@ -47,7 +49,7 @@ const FigureExport = FigureModel.extend({
         return label.text;
     },
 
-    draw_labels: function (panel, page) {
+    drawLabels: function (panel, page) {
         // Add the panel labels to the page.
         // Here we calculate the position of labels but delegate
         // to self.draw_text() to actually place the labels on PDF / TIFF
@@ -91,14 +93,14 @@ const FigureExport = FigureModel.extend({
                 let lx = x + spacer;
                 let ly = y + spacer;
                 labels.forEach(l => {
-                    label_h = this.draw_lab(l, lx, ly, { baseline: "hanging" })
+                    label_h = this.drawLab(l, lx, ly, { baseline: "hanging" })
                     ly += label_h + 7;
                 });
             } else if(key == 'topright') {
                 let lx = x + width - spacer;
                 let ly = y + spacer;
                 labels.forEach(l => {
-                    label_h = this.draw_lab(l, lx, ly, { baseline: "hanging", align: "right" })
+                    label_h = this.drawLab(l, lx, ly, { baseline: "hanging", align: "right" })
                     ly += label_h + 7;
                 });
             } else if (key == 'bottomright') {
@@ -106,7 +108,7 @@ const FigureExport = FigureModel.extend({
                 let ly = y + height - spacer;
                 labels.reverse();
                 labels.forEach(l => {
-                    label_h = this.draw_lab(l, lx, ly, { align: "right" })
+                    label_h = this.drawLab(l, lx, ly, { align: "right" })
                     ly -= label_h + 7;
                 });
             } else if (key == 'bottomleft') {
@@ -114,7 +116,7 @@ const FigureExport = FigureModel.extend({
                 let ly = y + height - spacer;
                 labels.reverse();
                 labels.forEach(l => {
-                    label_h = this.draw_lab(l, lx, ly, {})
+                    label_h = this.drawLab(l, lx, ly, {})
                     ly -= label_h + 7;
                 });
             } else if (key == 'top') {
@@ -122,7 +124,7 @@ const FigureExport = FigureModel.extend({
                 let ly = y - spacer - 2;
                 labels.reverse();
                 labels.forEach(l => {
-                    label_h = this.draw_lab(l, lx, ly, { align: "center" });
+                    label_h = this.drawLab(l, lx, ly, { align: "center" });
                     ly -= (label_h + spacer);
                 });
             } else if (key == 'left') {
@@ -131,7 +133,7 @@ const FigureExport = FigureModel.extend({
                 total_h += spacer * (labels.length - 1);
                 let ly = y + (height - total_h) / 2;
                 labels.forEach(l => {
-                    label_h = this.draw_lab(l, lx, ly, { align: "right", baseline: "hanging" });
+                    label_h = this.drawLab(l, lx, ly, { align: "right", baseline: "hanging" });
                     ly += label_h + spacer;
                 });
             } else if (key == 'right') {
@@ -140,7 +142,7 @@ const FigureExport = FigureModel.extend({
                 total_h += spacer * (labels.length - 1);
                 let ly = y + (height - total_h) / 2;
                 labels.forEach(l => {
-                    label_h = this.draw_lab(l, lx, ly, { baseline: "hanging" });
+                    label_h = this.drawLab(l, lx, ly, { baseline: "hanging" });
                     ly += label_h + spacer;
                 });
             } else if (key == "leftvert") {
@@ -149,21 +151,21 @@ const FigureExport = FigureModel.extend({
                 labels.reverse();
                 labels.forEach(l => {
                     let text_half_width = this.getTextDimensions(l.text, l.size).w / 2;
-                    label_h = this.draw_lab(l, lx, ly + text_half_width, { align: "left", angle: 90 },);
+                    label_h = this.drawLab(l, lx, ly + text_half_width, { align: "left", angle: 90 },);
                     lx -= (label_h + spacer);
                 });
             } else if (key == "bottom") {
                 let lx = x + (width / 2);
                 let ly = y + height + spacer;
                 labels.forEach(l => {
-                    label_h = this.draw_lab(l, lx, ly, { align: "center", baseline: "hanging" });
+                    label_h = this.drawLab(l, lx, ly, { align: "center", baseline: "hanging" });
                     ly += (label_h + spacer);
                 });
             }
         }
     },
 
-    draw_lab: function(label, lx, ly, options = {}) {
+    drawLab: function(label, lx, ly, options = {}) {
 
         // If page is black and label is black, make label white
         let page_color = this.get('page_color', 'ffffff').toLowerCase();
@@ -177,19 +179,14 @@ const FigureExport = FigureModel.extend({
             }
         }
 
-        label_h = label['size']
-        red = parseInt(color[0] + color[1], 16)
-        green = parseInt(color[2] + color[3], 16)
-        blue = parseInt(color[4] + color[5], 16)
-        fontsize = label['size']
+        let red = parseInt(color[0] + color[1], 16);
+        let green = parseInt(color[2] + color[3], 16);
+        let blue = parseInt(color[4] + color[5], 16);
 
-        this.doc.setTextColor(red, green, blue)
-        text = label['text']
-
-        this.doc.setFontSize(parseInt(fontsize * FONT_IN_PT));
-        this.doc.text(text, lx, ly, options);
-        // self.draw_text(text, lx, ly, fontsize, rgb, align = align)
-        return label_h
+        this.doc.setTextColor(red, green, blue);
+        this.doc.setFontSize(parseInt(label.size * FONT_IN_PT));
+        this.doc.text(label.text, lx, ly, options);
+        return label.size
     },
 
     getTextDimensions: function(text, fontSize) {
@@ -199,6 +196,91 @@ const FigureExport = FigureModel.extend({
         }
         this.doc.setFontSize(parseInt(fontSize * FONT_IN_PT));     // so that we get right dimensions
         return this.cell.getTextDimensions(text);
-    }
+    },
 
+    drawScalebar: function(panel, region_width, page) {
+        // Add the scalebar to the page.
+        // Here we calculate the position of scalebar but delegate
+        // to self.draw_line() and self.draw_text() to actually place
+        // the scalebar and label on PDF/ TIFF
+        let x = panel.get('x');
+        let y = panel.get('y');
+        let width = panel.get('width');
+        let height = panel.get('height');
+        let pixel_size_x = panel.get('pixel_size_x');
+
+        // Handle page offsets
+        // x = x - page['x']
+        // y = y - page['y']
+        console.log("pixel_size_x", pixel_size_x)
+        const scalebar = panel.get('scalebar');
+        console.log("scalebar", scalebar);
+        if (!scalebar || !scalebar.show) return;
+
+        if (!pixel_size_x || pixel_size_x <= 0){
+            console.log("Can't show scalebar - pixel_size_x is not defined for panel");
+            return;
+        }
+
+        let spacer = 0.05 * Math.max(height, width);
+
+        let color = scalebar.color;
+        let red = parseInt(color[0] + color[1], 16);
+        let green = parseInt(color[2] + color[3], 16);
+        let blue = parseInt(color[4] + color[5], 16);
+
+        let position = scalebar.position || 'bottomright';
+        // let align = 'left';
+        let lx, ly;
+
+        let sbLength = panel.get_scalebar_display_length();
+        const SB_THICKNESS = 3;
+        let sb_half = SB_THICKNESS / 2;
+
+        if (position == 'topleft'){
+            lx = x + spacer
+            ly = y + spacer + sb_half;
+        } else if (position == 'topright'){
+            lx = x + width - sbLength - spacer
+            ly = y + spacer + sb_half
+            align = "right"
+        } else if (position == 'bottomleft') {
+            lx = x + spacer
+            ly = y + height - spacer - sb_half
+        } else if (position == 'bottomright') {
+            lx = x + width - sbLength - spacer
+            ly = y + height - spacer - sb_half
+            align = "right"
+        }
+
+        console.log("LENGTH", sbLength);
+
+        this.doc.setDrawColor(red, green, blue);
+        this.doc.setLineWidth(SB_THICKNESS);
+        this.doc.line(lx, ly, lx + sbLength, ly);
+
+        // if 'show_label' in sb and sb['show_label']:
+        // symbol = u"\u00B5m"
+        // if 'pixel_size_x_symbol' in panel:
+        //     symbol = panel['pixel_size_x_symbol']
+        // if scalebar_unit and scalebar_unit in unit_symbols:
+        // symbol = unit_symbols[scalebar_unit]['symbol']
+        // label = "%s %s" % (sb['length'], symbol)
+        // font_size = 10
+        // try:
+        // font_size = int(sb.get('font_size'))
+        //             except Exception:
+        // pass
+
+        //             # For 'bottom' scalebar, put label above
+        // if 'bottom' in position:
+        //     ly = ly - font_size
+        // else:
+        // ly = ly + 5
+
+        // self.draw_text(
+        //     label, (lx + lx_end) / 2, ly, font_size, (red, green, blue),
+        //     align = "center")
+
+    }
 });

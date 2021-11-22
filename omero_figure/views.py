@@ -80,7 +80,10 @@ def pdf(request, file_id, conn=None, **kwargs):
     """
     Figure as PDF
     """
-    context = {'file_id': file_id}
+    context = {
+        'file_id': file_id,
+        'lengthUnits': json.dumps(get_length_units())
+    }
     return render(request, "figure/pdf.html", context)
 
 

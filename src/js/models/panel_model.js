@@ -147,6 +147,25 @@
             this.save('scalebar', sb);
         },
 
+        get_scalebar_display_length: function() {
+            var sb = this.get('scalebar');
+            if (sb && sb.show) {
+                var zoom = this.get('zoom');
+                var w = this.get('width');
+                var h = this.get('height');
+                var svg_css = this.get_vp_full_plane_css(zoom, w, h);
+                var panel_scale = svg_css.width / this.get('orig_width');
+                var physical_length = sb.length;
+                // convert units
+                var pixel_unit = this.get('pixel_size_x_unit');
+                var scalebar_unit = sb.units;
+                var convert_factor = LENGTH_UNITS[scalebar_unit].microns / LENGTH_UNITS[pixel_unit].microns;
+                var sb_pixels = convert_factor * physical_length / this.get('pixel_size_x');
+                var sb_width = panel_scale * sb_pixels;
+                return sb_width;
+            }
+        },
+
         // Simple checking whether shape is in viewport (x, y, width, height)
         // Return true if any of the points in shape are within viewport.
         is_shape_in_viewport: function(shape, viewport) {
