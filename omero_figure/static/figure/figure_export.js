@@ -5,9 +5,6 @@ const FigureExport = FigureModel.extend({
 
     exportPdf: function () {
 
-        console.log("exportPdf", this.panels.length);
-
-        console.log(this.get("paper_width"));
         this.doc = new jspdf.jsPDF({
             format: [this.get("paper_width"), this.get("paper_height")]
         });
@@ -198,11 +195,8 @@ const FigureExport = FigureModel.extend({
         return this.cell.getTextDimensions(text);
     },
 
-    drawScalebar: function(panel, region_width, page) {
+    drawScalebar: function(panel, page) {
         // Add the scalebar to the page.
-        // Here we calculate the position of scalebar but delegate
-        // to self.draw_line() and self.draw_text() to actually place
-        // the scalebar and label on PDF/ TIFF
         let x = panel.get('x');
         let y = panel.get('y');
         let width = panel.get('width');
@@ -212,9 +206,7 @@ const FigureExport = FigureModel.extend({
         // Handle page offsets
         // x = x - page['x']
         // y = y - page['y']
-        console.log("pixel_size_x", pixel_size_x)
         const scalebar = panel.get('scalebar');
-        console.log("scalebar", scalebar);
         if (!scalebar || !scalebar.show) return;
 
         if (!pixel_size_x || pixel_size_x <= 0){
@@ -243,44 +235,45 @@ const FigureExport = FigureModel.extend({
         } else if (position == 'topright'){
             lx = x + width - sbLength - spacer
             ly = y + spacer + sb_half
-            align = "right"
         } else if (position == 'bottomleft') {
             lx = x + spacer
             ly = y + height - spacer - sb_half
         } else if (position == 'bottomright') {
             lx = x + width - sbLength - spacer
             ly = y + height - spacer - sb_half
-            align = "right"
         }
-
-        console.log("LENGTH", sbLength);
 
         this.doc.setDrawColor(red, green, blue);
         this.doc.setLineWidth(SB_THICKNESS);
         this.doc.line(lx, ly, lx + sbLength, ly);
 
-        // if 'show_label' in sb and sb['show_label']:
-        // symbol = u"\u00B5m"
-        // if 'pixel_size_x_symbol' in panel:
-        //     symbol = panel['pixel_size_x_symbol']
-        // if scalebar_unit and scalebar_unit in unit_symbols:
-        // symbol = unit_symbols[scalebar_unit]['symbol']
-        // label = "%s %s" % (sb['length'], symbol)
-        // font_size = 10
-        // try:
-        // font_size = int(sb.get('font_size'))
-        //             except Exception:
-        // pass
+        if (scalebar.show_label) {
+            let units = scalebar.units;
+            let symbol = "µm";
+            if (panel.pixel_size_x_symbol) {
+                symbol = panel.pixel_size_x_symbol;
+            }
+            if (LENGTH_UNITS[units]) {
+                symbol = LENGTH_UNITS[units].symbol;
+            }
+            label = `${scalebar.length} ${symbol}`;
+            font_size = 10
+            f_size = parseInt(scalebar.font_size)
+            if (!isNaN(f_size)) {
+                font_size = f_size;
+            }
 
-        //             # For 'bottom' scalebar, put label above
-        // if 'bottom' in position:
-        //     ly = ly - font_size
-        // else:
-        // ly = ly + 5
+            let options = { align: "center" }
+            // For 'bottom' scalebar, put label above
+            if (position.includes("bottom")) {
+                ly = ly - 5 - SB_THICKNESS;
+            } else {
+                ly = ly + 5;
+                options.baseline = "hanging";
+            }
+            lx += (sbLength/2);
 
-        // self.draw_text(
-        //     label, (lx + lx_end) / 2, ly, font_size, (red, green, blue),
-        //     align = "center")
-
+            this.drawLab({ text: label, size: font_size, color: scalebar.color}, lx, ly, options)
+        }
     }
 });
