@@ -3,18 +3,15 @@ const FONT_IN_PT = 2.83465;
 
 const FigureExport = FigureModel.extend({
 
-    exportPdf: function () {
+    exportPdf: function (progressCallback) {
 
         this.doc = new jspdf.jsPDF({
             format: [this.get("paper_width"), this.get("paper_height")]
         });
 
-        // doc.setFontSize(40);
-        // doc.text("Octonyan loves jsPDF", 35, 25);
+        const panelCount = this.panels.length;
 
-        // doc.text("test...", 10, 10);
-
-        this.panels.forEach(panel => {
+        this.panels.forEach((panel, index) => {
 
             let imgSrc = panel.get_img_src(true, true);
 
@@ -28,6 +25,8 @@ const FigureExport = FigureModel.extend({
             this.drawLabels(panel);
 
             this.drawScalebar(panel);
+
+            progressCallback(100 * (index + 1)/panelCount);
         });
 
         return this.doc.output('datauristring');
