@@ -31,7 +31,7 @@ urlpatterns = [
     url(r'^file/(?P<file_id>[0-9]+)/$', views.index, name='load_figure'),
 
     # figure as PDF
-    url(r'^pdf/(?P<file_id>[0-9]+)/$', views.pdf, name='load_figure_pdf'),
+    url(r'^file/(?P<file_id>[0-9]+)/pdf/$', views.pdf, name='load_figure_pdf'),
 
     url(r'^imgData/(?P<image_id>[0-9]+)/$', views.img_data_json,
         name='figure_imgData'),
