@@ -14,8 +14,7 @@
 
     <div style="margin: auto; width:fit-content; padding:15%; text-align: center;">
         <h2 style="font-family: Arial, Helvetica, sans-serif;">Generating PDF...</h2>
-        <progress id="progress" max="100" value="0" style="width:300px;"></progress>
-        <span id="progressValue"></span>
+        <img src="{% static 'figure/images/spinner_big.gif' %}"/>
     </div>
 
 </body>
@@ -37,7 +36,7 @@
         console.log("Progress", percent);
         // This gets called during export, but the UI doesn't change
         // possibly because the thread is too busy with the export
-        document.getElementById("progress").value = percent;
+        // document.getElementById("progress").value = percent;
     }
 
     figureExport.load_from_OMERO(FILE_ID, function () {
