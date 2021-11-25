@@ -84,7 +84,7 @@
             });
         },
 
-        load_from_JSON: function(data) {
+        load_from_JSON: function(data, success) {
             var self = this;
 
             // bring older files up-to-date
@@ -123,6 +123,9 @@
             // wait for undo/redo to handle above, then...
             setTimeout(function() {
                 self.trigger("reset_undo_redo");
+                if (success) {
+                    success();
+                }
             }, 50);
         },
 

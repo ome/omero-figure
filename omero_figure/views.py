@@ -19,6 +19,7 @@
 from django.http import Http404, HttpResponse, \
     JsonResponse
 from django.views.decorators.http import require_POST
+from django.views.decorators.clickjacking import xframe_options_exempt
 from django.conf import settings
 from django.shortcuts import render
 from datetime import datetime
@@ -75,8 +76,10 @@ def get_length_units():
     return unit_symbols
 
 
+# Allow this page to be embedded in an iframe (e.g. within a jupyter notebook)
+@xframe_options_exempt
 @login_required()
-def pdf(request, file_id, conn=None, **kwargs):
+def pdf(request, file_id=None, conn=None, **kwargs):
     """
     Figure as PDF
     """

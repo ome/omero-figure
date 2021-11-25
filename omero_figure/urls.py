@@ -32,6 +32,8 @@ urlpatterns = [
 
     # figure as PDF
     url(r'^file/(?P<file_id>[0-9]+)/pdf/$', views.pdf, name='load_figure_pdf'),
+    # page to create PDF from user pasting in JSON
+    url(r'^pdf/$', views.pdf, name='figure_json_to_pdf'),
 
     url(r'^imgData/(?P<image_id>[0-9]+)/$', views.img_data_json,
         name='figure_imgData'),
