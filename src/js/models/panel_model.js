@@ -600,12 +600,17 @@
             if (this.get('z_projection')) {
                 proj = "&p=intmax|" + this.get('z_start') + ":" + this.get('z_end');
             }
-            baseUrl = baseUrl || WEBGATEWAYINDEX.slice(0, -1);  // remove last /
 
             // If BIG image, render scaled region
             var region = "";
             if (this.is_big_image() || render_region) {
-                baseUrl = BASE_WEBFIGURE_URL + 'render_scaled_region/';
+                // e.g. baseUrl http://idr.openmicroscopy.org/[webclient|webgateway] ?
+                if (baseUrl) {
+                    baseUrl = baseUrl.replace('webclient', 'figure').replace('webgateway', 'figure');
+                } else {
+                    baseUrl = BASE_WEBFIGURE_URL.slice(0, -1);  // remove last /
+                }
+                baseUrl += '/render_scaled_region/';
                 var rect = this.getViewportAsRect();
                 // Render a region that is 1.5 x larger
                 if (!force_no_padding) {
@@ -618,6 +623,7 @@
                 var coords = [rect.x, rect.y, rect.width, rect.height].map(function(c){return parseInt(c)})
                 region = '&region=' + coords.join(',');
             } else {
+                baseUrl = baseUrl || WEBGATEWAYINDEX.slice(0, -1);  // remove last /
                 baseUrl += '/render_image/';
             }
 
