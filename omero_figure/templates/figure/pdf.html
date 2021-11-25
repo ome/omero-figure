@@ -45,30 +45,25 @@
         // document.getElementById("progress").value = percent;
     }
 
-    // console.log("parent", window.parent);
-    // window.parent.testCall();
+    function exportAndDisplay() {
+        const pdfData = figureExport.exportPdf(showProgress);
+        var embed = "<embed width='100%' height='100%' src='" + pdfData + "'/>"
+        document.write(embed);
+    }
 
     if (FILE_ID) {
-        figureExport.load_from_OMERO(FILE_ID, function () {
-            const pdfData = figureExport.exportPdf(showProgress);
-            var embed = "<embed width='100%' height='100%' src='" + pdfData + "'/>"
-            document.write(embed);
-        });
+        figureExport.load_from_OMERO(FILE_ID, exportAndDisplay);
     } else {
         $("#progressMessage").hide();
         $("#jsonForm").show().on("submit", function(event){
             event.preventDefault();
             var $form = $(this);
             var figure_text = $("textarea", $form).val();
-            console.log(figure_text);
             let figure_json = JSON.parse(figure_text);
+            // show waiting placeholder...
             $("#jsonForm").hide();
             $("#progressMessage").show();
-            figureExport.load_from_JSON(figure_json, function () {
-                const pdfData = figureExport.exportPdf(showProgress);
-                var embed = "<embed width='100%' height='100%' src='" + pdfData + "'/>"
-                document.write(embed);
-            });
+            figureExport.load_from_JSON(figure_json, exportAndDisplay);
         }).find("textarea").focus().select();
     }
 
