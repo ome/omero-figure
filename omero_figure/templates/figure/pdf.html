@@ -54,6 +54,8 @@
     if (FILE_ID) {
         figureExport.load_from_OMERO(FILE_ID, exportAndDisplay);
     } else {
+        // If no FILE ID in url (/figure/pdf/) then we show a dialog where user
+        // can paste figure JSON and create PDF from that...
         $("#progressMessage").hide();
         $("#jsonForm").show().on("submit", function(event){
             event.preventDefault();

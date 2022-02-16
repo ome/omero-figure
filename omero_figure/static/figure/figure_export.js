@@ -305,10 +305,16 @@ const FigureExport = FigureModel.extend({
                 this.doc.setLineWidth(shape.strokeWidth || 2);
                 this.doc.line(start.x, start.y, end.x, end.y);
             } else if (shape.type == "Arrow") {
-                console.log("shape", shape);
                 this.drawArrow(panel, shape);
+            } else if (shape.type == "Ellipse") {
+                this.drawEllipse(panel, shape);
             }
         });
+    },
+
+    drawEllipse: function(panel, shape) {
+        console.log("Ellipse", shape);
+        let centre = this.panel_to_page_coords(panel, shape.x1, shape.y1);
     },
 
     drawArrow: function(panel, shape) {
