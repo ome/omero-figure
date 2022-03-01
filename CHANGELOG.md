@@ -1,3 +1,8 @@
+4.4.2 (March 2022)
+------------------
+
+- Pin omero-web version to 5.14.0 ([#458](https://github.com/ome/omero-figure/pull/458))
+
 4.4.1 (October 2021)
 --------------------
 
