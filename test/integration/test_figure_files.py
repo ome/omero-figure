@@ -23,7 +23,7 @@
 
 from omeroweb.testlib import IWebTest, get_json
 import pytest
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from omero.gateway import BlitzGateway
 
 

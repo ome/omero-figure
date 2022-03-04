@@ -29,7 +29,7 @@ import time
 from omeroweb.webgateway.marshal import imageMarshal
 from omeroweb.webgateway.views import _get_prepared_image
 from omeroweb.webclient.views import run_script
-from django.core.urlresolvers import reverse, NoReverseMatch
+from django.urls import reverse, NoReverseMatch
 from omero.rtypes import wrap, rlong, rstring, unwrap
 from omero.model import LengthI
 from omero.model.enums import UnitsLength
