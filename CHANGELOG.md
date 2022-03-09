@@ -1,3 +1,8 @@
+4.4.3 (March 2022)
+------------------
+
+- Make app compatible with Django 1.11.x and 3.2.x ([#456](https://github.com/ome/omero-figure/pull/456))
+
 4.4.2 (March 2022)
 ------------------
 
