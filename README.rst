@@ -221,4 +221,4 @@ OMERO.figure is released under the AGPL.
 Copyright
 ---------
 
-2016-2021, The Open Microscopy Environment
+2016-2022, The Open Microscopy Environment
