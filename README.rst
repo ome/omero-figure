@@ -94,7 +94,7 @@ Now install the script's dependencies:
 
 * Install `reportlab <https://bitbucket.org/rptlab/reportlab>`_ PDF python package.
   This needs to be installed in the virtual environment where the ``OMERO.server`` is installed. Depending on your install, you may need to
-call ``pip`` with, for example: ``/path/to_server_venv/venv/bin/pip install ...``
+  call ``pip`` with, for example: ``/path/to_server_venv/venv/bin/pip install ...``
 
 ::
 
