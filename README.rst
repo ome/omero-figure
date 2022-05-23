@@ -31,7 +31,7 @@ Install the app using `pip <https://pip.pypa.io/en/stable/>`_:
 
 NB: You need to ensure that you are running ``pip`` from the python environment
 where ``omero-web`` is installed. Depending on your install, you may need to
-call ``pip`` with, for example: ``/path/to/venv/bin/pip install ...``
+call ``pip`` with, for example: ``/path/to_web_venv/venv/bin/pip install ...``
 
 ::
 
@@ -93,7 +93,8 @@ Now install the script's dependencies:
 
 
 * Install `reportlab <https://bitbucket.org/rptlab/reportlab>`_ PDF python package.
-  This needs to be installed in the virtual environment where the server is run.
+  This needs to be installed in the virtual environment where the ``OMERO.server`` is installed. Depending on your install, you may need to
+call ``pip`` with, for example: ``/path/to_server_venv/venv/bin/pip install ...``
 
 ::
 
