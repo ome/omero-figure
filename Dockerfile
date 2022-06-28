@@ -1,14 +1,13 @@
-FROM node:4.2
+FROM openmicroscopy/omero-web-standalone:latest
 
-RUN adduser figure
+USER root
+RUN yum -y install npm
 COPY . /home/figure/src
-RUN chown -R figure /home/figure/src
-USER figure
+
 WORKDIR /home/figure/src
 
-RUN npm install
-RUN npm install grunt-cli
-RUN $(npm bin)/grunt demo
+RUN npm install -g grunt-cli && npm install grunt --save-dev
+RUN $(npm bin)/grunt build
+RUN /opt/omero/web/venv3/bin/pip install -e .
 
-WORKDIR /home/figure/src/demo
-CMD ["python", "-m", "SimpleHTTPServer"]
+USER omero-web
