@@ -163,38 +163,20 @@ with:
 
 	$ grunt watch
 
-To update the demo figure app at http://figure.openmicroscopy.org/demo/
-we have a grunt task that concats and moves js files into demo/.
-It also replaces Django template tags in index.html and various js code
-fragments with static app code. This is all handled by the grunt task:
+It is also possible to develop figure in docker without installing anything locally.
+The Docker image is built of top of ``openmicroscopy/omero-web-standalone:latest``, so you will have a fully functional
+omero-web environment while developing ``omero-figure``.
 
 ::
 
-    $ grunt demo
+    $ docker build -t figure-devel .
+    $ docker run -ti -e OMEROHOST=YOUR_HOST -p 4080:4080 figure-devel
 
-This puts everything into the omero-figure/demo/ directory.
-This can be tested locally via:
-
-::
-
-    $ cd demo/
-    $ python -m SimpleHTTPServer
-
-Go to http://localhost:8000/ to test it.
-This will not install the script and dependencies required to export the figure
-as PDF.
-
-To update the figure.openmicroscopy.org site:
-
-- Copy the demo directory and replace the demo directory in gh-pages-staging branch
-- Commit changes and open PR against ome/gh-pages-staging as described https://github.com/ome/omero-figure/tree/gh-pages-staging
-
-It is also possible to run the demo in docker without installing anything locally:
+or you can mount your local checkout of omero-figure and the code within docker:
 
 ::
+    $ docker run -ti -e OMEROHOST=YOUR_HOST -p 4080:4080  -v /PATH_TO_GIT_REPO/omero-figure:/home/figure/src figure-devel
 
-    $ docker build -t figure-demo .
-    $ docker run -ti --rm -p 8000:8000 figure-demo
 
 Release process
 ---------------
