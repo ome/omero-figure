@@ -165,14 +165,21 @@ with:
 
 It is also possible to develop figure in docker without installing anything locally.
 The Docker image is built on top of ``openmicroscopy/omero-web-standalone:latest``, so you will have a fully functional
-omero-web environment while developing ``omero-figure``.
+omero-web environment while developing ``omero-figure``. 
+First build the Docker image:
 
 ::
 
-    $ docker build -t figure-devel .
+   $ docker build -t figure-devel .
+
+
+To develop ``omero-figure`` you can either make all the changes within the Docker container itself by running:
+::
+
+
     $ docker run -ti -e OMEROHOST=YOUR_HOST -p 4080:4080 figure-devel
 
-or you can mount your local checkout of omero-figure and the code within docker:
+The preferred option is to mount the repository containing the omero-figure code. Make the changes locally and see the changes in the docker container. To do so, run:
 
 ::
     $ docker run -ti -e OMEROHOST=YOUR_HOST -p 4080:4080  -v /PATH_TO_GIT_REPO/omero-figure:/home/figure/src figure-devel
@@ -185,6 +192,7 @@ After starting the container, run ``docker ps`` to find the ID of the container.
    $ docker exec -u 0 -it CONTAINER_ID bash   # replace CONTAINER_ID by the correct value
    $ cd /home/figure/src
    $ grunt watch
+
 
 
 Release process
