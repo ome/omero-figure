@@ -185,7 +185,7 @@ The preferred option is to mount the repository containing the omero-figure code
     $ docker run -ti -e OMEROHOST=YOUR_HOST -p 4080:4080  -v /PATH_TO_GIT_REPO/omero-figure:/home/figure/src figure-devel
 
 
-After starting the container, run ``docker ps`` to find the ID of the container. Then run:
+After starting the container, run ``docker ps`` in another terminal to find the ID of the container. Then run:
 
 ::
 
