@@ -163,38 +163,37 @@ with:
 
 	$ grunt watch
 
-To update the demo figure app at http://figure.openmicroscopy.org/demo/
-we have a grunt task that concats and moves js files into demo/.
-It also replaces Django template tags in index.html and various js code
-fragments with static app code. This is all handled by the grunt task:
+It is also possible to develop figure in docker without installing anything locally.
+The Docker image is built on top of ``openmicroscopy/omero-web-standalone:latest``, so you will have a fully functional
+omero-web environment while developing ``omero-figure``. 
+First build the Docker image:
 
 ::
 
-    $ grunt demo
+   $ docker build -t figure-devel .
 
-This puts everything into the omero-figure/demo/ directory.
-This can be tested locally via:
+
+To develop ``omero-figure`` you can either make all the changes within the Docker container itself by running:
+::
+
+
+    $ docker run -ti -e OMEROHOST=YOUR_HOST -p 4080:4080 figure-devel
+
+The preferred option is to mount the repository containing the omero-figure code. Make the changes locally and see the changes in the docker container. To do so, run:
+
+::
+    $ docker run -ti -e OMEROHOST=YOUR_HOST -p 4080:4080  -v /PATH_TO_GIT_REPO/omero-figure:/home/figure/src figure-devel
+
+
+After starting the container, run ``docker ps`` in another terminal to find the ID of the container. Then run:
 
 ::
 
-    $ cd demo/
-    $ python -m SimpleHTTPServer
+   $ docker exec -u 0 -it CONTAINER_ID bash   # replace CONTAINER_ID by the correct value
+   $ cd /home/figure/src
+   $ grunt watch
 
-Go to http://localhost:8000/ to test it.
-This will not install the script and dependencies required to export the figure
-as PDF.
 
-To update the figure.openmicroscopy.org site:
-
-- Copy the demo directory and replace the demo directory in gh-pages-staging branch
-- Commit changes and open PR against ome/gh-pages-staging as described https://github.com/ome/omero-figure/tree/gh-pages-staging
-
-It is also possible to run the demo in docker without installing anything locally:
-
-::
-
-    $ docker build -t figure-demo .
-    $ docker run -ti --rm -p 8000:8000 figure-demo
 
 Release process
 ---------------
