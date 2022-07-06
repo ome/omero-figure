@@ -43,6 +43,7 @@ from omeroweb.webclient.decorators import login_required
 from .omeroutils import get_timestamps
 
 from . import utils
+from . import figure_settings
 import logging
 
 try:
@@ -173,6 +174,7 @@ def render_scaled_region(request, iid, z, t, conn=None, **kwargs):
     if scale_levels is None:
         # Not a big image - can load at full size
         level = None
+        scale = 1
     else:
         # Pick zoom such that returned image is below MAX size
         max_level = len(scale_levels.keys()) - 1
@@ -188,33 +190,48 @@ def render_scaled_region(request, iid, z, t, conn=None, **kwargs):
         # We need to use final rendered jpeg coordinates
         # Convert from original image coordinates by scaling
         scale = scale_levels[zm]
-        x = int(x * scale)
-        y = int(y * scale)
-        width = int(width * scale)
-        height = int(height * scale)
-        size_x = int(size_x * scale)
-        size_y = int(size_y * scale)
+
+    new_x = int(x * scale)
+    new_y = int(y * scale)
+    new_width = int(width * scale)
+    new_height = int(height * scale)
+    new_size_x = int(size_x * scale)
+    new_size_y = int(size_y * scale)
 
     canvas = None
     # Coordinates below are all final jpeg coordinates & sizes
-    if x < 0 or y < 0 or (x + width) > size_x or (y + height) > size_y:
+    if (new_x < 0 or new_y < 0 or (new_x + new_width) > new_size_x or
+            (new_y + new_height) > new_size_y):
         # If we're outside the bounds of the image...
         # Need to render reduced region and paste on to full size image
-        canvas = Image.new("RGB", (width, height), (221, 221, 221))
+        canvas = Image.new("RGB", (new_width, new_height), (221, 221, 221))
         paste_x = 0
         paste_y = 0
-        if x < 0:
-            paste_x = -x
-            width = width + x
-            x = 0
-        if y < 0:
-            paste_y = -y
-            height = height + y
-            y = 0
+        if new_x < 0:
+            paste_x = int(-new_x)
+            new_width = new_width + new_x
+            new_x = 0
+        if new_y < 0:
+            paste_y = int(-new_y)
+            new_height = new_height + new_y
+            new_y = 0
 
     # Render the region...
-    jpeg_data = image.renderJpegRegion(z, t, x, y, width, height, level=level,
-                                       compression=compress_quality)
+    if (new_width * new_height) > figure_settings.MAX_RENDERED_REGION:
+        # If region is too big, use thumbnail instead...
+        thumb_data = image.getThumbnail(size=96)
+        thumb_img = Image.open(BytesIO(thumb_data))
+        # resize the thumb to the scaled full image size
+        thumb_img = thumb_img.resize((new_size_x, new_size_y))
+        # crop to resized coordinates if necessary
+        if new_x > 0 or new_y > 0 or new_width < new_size_x or new_height < new_size_y:
+            thumb_img = thumb_img.crop((new_x, new_y, new_x + new_width, new_y + new_height))
+        rv = BytesIO()
+        thumb_img.save(rv, 'jpeg', quality=90)
+        jpeg_data = rv.getvalue()
+    else:
+        jpeg_data = image.renderJpegRegion(z, t, new_x, new_y, new_width, new_height, level=level,
+                                           compression=compress_quality)
 
     # paste to canvas if needed
     if canvas is not None:
