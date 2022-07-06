@@ -785,7 +785,7 @@
                     <!-- Figure Title will be added here -->
                 </div>
 
-                <form class="navbar-form navbar-right">
+                <form id="alignment-toolbars" class="navbar-form navbar-right">
 
                     <!-- Add a New Panel Button -->
                     <div class="btn-group" style="margin-right:20px">
@@ -799,13 +799,32 @@
                     </div>
 
                     <!-- Buttons for Alignment of Panels. see AlignmentToolbarView -->
-                    <div id="alignment-toolbar" class="btn-group icon-buttons">
+                    <div class="btn-group icon-buttons alignment-buttons" style="margin-right: 1px">
                         <button type="button" class="aleft btn btn-default btn-sm" title="Align Left" disabled="disabled">
                             <span class="glyphicon glyphicon-align-left"></span>
                         </button>
                         <button type="button" class="agrid btn btn-default btn-sm" title="Align To Grid" disabled="disabled">
                             <span class="glyphicon glyphicon-th"></span>
                         </button>
+                        <button type="button" class="btn btn-default btn-sm dropdown-toggle" title="Grid spacing options"
+                            data-toggle="dropdown" disabled="disabled" style="padding: 5px 3px">
+                            <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu" role="menu">
+                            <li><label><input type="radio" value="auto" checked name="grid_gap"/><span class="glyphicon glyphicon-ok"> </span> 5% of panel width</label></li>
+                            <li><label><input type="radio" value="0" name="grid_gap"/><span class="glyphicon glyphicon-ok"> </span> 0 px (no gap)</label></li>
+                            <li><label><input type="radio" value="1" name="grid_gap"/><span class="glyphicon glyphicon-ok"> </span> 1 px</label></li>
+                            <li><label><input type="radio" value="2" name="grid_gap"/><span class="glyphicon glyphicon-ok"> </span> 2 px</label></li>
+                            <li><label><input type="radio" value="5" name="grid_gap"/><span class="glyphicon glyphicon-ok"> </span> 5 px</label></li>
+                            <li><label><input type="radio" value="10" name="grid_gap"/><span class="glyphicon glyphicon-ok"> </span> 10 px</label></li>
+                            <li><label><input type="radio" value="15" name="grid_gap"/><span class="glyphicon glyphicon-ok"> </span> 15 px</label></li>
+                            <li><label><input type="radio" value="20" name="grid_gap"/><span class="glyphicon glyphicon-ok"> </span> 20 px</label></li>
+                            <li><label><input type="radio" id="custom_grid_gap" value="" name="grid_gap"/><span class="glyphicon glyphicon-ok"> </span>
+                                custom <span id="custom_grid_gap_label"></span>
+                            </label></li>
+                        </ul>
+                    </div>
+                    <div class="btn-group icon-buttons alignment-buttons">
                         <button type="button" class="atop btn btn-default btn-sm rotate-font" title="Align Top" disabled="disabled">
                             <span class="glyphicon glyphicon-align-right"></span>
                         </button>
