@@ -224,13 +224,16 @@ def render_scaled_region(request, iid, z, t, conn=None, **kwargs):
         # resize the thumb to the scaled full image size
         thumb_img = thumb_img.resize((new_size_x, new_size_y))
         # crop to resized coordinates if necessary
-        if new_x > 0 or new_y > 0 or new_width < new_size_x or new_height < new_size_y:
-            thumb_img = thumb_img.crop((new_x, new_y, new_x + new_width, new_y + new_height))
+        if (new_x > 0 or new_y > 0 or new_width < new_size_x
+                or new_height < new_size_y):
+            thumb_img = thumb_img.crop((new_x, new_y, new_x + new_width,
+                                        new_y + new_height))
         rv = BytesIO()
         thumb_img.save(rv, 'jpeg', quality=90)
         jpeg_data = rv.getvalue()
     else:
-        jpeg_data = image.renderJpegRegion(z, t, new_x, new_y, new_width, new_height, level=level,
+        jpeg_data = image.renderJpegRegion(z, t, new_x, new_y, new_width,
+                                           new_height, level=level,
                                            compression=compress_quality)
 
     # paste to canvas if needed
@@ -358,13 +361,13 @@ def save_web_figure(request, conn=None, **kwargs):
     link_to_images = False      # Disabled for now
     if link_to_images:
         current_links = conn.getAnnotationLinks("Image", ann_ids=[file_id])
-        for l in current_links:
-            if l.getParent().getId().getValue() not in image_ids:
+        for curr_link in current_links:
+            if curr_link.getParent().getId().getValue() not in image_ids:
                 # remove old link
-                update.deleteObject(l._obj, conn.SERVICE_OPTS)
+                update.deleteObject(curr_link._obj, conn.SERVICE_OPTS)
             else:
                 # we don't need to create links for these
-                image_ids.remove(l.getParent().getId().getValue())
+                image_ids.remove(curr_link.getParent().getId().getValue())
 
         # create new links if necessary
         links = []
@@ -548,7 +551,7 @@ def unit_conversion(request, value, from_unit, to_unit, conn=None, **kwargs):
         from_unit = getattr(UnitsLength, str(from_unit))
         to_unit = getattr(UnitsLength, str(to_unit))
         value = float(value)
-    except ImportError as ex:
+    except ImportError:
         error = ("Failed to import omero.model.enums.UnitsLength."
                  " Requires OMERO 5.1")
     except AttributeError as ex:
