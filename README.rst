@@ -106,6 +106,23 @@ Now install the script's dependencies:
 
     $ pip install markdown
 
+
+OMERO.figure settings
+---------------------
+
+max_rendered_region
+^^^^^^^^^^^^^^^^^^^
+
+When displaying a big (tiled) image, OMERO.figure will load data from an appropriate
+level of the tiled pyramid, accoring to the region to be displayed. However, if the
+smallest pyramid level is not sufficiently small, and the viewed region is large this can
+lead to memory issues. If the number of pixels to be rendered is above a threshold,
+then a low-resolution thumbnail of the image is used as a placeholder. This limit
+can be configured, with the default equivalent to 5000 x 5000 pixels:
+
+    $ omero config set omero.web.figure.max_rendered_region 25000000
+
+
 Upgrading OMERO.figure
 ----------------------
 
