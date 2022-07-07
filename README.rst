@@ -120,6 +120,8 @@ lead to memory issues. If the number of pixels to be rendered is above a thresho
 then a low-resolution thumbnail of the image is used as a placeholder. This limit
 can be configured, with the default equivalent to 5000 x 5000 pixels:
 
+::
+
     $ omero config set omero.web.figure.max_rendered_region 25000000
 
 
