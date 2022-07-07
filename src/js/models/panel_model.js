@@ -487,6 +487,12 @@
             zoom = zoom !== undefined ? zoom : this.get('zoom');
             dx = dx !== undefined ? dx : this.get('dx');
             dy = dy !== undefined ? dy : this.get('dy');
+            if (isNaN(parseInt(dx))) {
+                dx = 0;
+            }
+            if (isNaN(parseInt(dy))) {
+                dy = 0;
+            }
             var rotation = this.get('rotation');
 
             var width = this.get('width'),
@@ -516,7 +522,7 @@
 
             // Use offset from image centre to calculate ROI position
             var cX = orig_width/2 - dx,
-                cY = orig_height    /2 - dy,
+                cY = orig_height/2 - dy,
                 roiX = cX - (roiW / 2),
                 roiY = cY - (roiH / 2);
 
