@@ -131,9 +131,10 @@ def img_data_json(request, image_id, conn=None, **kwargs):
         rv['pixel_size']['symbolY'] = py.getSymbol()
         rv['pixel_size']['unitY'] = str(py.getUnit())
         pz = image.getPrimaryPixels().getPhysicalSizeZ()
-        rv['pixel_size']['valueZ'] = pz.getValue()
-        rv['pixel_size']['symbolZ'] = pz.getSymbol()
-        rv['pixel_size']['unitZ'] = str(pz.getUnit())
+        if pz is not None:
+            rv['pixel_size']['valueZ'] = pz.getValue()
+            rv['pixel_size']['symbolZ'] = pz.getSymbol()
+            rv['pixel_size']['unitZ'] = str(pz.getUnit())
     size_t = image.getSizeT()
     time_list = []
     if size_t > 1:
