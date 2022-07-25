@@ -157,6 +157,22 @@ def timestamps(request, conn=None, **kwargs):
 
 
 @login_required()
+def z_scale(request, conn=None, **kwargs):
+
+    iids = request.GET.getlist('image')
+    data = {}
+    for iid in iids:
+        image = conn.getObject('Image', iid)
+        if image is not None:
+            pz = image.getPrimaryPixels().getPhysicalSizeZ()
+            if pz is not None:
+                data[image.id] = {'valueZ': pz.getValue(),
+                                  'symbolZ': pz.getSymbol(),
+                                  'unitZ': str(pz.getUnit())}
+    return JsonResponse(data)
+
+
+@login_required()
 def render_scaled_region(request, iid, z, t, conn=None, **kwargs):
 
     region = request.GET.get('region')
