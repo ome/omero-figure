@@ -708,6 +708,24 @@
     .icon-buttons .btn-sm {
         padding: 4px 9px;
     }
+    /* drop-down list uses radio buttons to choose grid gap */
+    /* copies from bootstrap .dropdown-menu li a */
+    .dropdown-menu li label {
+        font-weight: normal;
+        display: block;
+        padding: 3px 20px;
+        white-space: nowrap;
+    }
+    .dropdown-menu li label:hover{
+        color: #ffffff;
+        text-decoration: none;
+        background-color: #428bca;
+    }
+    /* hide radio buttons - show tick icon after checked input */
+    .dropdown-menu input { display: none; }
+    .dropdown-menu input + span { visibility: hidden; }
+    .dropdown-menu input:checked + span { visibility: visible; }
+
     .rotate-font .glyphicon {
         -webkit-transform: rotate(-90deg);
         -moz-transform: rotate(-90deg);
