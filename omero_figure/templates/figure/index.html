@@ -514,9 +514,10 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                    <h4 class="modal-title">Markdown Formatting</h4>
+                    <h4 class="modal-title">Label Formatting</h4>
                 </div>
                 <div class="modal-body">
+                    <h4>Markdown formatting</h4>
                     <p>
                         You can use "Markdown" syntax to add formatting to plain text. For example,
                         **this text will be bold** and this *word* will be italic. NB: Links are not
@@ -545,6 +546,73 @@
                         </tr>
                        <!--  <tr><td>You need to use 2 line breaks between paragraphs</td><td></td></tr> -->
                     </table>
+                    <h4>Dynamic properties</h4>
+                    <p>
+                        Certain properties can be inserted in the label and are dynamically updated. For example,
+                        [x.pixel] will be replaced by the x coordinate of the viewport in pixels
+                        and [time.secs] will be replaced by the time in seconds of the current frame (automatically
+                        updated when the displayed frame is changed). Dynamic labels can be combined with
+                        markdown formatting.<br><br>
+                        The accepted syntaxes are <strong>[property]</strong> and <strong>[property.format]</strong>
+                    </p>
+                    <table class="table">
+                        <tr>
+                            <td></td>
+                            <th>Property - alias</th>
+                            <th>Format - alias (first is default)</th></tr>
+                        <tr>
+                        <tr>
+                            <th>Viewport X</th>
+                            <td>x</td>
+                            <td>pixel - px<br>unit</td>
+                        </tr>
+                        <tr>
+                            <th>Viewport Y</th>
+                            <td>y</td>
+                            <td>pixel - px<br>unit</td>
+                        </tr>
+                        <tr>
+                            <th>Viewport width</th>
+                            <td>width - w</td>
+                            <td>pixel - px<br>unit</td>
+                        </tr>
+                        <tr>
+                            <th>Viewport height</th>
+                            <td>height - h</td>
+                            <td>pixel - px<br>unit</td>
+                        </tr>
+                        <tr>
+                            <th>Viewport rotation</th>
+                            <td>rotation - rot</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <th>Z slice</th>
+                            <td>z</td>
+                            <td>pixel - px<br>unit</td>
+                        </tr>
+                        <tr>
+                            <th>Time</th>
+                            <td>time - t</td>
+                            <td>index<br>milliseconds - ms<br>seconds - secs - s<br>minutes - mins - m<br>hrs:mins:secs - h:m:s<br>mins:secs - m:s<br>hrs:mins - h:m</td>
+                        </tr>
+                        <tr>
+                            <th>Active channels</th>
+                            <td>channels - c</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <th>Image identifier</th>
+                            <td>image</td>
+                            <td>name<br>id</td>
+                        </tr>
+                        <tr>
+                            <th>Dataset identifier</th>
+                            <td>dataset</td>
+                            <td>name<br>id</td>
+                        </tr>
+                    </table>
+                    <h4>Legend</h4>
                     <p>The figure legend will be included in the PDF info page when the figure is
                         exported.</p>
                 </div>
