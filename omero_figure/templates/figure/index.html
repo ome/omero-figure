@@ -548,13 +548,38 @@
                     </table>
                     <h4>Dynamic properties</h4>
                     <p>
-                        Certain properties can be inserted in the label and are dynamically updated. For example,
-                        [x.pixel] will be replaced by the x coordinate of the viewport in pixels
-                        and [time.secs] will be replaced by the time in seconds of the current frame (automatically
-                        updated when the displayed frame is changed). Dynamic labels can be combined with
-                        markdown formatting.<br><br>
-                        The accepted syntaxes are <strong>[property]</strong> and <strong>[property.format]</strong>
+                        Certain properties can be inserted in the label and are dynamically updated upon changes.
                     </p>
+                    <table class="table">
+                        <tr>
+                            <td></td>
+                            <th>This text will be formatted to...</th>
+                            <th>...this text</th></tr>
+                        <tr>
+                        <tr>
+                            <th>X and Y in pixels</th>
+                            <td>**X:**[x] **Y:**[y]</td>
+                            <td><strong>X:</strong>56 <strong>Y:</strong>48</td>
+                        </tr>
+                        <tr>
+                            <th>Time in h:m:s format</th>
+                            <td>Time: *[time.h:m:s]*</td>
+                            <td>Time: <i>0:12:53</i></td>
+                        </tr>
+                        <tr>
+                            <th>Z in units (projection toggled OFF)</th>
+                            <td>Z: [z.unit]</td>
+                            <td>Z: 1.52 &#181;m</td>
+                        </tr>
+                        <tr>
+                            <th>Z slice range (projection toggled ON)</th>
+                            <td>Z projection: [z]</td>
+                            <td>Z projection: 15 - 27</td>
+                        </tr>
+                    </table>
+
+                    <p>The accepted syntaxes are <strong>[property]</strong>
+                        and <strong>[property.format]</strong> for the following values:</p>
                     <table class="table">
                         <tr>
                             <td></td>
@@ -562,27 +587,27 @@
                             <th>Format - alias (first is default)</th></tr>
                         <tr>
                         <tr>
-                            <th>Viewport X</th>
+                            <th>View X</th>
                             <td>x</td>
                             <td>pixel - px<br>unit</td>
                         </tr>
                         <tr>
-                            <th>Viewport Y</th>
+                            <th>View Y</th>
                             <td>y</td>
                             <td>pixel - px<br>unit</td>
                         </tr>
                         <tr>
-                            <th>Viewport width</th>
+                            <th>View width</th>
                             <td>width - w</td>
                             <td>pixel - px<br>unit</td>
                         </tr>
                         <tr>
-                            <th>Viewport height</th>
+                            <th>View height</th>
                             <td>height - h</td>
                             <td>pixel - px<br>unit</td>
                         </tr>
                         <tr>
-                            <th>Viewport rotation</th>
+                            <th>View rotation</th>
                             <td>rotation - rot</td>
                             <td></td>
                         </tr>
