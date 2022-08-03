@@ -20,7 +20,8 @@ from django.http import Http404, HttpResponse, \
     JsonResponse
 from django.views.decorators.http import require_POST
 from django.conf import settings
-from django.shortcuts import render
+from django.template import loader
+from django.templatetags import static
 from datetime import datetime
 import traceback
 import json
@@ -95,14 +96,26 @@ def index(request, file_id=None, conn=None, **kwargs):
             and settings.PUBLIC_USER == user.getOmeName()):
         is_public_user = True
 
-    context = {'scriptMissing': script_missing,
-               'userFullName': user_full_name,
-               'userId': user.id,
-               'maxPlaneSize': max_plane_size,
-               'lengthUnits': json.dumps(length_units),
-               'isPublicUser': is_public_user,
-               'version': utils.__version__}
-    return render(request, "figure/index.html", context)
+    # TODO: Load these variables in another way!
+    # context = {'scriptMissing': script_missing,
+    #            'userFullName': user_full_name,
+    #            'userId': user.id,
+    #            'maxPlaneSize': max_plane_size,
+    #            'lengthUnits': json.dumps(length_units),
+    #            'isPublicUser': is_public_user,
+    #            'version': utils.__version__}
+
+    # Load the template html and replace OMEROWEB_INDEX
+    template = loader.get_template("omero_figure/index.html")
+    html = template.render({}, request)
+    figure_index = reverse('figure_index')
+    html = html.replace('const BASE_WEBFIGURE_URL = "";',
+                        'const BASE_WEBFIGURE_URL = "%s";' % figure_index)
+    # update links to static files
+    static_dir = static.static('omero_figure/')
+    html = html.replace('href="/assets/', 'href="%s' % static_dir)
+    html = html.replace('src="/assets/', 'src="%s' % static_dir)
+    return HttpResponse(html)
 
 
 @login_required()
