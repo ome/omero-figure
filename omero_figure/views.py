@@ -109,8 +109,10 @@ def index(request, file_id=None, conn=None, **kwargs):
     template = loader.get_template("omero_figure/index.html")
     html = template.render({}, request)
     figure_index = reverse('figure_index')
-    html = html.replace('const BASE_WEBFIGURE_URL = "";',
+    html = html.replace('const BASE_WEBFIGURE_URL = "http://localhost:4080/figure/";',
                         'const BASE_WEBFIGURE_URL = "%s";' % figure_index)
+    html = html.replace('const APP_ROOT_URL = "";',
+                        'const APP_ROOT_URL = "%s";' % figure_index)
     # update links to static files
     static_dir = static.static('omero_figure/')
     html = html.replace('href="/assets/', 'href="%s' % static_dir)
