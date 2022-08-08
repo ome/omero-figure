@@ -516,7 +516,7 @@
                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
                     <h4 class="modal-title">Label Formatting</h4>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body" style="max-height:518px">
                     <h4>Markdown formatting</h4>
                     <p>
                         You can use "Markdown" syntax to add formatting to plain text. For example,
@@ -548,7 +548,8 @@
                     </table>
                     <h4>Dynamic properties</h4>
                     <p>
-                        Certain properties can be inserted in the label and are dynamically updated upon changes.
+                        Certain properties can be inserted in the label (within square brackets)
+                        and are dynamically updated upon changes. See the drop-down options for supported properties.
                     </p>
                     <table class="table">
                         <tr>
@@ -558,83 +559,33 @@
                         <tr>
                         <tr>
                             <th>X and Y in pixels</th>
-                            <td>**X:**[x] **Y:**[y]</td>
-                            <td><strong>X:</strong>56 <strong>Y:</strong>48</td>
+                            <td>X:[x.pixel] - Y:[y.pixel]</td>
+                            <td>X:52 - Y:89</td>
                         </tr>
                         <tr>
-                            <th>Time in h:m:s format</th>
-                            <td>Time: *[time.h:m:s]*</td>
-                            <td>Time: <i>0:12:53</i></td>
+                            <th>X and Y in units</th>
+                            <td>X:[x.unit] - Y:[y.unit]</td>
+                            <td>X:0.43 &#181;m - Y:0.23 &#181;m</td>
                         </tr>
                         <tr>
-                            <th>Z in units (projection toggled OFF)</th>
-                            <td>Z: [z.unit]</td>
-                            <td>Z: 1.52 &#181;m</td>
+                            <th>Width</th>
+                            <td>Width: [width.pixel]</td>
+                            <td>Width: 400</td>
                         </tr>
                         <tr>
-                            <th>Z slice range (projection toggled ON)</th>
-                            <td>Z projection: [z]</td>
-                            <td>Z projection: 15 - 27</td>
-                        </tr>
-                    </table>
-
-                    <p>The accepted syntaxes are <strong>[property]</strong>
-                        and <strong>[property.format]</strong> for the following values:</p>
-                    <table class="table">
-                        <tr>
-                            <td></td>
-                            <th>Property - alias</th>
-                            <th>Format - alias (first is default)</th></tr>
-                        <tr>
-                        <tr>
-                            <th>View X</th>
-                            <td>x</td>
-                            <td>pixel - px<br>unit</td>
+                            <th>Height (with markdown formatting)</th>
+                            <td>*Height*: **[height.pixel]**</td>
+                            <td><i>Height</i>: <strong>300</strong></td>
                         </tr>
                         <tr>
-                            <th>View Y</th>
-                            <td>y</td>
-                            <td>pixel - px<br>unit</td>
+                            <th>Image ID</th>
+                            <td>Image ID: [image.id]</td>
+                            <td>Image ID: 23556</td>
                         </tr>
                         <tr>
-                            <th>View width</th>
-                            <td>width - w</td>
-                            <td>pixel - px<br>unit</td>
-                        </tr>
-                        <tr>
-                            <th>View height</th>
-                            <td>height - h</td>
-                            <td>pixel - px<br>unit</td>
-                        </tr>
-                        <tr>
-                            <th>View rotation</th>
-                            <td>rotation - rot</td>
-                            <td></td>
-                        </tr>
-                        <tr>
-                            <th>Z slice</th>
-                            <td>z</td>
-                            <td>pixel - px<br>unit</td>
-                        </tr>
-                        <tr>
-                            <th>Time</th>
-                            <td>time - t</td>
-                            <td>index<br>milliseconds - ms<br>seconds - secs - s<br>minutes - mins - m<br>hrs:mins:secs - h:m:s<br>mins:secs - m:s<br>hrs:mins - h:m</td>
-                        </tr>
-                        <tr>
-                            <th>Active channels</th>
-                            <td>channels - c</td>
-                            <td></td>
-                        </tr>
-                        <tr>
-                            <th>Image identifier</th>
-                            <td>image</td>
-                            <td>name<br>id</td>
-                        </tr>
-                        <tr>
-                            <th>Dataset identifier</th>
-                            <td>dataset</td>
-                            <td>name<br>id</td>
+                            <th>Dataset ID</th>
+                            <td>Dataset ID: [dataset.id]</td>
+                            <td>Dataset ID: 1654</td>
                         </tr>
                     </table>
                     <h4>Legend</h4>
