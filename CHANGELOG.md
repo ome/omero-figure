@@ -1,3 +1,11 @@
+4.5.0 (August 2022)
+-------------------
+
+- Support more dynamic label options (Thanks to Tom Boissonnet) ([#472](https://github.com/ome/omero-figure/pull/472))
+- Add custom gap size between image panels ([#470](https://github.com/ome/omero-figure/pull/470))
+- Channel sliders handle floating-point images ([#468](https://github.com/ome/omero-figure/pull/468))
+- Fix legend button overlaying right-panel menus ([#474](https://github.com/ome/omero-figure/pull/474))
+
 4.4.3 (March 2022)
 ------------------
 
