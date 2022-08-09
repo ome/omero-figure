@@ -91,28 +91,27 @@ def index(request, file_id=None, conn=None, **kwargs):
     max_w, max_h = conn.getMaxPlaneSize()
     max_plane_size = max_w * max_h
     length_units = get_length_units()
-    is_public_user = False
+    is_public_user = "false"
     if (hasattr(settings, 'PUBLIC_USER')
             and settings.PUBLIC_USER == user.getOmeName()):
-        is_public_user = True
-
-    # TODO: Load these variables in another way!
-    # context = {'scriptMissing': script_missing,
-    #            'userFullName': user_full_name,
-    #            'userId': user.id,
-    #            'maxPlaneSize': max_plane_size,
-    #            'lengthUnits': json.dumps(length_units),
-    #            'isPublicUser': is_public_user,
-    #            'version': utils.__version__}
+        is_public_user = "true"
 
     # Load the template html and replace OMEROWEB_INDEX
     template = loader.get_template("omero_figure/index.html")
     html = template.render({}, request)
-    figure_index = reverse('figure_index')
-    html = html.replace('const BASE_WEBFIGURE_URL = "http://localhost:4080/figure/";',
-                        'const BASE_WEBFIGURE_URL = "%s";' % figure_index)
+    omeroweb_index = reverse("index")
+    figure_index = reverse("figure_index")
+    ping_url = reverse("keepalive_ping")
+    html = html.replace('const BASE_OMEROWEB_URL = "http://localhost:4080/figure/";',
+                        'const BASE_OMEROWEB_URL = "%s";' % omeroweb_index)
     html = html.replace('const APP_ROOT_URL = "";',
                         'const APP_ROOT_URL = "%s";' % figure_index)
+    html = html.replace('const USER_ID = 0;', 'const USER_ID = %s' % user.id)
+    html = html.replace('const PING_URL = "";', 'const PING_URL = "%s";' % ping_url)
+    html = html.replace('const USER_FULL_NAME = "OME";', 'const USER_FULL_NAME = "%s";' % user_full_name)
+    html = html.replace('const IS_PUBLIC_USER = false;', 'const IS_PUBLIC_USER = %s;' % is_public_user)
+    html = html.replace('const MAX_PLANE_SIZE = 10188864;', 'const MAX_PLANE_SIZE = %s;' % max_plane_size)
+
     # update links to static files
     static_dir = static.static('omero_figure/')
     html = html.replace('href="/assets/', 'href="%s' % static_dir)
