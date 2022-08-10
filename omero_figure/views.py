@@ -219,9 +219,10 @@ def render_scaled_region(request, iid, z, t, conn=None, **kwargs):
     # Render the region...
     if (new_width * new_height) > figure_settings.MAX_RENDERED_REGION:
         # If region is too big, use thumbnail instead...
-        server_settings = request.session.get("server_settings", {}).get("browser", {})
-        defaultSize = server_settings.get("thumb_default_size", 96)
-        thumb_data = image.getThumbnail(size=defaultSize)
+        server_settings = request.session.get(
+            "server_settings", {}).get("browser", {})
+        default_size = server_settings.get("thumb_default_size", 96)
+        thumb_data = image.getThumbnail(size=default_size)
         thumb_img = Image.open(BytesIO(thumb_data))
         # resize the thumb to the scaled full image size
         thumb_img = thumb_img.resize((new_size_x, new_size_y))
