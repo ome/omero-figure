@@ -2,6 +2,7 @@
 -------------------
 
 - Support more dynamic label options (Thanks to Tom Boissonnet) ([#472](https://github.com/ome/omero-figure/pull/472))
+  - This includes an update to the [Figure file format](https://github.com/ome/omero-figure/blob/master/docs/figure_file_format.rst)
 - Add custom gap size between image panels ([#470](https://github.com/ome/omero-figure/pull/470))
 - Channel sliders handle floating-point images ([#468](https://github.com/ome/omero-figure/pull/468))
 - Fix legend button overlaying right-panel menus ([#474](https://github.com/ome/omero-figure/pull/474))
