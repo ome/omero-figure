@@ -167,27 +167,11 @@
         padding: 3px 15px;
     }
 
-    .markdown-info {
-        padding: 3px 12px;
-        color: #aaa;
-        text-align: right;
-        padding-left: 40px;
-        background: url(../images/markdown_light32x20.png) 0% center no-repeat;
-    }
-    .markdown-info:hover {
-        background: url(../images/markdown_dark32x20.png) 0% center no-repeat;
-    }
     .legend-container .markdown-info {
         display: none;
     }
     .legend-container .editing .markdown-info {
         display: block;
-    }
-
-    #labelsTab .markdown-info {
-        height: 18px;
-        margin: 9px 9px 0;
-        float: left"
     }
 
     /* hide appropriate collapse/hide button */

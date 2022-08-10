@@ -36,7 +36,7 @@ This is an example of a minimal OMERO.figure JSON file::
 
     {
     // see older versions below
-    "version": 5,
+    "version": 6,
     "panels": [
         {
             // position of the panel on the page
@@ -82,6 +82,11 @@ Optional settings for each panel::
     // options are omero.model.LengthI.SYMBOLS.keys()
     "pixel_size_x_unit": 'MICROMETER',
 
+    // pixel size z to show z position in labels
+    "pixel_size_z": 0.32,
+    "pixel_size_z_symbol": 'µm',    // µm by default
+    "pixel_size_z_unit": 'MICROMETER',
+
     // show a scalebar
     "scalebar": {
         "show": true,
@@ -108,11 +113,21 @@ Optional settings for each panel::
             "color": "00FF00"
         },
         {
-            // 'live' timestamps, 'time' one of: index (show 1-based T index), milliseconds,
+            // Dynamic properties: text in labels in the form '[property.format]'
+            // are dynamically replaced by the specified values
+
+            // for 'time' property, 'format' one of: index (show 1-based T index), milliseconds,
             // secs, mins:secs, mins, hrs:mins, hrs:mins:secs,
-            "time": "milliseconds",
+            "text": "[time.milliseconds]",
             "size": "12",
             "position": "topleft",
+            "color": "FFFFFF"
+        },
+        {
+            // for 'x' and 'y' property, 'format' one of: pixel, unit
+            "text": "X: [x.pixel] - Y: [y.pixel]",
+            "size": "12",
+            "position": "topright",
             "color": "FFFFFF"
         }
     ],
@@ -137,6 +152,8 @@ Optional settings for each panel::
 
     // panel rotation in degrees clockwise
     rotation: 0,
+    // rotation symbol to display in label
+    rotation_symbol:'°',
 
 
 Optional settings for the top-level figure object. If not specified,
@@ -207,6 +224,11 @@ that lines will not appear thicker on a panel when it is zoomed in. Supported Sh
 
 Version history
 ----------------
+
+New in version 6:
+
+- 'label': 'time':'seconds' changed to 'text':'[time.seconds]' (for all timestamp formats)
+- 'panel': z pixel properties added ('pixel_size_z', 'pixel_size_z_symbol', 'pixel_size_z_unit')
 
 New in version 5:
 
