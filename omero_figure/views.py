@@ -231,8 +231,11 @@ def render_scaled_region(request, iid, z, t, conn=None, **kwargs):
             thumb_img = thumb_img.crop((new_x, new_y, new_x + new_width,
                                         new_y + new_height))
         rv = BytesIO()
-        thumb_img.save(rv, 'jpeg', quality=90)
-        jpeg_data = rv.getvalue()
+        try:
+            thumb_img.save(rv, 'jpeg', quality=90)
+            jpeg_data = rv.getvalue()
+        finally:
+            rv.close()
     else:
         jpeg_data = image.renderJpegRegion(z, t, new_x, new_y, new_width,
                                            new_height, level=level,
