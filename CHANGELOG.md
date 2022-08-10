@@ -1,4 +1,4 @@
-4.5.0 (August 2022)
+5.0.0 (August 2022)
 -------------------
 
 - Support more dynamic label options (Thanks to Tom Boissonnet) ([#472](https://github.com/ome/omero-figure/pull/472))
