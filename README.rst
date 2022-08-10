@@ -114,7 +114,7 @@ max_rendered_region
 ^^^^^^^^^^^^^^^^^^^
 
 When displaying a big (tiled) image, OMERO.figure will load data from an appropriate
-level of the tiled pyramid, accoring to the region to be displayed. However, if the
+level of the tiled pyramid, according to the region to be displayed. However, if the
 smallest pyramid level is not sufficiently small, and the viewed region is large this can
 lead to memory issues. If the number of pixels to be rendered is above a threshold,
 then a low-resolution thumbnail of the image is used as a placeholder. This limit
