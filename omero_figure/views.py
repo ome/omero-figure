@@ -226,14 +226,23 @@ def render_scaled_region(request, iid, z, t, conn=None, **kwargs):
         thumb_img = Image.open(BytesIO(thumb_data))
         # resize the thumb to the scaled full image size
         thumb_img = thumb_img.resize((new_size_x, new_size_y))
-        # crop to resized coordinates if necessary
+        # crop thumbnail to resized coordinates if necessary
+        # mimic the behaviour of image.renderJpegRegion()
         if (new_x > 0 or new_y > 0 or new_width < new_size_x
                 or new_height < new_size_y):
             thumb_img = thumb_img.crop((new_x, new_y, new_x + new_width,
                                         new_y + new_height))
         rv = BytesIO()
         try:
-            thumb_img.save(rv, 'jpeg', quality=90)
+            if canvas is not None:
+                canvas.paste(thumb_img, (paste_x, paste_y))
+                # don't need to return high-res thumbnail
+                big_thumb_size = 2 * default_size
+                thmb_h = int((canvas.height/canvas.width) * big_thumb_size)
+                canvas = canvas.resize((big_thumb_size, thmb_h))
+                canvas.save(rv, 'jpeg', quality=90)
+            else:
+                thumb_img.save(rv, 'jpeg', quality=90)
             jpeg_data = rv.getvalue()
         finally:
             rv.close()
@@ -241,15 +250,18 @@ def render_scaled_region(request, iid, z, t, conn=None, **kwargs):
         jpeg_data = image.renderJpegRegion(z, t, new_x, new_y, new_width,
                                            new_height, level=level,
                                            compression=compress_quality)
-
-    # paste to canvas if needed
-    if canvas is not None:
-        i = BytesIO(jpeg_data)
-        to_paste = Image.open(i)
-        canvas.paste(to_paste, (paste_x, paste_y))
-        rv = BytesIO()
-        canvas.save(rv, 'jpeg', quality=90)
-        jpeg_data = rv.getvalue()
+        # paste to canvas if needed
+        if canvas is not None:
+            i = BytesIO(jpeg_data)
+            rv = BytesIO()
+            try:
+                to_paste = Image.open(i)
+                canvas.paste(to_paste, (paste_x, paste_y))
+                canvas.save(rv, 'jpeg', quality=90)
+                jpeg_data = rv.getvalue()
+            finally:
+                i.close()
+                rv.close()
 
     return HttpResponse(jpeg_data, content_type='image/jpeg')
 
