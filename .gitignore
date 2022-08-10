@@ -9,4 +9,4 @@ _site
 dist
 omero_figure.egg-info
 omero_figure/templates/omero_figure/
-omero_figure/static/omero_figure/
+omero_figure/static/omero_figure/assets/

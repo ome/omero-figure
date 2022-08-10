@@ -114,8 +114,12 @@ def index(request, file_id=None, conn=None, **kwargs):
 
     # update links to static files
     static_dir = static.static('omero_figure/')
-    html = html.replace('href="/assets/', 'href="%s' % static_dir)
-    html = html.replace('src="/assets/', 'src="%s' % static_dir)
+    html = html.replace('href="/', 'href="%s' % static_dir)
+    html = html.replace('src="/', 'src="%s' % static_dir)
+
+    # bootstrap-icons. Use CDN when served by vite, but use static copy
+    # when served by omero-web
+    html = html.replace("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/", static_dir)
     return HttpResponse(html)
 
 
