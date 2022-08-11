@@ -148,6 +148,11 @@ def img_data_json(request, image_id, conn=None, **kwargs):
         rv['pixel_size']['valueY'] = py.getValue()
         rv['pixel_size']['symbolY'] = py.getSymbol()
         rv['pixel_size']['unitY'] = str(py.getUnit())
+        pz = image.getPrimaryPixels().getPhysicalSizeZ()
+        if pz is not None:
+            rv['pixel_size']['valueZ'] = pz.getValue()
+            rv['pixel_size']['symbolZ'] = pz.getSymbol()
+            rv['pixel_size']['unitZ'] = str(pz.getUnit())
     size_t = image.getSizeT()
     time_list = []
     if size_t > 1:
@@ -166,6 +171,22 @@ def timestamps(request, conn=None, **kwargs):
         image = conn.getObject('Image', iid)
         if image is not None:
             data[image.id] = get_timestamps(conn, image)
+    return JsonResponse(data)
+
+
+@login_required()
+def z_scale(request, conn=None, **kwargs):
+
+    iids = request.GET.getlist('image')
+    data = {}
+    for iid in iids:
+        image = conn.getObject('Image', iid)
+        if image is not None:
+            pz = image.getPrimaryPixels().getPhysicalSizeZ()
+            if pz is not None:
+                data[image.id] = {'valueZ': pz.getValue(),
+                                  'symbolZ': pz.getSymbol(),
+                                  'unitZ': str(pz.getUnit())}
     return JsonResponse(data)
 
 

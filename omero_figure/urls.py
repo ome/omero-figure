@@ -73,6 +73,10 @@ urlpatterns = [
     # Use query ?image=1&image=2
     url(r'^timestamps/$', views.timestamps, name='figure_timestamps'),
 
+    # Get Z scale for images
+    # Use query ?image=1&image=2
+    url(r'^z_scale/$', views.z_scale, name='figure_z_scale'),
+
     url(r'^roiCount/(?P<image_id>[0-9]+)/$', views.roi_count,
         name='figure_roiCount'),
 
