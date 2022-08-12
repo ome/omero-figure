@@ -111,6 +111,7 @@ def index(request, file_id=None, conn=None, **kwargs):
     html = html.replace('const USER_FULL_NAME = "OME";', 'const USER_FULL_NAME = "%s";' % user_full_name)
     html = html.replace('const IS_PUBLIC_USER = false;', 'const IS_PUBLIC_USER = %s;' % is_public_user)
     html = html.replace('const MAX_PLANE_SIZE = 10188864;', 'const MAX_PLANE_SIZE = %s;' % max_plane_size)
+    html = html.replace('const LENGTH_UNITS = LENGTHUNITS;', 'const LENGTH_UNITS = %s;' % json.dumps(length_units))
 
     # update links to static files
     static_dir = static.static('omero_figure/')
