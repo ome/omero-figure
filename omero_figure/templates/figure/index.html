@@ -516,7 +516,7 @@
                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
                     <h4 class="modal-title">Label Formatting</h4>
                 </div>
-                <div class="modal-body" style="max-height:518px">
+                <div class="modal-body" style="max-height:542px">
                     <h4>Markdown formatting</h4>
                     <p>
                         You can use "Markdown" syntax to add formatting to plain text. For example,
@@ -579,6 +579,16 @@
                             <th>Height (with markdown formatting)</th>
                             <td>*Height*: **[height.pixel]**</td>
                             <td><i>Height</i>: <strong>300</strong></td>
+                        </tr>
+                        <tr>
+                            <th>Time with decimal precision of 2</th>
+                            <td>Time (s): [t.secs.2]</td>
+                            <td>Time (s): 0.93 s</td>
+                        </tr>
+                        <tr>
+                            <th>Time with frame n°3 as the "zero"</th>
+                            <td>Time (ms): [t.ms-3]</td>
+                            <td>Time (ms): -58 ms</td>
                         </tr>
                         <tr>
                             <th>Image ID</th>
