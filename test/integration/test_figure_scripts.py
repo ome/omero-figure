@@ -131,8 +131,11 @@ def get_panel_json(image, index, page_x):
                "radiusX": size_x/3, "radiusY": size_y/2, "rotation": 45,
                "strokeWidth": 10, "strokeColor": "#00FF00"}]
 
+    labels = (get_time_test_labels() + get_view_test_labels()
+              + get_obj_test_labels() + get_other_test_labels())
+
     img_json = {
-        "labels": [],
+        "labels": labels,
         "channels": [channel],
         "height": 100 * (index + 1),
         "width": 100 * (index + 1),
@@ -153,3 +156,89 @@ def get_panel_json(image, index, page_x):
         "theT": 0
     }
     return img_json
+
+
+def get_time_test_labels(size=12, position="top", color="000000"):
+    """Create test labels about the time"""
+    time_props = ["time", "t"]
+    time_formats = ["", ".index", ".milliseconds", ".ms", ".seconds", ".secs",
+                    ".s", ".minutes", ".mins", ".m", ".hrs:mins:secs",
+                    ".h:m:s", ".hrs:mins", ".h:m", ".mins:secs", ".m:s"]
+
+    dec_formats = ["", ".0", ".2", ".abc"]  # .abc for resilience test
+    ref_frames = ["", "-0", "-1", "-abc"]  # -0 and abc for resilience test
+
+    label_text = []
+    for prop in time_props:
+        tmp = [f"[{prop}{format}]" for format in time_formats]
+        label_text.append(" or ".join(tmp))
+    for dec_format in dec_formats:
+        tmp = [f"[t{dec_format}{ref_fr}]" for ref_fr in ref_frames]
+        label_text.append(" or ".join(tmp))
+        tmp = [f"[t.s{dec_format}{ref_fr}]" for ref_fr in ref_frames]
+        label_text.append(" or ".join(tmp))
+
+    labels = []
+    for text in label_text:
+        labels.append({"text": text, "size": size,
+                       "position": position, "color": color})
+    return labels
+
+
+def get_view_test_labels(size=12, position="top", color="000000"):
+    """Create test labels for about the view"""
+
+    view_props = ["x", "y", "z", "width", "w", "height", "h"]
+    view_formats = ["", ".pixel", ".px", ".unit"]
+
+    dec_formats = ["", ".0", ".2", ".abc"]  # .abc for resilience test
+
+    label_text = []
+    for prop in view_props:
+        tmp = [f"[{prop}{format}]" for format in view_formats]
+        label_text.append(" or ".join(tmp))
+    tmp = [f"[x{dec_format}]" for dec_format in dec_formats]
+    label_text.append(" or ".join(tmp))
+    tmp = [f"[x.unit{dec_format}]" for dec_format in dec_formats]
+    label_text.append(" or ".join(tmp))
+
+    labels = []
+    for text in label_text:
+        labels.append({"text": text, "size": size,
+                       "position": position, "color": color})
+    return labels
+
+
+def get_obj_test_labels(size=12, position="top", color="000000"):
+    """Create test labels for about the image or dataset"""
+
+    obj_props = ["image", "dataset"]
+    obj_formats = ["", ".id", ".name"]
+
+    label_text = []
+    for prop in obj_props:
+        tmp = [f"[{prop}{format}]" for format in obj_formats]
+        label_text.append(" or ".join(tmp))
+
+    labels = []
+    for text in label_text:
+        labels.append({"text": text, "size": size,
+                       "position": position, "color": color})
+    return labels
+
+
+def get_other_test_labels(size=12, position="top", color="000000"):
+    """Create test labels for other labels and markdown"""
+    other_props = ["rotation", "rot", "channels", "c"]
+    markdowns = ["", "*", "**"]
+
+    label_text = []
+    for prop in other_props:
+        tmp = [f"{md}[{prop}]{md}" for md in markdowns]
+        label_text.append(" or ".join(tmp))
+
+    labels = []
+    for text in label_text:
+        labels.append({"text": text, "size": size,
+                       "position": position, "color": color})
+    return labels
