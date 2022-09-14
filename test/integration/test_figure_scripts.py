@@ -134,26 +134,43 @@ def get_panel_json(image, index, page_x):
     labels = (get_time_test_labels() + get_view_test_labels()
               + get_obj_test_labels() + get_other_test_labels())
 
+    # This works if we have Units support (OMERO 5.1)
+    px = image.getPrimaryPixels().getPhysicalSizeX()
+    py = image.getPrimaryPixels().getPhysicalSizeY()
+    pz = image.getPrimaryPixels().getPhysicalSizeZ()
     img_json = {
-        "labels": labels,
-        "channels": [channel],
-        "height": 100 * (index + 1),
+        "imageId": image.getId().getValue(),
+        "name": "test_image",  # image.getName().getValue()
         "width": 100 * (index + 1),
-        "sizeT": pix.getSizeT().val,
+        "height": 100 * (index + 1),
         "sizeZ": pix.getSizeZ().val,
+        "theZ": 0,
+        "sizeT": pix.getSizeT().val,
+        "theT": 0,
+        # rdef -> used at panel creation then deleted
+        "channels": [channel],
         "orig_width": size_x,
         "orig_height": size_y,
+        "x": page_x,
+        "y": index * 200,
+        'datasetName': "TestDataset",
+        'datasetId': 123,
+        'pixel_size_x': px.getValue(),
+        'pixel_size_y': py.getValue(),
+        'pixel_size_z': None if pz is None else pz.getValue(),
+        'pixel_size_x_symbol': px.getSymbol(),
+        'pixel_size_z_symbol': None if pz is None else pz.getSymbol(),
+        'pixel_size_x_unit': str(px.getUnit()),
+        'pixel_size_z_unit': None if pz is None else str(pz.getUnit()),
+        'deltaT': [],
+        "zoom": 100 + (index * 50),
         "dx": 0,
         "dy": 0,
+        "labels": labels,
         "rotation": 100 * index,
-        "imageId": image.getId().getValue(),
-        "name": "test_image",
-        "zoom": 100 + (index * 50),
+        "rotation_symbol": '\xB0',
+        "max_export_dpi": 1000,
         "shapes": shapes,
-        "y": index * 200,
-        "x": page_x,
-        "theZ": 0,
-        "theT": 0
     }
     return img_json
 
