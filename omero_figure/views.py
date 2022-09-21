@@ -102,7 +102,7 @@ def index(request, file_id=None, conn=None, **kwargs):
     omeroweb_index = reverse("index")
     figure_index = reverse("figure_index")
     ping_url = reverse("keepalive_ping")
-    html = html.replace('const BASE_OMEROWEB_URL = "http://localhost:4080/figure/";',
+    html = html.replace('const BASE_OMEROWEB_URL = dev_omeroweb_url;',
                         'const BASE_OMEROWEB_URL = "%s";' % omeroweb_index)
     html = html.replace('const APP_ROOT_URL = "";',
                         'const APP_ROOT_URL = "%s";' % figure_index)
