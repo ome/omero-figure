@@ -182,17 +182,19 @@ def get_time_test_labels(size=12, position="top", color="000000"):
                     ".s", ".minutes", ".mins", ".m", ".hrs:mins:secs",
                     ".h:m:s", ".hrs:mins", ".h:m", ".mins:secs", ".m:s"]
 
-    dec_formats = ["", ".0", ".2", ".abc"]  # .abc for resilience test
-    ref_frames = ["", "-0", "-1", "-abc"]  # -0 and abc for resilience test
+    precisions = ["", ";precision=0", ";precision=2",
+                  " ; precision  = abc "]  # abc and spaces for resilience test
+    offsets = ["", ";offset=0", ";offset=1",
+               " ; offset = abc "]  # 0, abc and spaces for resilience test
 
     label_text = []
     for prop in time_props:
         tmp = [f"[{prop}{format}]" for format in time_formats]
         label_text.append(" or ".join(tmp))
-    for dec_format in dec_formats:
-        tmp = [f"[t{dec_format}{ref_fr}]" for ref_fr in ref_frames]
+    for precision in precisions:
+        tmp = [f"[t{precision}{offset}]" for offset in offsets]
         label_text.append(" or ".join(tmp))
-        tmp = [f"[t.s{dec_format}{ref_fr}]" for ref_fr in ref_frames]
+        tmp = [f"[t.s{precision}{offset}]" for offset in offsets]
         label_text.append(" or ".join(tmp))
 
     labels = []
@@ -208,15 +210,16 @@ def get_view_test_labels(size=12, position="top", color="000000"):
     view_props = ["x", "y", "z", "width", "w", "height", "h"]
     view_formats = ["", ".pixel", ".px", ".unit"]
 
-    dec_formats = ["", ".0", ".2", ".abc"]  # .abc for resilience test
+    precisions = ["", ";precision=0", ";precision=2",
+                  "; precision = abc "]  # abc and spaces for resilience test
 
     label_text = []
     for prop in view_props:
         tmp = [f"[{prop}{format}]" for format in view_formats]
         label_text.append(" or ".join(tmp))
-    tmp = [f"[x{dec_format}]" for dec_format in dec_formats]
+    tmp = [f"[x{precision}]" for precision in precisions]
     label_text.append(" or ".join(tmp))
-    tmp = [f"[x.unit{dec_format}]" for dec_format in dec_formats]
+    tmp = [f"[x.unit{precision}]" for precision in precisions]
     label_text.append(" or ".join(tmp))
 
     labels = []
