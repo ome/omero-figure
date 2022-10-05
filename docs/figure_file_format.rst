@@ -132,9 +132,9 @@ Optional settings for each panel::
         },
         {
             // for 'time', 'x', 'y', 'width' and 'height', decimal precision
-            // can be specified in 3rd position (here 2)
-            // 'time' can be relative to a frame, specified after a '-' sign (here 3)
-            "text": "Time (s): [time.secs.2-3]",
+            // parameter can be passed (here 2)
+            // 'time' can also be passed an offset parameter (relative to a frame, here n°3)
+            "text": "Time (s): [time.secs; precision=2; offset=3]",
             "size": "12",
             "position": "topright",
             "color": "FFFFFF"
