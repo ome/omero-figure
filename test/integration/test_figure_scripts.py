@@ -131,25 +131,134 @@ def get_panel_json(image, index, page_x):
                "radiusX": size_x/3, "radiusY": size_y/2, "rotation": 45,
                "strokeWidth": 10, "strokeColor": "#00FF00"}]
 
+    labels = (get_time_test_labels() + get_view_test_labels()
+              + get_obj_test_labels() + get_other_test_labels())
+
+    # This works if we have Units support (OMERO 5.1)
+    px = image.getPrimaryPixels().getPhysicalSizeX()
+    py = image.getPrimaryPixels().getPhysicalSizeY()
+    pz = image.getPrimaryPixels().getPhysicalSizeZ()
     img_json = {
-        "labels": [],
-        "channels": [channel],
-        "height": 100 * (index + 1),
+        "imageId": image.getId().getValue(),
+        "name": "test_image",  # image.getName().getValue()
         "width": 100 * (index + 1),
-        "sizeT": pix.getSizeT().val,
+        "height": 100 * (index + 1),
         "sizeZ": pix.getSizeZ().val,
+        "theZ": 0,
+        "sizeT": pix.getSizeT().val,
+        "theT": 0,
+        # rdef -> used at panel creation then deleted
+        "channels": [channel],
         "orig_width": size_x,
         "orig_height": size_y,
+        "x": page_x,
+        "y": index * 200,
+        'datasetName': "TestDataset",
+        'datasetId': 123,
+        'pixel_size_x': None if px is None else px.getValue(),
+        'pixel_size_y': None if py is None else py.getValue(),
+        'pixel_size_z': None if pz is None else pz.getValue(),
+        'pixel_size_x_symbol': '\xB5m' if px is None else px.getSymbol(),
+        'pixel_size_z_symbol': None if pz is None else pz.getSymbol(),
+        'pixel_size_x_unit': None if px is None else str(px.getUnit()),
+        'pixel_size_z_unit': None if pz is None else str(pz.getUnit()),
+        'deltaT': [],
+        "zoom": 100 + (index * 50),
         "dx": 0,
         "dy": 0,
+        "labels": labels,
         "rotation": 100 * index,
-        "imageId": image.getId().getValue(),
-        "name": "test_image",
-        "zoom": 100 + (index * 50),
+        "rotation_symbol": '\xB0',
+        "max_export_dpi": 1000,
         "shapes": shapes,
-        "y": index * 200,
-        "x": page_x,
-        "theZ": 0,
-        "theT": 0
     }
     return img_json
+
+
+def get_time_test_labels(size=12, position="top", color="000000"):
+    """Create test labels about the time"""
+    time_props = ["time", "t"]
+    time_formats = ["", ".index", ".milliseconds", ".ms", ".seconds", ".secs",
+                    ".s", ".minutes", ".mins", ".m", ".hrs:mins:secs",
+                    ".h:m:s", ".hrs:mins", ".h:m", ".mins:secs", ".m:s"]
+
+    precisions = ["", ";precision=0", ";precision=2",
+                  " ; precision  = abc "]  # abc and spaces for resilience test
+    offsets = ["", ";offset=0", ";offset=1",
+               " ; offset = abc "]  # 0, abc and spaces for resilience test
+
+    label_text = []
+    for prop in time_props:
+        tmp = [f"[{prop}{format}]" for format in time_formats]
+        label_text.append(" or ".join(tmp))
+    for precision in precisions:
+        tmp = [f"[t{precision}{offset}]" for offset in offsets]
+        label_text.append(" or ".join(tmp))
+        tmp = [f"[t.s{precision}{offset}]" for offset in offsets]
+        label_text.append(" or ".join(tmp))
+
+    labels = []
+    for text in label_text:
+        labels.append({"text": text, "size": size,
+                       "position": position, "color": color})
+    return labels
+
+
+def get_view_test_labels(size=12, position="top", color="000000"):
+    """Create test labels for about the view"""
+
+    view_props = ["x", "y", "z", "width", "w", "height", "h"]
+    view_formats = ["", ".pixel", ".px", ".unit"]
+
+    precisions = ["", ";precision=0", ";precision=2",
+                  "; precision = abc "]  # abc and spaces for resilience test
+
+    label_text = []
+    for prop in view_props:
+        tmp = [f"[{prop}{format}]" for format in view_formats]
+        label_text.append(" or ".join(tmp))
+    tmp = [f"[x{precision}]" for precision in precisions]
+    label_text.append(" or ".join(tmp))
+    tmp = [f"[x.unit{precision}]" for precision in precisions]
+    label_text.append(" or ".join(tmp))
+
+    labels = []
+    for text in label_text:
+        labels.append({"text": text, "size": size,
+                       "position": position, "color": color})
+    return labels
+
+
+def get_obj_test_labels(size=12, position="top", color="000000"):
+    """Create test labels for about the image or dataset"""
+
+    obj_props = ["image", "dataset"]
+    obj_formats = ["", ".id", ".name"]
+
+    label_text = []
+    for prop in obj_props:
+        tmp = [f"[{prop}{format}]" for format in obj_formats]
+        label_text.append(" or ".join(tmp))
+
+    labels = []
+    for text in label_text:
+        labels.append({"text": text, "size": size,
+                       "position": position, "color": color})
+    return labels
+
+
+def get_other_test_labels(size=12, position="top", color="000000"):
+    """Create test labels for other labels and markdown"""
+    other_props = ["rotation", "rot", "channels", "c"]
+    markdowns = ["", "*", "**"]
+
+    label_text = []
+    for prop in other_props:
+        tmp = [f"{md}[{prop}]{md}" for md in markdowns]
+        label_text.append(" or ".join(tmp))
+
+    labels = []
+    for text in label_text:
+        labels.append({"text": text, "size": size,
+                       "position": position, "color": color})
+    return labels

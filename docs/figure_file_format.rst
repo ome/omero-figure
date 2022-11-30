@@ -129,6 +129,15 @@ Optional settings for each panel::
             "size": "12",
             "position": "topright",
             "color": "FFFFFF"
+        },
+        {
+            // for 'time', 'x', 'y', 'width' and 'height', decimal precision
+            // parameter can be passed (here 2)
+            // 'time' can also be passed an offset parameter (relative to a frame, here n°3)
+            "text": "Time (s): [time.secs; precision=2; offset=3]",
+            "size": "12",
+            "position": "topright",
+            "color": "FFFFFF"
         }
     ],
 
