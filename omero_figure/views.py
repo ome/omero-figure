@@ -43,7 +43,6 @@ from io import BytesIO
 from omeroweb.webclient.decorators import login_required
 from .omeroutils import get_timestamps
 
-from . import utils
 import logging
 
 try:
@@ -83,9 +82,10 @@ def index(request, file_id=None, conn=None, **kwargs):
     and lay them out in canvas by dragging & resizing etc
     """
 
-    script_service = conn.getScriptService()
-    sid = script_service.getScriptID(SCRIPT_PATH)
-    script_missing = sid <= 0
+    # TODO: use script_missing test to enable/diable scripts button
+    # script_service = conn.getScriptService()
+    # sid = script_service.getScriptID(SCRIPT_PATH)
+    # script_missing = sid <= 0
     user = conn.getUser()
     user_full_name = "%s %s" % (user.firstName, user.lastName)
     max_w, max_h = conn.getMaxPlaneSize()
@@ -107,11 +107,16 @@ def index(request, file_id=None, conn=None, **kwargs):
     html = html.replace('const APP_ROOT_URL = "";',
                         'const APP_ROOT_URL = "%s";' % figure_index)
     html = html.replace('const USER_ID = 0;', 'const USER_ID = %s' % user.id)
-    html = html.replace('const PING_URL = "";', 'const PING_URL = "%s";' % ping_url)
-    html = html.replace('const USER_FULL_NAME = "OME";', 'const USER_FULL_NAME = "%s";' % user_full_name)
-    html = html.replace('const IS_PUBLIC_USER = false;', 'const IS_PUBLIC_USER = %s;' % is_public_user)
-    html = html.replace('const MAX_PLANE_SIZE = 10188864;', 'const MAX_PLANE_SIZE = %s;' % max_plane_size)
-    html = html.replace('const LENGTH_UNITS = LENGTHUNITS;', 'const LENGTH_UNITS = %s;' % json.dumps(length_units))
+    html = html.replace('const PING_URL = "";',
+                        'const PING_URL = "%s";' % ping_url)
+    html = html.replace('const USER_FULL_NAME = "OME";',
+                        'const USER_FULL_NAME = "%s";' % user_full_name)
+    html = html.replace('const IS_PUBLIC_USER = false;',
+                        'const IS_PUBLIC_USER = %s;' % is_public_user)
+    html = html.replace('const MAX_PLANE_SIZE = 10188864;',
+                        'const MAX_PLANE_SIZE = %s;' % max_plane_size)
+    html = html.replace('const LENGTH_UNITS = LENGTHUNITS;',
+                        'const LENGTH_UNITS = %s;' % json.dumps(length_units))
 
     # update links to static files
     static_dir = static.static('omero_figure/')
@@ -120,7 +125,9 @@ def index(request, file_id=None, conn=None, **kwargs):
 
     # bootstrap-icons. Use CDN when served by vite, but use static copy
     # when served by omero-web
-    html = html.replace("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/", static_dir)
+    html = html.replace(
+        "https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/",
+        static_dir)
     return HttpResponse(html)
 
 
@@ -381,13 +388,13 @@ def save_web_figure(request, conn=None, **kwargs):
     link_to_images = False      # Disabled for now
     if link_to_images:
         current_links = conn.getAnnotationLinks("Image", ann_ids=[file_id])
-        for l in current_links:
-            if l.getParent().getId().getValue() not in image_ids:
+        for lnk in current_links:
+            if lnk.getParent().getId().getValue() not in image_ids:
                 # remove old link
-                update.deleteObject(l._obj, conn.SERVICE_OPTS)
+                update.deleteObject(lnk._obj, conn.SERVICE_OPTS)
             else:
                 # we don't need to create links for these
-                image_ids.remove(l.getParent().getId().getValue())
+                image_ids.remove(lnk.getParent().getId().getValue())
 
         # create new links if necessary
         links = []
@@ -571,7 +578,7 @@ def unit_conversion(request, value, from_unit, to_unit, conn=None, **kwargs):
         from_unit = getattr(UnitsLength, str(from_unit))
         to_unit = getattr(UnitsLength, str(to_unit))
         value = float(value)
-    except ImportError as ex:
+    except ImportError:
         error = ("Failed to import omero.model.enums.UnitsLength."
                  " Requires OMERO 5.1")
     except AttributeError as ex:
