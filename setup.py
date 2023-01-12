@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2016 University of Dundee.
+# Copyright (c) 2016-2023 University of Dundee.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -112,12 +112,9 @@ def require_npm(command, strict=False):
     class WrappedCommand(command):
         def run(self):
             if strict or not os.path.exists(
-                    'omero_figure/static/figure/figure.js'):
+                    'omero_figure/templates/omero_figure/index.html'):
                 self.spawn(['npm', 'install'])
-                self.spawn(['grunt', 'jst'])
-                self.spawn(['grunt', 'concat'])
-                self.spawn(['grunt', 'jshint', '--force'])
-                self.spawn(['grunt', 'copy:shapeEditor'])
+                self.spawn(['npm', 'build'])
             command.run(self)
     return WrappedCommand
 
