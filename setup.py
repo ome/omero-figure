@@ -114,7 +114,7 @@ def require_npm(command, strict=False):
             if strict or not os.path.exists(
                     'omero_figure/templates/omero_figure/index.html'):
                 self.spawn(['npm', 'install'])
-                self.spawn(['npm', 'build'])
+                self.spawn(['npm', 'run', 'build'])
             command.run(self)
     return WrappedCommand
 
