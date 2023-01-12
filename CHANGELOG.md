@@ -1,3 +1,9 @@
+
+5.1.0 (November 2022)
+---------------------
+
+- Time offset and precision formatting for labels (Thanks to Tom Boissonnet) ([#481](https://github.com/ome/omero-figure/pull/481))
+
 5.0.0 (August 2022)
 -------------------
 

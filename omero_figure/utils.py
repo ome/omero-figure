@@ -19,7 +19,7 @@
 import json
 import os
 
-__version__ = "5.0.1.dev0"
+__version__ = "5.1.1.dev0"
 
 
 def read_file(fname, content_type=None):
