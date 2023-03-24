@@ -141,12 +141,21 @@ Install Node from https://nodejs.org, then:
     $ npm install
     $ npm run start
 
-This will serve the app at http://localhost:8080/.
 
-During development, we load and save figure files to an omero-web server at
-http://localhost:4080/. This can be edited in `src/index.html`.
-You should be logged-in to OMERO in the webclient at this URL.
+CORS
+****
 
+During development, we load and save figure files to an omero-web server.
+You will need to have CORS enabled on your local omero-web server at
+http://localhost:4080/ and be logged in already.
+This URL can be edited in `src/index.html`.
+
+You MUST access the figure app at http://localhost:8080/ (NOT http://127.0.0.1:8080/)
+for CORS to work.
+
+
+Build
+-----
 
 To build the app:
 
