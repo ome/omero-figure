@@ -286,6 +286,8 @@
     .scalebar_form .row {
         align-items: center;
         display: flex;
+        gap: 3px;
+        margin-top: 3px;
     }
 
     .scalebar_form .scalebar_length {
