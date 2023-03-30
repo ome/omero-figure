@@ -91,6 +91,7 @@ Optional settings for each panel::
     "scalebar": {
         "show": true,
         "length": 10,
+        "height": 3,
         "units": "MICROMETER",
         "position": "bottomright",  // topright, topleft, bottomleft
         "color": "FFFFFF",
