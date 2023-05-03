@@ -36,7 +36,7 @@ This is an example of a minimal OMERO.figure JSON file::
 
     {
     // see older versions below
-    "version": 6,
+    "version": 7,
     "panels": [
         {
             // position of the panel on the page
@@ -91,6 +91,7 @@ Optional settings for each panel::
     "scalebar": {
         "show": true,
         "length": 10,
+        "height": 3,
         "units": "MICROMETER",
         "position": "bottomright",  // topright, topleft, bottomleft
         "color": "FFFFFF",
@@ -233,6 +234,10 @@ that lines will not appear thicker on a panel when it is zoomed in. Supported Sh
 
 Version history
 ----------------
+
+New in version 7:
+
+- `scalebar`: added 'height': <integer>
 
 New in version 6:
 
