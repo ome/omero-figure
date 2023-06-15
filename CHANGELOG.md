@@ -1,3 +1,7 @@
+6.0.1 (June 2023)
+-----------------
+
+- Make app compatible with Django 4.0.x ([#508](https://github.com/ome/omero-figure/pull/508))
 
 6.0.0 (May 2023)
 ----------------
