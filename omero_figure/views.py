@@ -123,7 +123,7 @@ def index(request, file_id=None, conn=None, **kwargs):
     html = html.replace('href="/', 'href="%s' % static_dir)
     html = html.replace('src="/', 'src="%s' % static_dir)
     html = html.replace('const STATIC_DIR = "";',
-                        'const STATIC_DIR = "%s";' % static_dir[0:-1])  #remove trailing slash
+                        'const STATIC_DIR = "%s";' % static_dir[0:-1])
 
     # bootstrap-icons. Use CDN when served by vite, but use static copy
     # when served by omero-web
