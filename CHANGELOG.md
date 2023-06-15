@@ -1,4 +1,11 @@
 
+6.0.0 (May 2023)
+----------------
+
+- Support scalebar height (Thanks to Julian Hniopek) ([#504](https://github.com/ome/omero-figure/pull/504))
+  - This includes an update to the [Figure file format](https://github.com/ome/omero-figure/blob/master/docs/figure_file_format.rst)
+- Default file name `YYYY-MM-DD_hh-mm-ss` (Thanks to Tom Boissonnet) ([#497](https://github.com/ome/omero-figure/pull/497))
+
 5.1.0 (November 2022)
 ---------------------
 
