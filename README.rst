@@ -191,19 +191,19 @@ First build the Docker image and specify the server you wish to connect to:
 ::
 
    $ docker build -t figure-devel .
-   $ export HOST=demo.openmicroscopy.org
+   $ export OMEROHOST=demo.openmicroscopy.org
 
 
 To develop ``omero-figure`` you can either make all the changes within the Docker container itself by running:
 ::
 
 
-    $ docker run -ti -e OMEROHOST=$HOST -p 4080:4080 figure-devel
+    $ docker run -ti -e OMEROHOST -p 4080:4080 figure-devel
 
 The preferred option is to mount the repository containing the omero-figure code. Make the changes locally and see the changes in the docker container. To do so, run:
 ::
 
-    $ docker run -ti -e OMEROHOST=$HOST -p 4080:4080  -v /PATH_TO_GIT_REPO/omero-figure:/home/figure/src figure-devel
+    $ docker run -ti -e OMEROHOST -p 4080:4080  -v /PATH_TO_GIT_REPO/omero-figure:/home/figure/src figure-devel
 
 
 After starting the container, run ``docker ps`` in another terminal to find the ID of the container. Then run:
