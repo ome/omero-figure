@@ -105,7 +105,7 @@ Optional settings for each panel::
     ],
 
     // labels on the panel
-    // positions are: top, left, right, leftvert, bottom, topleft, topright, bottomleft, bottomright
+    // positions are: top, left, right, leftvert, rightvert, bottom, topleft, topright, bottomleft, bottomright
     "labels": [
         {
             "text": "GFP-INCENP",
