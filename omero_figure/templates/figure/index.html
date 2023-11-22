@@ -605,6 +605,11 @@
                             <td>Dataset ID: [dataset.id]</td>
                             <td>Dataset ID: 1654</td>
                         </tr>
+                        <tr>
+                            <th>Zoom</th>
+                            <td>[zoom]</td>
+                            <td>100 %</td>
+                        </tr>
                     </table>
                     <h4>Legend</h4>
                     <p>The figure legend will be included in the PDF info page when the figure is
@@ -698,8 +703,14 @@
                 </div>
                 <form class="labelsFromMapAnnsForm" role="form">
                     <div class="modal-body">
-                        <p>Choose Key
-                            <small class="text-muted">(shows numbers of images)</small>:</p>
+                        <div>                                                    
+                            <input type="radio" id="all-keys" name="kvpChoice" value="all-keys" />
+                            <label for="all-keys">All Keys </label>
+              
+                            <input type="radio" id="single-key" name="kvpChoice" value="single-key" checked />
+                            <label for="single-key">Choose Key <small class="text-muted">(shows numbers of images)</small>:</label>
+                        </div>
+                    
                         <select>
                         </select>
                         <div class="checkbox">
