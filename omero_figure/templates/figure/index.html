@@ -615,6 +615,11 @@
                             <td>Dataset ID: [dataset.id]</td>
                             <td>Dataset ID: 1654</td>
                         </tr>
+                        <tr>
+                            <th>Zoom</th>
+                            <td>[zoom]</td>
+                            <td>100 %</td>
+                        </tr>
                     </table>
                     <h4>Legend</h4>
                     <p>The figure legend will be included in the PDF info page when the figure is
@@ -708,8 +713,14 @@
                 </div>
                 <form class="labelsFromMapAnnsForm" role="form">
                     <div class="modal-body">
-                        <p>Choose Key
-                            <small class="text-muted">(shows numbers of images)</small>:</p>
+                        <div>                                                    
+                            <input type="radio" id="all-keys" name="kvpChoice" value="all-keys" />
+                            <label for="all-keys">All Keys </label>
+              
+                            <input type="radio" id="single-key" name="kvpChoice" value="single-key" checked />
+                            <label for="single-key">Choose Key <small class="text-muted">(shows numbers of images)</small>:</label>
+                        </div>
+                    
                         <select>
                         </select>
                         <div class="checkbox">
@@ -875,6 +886,9 @@
                         <button type="button" class="aleft btn btn-default btn-sm" title="Align Left" disabled="disabled">
                             <span class="glyphicon glyphicon-align-left"></span>
                         </button>
+                        <button type="button" class="aright btn btn-default btn-sm" title="Align Right" disabled="disabled">
+                            <span class="glyphicon glyphicon-align-right"></span>
+                        </button>
                         <button type="button" class="agrid btn btn-default btn-sm" title="Align To Grid" disabled="disabled">
                             <span class="glyphicon glyphicon-th"></span>
                         </button>
@@ -899,6 +913,9 @@
                     <div class="btn-group icon-buttons alignment-buttons">
                         <button type="button" class="atop btn btn-default btn-sm rotate-font" title="Align Top" disabled="disabled">
                             <span class="glyphicon glyphicon-align-right"></span>
+                        </button>
+                        <button type="button" class="abottom btn btn-default btn-sm rotate-font" title="Align Bottom" disabled="disabled">
+                            <span class="glyphicon glyphicon-align-left"></span>
                         </button>
                         <button type="button" class="btn btn-default btn-sm dropdown-toggle" title="Align Sizes"
                             disabled="disabled" data-toggle="dropdown">
@@ -1080,12 +1097,14 @@
                     <div class='clearfix'></div>
                     <div class='tab-footer'>
                         <div class="col-sm-2 no-padding">
-                            <h5>Zoom</h5>
+                            <h5>Zoom %</h5>
                         </div>
                         <div class="col-sm-8 no-padding">
                             <div id="vp_zoom_slider"></div>
                         </div>
-                        <div id="vp_zoom_value" class="col-sm-2" style="padding: 8px 0 0; text-align:right"></div>
+                    
+                        <input id="vp_zoom_value" type="number" size="4"/>
+                        
                         <div class='clearfix'></div>
                         <div id="reset-zoom-view">
                             <!-- button added by ZoomView render() -->
