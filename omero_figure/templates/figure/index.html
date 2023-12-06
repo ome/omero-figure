@@ -520,8 +520,14 @@
                     <h4>Markdown formatting</h4>
                     <p>
                         You can use "Markdown" syntax to add formatting to plain text. For example,
-                        **this text will be bold** and this *word* will be italic. NB: Links are not
-                        supported for panel labels.
+                        **this text will be bold** and this *word* will be italic. 
+                    </p>
+                    <p>
+                        NB: Links are not supported for panel labels.
+                    </p>
+                    <p>
+                        NB: You can escape a certain character to not be interpreted as Markdown by adding \ in front of the 
+                        character. Ex: "my_string_" is interpreted as "my<i>string</i>" but "my\_string\_" is now interpreted as "my_string_"
                     </p>
 
                     <table class="table">
@@ -531,21 +537,21 @@
                             <th>...this text</th></tr>
                         <tr>
                             <th>BOLD</th>
-                            <td>Use 2 stars for **bold**.</td>
-                            <td>Use 2 stars for <strong>bold</strong>.</td>
+                            <td>**bold** or __bold__</td>
+                            <td><strong>bold</strong> or <strong>bold</strong></td>
                         </tr>
                         <tr>
                             <th>ITALIC</th>
-                            <td>Use 1 star for *italic*.</td>
-                            <td>Use 1 star for <i>italic</i>.</td>
+                            <td>*italic* or _italic_</td>
+                            <td><i>italic</i> or <i>italic</i></td>
                         </tr>
                         <tr>
                             <th>LINKS</th>
-                            <td>Add links with [Link text](http://link_url.com)</td>
-                            <td>Add links with <a href="#">Link text</a></td>
+                            <td>[Link text](http://link_url.com)</td>
+                            <td><a href="#">Link text</a></td>
                         </tr>
                        <!--  <tr><td>You need to use 2 line breaks between paragraphs</td><td></td></tr> -->
-                    </table>
+                    </table>                    
                     <h4>Dynamic properties</h4>
                     <p>
                         The drop-down menu in the 'Add Labels' form allows you to create labels based on Image metadata. 
