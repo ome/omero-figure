@@ -184,27 +184,28 @@ Using Docker
 ************
 
 It is also possible to develop figure in docker without installing anything locally.
-The Docker image is built on top of ``openmicroscopy/omero-web-standalone:latest``, so you will have a fully functional
-omero-web environment while developing ``omero-figure``. 
+The Docker image at ``omero-figure/Dockerfile`` is built on top of
+`openmicroscopy/omero-web-standalone:latest <https://hub.docker.com/r/openmicroscopy/omero-web-standalone>`_,
+so you will have a fully functional omero-web environment while developing ``omero-figure``. 
 First build the Docker image and specify the server you wish to connect to:
 
 ::
 
+   $ cd omero-figure
    $ docker build -t figure-devel .
    $ export OMEROHOST=demo.openmicroscopy.org
 
-
-To develop ``omero-figure`` you can either make all the changes within the Docker container itself by running:
-::
-
-
-    $ docker run -ti -e OMEROHOST -p 4080:4080 figure-devel
-
-The preferred option is to mount the repository containing the omero-figure code. Make the changes locally and see the changes in the docker container. To do so, run:
+The preferred option is to mount the repository containing the omero-figure code. You can make the changes locally and run `grunt watch`
+as described above and see changes in the docker container. To do so, run:
 ::
 
     $ docker run -ti -e OMEROHOST -p 4080:4080  -v /PATH_TO_GIT_REPO/omero-figure:/home/figure/src figure-devel
 
+
+Alternatively, to run and develop ``omero-figure`` within the Docker container itself:
+::
+
+    $ docker run -ti -e OMEROHOST -p 4080:4080 figure-devel
 
 After starting the container, run ``docker ps`` in another terminal to find the ID of the container. Then run:
 
@@ -212,7 +213,8 @@ After starting the container, run ``docker ps`` in another terminal to find the 
 
    $ docker exec -u 0 -it CONTAINER_ID bash   # replace CONTAINER_ID by the correct value
    $ cd /home/figure/src
-   $ grunt watch
+   $ vi src/js/app.js
+   $ grunt build          # or run grunt watch in another terminal
 
 
 
