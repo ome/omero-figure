@@ -1,4 +1,4 @@
-FROM openmicroscopy/omero-web-standalone:5.21.0
+FROM openmicroscopy/omero-web-standalone:latest
 
 USER root
 RUN yum -y install npm
