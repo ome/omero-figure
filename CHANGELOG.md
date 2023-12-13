@@ -16,7 +16,7 @@ Thanks to Rémy Dornier for all the following features:
 - Manual Zoom level ([#517](https://github.com/ome/omero-figure/pull/517))
 
 Other changes:
-- Allow Pillow 10.x for figure export ([#523](https://github.com/ome/omero-figure/pull/523))
+- Avoid font.getSize(), removed in Pillow 10.x ([#523](https://github.com/ome/omero-figure/pull/523))
 - Improve developer instructions ([#515](https://github.com/ome/omero-figure/pull/515))
 - Handle image loading errors ([#532](https://github.com/ome/omero-figure/pull/532))
 
