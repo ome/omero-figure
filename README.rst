@@ -199,6 +199,9 @@ The preferred option is to mount the repository containing the omero-figure code
 as described above and see changes in the docker container. To do so, run:
 ::
 
+    $ cd /PATH_TO_GIT_REPO/omero-figure
+    $ grunt build
+    $ grunt watch   # to see updates
     $ docker run -ti -e OMEROHOST -p 4080:4080  -v /PATH_TO_GIT_REPO/omero-figure:/home/figure/src figure-devel
 
 
