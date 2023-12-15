@@ -183,7 +183,7 @@ for running the development server.
 Using Docker
 ************
 
-It is also possible to develop figure in docker without installing anything locally.
+It is also possible to develop figure in docker without creating a python environment locally.
 The Docker image at ``omero-figure/Dockerfile`` is built on top of
 `openmicroscopy/omero-web-standalone:latest <https://hub.docker.com/r/openmicroscopy/omero-web-standalone>`_,
 so you will have a fully functional omero-web environment while developing ``omero-figure``. 
