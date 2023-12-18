@@ -177,6 +177,7 @@ which will include `omero-web`:
     $ cd omero-figure
     $ pip install -e .
 
+You'll also need to run the `omero config` steps detailed above.
 See instructions at https://omero.readthedocs.io/en/latest/developers/Web/Deployment.html
 for running the development server.
 
@@ -186,8 +187,11 @@ Using Docker
 It is also possible to develop figure in docker without creating a python environment locally.
 The Docker image at ``omero-figure/Dockerfile`` is built on top of
 `openmicroscopy/omero-web-standalone:latest <https://hub.docker.com/r/openmicroscopy/omero-web-standalone>`_,
-so you will have a fully functional omero-web environment while developing ``omero-figure``. 
-First build the Docker image and specify the server you wish to connect to:
+so you will have a fully functional omero-web environment while developing ``omero-figure``.
+This Docker image includes OMERO.figure. You can either replace this with a link to your local ``omero-figure`` repo
+or you can use the Docker copy of OMERO.figure for development.
+
+In either case, start by building the Docker image and specify the server you wish to connect to:
 
 ::
 
@@ -195,8 +199,10 @@ First build the Docker image and specify the server you wish to connect to:
    $ docker build -t figure-devel .
    $ export OMEROHOST=demo.openmicroscopy.org
 
-The preferred option is to mount the repository containing the omero-figure code. You can make the changes locally and run `grunt watch`
-as described above and see changes in the docker container. To do so, run:
+To use your local ``omero-figure`` repo for development, you can mount this in place of the Docker ``omero-figure``.
+You'll need `npm` and `grunt` installed locally and run `grunt watch` during development as described above.
+You can refresh the Docker hosted page at http://localhost:4080/figure to see changes:
+
 ::
 
     $ cd /PATH_TO_GIT_REPO/omero-figure
