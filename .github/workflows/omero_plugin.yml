@@ -27,8 +27,8 @@ jobs:
       - name: Checkout omero-test-infra
         uses: actions/checkout@master
         with:
-          repository: ome/omero-test-infra
+          repository: jburel/omero-test-infra
           path: .omero
-          ref: ${{ secrets.OMERO_TEST_INFRA_REF }}
+          ref: update
       - name: Build and run OMERO tests
         run: .omero/docker $STAGE
