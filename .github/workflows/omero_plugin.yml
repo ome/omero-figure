@@ -18,7 +18,7 @@ on:
 
 jobs:
   test:
-    name: Run integration tests against OMERO
+    name: Run integration  tests against OMERO
     runs-on: ubuntu-22.04
     env:
       STAGE: app
