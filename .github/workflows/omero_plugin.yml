@@ -27,7 +27,7 @@ jobs:
       - name: Checkout omero-test-infra
         uses: actions/checkout@master
         with:
-          repository: ome/omero-test-infra
+          repository: pwalczysko/omero-test-infra
           path: .omero
           ref: ${{ secrets.OMERO_TEST_INFRA_REF }}
       - name: Build and run OMERO tests
