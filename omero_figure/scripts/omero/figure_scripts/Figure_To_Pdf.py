@@ -1158,7 +1158,7 @@ class FigureExport(object):
                      'bottomleft': [], 'bottomright': []}
 
         parse_re = re.compile(r"\[.+?\]")
-        for l in labels:
+        for lab in labels:
             # Substitution of special label by their values
             new_text = []
             last_idx = 0
@@ -1344,72 +1344,72 @@ class FigureExport(object):
             if key == 'topleft':
                 lx = x + spacer
                 ly = y + spacer
-                for l in labels:
-                    label_h = draw_lab(l, lx, ly)
+                for lab in labels:
+                    label_h = draw_lab(lab, lx, ly)
                     ly += label_h + spacer
             elif key == 'topright':
                 lx = x + width - spacer
                 ly = y + spacer
-                for l in labels:
-                    label_h = draw_lab(l, lx, ly, align='right')
+                for lab in labels:
+                    label_h = draw_lab(lab, lx, ly, align='right')
                     ly += label_h + spacer
             elif key == 'bottomleft':
                 lx = x + spacer
                 ly = y + height
                 labels.reverse()  # last item goes bottom
-                for l in labels:
-                    ly = ly - l['size'] - spacer
+                for lab in labels:
+                    ly = ly - lab['size'] - spacer
                     draw_lab(l, lx, ly)
             elif key == 'bottomright':
                 lx = x + width - spacer
                 ly = y + height
                 labels.reverse()  # last item goes bottom
-                for l in labels:
-                    ly = ly - l['size'] - spacer
-                    draw_lab(l, lx, ly, align='right')
+                for lab in labels:
+                    ly = ly - lab['size'] - spacer
+                    draw_lab(lab, lx, ly, align='right')
             elif key == 'top':
                 lx = x + (width/2)
                 ly = y
                 labels.reverse()
-                for l in labels:
-                    ly = ly - l['size'] - spacer
-                    draw_lab(l, lx, ly, align='center')
+                for lab in labels:
+                    ly = ly - lab['size'] - spacer
+                    draw_lab(lab, lx, ly, align='center')
             elif key == 'bottom':
                 lx = x + (width/2)
                 ly = y + height + spacer
-                for l in labels:
-                    label_h = draw_lab(l, lx, ly, align='center')
+                for lab in labels:
+                    label_h = draw_lab(lab, lx, ly, align='center')
                     ly += label_h + spacer
             elif key == 'left':
                 lx = x - spacer
-                sizes = [l['size'] for l in labels]
+                sizes = [l['size'] for lab in labels]
                 total_h = sum(sizes) + spacer * (len(labels)-1)
                 ly = y + (height-total_h)/2
-                for l in labels:
-                    label_h = draw_lab(l, lx, ly, align='right')
+                for lab in labels:
+                    label_h = draw_lab(lab, lx, ly, align='right')
                     ly += label_h + spacer
             elif key == 'right':
                 lx = x + width + spacer
                 sizes = [l['size'] for l in labels]
                 total_h = sum(sizes) + spacer * (len(labels)-1)
                 ly = y + (height-total_h)/2
-                for l in labels:
-                    label_h = draw_lab(l, lx, ly)
+                for lab in labels:
+                    label_h = draw_lab(lab, lx, ly)
                     ly += label_h + spacer
             elif key == 'leftvert':
                 lx = x - spacer
                 ly = y + (height/2)
                 labels.reverse()
-                for l in labels:
-                    lx = lx - l['size'] - spacer
-                    draw_lab(l, lx, ly, align='left-vertical')
+                for lab in labels:
+                    lx = lx - lab['size'] - spacer
+                    draw_lab(lab, lx, ly, align='left-vertical')
             elif key == 'rightvert':
                 lx = x + width + spacer
                 ly = y + (height/2)
                 labels.reverse()
-                for l in labels:
-                    lx = lx + l['size'] + spacer
-                    draw_lab(l, lx, ly, align='right-vertical')
+                for lab in labels:
+                    lx = lx + lab['size'] + spacer
+                    draw_lab(lab, lx, ly, align='right-vertical')
 
     def draw_scalebar(self, panel, region_width, page):
         """
