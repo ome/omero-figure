@@ -74,7 +74,7 @@ class TestFigureScripts(ScriptTest):
             assert isinstance(ann, Image)
         else:
             c = self.new_client(user=user)
-            check_file_annotation(c, ann, link_count=2)
+            check_file_annotation(c, ann, link_count=1)
 
 
 def create_figure(images):
