@@ -205,12 +205,11 @@ You can refresh the Docker hosted page at http://localhost:4080/figure to see ch
 
 ::
 
-    $ cd /PATH_TO_GIT_REPO/omero-figure
-    $ grunt build
-    $ grunt watch   # to see updates
-
-    # in a different terminal...
     $ docker run -ti -e OMEROHOST -p 4080:4080  -v /PATH_TO_GIT_REPO/omero-figure:/home/figure/src figure-devel
+
+    # in a different terminal, run grunt build or watch...
+    $ cd /PATH_TO_GIT_REPO/omero-figure
+    $ grunt build   # or grunt watch
 
 
 Alternatively, to run and develop ``omero-figure`` within the Docker container itself:
