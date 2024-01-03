@@ -366,13 +366,13 @@ def save_web_figure(request, conn=None, **kwargs):
     link_to_images = False      # Disabled for now
     if link_to_images:
         current_links = conn.getAnnotationLinks("Image", ann_ids=[file_id])
-        for l in current_links:
-            if l.getParent().getId().getValue() not in image_ids:
+        for link in current_links:
+            if link.getParent().getId().getValue() not in image_ids:
                 # remove old link
-                update.deleteObject(l._obj, conn.SERVICE_OPTS)
+                update.deleteObject(link._obj, conn.SERVICE_OPTS)
             else:
                 # we don't need to create links for these
-                image_ids.remove(l.getParent().getId().getValue())
+                image_ids.remove(link.getParent().getId().getValue())
 
         # create new links if necessary
         links = []
@@ -556,7 +556,7 @@ def unit_conversion(request, value, from_unit, to_unit, conn=None, **kwargs):
         from_unit = getattr(UnitsLength, str(from_unit))
         to_unit = getattr(UnitsLength, str(to_unit))
         value = float(value)
-    except ImportError as ex:
+    except ImportError:
         error = ("Failed to import omero.model.enums.UnitsLength."
                  " Requires OMERO 5.1")
     except AttributeError as ex:
