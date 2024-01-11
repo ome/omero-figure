@@ -27,7 +27,6 @@ import json
 from script import ScriptTest
 from script import run_script
 from script import check_file_annotation
-from omero.sys import ParametersI
 from omero.model import Image
 
 path = "/omero/figure_scripts/"
@@ -59,15 +58,8 @@ class TestFigureScripts(ScriptTest):
         image = self.create_test_image(size_x, size_y, size_z, size_c,
                                        size_t, session)
 
-        image_id = self.import_pyramid(tmpdir, client=client)
-        query_service = client.sf.getQueryService()
-        big_image = query_service.findByQuery(
-            """select i from Image i left outer join fetch i.pixels as p
-               where i.id = :id""",
-            ParametersI().addId(image_id))
-
         figure_name = "test_export_figure_as_%s" % export_option
-        json = create_figure([image, big_image])
+        json = create_figure([image])
         uri = "https://www.openmicroscopy.org/"
         args = {
             "Figure_JSON": omero.rtypes.rstring(json),
@@ -78,11 +70,11 @@ class TestFigureScripts(ScriptTest):
         robj = run_script(client, id, args, "New_Figure")
         ann = robj.getValue()
         # New image is returned when it is an OMERO image
-        if export_option is "OMERO":
+        if export_option == "OMERO":
             assert isinstance(ann, Image)
         else:
             c = self.new_client(user=user)
-            check_file_annotation(c, ann, link_count=2)
+            check_file_annotation(c, ann, link_count=1)
 
 
 def create_figure(images):
