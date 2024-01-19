@@ -1,6 +1,6 @@
 
-6.1.0 (December 2023)
----------------------
+6.1.0 (January 2024)
+--------------------
 
 Thanks to Rémy Dornier for all the following features:
 - Escape label underscores ([#529](https://github.com/ome/omero-figure/pull/529))
