@@ -17,7 +17,6 @@ Thanks to Rémy Dornier for all the following features:
 
 Other changes:
 - Avoid font.getSize(), removed in Pillow 10.x ([#523](https://github.com/ome/omero-figure/pull/523))
-- Improve developer instructions ([#515](https://github.com/ome/omero-figure/pull/515))
 - Handle image loading errors ([#532](https://github.com/ome/omero-figure/pull/532))
 
 6.0.1 (June 2023)
