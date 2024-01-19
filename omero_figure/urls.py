@@ -76,6 +76,10 @@ urlpatterns = [
     # Use query ?image=1&image=2
     re_path(r'^timestamps/$', views.timestamps, name='figure_timestamps'),
 
+    # Get parents (e.g. Plate, Well, WellSample) for images
+    # Use query ?image=1&image=2
+    re_path(r'^paths_to_objects/$', views.paths_to_objects, name='figure_paths_to_objects'),
+
     # Get Z scale for images
     # Use query ?image=1&image=2
     re_path(r'^z_scale/$', views.z_scale, name='figure_z_scale'),

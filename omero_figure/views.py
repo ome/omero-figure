@@ -26,6 +26,8 @@ import traceback
 import json
 import time
 
+from omeroweb.webclient.show import paths_to_object
+
 from omeroweb.webgateway.marshal import imageMarshal
 from omeroweb.webgateway.views import _get_prepared_image
 from omeroweb.webclient.views import run_script
@@ -158,6 +160,33 @@ def timestamps(request, conn=None, **kwargs):
         if image is not None:
             data[image.id] = get_timestamps(conn, image)
     return JsonResponse(data)
+
+
+@login_required()
+def paths_to_objects(request, conn=None, **kwargs):
+
+    image_ids = request.GET.getlist('image')
+
+    paths = []
+    for img_id in image_ids:
+        img_id = int(img_id)
+        print("img_id", img_id)
+        for img_path in paths_to_object(conn, image_id=img_id):
+            for item in img_path:
+                o_type = item["type"]
+                if o_type == "wellsample":
+                    continue
+                obj = conn.getObject(o_type, item["id"])
+                if o_type == "well":
+                    item["label"] = obj.getWellPos()
+                else:
+                    item["name"] = obj.getName()
+            # except:
+            #     pass
+            paths.append(img_path)
+            print("img_path",img_path)
+
+    return JsonResponse({"paths": paths})
 
 
 @login_required()
