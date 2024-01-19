@@ -26,6 +26,8 @@ import traceback
 import json
 import time
 
+from omeroweb.webclient.show import paths_to_object
+
 from omeroweb.webgateway.marshal import imageMarshal
 from omeroweb.webgateway.views import _get_prepared_image
 from omeroweb.webclient.views import run_script
@@ -228,6 +230,7 @@ def timestamps(request, conn=None, **kwargs):
 
 
 @login_required()
+<<<<<<< HEAD
 def pixels_type(request, conn=None, **kwargs):
     iids = request.GET.getlist('image')
     data = {}
@@ -244,6 +247,36 @@ def pixels_type(request, conn=None, **kwargs):
                     "pixel_range": image.getPixelRange()
                 }
     return JsonResponse(data)
+=======
+def paths_to_objects(request, conn=None, **kwargs):
+
+    image_ids = request.GET.getlist('image')
+
+    paths = []
+    for img_id in image_ids:
+        img_id = int(img_id)
+        print("img_id", img_id)
+        for img_path in paths_to_object(conn, image_id=img_id):
+            for item in img_path:
+                o_type = item["type"]
+                if o_type == "wellsample":
+                    continue
+                obj = conn.getObject(o_type, item["id"])
+                if o_type == "well":
+                    item["label"] = obj.getWellPos()
+                else:
+                    item["name"] = obj.getName()
+            # except:
+            #     pass
+            paths.append(img_path)
+            print("img_path",img_path)
+
+    return JsonResponse({"paths": paths})
+
+
+@login_required()
+def z_scale(request, conn=None, **kwargs):
+>>>>>>> 4f547cdf (start to work on URL to load Plate, Well info for Image)
 
 
 @login_required()
