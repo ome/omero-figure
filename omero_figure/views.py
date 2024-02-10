@@ -42,7 +42,7 @@ from omero_marshal import get_encoder
 from io import BytesIO
 
 from omeroweb.webclient.decorators import login_required
-from .omeroutils import get_timestamps
+from .omeroutils import get_timestamps, get_wellsample_index
 
 from . import utils
 import logging
@@ -166,25 +166,25 @@ def timestamps(request, conn=None, **kwargs):
 def paths_to_objects(request, conn=None, **kwargs):
 
     image_ids = request.GET.getlist('image')
+    try:
+        image_ids = [int(iid) for iid in image_ids]
+    except ValueError:
+        return Http404 ("Invalid 'image' id")
 
     paths = []
     for img_id in image_ids:
-        img_id = int(img_id)
-        print("img_id", img_id)
         for img_path in paths_to_object(conn, image_id=img_id):
             for item in img_path:
                 o_type = item["type"]
                 if o_type == "wellsample":
+                    item["index"] = get_wellsample_index(conn, item["id"])
                     continue
                 obj = conn.getObject(o_type, item["id"])
                 if o_type == "well":
                     item["label"] = obj.getWellPos()
                 else:
                     item["name"] = obj.getName()
-            # except:
-            #     pass
             paths.append(img_path)
-            print("img_path",img_path)
 
     return JsonResponse({"paths": paths})
 
