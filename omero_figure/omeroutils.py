@@ -87,3 +87,15 @@ def get_timestamps(conn, image):
             time_list.append(0)
 
     return time_list
+
+
+def get_wellsample_index(conn, wellsample_id):
+    params = ParametersI()
+    params.addId(wellsample_id)
+    query = """select index(wellSamples) from Well well
+        left outer join well.wellSamples as wellSamples
+        where wellSamples.id = :id
+        """
+    qs = conn.getQueryService()
+    rsp = qs.projection(query, params, conn.SERVICE_OPTS)
+    return rsp[0][0].val
