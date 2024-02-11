@@ -163,7 +163,7 @@ def timestamps(request, conn=None, **kwargs):
 
 
 @login_required()
-def paths_to_objects(request, conn=None, **kwargs):
+def parents(request, conn=None, **kwargs):
 
     image_ids = request.GET.getlist('image')
     try:
@@ -171,11 +171,14 @@ def paths_to_objects(request, conn=None, **kwargs):
     except ValueError:
         return Http404 ("Invalid 'image' id")
 
-    paths = []
+    parents = {}
     for img_id in image_ids:
+        img_parents = {}
         for img_path in paths_to_object(conn, image_id=img_id):
             for item in img_path:
                 o_type = item["type"]
+                del item["type"]
+                img_parents[o_type] = item
                 if o_type == "wellsample":
                     item["index"] = get_wellsample_index(conn, item["id"])
                     continue
@@ -184,9 +187,9 @@ def paths_to_objects(request, conn=None, **kwargs):
                     item["label"] = obj.getWellPos()
                 else:
                     item["name"] = obj.getName()
-            paths.append(img_path)
+        parents[img_id] = img_parents
 
-    return JsonResponse({"paths": paths})
+    return JsonResponse({"parents": parents})
 
 
 @login_required()
