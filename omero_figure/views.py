@@ -42,7 +42,7 @@ from omero_marshal import get_encoder
 from io import BytesIO
 
 from omeroweb.webclient.decorators import login_required
-from .omeroutils import get_timestamps, get_wellsample_index
+from .omeroutils import get_timestamps
 
 import logging
 
@@ -230,25 +230,7 @@ def timestamps(request, conn=None, **kwargs):
 
 
 @login_required()
-<<<<<<< HEAD
-def pixels_type(request, conn=None, **kwargs):
-    iids = request.GET.getlist('image')
-    data = {}
-    for iid in iids:
-        try:
-            iid = int(iid)
-        except ValueError:
-            pass
-        else:
-            image = conn.getObject('Image', iid)
-            if image is not None:
-                data[image.id] = {
-                    "pixelsType": image.getPixelsType(),
-                    "pixel_range": image.getPixelRange()
-                }
-    return JsonResponse(data)
-=======
-def paths_to_objects(request, conn=None, **kwargs):
+def parents(request, conn=None, **kwargs):
 
     image_ids = request.GET.getlist('image')
     try:
@@ -256,11 +238,14 @@ def paths_to_objects(request, conn=None, **kwargs):
     except ValueError:
         return Http404 ("Invalid 'image' id")
 
-    paths = []
+    parents = []
     for img_id in image_ids:
+        img_parents = {}
         for img_path in paths_to_object(conn, image_id=img_id):
             for item in img_path:
                 o_type = item["type"]
+                del item["type"]
+                img_parents[o_type] = item
                 if o_type == "wellsample":
                     item["index"] = get_wellsample_index(conn, item["id"])
                     continue
@@ -269,14 +254,9 @@ def paths_to_objects(request, conn=None, **kwargs):
                     item["label"] = obj.getWellPos()
                 else:
                     item["name"] = obj.getName()
-            paths.append(img_path)
+        parents[img_id] = img_parents   
 
-    return JsonResponse({"paths": paths})
-
-
-@login_required()
-def z_scale(request, conn=None, **kwargs):
->>>>>>> 4f547cdf (start to work on URL to load Plate, Well info for Image)
+    return JsonResponse({"parents": parents})
 
 
 @login_required()
