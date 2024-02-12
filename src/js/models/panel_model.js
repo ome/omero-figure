@@ -376,8 +376,7 @@
                 }
             } else {
                 // screen, plate, well, (name or id)
-                console.log("get_name_label_text", property, format, this.get(property));
-                text = this.get(property)?.[format] ?? "Not Found";
+                text = "" + this.get(property)?.[format] ?? "Not Found";
             }
             return text;
         },

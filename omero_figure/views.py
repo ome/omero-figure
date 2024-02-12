@@ -169,7 +169,7 @@ def parents(request, conn=None, **kwargs):
     try:
         image_ids = [int(iid) for iid in image_ids]
     except ValueError:
-        return Http404 ("Invalid 'image' id")
+        return Http404("Invalid 'image' id")
 
     parents = {}
     for img_id in image_ids:
