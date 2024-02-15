@@ -149,15 +149,19 @@ def img_data_json(request, image_id, conn=None, **kwargs):
 
     if units_support:
         # Add extra parameters with units data
+        if 'pixel_size' not in rv:
+            rv['pixel_size'] = {}
         # NB ['pixel_size']['x'] will have size in MICROMETER
         px = image.getPrimaryPixels().getPhysicalSizeX()
-        rv['pixel_size']['valueX'] = px.getValue()
-        rv['pixel_size']['symbolX'] = px.getSymbol()
-        rv['pixel_size']['unitX'] = str(px.getUnit())
+        if px is not None:
+            rv['pixel_size']['valueX'] = px.getValue()
+            rv['pixel_size']['symbolX'] = px.getSymbol()
+            rv['pixel_size']['unitX'] = str(px.getUnit())
         py = image.getPrimaryPixels().getPhysicalSizeY()
-        rv['pixel_size']['valueY'] = py.getValue()
-        rv['pixel_size']['symbolY'] = py.getSymbol()
-        rv['pixel_size']['unitY'] = str(py.getUnit())
+        if py is not None:
+            rv['pixel_size']['valueY'] = py.getValue()
+            rv['pixel_size']['symbolY'] = py.getSymbol()
+            rv['pixel_size']['unitY'] = str(py.getUnit())
         pz = image.getPrimaryPixels().getPhysicalSizeZ()
         if pz is not None:
             rv['pixel_size']['valueZ'] = pz.getValue()
@@ -390,13 +394,13 @@ def save_web_figure(request, conn=None, **kwargs):
     link_to_images = False      # Disabled for now
     if link_to_images:
         current_links = conn.getAnnotationLinks("Image", ann_ids=[file_id])
-        for lnk in current_links:
-            if lnk.getParent().getId().getValue() not in image_ids:
+        for link in current_links:
+            if link.getParent().getId().getValue() not in image_ids:
                 # remove old link
-                update.deleteObject(lnk._obj, conn.SERVICE_OPTS)
+                update.deleteObject(link._obj, conn.SERVICE_OPTS)
             else:
                 # we don't need to create links for these
-                image_ids.remove(lnk.getParent().getId().getValue())
+                image_ids.remove(link.getParent().getId().getValue())
 
         # create new links if necessary
         links = []

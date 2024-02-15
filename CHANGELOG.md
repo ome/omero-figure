@@ -1,3 +1,24 @@
+
+6.1.0 (January 2024)
+--------------------
+
+Thanks to Rémy Dornier for all the following features:
+- Escape label underscores ([#529](https://github.com/ome/omero-figure/pull/529))
+- Prevent duplicate labesl ([#530](https://github.com/ome/omero-figure/pull/530))
+- Time-index labels support offset ([#524](https://github.com/ome/omero-figure/pull/524))
+- Z labels support offset ([#521](https://github.com/ome/omero-figure/pull/521))
+- Labels from ALL Key-Value pairs ([#528](https://github.com/ome/omero-figure/pull/528))
+- Zoom labels ([#527](https://github.com/ome/omero-figure/pull/527))
+- Add Cyan to colour choosers ([#516](https://github.com/ome/omero-figure/pull/516))
+- Align panels to right & bottom ([#520](https://github.com/ome/omero-figure/pull/520))
+- Right vertical labels ([#519](https://github.com/ome/omero-figure/pull/519))
+- Edit ID Z stack ([#518](https://github.com/ome/omero-figure/pull/518))
+- Manual Zoom level ([#517](https://github.com/ome/omero-figure/pull/517))
+
+Other changes:
+- Avoid font.getSize(), removed in Pillow 10.x ([#523](https://github.com/ome/omero-figure/pull/523))
+- Handle image loading errors ([#532](https://github.com/ome/omero-figure/pull/532))
+
 6.0.1 (June 2023)
 -----------------
 
