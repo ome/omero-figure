@@ -147,6 +147,9 @@ To serve the app at http://localhost:8080/ using the vite dev server
 
     $ npm run start
 
+If you are editing the Shape-Editor code, you can view the test page at
+http://localhost:8080/shapeEditorTest.html
+
 
 CORS
 ****
