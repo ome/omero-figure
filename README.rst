@@ -139,6 +139,12 @@ Install Node from https://nodejs.org, then:
 
     $ cd omero-figure
     $ npm install
+
+To serve the app at http://localhost:8080/ using the vite dev server
+(this will automatically refresh the page when changes are saved):
+
+::
+
     $ npm run start
 
 
@@ -152,6 +158,9 @@ This URL can be edited in `src/index.html`.
 
 You MUST access the figure app at http://localhost:8080/ (NOT http://127.0.0.1:8080/)
 for CORS to work.
+
+NB: in general, POST actions such as saving of figure files or exporting figures doesn't
+yet work with the dev server. To test these actions, build the app as described below:
 
 
 Build
@@ -171,6 +180,12 @@ To serve this on a local omero-web, set config as above and install with:
 ::
 
    $ pip install -e .
+
+In order to build whenever changes are saved within the `src/` directory:
+
+::
+
+    $ npm run watch
 
 
 Release process
