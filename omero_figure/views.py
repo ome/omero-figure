@@ -82,10 +82,10 @@ def index(request, file_id=None, conn=None, **kwargs):
     and lay them out in canvas by dragging & resizing etc
     """
 
-    # TODO: use script_missing test to enable/diable scripts button
-    # script_service = conn.getScriptService()
-    # sid = script_service.getScriptID(SCRIPT_PATH)
-    # script_missing = sid <= 0
+    # test for script to enable/diable export button
+    script_service = conn.getScriptService()
+    sid = script_service.getScriptID(SCRIPT_PATH)
+    export_enabled = sid > 0
     user = conn.getUser()
     user_full_name = "%s %s" % (user.firstName, user.lastName)
     max_w, max_h = conn.getMaxPlaneSize()
@@ -117,6 +117,9 @@ def index(request, file_id=None, conn=None, **kwargs):
                         'const MAX_PLANE_SIZE = %s;' % max_plane_size)
     html = html.replace('const LENGTH_UNITS = LENGTHUNITS;',
                         'const LENGTH_UNITS = %s;' % json.dumps(length_units))
+    if export_enabled:
+        html = html.replace('const EXPORT_ENABLED = false;',
+                            'const EXPORT_ENABLED = true;')
 
     # update links to static files
     static_dir = static.static('omero_figure/')
