@@ -2,6 +2,6 @@
 
 set -e
 set -u
-curl -fsSL https://rpm.nodesource.com/setup_16.x | sudo bash -
-sudo yum install -y nodejs
+curl -fsSL https://rpm.nodesource.com/setup_20.x | sudo bash -
+sudo dnf install -y nodejs
 npm install -g grunt
