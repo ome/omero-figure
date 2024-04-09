@@ -1,4 +1,13 @@
 
+6.2.0 (February 2024)
+---------------------
+
+- Labels from Key-Value pairs and Tags on parent objects (Thanks to Tom Boissonnet) ([#525](https://github.com/ome/omero-figure/pull/525))
+- Fix enable Save after updating Image IDs (Thanks to Rémy Dornier) ([#544](https://github.com/ome/omero-figure/pull/544))
+- Fix cropping of horizontal page layout ([#541](https://github.com/ome/omero-figure/pull/541))
+- Integration tests call pytest directly ([#542](https://github.com/ome/omero-figure/pull/542))
+
+
 6.1.0 (January 2024)
 --------------------
 
