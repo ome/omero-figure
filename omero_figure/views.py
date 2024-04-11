@@ -192,6 +192,26 @@ def timestamps(request, conn=None, **kwargs):
 
 
 @login_required()
+def pixels_type(request, conn=None, **kwargs):
+
+    iids = request.GET.getlist('image')
+    data = {}
+    for iid in iids:
+        try:
+            iid = int(iid)
+        except ValueError:
+            pass
+        else:
+            image = conn.getObject('Image', iid)
+            if image is not None:
+                data[image.id] = {
+                    "pixelsType": image.getPixelsType(),
+                    "pixel_range": image.getPixelRange()
+                }
+    return JsonResponse(data)
+
+
+@login_required()
 def z_scale(request, conn=None, **kwargs):
 
     iids = request.GET.getlist('image')

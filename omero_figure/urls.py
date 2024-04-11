@@ -76,6 +76,9 @@ urlpatterns = [
     # Use query ?image=1&image=2
     re_path(r'^timestamps/$', views.timestamps, name='figure_timestamps'),
 
+    # Get pixelsType for images. Use query ?image=1&image=2
+    re_path(r'^pixels_type/$', views.pixels_type, name='figure_pixels_type'),
+
     # Get Z scale for images
     # Use query ?image=1&image=2
     re_path(r'^z_scale/$', views.z_scale, name='figure_z_scale'),
