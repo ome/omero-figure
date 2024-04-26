@@ -1,4 +1,10 @@
 
+6.2.2 (April 2024)
+------------------
+
+- Avoid rendering very large planes when exporting Big images ([#553](https://github.com/ome/omero-figure/pull/553))
+
+
 6.2.1 (April 2024)
 ------------------
 
