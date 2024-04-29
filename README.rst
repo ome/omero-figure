@@ -131,9 +131,7 @@ above. If using *Option 1*, you need to *replace* the existing script:
 Development
 -----------
 
-We use Grunt for various tools.
-See http://figure.openmicroscopy.org/2014/05/01/testing-with-jshint-jasmine-grunt.html
-for an introduction.
+We use `vite.js <https://vitejs.dev/>`_ to build and serve the app during development.
 
 Install Node from https://nodejs.org, then:
 
@@ -142,57 +140,55 @@ Install Node from https://nodejs.org, then:
     $ cd omero-figure
     $ npm install
 
-Install Grunt CLI as described on http://gruntjs.com/using-the-cli.
-
-To build various resources into ``omero_figure/static``  run:
-
-::
-
-    $ grunt build
-
-This will concatenate js files into a single figure.js file,
-compile the underscore templates into templates.js and also
-copy the shape-editor.js from node_modules.
-
-During development, you will want to peform the concatenation
-(``concat``) and template compilation (``jst``) tasks whenever
-the JavaScript or template files change. This can be achieved
-with:
+To serve the app at http://localhost:8080/ using the vite dev server
+(this will automatically refresh the page when changes are saved):
 
 ::
 
-	$ grunt watch
+    $ npm run start
 
-It is also possible to develop figure in docker without installing anything locally.
-The Docker image is built on top of ``openmicroscopy/omero-web-standalone:latest``, so you will have a fully functional
-omero-web environment while developing ``omero-figure``. 
-First build the Docker image:
+If you are editing the Shape-Editor code, you can view the test page at
+http://localhost:8080/shapeEditorTest.html
+
+
+CORS
+****
+
+During development, we load and save figure files to an omero-web server.
+You will need to have CORS enabled on your local omero-web server at
+http://localhost:4080/ and be logged in already.
+This URL can be edited in `src/index.html`.
+
+You MUST access the figure app at http://localhost:8080/ (NOT http://127.0.0.1:8080/)
+for CORS to work.
+
+NB: in general, POST actions such as saving of figure files or exporting figures doesn't
+yet work with the dev server. To test these actions, build the app as described below:
+
+
+Build
+-----
+
+To build the app:
 
 ::
 
-   $ docker build -t figure-devel .
+   $ npm run build
 
+This compiles index.html and other static assets into correct locations to be
+served by the Django `omero-web` server.
 
-To develop ``omero-figure`` you can either make all the changes within the Docker container itself by running:
-::
-
-
-    $ docker run -ti -e OMEROHOST=YOUR_HOST -p 4080:4080 figure-devel
-
-The preferred option is to mount the repository containing the omero-figure code. Make the changes locally and see the changes in the docker container. To do so, run:
-
-::
-    $ docker run -ti -e OMEROHOST=YOUR_HOST -p 4080:4080  -v /PATH_TO_GIT_REPO/omero-figure:/home/figure/src figure-devel
-
-
-After starting the container, run ``docker ps`` in another terminal to find the ID of the container. Then run:
+To serve this on a local omero-web, set config as above and install with:
 
 ::
 
-   $ docker exec -u 0 -it CONTAINER_ID bash   # replace CONTAINER_ID by the correct value
-   $ cd /home/figure/src
-   $ grunt watch
+   $ pip install -e .
 
+In order to build whenever changes are saved within the `src/` directory:
+
+::
+
+    $ npm run watch
 
 
 Release process

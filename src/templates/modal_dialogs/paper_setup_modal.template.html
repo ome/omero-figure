@@ -1,0 +1,108 @@
+
+<div class="row" style="margin-bottom: 15px;">
+    <div class="form-group col-sm-6">
+        <label>Page Color</label>
+        <input class="pageColor form-control"
+            value="#<%= page_color %>"
+            type="color" style="padding: 0" />
+    </div>
+    <div class="form-group col-sm-6"></div>
+</div>
+
+<div class="row" style="margin-bottom: 15px;">
+    <div class="form-group col-sm-6">
+        <label>Number of Pages</label>
+        <select class="pageCountSelect form-control">
+            <% _.each([1,2,3,4,5,6,7,8,9,10],function(p){
+                print ("<option value='"+p+"'" + ((p == page_count) ? " selected " : "") + " >"+p+"</option>")
+            }); %>
+        </select>
+    </div>
+    <div class="form-group col-sm-6"></div>
+</div>
+
+<div class="row" style="margin-bottom: 15px;">
+    <div class="col-sm-6">
+        <label>Size</label>
+        <div class="form-horizontal">
+            <div class="form-group col-sm-12">
+                <select class="paperSizeSelect form-control">
+                    <option value="A4" <% if (page_size == 'A4') { print('selected') } %> >
+                        A4 (210 x 297 mm)
+                    </option>
+                    <option value="A3" <% if (page_size == 'A3') { print('selected') } %> >
+                        A3 (297 x 420 mm)
+                    </option>
+                    <option value="A2" <% if (page_size == 'A2') { print('selected') } %> >
+                        A2 (420 x 594 mm)
+                    </option>
+                    <option value="A1" <% if (page_size == 'A1') { print('selected') } %> >
+                        A1 (594 x 841 mm)
+                    </option>
+                    <option value="A0" <% if (page_size == 'A0') { print('selected') } %> >
+                        A0 (841 x 1189 mm)
+                    </option>
+                    <option value="letter" <% if (page_size == 'letter') { print('selected') } %> >
+                        Letter (216 x 280 mm)
+                    </option>
+                    <option value="mm" <% if (page_size == 'mm') { print('selected') } %> >
+                        Custom (mm)
+                    </option>
+                    <option value="crop" <% if (page_size == 'crop') { print('selected') } %>
+                        title="Fit a single page around all panels">
+                        <% if (page_count > 1) { %>
+                            Crop single page to panels
+                        <% } else { %>
+                            Crop page around panels
+                        <% } %>
+                    </option>
+                </select>
+            </div>
+            <!-- <label for="inputPassword" class="col-sm-2 control-label">Password</label> -->
+        </div>
+    </div>
+    <div class="col-sm-6">
+        <label>Orientation</label>
+        <div class="form-horizontal row" style="margin-top: 8px;">
+            <div class="form-group col-sm-6" style="padding-left: 0;">
+                <input type="radio" name="pageOrientation" value="vertical"
+                    <% if (orientation == 'vertical') { print('checked') } %> >
+                <label class="control-label text-muted">Vertical</label>
+            </div>
+            <div class="form-group col-sm-6">
+                <input type="radio" name="pageOrientation" value="horizontal"
+                    <% if (orientation == 'horizontal') { print('checked') } %> >
+                <label class="control-label text-muted">Horizontal</label>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 align-items-center <% if (wh_disabled) { print(' wh_disabled')} %>">
+    <div class="col-auto">
+        <labelclass="col-form-label">Width</label>
+    </div>
+    <div class="col-auto">
+        <input id='paperWidth' type="number" style="width:70px"
+        <% if (wh_disabled) { print('disabled')} %>
+        class="form-control" value="<%= width_mm %>">
+    </div>
+    <div class="col-auto">
+        <span class="form-text">
+        mm
+        </span>
+    </div>
+    <div class="col-auto">
+        <label class="col-form-label">Height</label>
+    </div>
+    <div class="col-auto">
+        <input id='paperHeight' type="number" style="width:70px"
+            <% if (wh_disabled) { print('disabled')} %>
+            class="form-control" value="<%= height_mm %>">
+    </div>
+    <div class="col-auto">
+        <span class="form-text">
+        mm
+        </span>
+    </div>
+</div>

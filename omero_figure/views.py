@@ -20,7 +20,8 @@ from django.http import Http404, HttpResponse, \
     JsonResponse
 from django.views.decorators.http import require_POST
 from django.conf import settings
-from django.shortcuts import render
+from django.template import loader
+from django.templatetags import static
 from datetime import datetime
 import traceback
 import json
@@ -42,7 +43,6 @@ from io import BytesIO
 from omeroweb.webclient.decorators import login_required
 from .omeroutils import get_timestamps
 
-from . import utils
 import logging
 
 try:
@@ -82,27 +82,58 @@ def index(request, file_id=None, conn=None, **kwargs):
     and lay them out in canvas by dragging & resizing etc
     """
 
+    # test for script to enable/diable export button
     script_service = conn.getScriptService()
     sid = script_service.getScriptID(SCRIPT_PATH)
-    script_missing = sid <= 0
+    export_enabled = sid > 0
     user = conn.getUser()
     user_full_name = "%s %s" % (user.firstName, user.lastName)
     max_w, max_h = conn.getMaxPlaneSize()
     max_plane_size = max_w * max_h
     length_units = get_length_units()
-    is_public_user = False
+    is_public_user = "false"
     if (hasattr(settings, 'PUBLIC_USER')
             and settings.PUBLIC_USER == user.getOmeName()):
-        is_public_user = True
+        is_public_user = "true"
 
-    context = {'scriptMissing': script_missing,
-               'userFullName': user_full_name,
-               'userId': user.id,
-               'maxPlaneSize': max_plane_size,
-               'lengthUnits': json.dumps(length_units),
-               'isPublicUser': is_public_user,
-               'version': utils.__version__}
-    return render(request, "figure/index.html", context)
+    # Load the template html and replace OMEROWEB_INDEX
+    template = loader.get_template("omero_figure/index.html")
+    html = template.render({}, request)
+    omeroweb_index = reverse("index")
+    figure_index = reverse("figure_index")
+    ping_url = reverse("keepalive_ping")
+    html = html.replace('const BASE_OMEROWEB_URL = dev_omeroweb_url;',
+                        'const BASE_OMEROWEB_URL = "%s";' % omeroweb_index)
+    html = html.replace('const APP_ROOT_URL = "";',
+                        'const APP_ROOT_URL = "%s";' % figure_index)
+    html = html.replace('const USER_ID = 0;', 'const USER_ID = %s' % user.id)
+    html = html.replace('const PING_URL = "";',
+                        'const PING_URL = "%s";' % ping_url)
+    html = html.replace('const USER_FULL_NAME = "OME";',
+                        'const USER_FULL_NAME = "%s";' % user_full_name)
+    html = html.replace('const IS_PUBLIC_USER = false;',
+                        'const IS_PUBLIC_USER = %s;' % is_public_user)
+    html = html.replace('const MAX_PLANE_SIZE = 10188864;',
+                        'const MAX_PLANE_SIZE = %s;' % max_plane_size)
+    html = html.replace('const LENGTH_UNITS = LENGTHUNITS;',
+                        'const LENGTH_UNITS = %s;' % json.dumps(length_units))
+    if export_enabled:
+        html = html.replace('const EXPORT_ENABLED = false;',
+                            'const EXPORT_ENABLED = true;')
+
+    # update links to static files
+    static_dir = static.static('omero_figure/')
+    html = html.replace('href="/', 'href="%s' % static_dir)
+    html = html.replace('src="/', 'src="%s' % static_dir)
+    html = html.replace('const STATIC_DIR = "";',
+                        'const STATIC_DIR = "%s";' % static_dir[0:-1])
+
+    # bootstrap-icons. Use CDN when served by vite, but use static copy
+    # when served by omero-web
+    html = html.replace(
+        "https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/",
+        static_dir)
+    return HttpResponse(html)
 
 
 @login_required()

@@ -1,0 +1,60 @@
+
+
+
+    <table id="xywh_table" class="table">
+        <tbody>
+            <tr><td>
+                Panel
+
+                <form class="form-inline float-end">
+                    <div style="display: inline-block;">
+                        <%= dpi %> dpi
+
+                        <% if (export_dpi != dpi && !isNaN(export_dpi)) { %>
+                        (Export at <%= export_dpi %> dpi
+                            <% if (export_dpi > dpi) { %>
+                            <button type="button" title="Delete Label" class="close btn btn-sm btn-light clear_dpi"
+                                title="Remove (don't change dpi on export)"
+                                aria-hidden="true" style="float: none; padding: 0; margin-top: -3px;">×</button>
+                            <% } %>
+                        <label>)</label>
+                        <% } %>
+                    </div>
+                    <button class="btn btn-sm btn-success set_dpi"
+                        title="Resample to a higher dpi at export">Set dpi</button>
+                </form>
+                
+            </td></tr>
+            <tr><td style="border-bottom-width: 0">
+                <form class="form-horizontal xywh_form" role="form" style="position:relative">
+                    <div class="form-group row mb-3">
+                        <label class="col-sm-2 col-form-label">X</label>
+                        <div class="col-sm-4">
+                            <input type="number" name="x" min="0" class="form-control input-sm" value="<%= x %>">
+                        </div>
+                        <label class="col-sm-2  col-form-label">Width</label>
+                        <div class="col-sm-4">
+                            <input type="number" name="width" min="0" class="form-control input-sm" value="<%= width %>">
+                        </div>
+                    </div>
+                    <div class="form-group row mb-2">
+                        <label class="col-sm-2 col-form-label">Y</label>
+                        <div class="col-sm-4">
+                            <input type="number" name="y" min="0" class="form-control input-sm" value="<%= y %>">
+                        </div>
+                        <label class="col-sm-2 col-form-label">
+                            Height
+                        </label>
+                        <div class="col-sm-4">
+                            <input type="number" name="height" min="0" class="form-control input-sm" value="<%= height %>">
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-link setAspectRatio" title="Maintain aspect ratio">
+                        <i class="bi-link-45deg"></i>
+                        <i class="bi-check-circle-fill okSign"></i>
+                    </button>
+                    <div style="position:absolute; right: 100px; top: 19px; border: solid #bbb 1px; width: 9px; height: 55px; border-right: 0px;"></div>
+                </form>
+            </td></tr>
+        </tbody>
+    </table>
