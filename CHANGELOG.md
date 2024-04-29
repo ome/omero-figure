@@ -1,4 +1,17 @@
 
+6.2.2 (April 2024)
+------------------
+
+- Avoid rendering very large planes when exporting Big images ([#553](https://github.com/ome/omero-figure/pull/553))
+
+
+6.2.1 (April 2024)
+------------------
+
+- Fix loss of Zoom data with `Edit ID` feature ([#550](https://github.com/ome/omero-figure/pull/550))
+- Fix labels in figures exported as TIFF ([#548](https://github.com/ome/omero-figure/pull/548))
+
+
 6.2.0 (February 2024)
 ---------------------
 
