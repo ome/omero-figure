@@ -160,25 +160,15 @@ def max_projection_range_exceeded(request, iid, z=None, t=None,
     msg_size = font20.getbbox(msg)
     txt_w = msg_size[2]
     txt_h = msg_size[3]
-    advice = "Try to turn off channels or reduce Z-range"
-    advice_size = font14.getbbox(advice)
-    adv_w = advice_size[2]
-    adv_h = advice_size[3]
 
-    image_size = max(txt_w, adv_w) + 10
-    line_space = 10
-    total_h = txt_h + adv_h + line_space
+    image_size = txt_w + 10
 
     im = Image.new("RGB", (image_size, image_size), (5, 0, 0))
     draw = ImageDraw.Draw(im)
-    text_y = im.size[1]/2 - total_h/2
+    text_y = im.size[1]/2 - txt_h/2
     draw.text((im.size[0]/2 - txt_w/2, text_y), msg,
               font=font20,
               fill=(256, 256, 256))
-    text_y += txt_h + line_space
-    draw.text((im.size[0]/2 - adv_w/2, text_y), advice,
-              font=font14,
-              fill=(200, 200, 200))
 
     rv = BytesIO()
     im.save(rv, "jpeg", quality=90)
