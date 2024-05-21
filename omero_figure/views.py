@@ -154,7 +154,6 @@ def max_projection_range_exceeded(request, iid, z=None, t=None,
 
     from PIL import Image, ImageDraw, ImageFont
 
-    font14 = ImageFont.load_default(14)
     font20 = ImageFont.load_default(20)
     msg = "Max Z projection exceeded"
     msg_size = font20.getbbox(msg)
