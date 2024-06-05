@@ -18,7 +18,7 @@
 
 from omeroweb.webgateway import views as webgateway_views
 from . import views
-from django.urls import re_path, path
+from django.urls import path
 
 
 urlpatterns = [
@@ -38,16 +38,15 @@ urlpatterns = [
          name='make_web_figure'),
 
     # Save json to file annotation
-    path('save_web_figure/', views.save_web_figure,
-            name='save_web_figure'),
+    path('save_web_figure/', views.save_web_figure, name='save_web_figure'),
 
     # Get json from file (file annotation Id)
     path('load_web_figure/<int:file_id>/', views.load_web_figure,
-            name='load_web_figure'),
+         name='load_web_figure'),
 
     # List file annotations of saved Figures
     path('list_web_figures/', views.list_web_figures,
-            name='list_web_figures'),
+         name='list_web_figures'),
 
     path('render_thumbnail/<int:iid>/',
          webgateway_views.render_thumbnail,
