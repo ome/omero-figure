@@ -6,7 +6,7 @@
 	- Please see the PR for more details of the changes
 	- Follow-up bug-fix: [#561](https://github.com/ome/omero-figure/pull/561)
 - Fix the layering of ROI Shapes so that smaller shapes are always on top and clickable.
-    - NB: This was fixed in the separate Shape-Editor repo at [#12](https://github.com/ome/shape-editor/pull/12) (thanks to Rémy Dornier) and this library now been moved into the omero-figure repo in #477 above.
+    - NB: This was fixed in the separate Shape-Editor repository at [#12](https://github.com/ome/shape-editor/pull/12) (thanks to Rémy Dornier) and this library has now been moved into the omero-figure repository in #477 above.
 
 
 6.2.2 (April 2024)
