@@ -100,8 +100,9 @@ Now install the script's dependencies:
 
     $ pip install "reportlab<3.6"
 
-*Option 3*: You can also install the dependencies as described in *Option 2* above. Then, upload the script through the Omero web interface. For this, log into your Omero web interface
-as admin, select the scripts icon and click on the "Upload Script" button. Select the ``Figure_To_Pdf.py`` script from the directory where you copied it to locally and upload.
+*Option 3*: You can also install the dependencies as described in *Option 2* above. Then, upload the script through the OMERO web interface. For this, log into your OMERO web interface
+as admin, select the scripts icon and click on the "Upload Script" button. Select the ``Figure_To_Pdf.py`` script from the directory where you copied it to locally and upload it into the
+directory ``omero/figure_scripts``.
 
 * Optional: Figure legends can be formatted using Markdown syntax. To see this correctly in the exported PDF info page, we need `Python Markdown <https://python-markdown.github.io/>`_:
 
