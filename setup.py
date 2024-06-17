@@ -90,5 +90,5 @@ setup(name="omero-figure",
         'sdist': require_npm(sdist, True),
         'develop': require_npm(develop),
       },
-      tests_require=['pytest', 'numpy'],
+      tests_require=['pytest', 'numpy<2'],
       )
