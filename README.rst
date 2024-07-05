@@ -89,6 +89,9 @@ The command will display the absolute path to the directory where the applicatio
 *Option 2*: Alternatively, before starting the OMERO.server, copy the script from the figure install
 ``/omero_figure/scripts/omero/figure_scripts/Figure_To_Pdf.py`` to the OMERO.server ``path/to/OMERO.server/lib/scripts/omero/figure_scripts``. Then restart the OMERO.server.
 
+*Option 3*: Upload the script through the OMERO web interface: For this, log into your OMERO web interface as admin, select the scripts icon and click on the "Upload Script" button.
+Select the ``Figure_To_Pdf.py`` script from the directory where you copied it to locally and upload it into the directory ``omero/figure_scripts``.
+
 Now install the script's dependencies:
 
 
@@ -98,7 +101,7 @@ Now install the script's dependencies:
 
 ::
 
-    $ pip install "reportlab<3.6"
+    $ pip install reportlab
 
 * Optional: Figure legends can be formatted using Markdown syntax. To see this correctly in the exported PDF info page, we need `Python Markdown <https://python-markdown.github.io/>`_:
 
@@ -217,4 +220,4 @@ OMERO.figure is released under the AGPL.
 Copyright
 ---------
 
-2016-2022, The Open Microscopy Environment
+2016-2024, The Open Microscopy Environment

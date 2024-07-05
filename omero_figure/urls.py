@@ -18,20 +18,20 @@
 
 from omeroweb.webgateway import views as webgateway_views
 from . import views
-from django.urls import re_path
+from django.urls import path
 
 
 urlpatterns = [
 
     # index 'home page' of the figure app
-    re_path(r'^$', views.index, name='figure_index'),
-    re_path(r'^new/$', views.index, name='new_figure'),
-    re_path(r'^recover/$', views.index, name='recover_figure'),
-    re_path(r'^open/$', views.index, name='open_figure'),
-    re_path(r'^file/(?P<file_id>[0-9]+)/$', views.index, name='load_figure'),
+    path('', views.index, name='figure_index'),
+    path('new/', views.index, name='new_figure'),
+    path('recover/', views.index, name='recover_figure'),
+    path('open/', views.index, name='open_figure'),
+    path('file/<int:file_id>/', views.index, name='load_figure'),
 
-    re_path(r'^imgData/(?P<image_id>[0-9]+)/$', views.img_data_json,
-            name='figure_imgData'),
+    path('imgData/<int:image_id>/', views.img_data_json,
+         name='figure_imgData'),
 
     re_path(r'^max_projection_range_exceeded/'
             r'(?P<iid>[0-9]+)/(?:(?P<z>[0-9]+)/)?(?:(?P<t>[0-9]+)/)?$',
@@ -39,65 +39,61 @@ urlpatterns = [
             name='max_projection_range_exceeded'),
 
     # Send json to OMERO to create pdf using scripting service
-    re_path(r'^make_web_figure/', views.make_web_figure,
-            name='make_web_figure'),
+    path('make_web_figure/', views.make_web_figure,
+         name='make_web_figure'),
 
     # Save json to file annotation
-    re_path(r'^save_web_figure/', views.save_web_figure,
-            name='save_web_figure'),
+    path('save_web_figure/', views.save_web_figure, name='save_web_figure'),
 
     # Get json from file (file annotation Id)
-    re_path(r'^load_web_figure/(?P<file_id>[0-9]+)/$', views.load_web_figure,
-            name='load_web_figure'),
+    path('load_web_figure/<int:file_id>/', views.load_web_figure,
+         name='load_web_figure'),
 
     # List file annotations of saved Figures
-    re_path(r'^list_web_figures/', views.list_web_figures,
-            name='list_web_figures'),
+    path('list_web_figures/', views.list_web_figures,
+         name='list_web_figures'),
 
-    re_path(r'^render_thumbnail/(?P<iid>[0-9]+)/$',
-            webgateway_views.render_thumbnail,
-            {'_defcb': views.default_thumbnail},
-            name="figure_render_thumbnail"),
+    path('render_thumbnail/<int:iid>/',
+         webgateway_views.render_thumbnail,
+         {'_defcb': views.default_thumbnail},
+         name="figure_render_thumbnail"),
 
     # Region defined by ?region=x,y,w,h
-    re_path(
-        r'^render_scaled_region/(?P<iid>[0-9]+)/(?P<z>[0-9]+)/(?P<t>[0-9]+)/$',
+    path(
+        'render_scaled_region/<int:iid>/<int:z>/<int:t>/',
         views.render_scaled_region,
         name="figure_render_scaled_region"),
 
     # Delete file annotations of saved Figures - 'POST' with 'fileId' of file
     # annotation
-    re_path(r'^delete_web_figure/$', views.delete_web_figure,
-            name='delete_web_figure'),
+    path('delete_web_figure/', views.delete_web_figure,
+         name='delete_web_figure'),
 
     # Converts Lengths of value in 'fromUnit' to 'toUnit'.
     # E.g. unit_conversion/1.12/MICROMETER/ANGSTROM/.
     # Returns result as json with keys of 'value', 'unit' and 'symbol'
-    re_path(r'^unit_conversion/(?P<value>[0-9.]+)/(?P<from_unit>[A-Z]+)/'
-            '(?P<to_unit>[A-Z]+)/$',
-            views.unit_conversion, name='unit_conversion'),
+    path('unit_conversion/<int:value>/<slug:from_unit>/<slug:to_unit>/',
+         views.unit_conversion, name='unit_conversion'),
 
     # Get timestamps in seconds for images
     # Use query ?image=1&image=2
-    re_path(r'^timestamps/$', views.timestamps, name='figure_timestamps'),
+    path('timestamps/', views.timestamps, name='figure_timestamps'),
 
     # Get pixelsType for images. Use query ?image=1&image=2
     re_path(r'^pixels_type/$', views.pixels_type, name='figure_pixels_type'),
 
     # Get Z scale for images
     # Use query ?image=1&image=2
-    re_path(r'^z_scale/$', views.z_scale, name='figure_z_scale'),
+    path('z_scale/', views.z_scale, name='figure_z_scale'),
 
-    re_path(r'^roiCount/(?P<image_id>[0-9]+)/$', views.roi_count,
-            name='figure_roiCount'),
+    path('roiCount/<int:image_id>/', views.roi_count, name='figure_roiCount'),
 
-    re_path(r'^roiRectangles/(?P<image_id>[0-9]+)/$', views.roi_rectangles,
-            name='figure_roiRectangles'),
+    path('roiRectangles/<int:image_id>/', views.roi_rectangles,
+         name='figure_roiRectangles'),
 
     # POST to change figure to new group with ann_id and group_id
-    re_path(r'chgrp/$', views.chgrp, name='figure_chgrp'),
+    path('chgrp/', views.chgrp, name='figure_chgrp'),
 
     # Get group and owner info for multiple images. ?image=1,2,3
-    re_path(r'images_details/', views.images_details,
-            name="figure_images_details")
+    path('images_details/', views.images_details, name="figure_images_details")
 ]
