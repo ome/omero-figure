@@ -18,7 +18,7 @@
 
 from omeroweb.webgateway import views as webgateway_views
 from . import views
-from django.urls import path
+from django.urls import path, re_path
 
 
 urlpatterns = [
@@ -33,10 +33,10 @@ urlpatterns = [
     path('imgData/<int:image_id>/', views.img_data_json,
          name='figure_imgData'),
 
-    path(r'^max_projection_range_exceeded/'
-         r'(?P<iid>[0-9]+)/(?:(?P<z>[0-9]+)/)?(?:(?P<t>[0-9]+)/)?$',
-         views.max_projection_range_exceeded,
-         name='max_projection_range_exceeded'),
+    re_path(r'^max_projection_range_exceeded/'
+            r'(?P<iid>[0-9]+)/(?:(?P<z>[0-9]+)/)?(?:(?P<t>[0-9]+)/)?$',
+            views.max_projection_range_exceeded,
+            name='max_projection_range_exceeded'),
 
     # Send json to OMERO to create pdf using scripting service
     path('make_web_figure/', views.make_web_figure,
