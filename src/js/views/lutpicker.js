@@ -42,6 +42,7 @@ var LutPickerView = Backbone.View.extend({
                 "6_shades.lut",
                 "blue_orange_icb.lut",
                 "brgbcmyw.lut",
+                "cividis.lut",
                 "cool.lut",
                 "cyan_hot.lut",
                 "edges.lut",
