@@ -79,6 +79,7 @@ var LutPickerView = Backbone.View.extend({
                 "thal.lut",
                 "thallium.lut",
                 "thermal.lut",
+                "turbo.lut",
                 "unionjack.lut",
                 "viridis.lut",
                 "yellow_hot.lut"],
