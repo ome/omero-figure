@@ -1045,7 +1045,11 @@
 
             this.models.forEach(function(m){
                 m.cropToRoi(rect);
+                $("#vp_zoom_slider").val(parseInt(m.get('zoom')));
+                $("#vp_zoom_value").val(parseInt(m.get('zoom')));
             });
+
+            
         },
 
         show_crop_dialog: function(event) {
