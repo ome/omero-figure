@@ -56,6 +56,7 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 JSON_FILEANN_NS = "omero.web.figure.json"
+LINK_FIGURE_NS = "omero.web.figure.link"
 SCRIPT_PATH = "/omero/figure_scripts/Figure_To_Pdf.py"
 
 
@@ -341,6 +342,7 @@ def save_web_figure(request, conn=None, **kwargs):
             description['baseUrl'] = panel['baseUrl']
     desc = json.dumps(description)
 
+    map_id = -1
     if file_id is None:
         # Create new file
         # Try to set Group context to the same as first image
@@ -365,6 +367,14 @@ def save_web_figure(request, conn=None, **kwargs):
         fa.setDescription(wrap(desc))
         fa = update.saveAndReturnObject(fa, conn.SERVICE_OPTS)
         file_id = fa.getId().getValue()
+
+        base_url = request.POST.get('baseUrl')
+        if base_url is not None :
+            map_ann = omero.gateway.MapAnnotationWrapper(conn)
+            map_ann.setNs(wrap(LINK_FIGURE_NS + "." + file_id))
+            map_ann.setValue([["Figure", base_url + "/file/" + file_id]])
+            map_ann.save()
+            map_id = map_ann.getId()
 
     else:
         # Update existing Original File
@@ -392,6 +402,36 @@ def save_web_figure(request, conn=None, **kwargs):
         # rawFileStore.close(conn.SERVICE_OPTS)
         raw_file_store.save(conn.SERVICE_OPTS)
         raw_file_store.close()
+
+        ma = conn.getObject("MapAnnotation", ns=wrap(LINK_FIGURE_NS+"."+file_id))
+        if ma is not None :
+            map_id = ma.getId()
+    
+    if map_id > 0:
+        current_links = conn.getAnnotationLinks("Image", ns=(wrap(LINK_FIGURE_NS+"."+file_id)))
+        for link in current_links:
+            if link.getParent().getId().getValue() not in image_ids:
+                # remove old link
+                update.deleteObject(link._obj, conn.SERVICE_OPTS)
+            else:
+                # we don't need to create links for these
+                image_ids.remove(link.getParent().getId().getValue())
+
+        # create new links if necessary
+        links = []
+        if len(image_ids) > 0:
+            for i in conn.getObjects("Image", image_ids):
+                if not i.canAnnotate():
+                    continue
+                link = omero.model.ImageAnnotationLinkI()
+                link.parent = omero.model.ImageI(i.getId(), False)
+                link.child = omero.model.MapAnnotationI(map_id, False)
+                links.append(link)
+            # Don't want to fail at this point due to strange permissions combo
+            try:
+                update.saveArray(links, conn.SERVICE_OPTS)
+            except Exception:
+                pass
 
     # Link file annotation to all images (remove from any others)
     link_to_images = False      # Disabled for now
