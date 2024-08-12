@@ -369,11 +369,11 @@ def save_web_figure(request, conn=None, **kwargs):
         file_id = fa.getId().getValue()
 
         # create a new key-value pair for the new figure
-        base_url = request.POST.get('baseUrl')
-        if base_url is not None :
+        figure_base_url = request.POST.get('figureBaseUrl')
+        if figure_base_url is not None :
             map_ann = omero.gateway.MapAnnotationWrapper(conn)
             map_ann.setNs(wrap(LINK_FIGURE_NS))
-            map_ann.setValue([["Figure_" + figure_name + "_" + file_id, base_url + "/file/" + file_id]])
+            map_ann.setValue([["Figure_%s_%s" % (figure_name, file_id), "%s/file/%s" % (figure_base_url, file_id)]])
             map_ann.save()
             map_id = map_ann.getId()
 
@@ -408,7 +408,7 @@ def save_web_figure(request, conn=None, **kwargs):
         params = omero.sys.ParametersI()
         where_clause = []
 
-        params.add('filter', rlist([wrap("Figure_" + figure_name + "_" + file_id)]))
+        params.add('filter', rlist([wrap("Figure_%s_%s" % (figure_name, file_id))]))
         where_clause.append("mv.name in (:filter)")
 
         params.add('ns', rlist([wrap(LINK_FIGURE_NS)]))
