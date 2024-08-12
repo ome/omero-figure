@@ -101,7 +101,7 @@ Now install the script's dependencies:
 
 ::
 
-    $ pip install "reportlab<3.6"
+    $ pip install reportlab
 
 * Optional: Figure legends can be formatted using Markdown syntax. To see this correctly in the exported PDF info page, we need `Python Markdown <https://python-markdown.github.io/>`_:
 
