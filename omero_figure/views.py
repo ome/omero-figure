@@ -368,11 +368,12 @@ def save_web_figure(request, conn=None, **kwargs):
         fa = update.saveAndReturnObject(fa, conn.SERVICE_OPTS)
         file_id = fa.getId().getValue()
 
+        # create a new key-value pair for the new figure
         base_url = request.POST.get('baseUrl')
         if base_url is not None :
             map_ann = omero.gateway.MapAnnotationWrapper(conn)
-            map_ann.setNs(wrap(LINK_FIGURE_NS + "." + file_id))
-            map_ann.setValue([["Figure", base_url + "/file/" + file_id]])
+            map_ann.setNs(wrap(LINK_FIGURE_NS))
+            map_ann.setValue([["Figure_" + figure_name + "_" + file_id, base_url + "/file/" + file_id]])
             map_ann.save()
             map_id = map_ann.getId()
 
@@ -403,19 +404,39 @@ def save_web_figure(request, conn=None, **kwargs):
         raw_file_store.save(conn.SERVICE_OPTS)
         raw_file_store.close()
 
-        ma = conn.getObject("MapAnnotation", ns=wrap(LINK_FIGURE_NS+"."+file_id))
-        if ma is not None :
-            map_id = ma.getId()
-    
+        # retrieve the key-value corresponding to the current figure
+        params = omero.sys.ParametersI()
+        where_clause = []
+
+        params.add('filter', rlist([wrap("Figure_" + figure_name + "_" + file_id)]))
+        where_clause.append("mv.name in (:filter)")
+
+        params.add('ns', rlist([wrap(LINK_FIGURE_NS)]))
+        where_clause.append("a.ns in (:ns)")
+        where_clause.append("mv.value != '' ")
+
+        qs = conn.getQueryService()
+        q = """
+                select distinct a
+                    from Annotation a
+                    join a.mapValue mv where %s
+                """ % (" and ".join(where_clause))
+
+        ann = qs.findAllByQuery(q, params, conn.SERVICE_OPTS)
+
+        if ann is not None and len(ann) > 0:
+            map_id = ann[0].getId().getValue()
+
     if map_id > 0:
-        current_links = conn.getAnnotationLinks("Image", ns=(wrap(LINK_FIGURE_NS+"."+file_id)))
+        # get the links between the key-value and the linked images
+        current_links = conn.getAnnotationLinks("Image", ns=(wrap(LINK_FIGURE_NS)), ann_ids=[map_id])
         for link in current_links:
-            if link.getParent().getId().getValue() not in image_ids:
+            if link.getParent().getId() not in image_ids:
                 # remove old link
                 update.deleteObject(link._obj, conn.SERVICE_OPTS)
             else:
                 # we don't need to create links for these
-                image_ids.remove(link.getParent().getId().getValue())
+                image_ids.remove(link.getParent().getId())
 
         # create new links if necessary
         links = []
