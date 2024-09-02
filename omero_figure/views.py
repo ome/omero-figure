@@ -370,10 +370,11 @@ def save_web_figure(request, conn=None, **kwargs):
 
         # create a new key-value pair for the new figure
         figure_base_url = request.POST.get('figureBaseUrl')
-        if figure_base_url is not None :
+        if figure_base_url is not None:
             map_ann = omero.gateway.MapAnnotationWrapper(conn)
             map_ann.setNs(wrap(LINK_FIGURE_NS))
-            map_ann.setValue([["Figure_%s_%s" % (figure_name, file_id), "%s/file/%s" % (figure_base_url, file_id)]])
+            map_ann.setValue([["Figure_%s_%s" % (figure_name, file_id), 
+                               "%s/file/%s" % (figure_base_url, file_id)]])
             map_ann.save()
             map_id = map_ann.getId()
 
@@ -408,10 +409,11 @@ def save_web_figure(request, conn=None, **kwargs):
         params = omero.sys.ParametersI()
         where_clause = []
 
-        params.add('filter', rlist([wrap("Figure_%s_%s" % (figure_name, file_id))]))
+        params.add('filter', 
+                    wrap(["Figure_%s_%s" % (figure_name, file_id)))
         where_clause.append("mv.name in (:filter)")
 
-        params.add('ns', rlist([wrap(LINK_FIGURE_NS)]))
+        params.add('ns', wrap([LINK_FIGURE_NS]))
         where_clause.append("a.ns in (:ns)")
         where_clause.append("mv.value != '' ")
 
@@ -429,7 +431,11 @@ def save_web_figure(request, conn=None, **kwargs):
 
     if map_id > 0:
         # get the links between the key-value and the linked images
-        current_links = conn.getAnnotationLinks("Image", ns=(wrap(LINK_FIGURE_NS)), ann_ids=[map_id])
+        current_links = conn.getAnnotationLinks(
+                            "Image", 
+                            ns=(wrap(LINK_FIGURE_NS)), 
+                            ann_ids=[map_id]
+                        )
         for link in current_links:
             if link.getParent().getId() not in image_ids:
                 # remove old link
@@ -483,7 +489,6 @@ def save_web_figure(request, conn=None, **kwargs):
                 pass
 
     return HttpResponse(str(file_id))
-
 
 @login_required()
 def load_web_figure(request, file_id, conn=None, **kwargs):
