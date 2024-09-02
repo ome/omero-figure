@@ -371,7 +371,7 @@ def save_web_figure(request, conn=None, **kwargs):
 
         # create a new key-value pair for the new figure
         if figure_base_url is not None:
-            map_id = create_figure_kvp(conn, LINK_FIGURE_NS, 
+            map_id = create_figure_kvp(conn, LINK_FIGURE_NS,
                                         figure_name, file_id, figure_base_url)
 
     else:
@@ -405,7 +405,7 @@ def save_web_figure(request, conn=None, **kwargs):
         params = omero.sys.ParametersI()
         where_clause = []
 
-        params.add('filter', 
+        params.add('filter',
                     wrap(["Figure_%s_%s" % (figure_name, file_id)]))
         where_clause.append("mv.name in (:filter)")
 
@@ -421,18 +421,18 @@ def save_web_figure(request, conn=None, **kwargs):
                 """ % (" and ".join(where_clause))
 
         ann = [result[0].val for result in qs.projection(q, params, conn.SERVICE_OPTS)]
-        
+
         if ann is not None and len(ann) > 0:
             map_id = ann[0]
         else:
-            map_id = create_figure_kvp(conn, LINK_FIGURE_NS, figure_name, 
+            map_id = create_figure_kvp(conn, LINK_FIGURE_NS, figure_name,
                                     file_id, figure_base_url)
 
     if map_id > 0:
         # get the links between the key-value and the linked images
         current_links = conn.getAnnotationLinks(
-                            "Image", 
-                            ns=(wrap(LINK_FIGURE_NS)), 
+                            "Image",
+                            ns=(wrap(LINK_FIGURE_NS)),
                             ann_ids=[map_id]
                         )
         for link in current_links:
@@ -493,7 +493,7 @@ def save_web_figure(request, conn=None, **kwargs):
 def create_figure_kvp(conn, ns, fig_name, file_id, figure_url):
     map_ann = omero.gateway.MapAnnotationWrapper(conn)
     map_ann.setNs(wrap(ns))
-    map_ann.setValue([["Figure_%s_%s" % (fig_name, file_id), 
+    map_ann.setValue([["Figure_%s_%s" % (fig_name, file_id),
                         "%s/file/%s" % (figure_url, file_id)]])
     map_ann.save()
     return map_ann.getId()
