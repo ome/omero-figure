@@ -1,3 +1,15 @@
+
+7.1.0 (September 2024)
+----------------------
+
+- Labels ordering with drag and drop (Thanks to Tehmina Enayat and Tom Boissonnet) ([#575](https://github.com/ome/omero-figure/pull/575))
+- Z-projection limits ([#560](https://github.com/ome/omero-figure/pull/560))
+- Color-picker behaviour improvements on Chrome (Thanks to Rémy Dornier) ([#576](https://github.com/ome/omero-figure/pull/576))
+- Fix formatting of zoom labels (Thanks to Rémy Dornier) ([#581](https://github.com/ome/omero-figure/pull/581))
+- Fix panning of Big Images (Thanks to Rémy Dornier) ([#580](https://github.com/ome/omero-figure/pull/580))
+- Fix hot-reloading during development (Thanks to Tom Boissonnet) ([#574](https://github.com/ome/omero-figure/pull/574))
+
+
 7.0.0 (May 2024)
 ----------------
 
