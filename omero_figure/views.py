@@ -343,6 +343,7 @@ def save_web_figure(request, conn=None, **kwargs):
     desc = json.dumps(description)
 
     map_id = -1
+    figure_base_url = request.POST.get('figureBaseUrl')
     if file_id is None:
         # Create new file
         # Try to set Group context to the same as first image
@@ -369,14 +370,9 @@ def save_web_figure(request, conn=None, **kwargs):
         file_id = fa.getId().getValue()
 
         # create a new key-value pair for the new figure
-        figure_base_url = request.POST.get('figureBaseUrl')
         if figure_base_url is not None:
-            map_ann = omero.gateway.MapAnnotationWrapper(conn)
-            map_ann.setNs(wrap(LINK_FIGURE_NS))
-            map_ann.setValue([["Figure_%s_%s" % (figure_name, file_id), 
-                               "%s/file/%s" % (figure_base_url, file_id)]])
-            map_ann.save()
-            map_id = map_ann.getId()
+            map_id = create_figure_kvp(conn, LINK_FIGURE_NS, 
+                                        figure_name, file_id, figure_base_url)
 
     else:
         # Update existing Original File
@@ -410,7 +406,7 @@ def save_web_figure(request, conn=None, **kwargs):
         where_clause = []
 
         params.add('filter', 
-                    wrap(["Figure_%s_%s" % (figure_name, file_id)))
+                    wrap(["Figure_%s_%s" % (figure_name, file_id)]))
         where_clause.append("mv.name in (:filter)")
 
         params.add('ns', wrap([LINK_FIGURE_NS]))
@@ -419,15 +415,18 @@ def save_web_figure(request, conn=None, **kwargs):
 
         qs = conn.getQueryService()
         q = """
-                select distinct a
+                select distinct a.id
                     from Annotation a
                     join a.mapValue mv where %s
                 """ % (" and ".join(where_clause))
 
-        ann = qs.findAllByQuery(q, params, conn.SERVICE_OPTS)
-
+        ann = [result[0].val for result in qs.projection(q, params, conn.SERVICE_OPTS)]
+        
         if ann is not None and len(ann) > 0:
-            map_id = ann[0].getId().getValue()
+            map_id = ann[0]
+        else:
+            map_id = create_figure_kvp(conn, LINK_FIGURE_NS, figure_name, 
+                                    file_id, figure_base_url)
 
     if map_id > 0:
         # get the links between the key-value and the linked images
@@ -489,6 +488,16 @@ def save_web_figure(request, conn=None, **kwargs):
                 pass
 
     return HttpResponse(str(file_id))
+
+
+def create_figure_kvp(conn, ns, fig_name, file_id, figure_url):
+    map_ann = omero.gateway.MapAnnotationWrapper(conn)
+    map_ann.setNs(wrap(ns))
+    map_ann.setValue([["Figure_%s_%s" % (fig_name, file_id), 
+                        "%s/file/%s" % (figure_url, file_id)]])
+    map_ann.save()
+    return map_ann.getId()
+
 
 @login_required()
 def load_web_figure(request, file_id, conn=None, **kwargs):
