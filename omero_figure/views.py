@@ -488,6 +488,27 @@ def save_web_figure(request, conn=None, **kwargs):
     return HttpResponse(str(file_id))
 
 
+def delete_figure_kvp(conn, ns, figure_name, file_id):
+    # get kvp
+    ann = get_figure_kvp(conn, ns, figure_name, file_id)
+    if ann is not None and len(ann) > 0:
+        map_id = ann[0]
+        update = conn.getUpdateService()
+
+        # get the links between the key-value and the linked images
+        current_links = conn.getAnnotationLinks(
+            "Image",
+            ns=(wrap(ns)),
+            ann_ids=[map_id]
+        )
+        # delete links
+        for link in current_links:
+            update.deleteObject(link._obj, conn.SERVICE_OPTS)
+
+        # delete kvp
+        conn.deleteObjects("Annotation", [map_id])
+
+
 def link_figure_kvp_to_images(conn, update, ns, image_ids, map_id):
     # get the links between the key-value and the linked images
     current_links = conn.getAnnotationLinks(
@@ -523,26 +544,7 @@ def link_figure_kvp_to_images(conn, update, ns, image_ids, map_id):
 def create_or_get_figure_kvp(conn, ns, figure_name, file_id, figure_url):
     # retrieve the key-value corresponding to the current figure
     try:
-        params = omero.sys.ParametersI()
-        where_clause = []
-
-        params.add('filter',
-                    wrap(["Figure_%s_%s" % (figure_name, file_id)]))
-        where_clause.append("mv.name in (:filter)")
-
-        params.add('ns', wrap([ns]))
-        where_clause.append("a.ns in (:ns)")
-        where_clause.append("mv.value != '' ")
-
-        qs = conn.getQueryService()
-        q = """
-                select distinct a.id
-                    from Annotation a
-                    join a.mapValue mv where %s
-                """ % (" and ".join(where_clause))
-
-        results = qs.projection(q, params, conn.SERVICE_OPTS)
-        ann = [result[0].val for result in results]
+        ann = get_figure_kvp(conn, ns, figure_name, file_id)
 
         if ann is not None and len(ann) > 0:
             return ann[0]
@@ -555,6 +557,29 @@ def create_or_get_figure_kvp(conn, ns, figure_name, file_id, figure_url):
             return map_ann.getId()
     except Exception:
         return -1
+
+
+def get_figure_kvp(conn, ns, figure_name, file_id):
+    params = omero.sys.ParametersI()
+    where_clause = []
+
+    params.add('filter',
+                wrap(["Figure_%s_%s" % (figure_name, file_id)]))
+    where_clause.append("mv.name in (:filter)")
+
+    params.add('ns', wrap([ns]))
+    where_clause.append("a.ns in (:ns)")
+    where_clause.append("mv.value != '' ")
+
+    qs = conn.getQueryService()
+    q = """
+            select distinct a.id
+                from Annotation a
+                join a.mapValue mv where %s
+            """ % (" and ".join(where_clause))
+
+    results = qs.projection(q, params, conn.SERVICE_OPTS)
+    return [result[0].val for result in results]
 
 
 @login_required()
@@ -702,6 +727,8 @@ def delete_web_figure(request, conn=None, **kwargs):
         return HttpResponse("Need to POST 'fileId' to delete")
 
     file_id = request.POST.get('fileId')
+    figure_name = request.POST.get('figName')
+    delete_figure_kvp(conn, LINK_FIGURE_NS, figure_name, file_id)
     conn.deleteObjects("Annotation", [file_id])
     return HttpResponse("Deleted OK")
 
