@@ -91,6 +91,8 @@ def index(request, file_id=None, conn=None, **kwargs):
     max_w, max_h = conn.getMaxPlaneSize()
     max_plane_size = max_w * max_h
     length_units = get_length_units()
+    cfg = conn.getConfigService()
+    max_bytes = cfg.getConfigValue('omero.pixeldata.max_projection_bytes')
     is_public_user = "false"
     if (hasattr(settings, 'PUBLIC_USER')
             and settings.PUBLIC_USER == user.getOmeName()):
@@ -117,6 +119,9 @@ def index(request, file_id=None, conn=None, **kwargs):
                         'const MAX_PLANE_SIZE = %s;' % max_plane_size)
     html = html.replace('const LENGTH_UNITS = LENGTHUNITS;',
                         'const LENGTH_UNITS = %s;' % json.dumps(length_units))
+    if max_bytes:
+        html = html.replace('const MAX_PROJECTION_BYTES = 1024 * 1024 * 256;',
+                            'const MAX_PROJECTION_BYTES = %s;' % max_bytes)
     if export_enabled:
         html = html.replace('const EXPORT_ENABLED = false;',
                             'const EXPORT_ENABLED = true;')
@@ -134,6 +139,39 @@ def index(request, file_id=None, conn=None, **kwargs):
         "https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/",
         static_dir)
     return HttpResponse(html)
+
+
+@login_required()
+def max_projection_range_exceeded(request, iid, z=None, t=None,
+                                  conn=None, **kwargs):
+    """
+    The app will use this URL instead of `render_image/` if the
+    requested Z-projection range exceeds the maximum projected
+    bytes (given the number of active channels)
+
+    This returns a placeholder image with suitable message
+    """
+
+    from PIL import Image, ImageDraw, ImageFont
+
+    font20 = ImageFont.load_default(20)
+    msg = "Max Z projection disabled"
+    msg_size = font20.getbbox(msg)
+    txt_w = msg_size[2]
+    txt_h = msg_size[3]
+
+    image_size = txt_w + 10
+
+    im = Image.new("RGB", (image_size, image_size), (5, 0, 0))
+    draw = ImageDraw.Draw(im)
+    text_y = im.size[1]/2 - txt_h/2
+    draw.text((im.size[0]/2 - txt_w/2, text_y), msg,
+              font=font20,
+              fill=(256, 256, 256))
+
+    rv = BytesIO()
+    im.save(rv, "jpeg", quality=90)
+    return HttpResponse(rv.getvalue(), content_type="image/jpeg")
 
 
 @login_required()
@@ -188,6 +226,26 @@ def timestamps(request, conn=None, **kwargs):
         image = conn.getObject('Image', iid)
         if image is not None:
             data[image.id] = get_timestamps(conn, image)
+    return JsonResponse(data)
+
+
+@login_required()
+def pixels_type(request, conn=None, **kwargs):
+
+    iids = request.GET.getlist('image')
+    data = {}
+    for iid in iids:
+        try:
+            iid = int(iid)
+        except ValueError:
+            pass
+        else:
+            image = conn.getObject('Image', iid)
+            if image is not None:
+                data[image.id] = {
+                    "pixelsType": image.getPixelsType(),
+                    "pixel_range": image.getPixelRange()
+                }
     return JsonResponse(data)
 
 
