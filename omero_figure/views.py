@@ -164,8 +164,8 @@ def max_projection_range_exceeded(request, iid, z=None, t=None,
 
     im = Image.new("RGB", (image_size, image_size), (5, 0, 0))
     draw = ImageDraw.Draw(im)
-    text_y = im.size[1]/2 - txt_h/2
-    draw.text((im.size[0]/2 - txt_w/2, text_y), msg,
+    text_y = im.size[1] / 2 - txt_h / 2
+    draw.text((im.size[0] / 2 - txt_w / 2, text_y), msg,
               font=font20,
               fill=(256, 256, 256))
 
@@ -229,7 +229,6 @@ def timestamps(request, conn=None, **kwargs):
 
 @login_required()
 def pixels_type(request, conn=None, **kwargs):
-
     iids = request.GET.getlist('image')
     data = {}
     for iid in iids:
@@ -448,7 +447,7 @@ def save_web_figure(request, conn=None, **kwargs):
 
     # create a new key-value pair for the new figure
     figure_url = request.build_absolute_uri(reverse('load_figure',
-                                            args=[file_id]))
+                                                    args=[file_id]))
     map_id = create_or_get_figure_kvp(conn, LINK_FIGURE_NS,
                                       figure_name, file_id, figure_url)
 
@@ -552,7 +551,7 @@ def create_or_get_figure_kvp(conn, ns, figure_name, file_id, figure_url):
             map_ann = omero.gateway.MapAnnotationWrapper(conn)
             map_ann.setNs(wrap(ns))
             map_ann.setValue([["Figure_%s_%s" % (figure_name, file_id),
-                            figure_url]])
+                               figure_url]])
             map_ann.save()
             return map_ann.getId()
     except Exception:
@@ -564,7 +563,7 @@ def get_figure_kvp(conn, ns, figure_name, file_id):
     where_clause = []
 
     params.add('filter',
-                wrap(["Figure_%s_%s" % (figure_name, file_id)]))
+               wrap(["Figure_%s_%s" % (figure_name, file_id)]))
     where_clause.append("mv.name in (:filter)")
 
     params.add('ns', wrap([ns]))
