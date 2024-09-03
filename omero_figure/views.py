@@ -396,7 +396,7 @@ def save_web_figure(request, conn=None, **kwargs):
     desc = json.dumps(description)
 
     map_id = -1
-    figure_base_url = request.POST.get('figureBaseUrl')
+
     if file_id is None:
         # Create new file
         # Try to set Group context to the same as first image
@@ -423,9 +423,10 @@ def save_web_figure(request, conn=None, **kwargs):
         file_id = fa.getId().getValue()
 
         # create a new key-value pair for the new figure
-        if figure_base_url is not None:
-            map_id = create_figure_kvp(conn, LINK_FIGURE_NS,
-                                       figure_name, file_id, figure_base_url)
+        figure_url = request.build_absolute_uri(reverse('load_figure',
+                                                args=[file_id]))
+        map_id = create_figure_kvp(conn, LINK_FIGURE_NS,
+                                    figure_name, file_id, figure_url)
 
     else:
         # Update existing Original File
@@ -479,8 +480,10 @@ def save_web_figure(request, conn=None, **kwargs):
         if ann is not None and len(ann) > 0:
             map_id = ann[0]
         else:
+            figure_url = request.build_absolute_uri(reverse('load_figure',
+                                                    args=[file_id]))
             map_id = create_figure_kvp(conn, LINK_FIGURE_NS, figure_name,
-                                       file_id, figure_base_url)
+                                       file_id, figure_url)
 
     if map_id > 0:
         # get the links between the key-value and the linked images
@@ -547,8 +550,7 @@ def save_web_figure(request, conn=None, **kwargs):
 def create_figure_kvp(conn, ns, fig_name, file_id, figure_url):
     map_ann = omero.gateway.MapAnnotationWrapper(conn)
     map_ann.setNs(wrap(ns))
-    map_ann.setValue([["Figure_%s_%s" % (fig_name, file_id),
-                       "%s/file/%s" % (figure_url, file_id)]])
+    map_ann.setValue([["Figure_%s_%s" % (fig_name, file_id), figure_url]])
     map_ann.save()
     return map_ann.getId()
 
