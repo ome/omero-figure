@@ -395,8 +395,6 @@ def save_web_figure(request, conn=None, **kwargs):
             description['baseUrl'] = panel['baseUrl']
     desc = json.dumps(description)
 
-    map_id = -1
-
     if file_id is None:
         # Create new file
         # Try to set Group context to the same as first image
@@ -421,13 +419,6 @@ def save_web_figure(request, conn=None, **kwargs):
         fa.setDescription(wrap(desc))
         fa = update.saveAndReturnObject(fa, conn.SERVICE_OPTS)
         file_id = fa.getId().getValue()
-
-        # create a new key-value pair for the new figure
-        figure_url = request.build_absolute_uri(reverse('load_figure',
-                                                args=[file_id]))
-        map_id = create_figure_kvp(conn, LINK_FIGURE_NS,
-                                    figure_name, file_id, figure_url)
-
     else:
         # Update existing Original File
         fa = conn.getObject("FileAnnotation", file_id)
@@ -455,66 +446,16 @@ def save_web_figure(request, conn=None, **kwargs):
         raw_file_store.save(conn.SERVICE_OPTS)
         raw_file_store.close()
 
-        # retrieve the key-value corresponding to the current figure
-        params = omero.sys.ParametersI()
-        where_clause = []
+    # create a new key-value pair for the new figure
+    figure_url = request.build_absolute_uri(reverse('load_figure',
+                                            args=[file_id]))
+    map_id = create_or_get_figure_kvp(conn, LINK_FIGURE_NS,
+                                      figure_name, file_id, figure_url)
 
-        params.add('filter',
-                   wrap(["Figure_%s_%s" % (figure_name, file_id)]))
-        where_clause.append("mv.name in (:filter)")
-
-        params.add('ns', wrap([LINK_FIGURE_NS]))
-        where_clause.append("a.ns in (:ns)")
-        where_clause.append("mv.value != '' ")
-
-        qs = conn.getQueryService()
-        q = """
-                select distinct a.id
-                    from Annotation a
-                    join a.mapValue mv where %s
-                """ % (" and ".join(where_clause))
-
-        results = qs.projection(q, params, conn.SERVICE_OPTS)
-        ann = [result[0].val for result in results]
-
-        if ann is not None and len(ann) > 0:
-            map_id = ann[0]
-        else:
-            figure_url = request.build_absolute_uri(reverse('load_figure',
-                                                    args=[file_id]))
-            map_id = create_figure_kvp(conn, LINK_FIGURE_NS, figure_name,
-                                       file_id, figure_url)
-
+    # Link figure URL as key-value pair to all images (remove from any others)
     if map_id > 0:
-        # get the links between the key-value and the linked images
-        current_links = conn.getAnnotationLinks(
-            "Image",
-            ns=(wrap(LINK_FIGURE_NS)),
-            ann_ids=[map_id]
-        )
-        for link in current_links:
-            if link.getParent().getId() not in image_ids:
-                # remove old link
-                update.deleteObject(link._obj, conn.SERVICE_OPTS)
-            else:
-                # we don't need to create links for these
-                image_ids.remove(link.getParent().getId())
-
-        # create new links if necessary
-        links = []
-        if len(image_ids) > 0:
-            for i in conn.getObjects("Image", image_ids):
-                if not i.canAnnotate():
-                    continue
-                link = omero.model.ImageAnnotationLinkI()
-                link.parent = omero.model.ImageI(i.getId(), False)
-                link.child = omero.model.MapAnnotationI(map_id, False)
-                links.append(link)
-            # Don't want to fail at this point due to strange permissions combo
-            try:
-                update.saveArray(links, conn.SERVICE_OPTS)
-            except Exception:
-                pass
+        link_figure_kvp_to_images(conn, update, LINK_FIGURE_NS,
+                                  image_ids, map_id)
 
     # Link file annotation to all images (remove from any others)
     link_to_images = False  # Disabled for now
@@ -547,12 +488,73 @@ def save_web_figure(request, conn=None, **kwargs):
     return HttpResponse(str(file_id))
 
 
-def create_figure_kvp(conn, ns, fig_name, file_id, figure_url):
-    map_ann = omero.gateway.MapAnnotationWrapper(conn)
-    map_ann.setNs(wrap(ns))
-    map_ann.setValue([["Figure_%s_%s" % (fig_name, file_id), figure_url]])
-    map_ann.save()
-    return map_ann.getId()
+def link_figure_kvp_to_images(conn, update, ns, image_ids, map_id):
+    # get the links between the key-value and the linked images
+    current_links = conn.getAnnotationLinks(
+        "Image",
+        ns=(wrap(ns)),
+        ann_ids=[map_id]
+    )
+    for link in current_links:
+        if link.getParent().getId() not in image_ids:
+            # remove old link
+            update.deleteObject(link._obj, conn.SERVICE_OPTS)
+        else:
+            # we don't need to create links for these
+            image_ids.remove(link.getParent().getId())
+
+    # create new links if necessary
+    links = []
+    if len(image_ids) > 0:
+        for i in conn.getObjects("Image", image_ids):
+            if not i.canAnnotate():
+                continue
+            link = omero.model.ImageAnnotationLinkI()
+            link.parent = omero.model.ImageI(i.getId(), False)
+            link.child = omero.model.MapAnnotationI(map_id, False)
+            links.append(link)
+        # Don't want to fail at this point due to strange permissions combo
+        try:
+            update.saveArray(links, conn.SERVICE_OPTS)
+        except Exception:
+            pass
+
+
+def create_or_get_figure_kvp(conn, ns, figure_name, file_id, figure_url):
+    # retrieve the key-value corresponding to the current figure
+    try:
+        params = omero.sys.ParametersI()
+        where_clause = []
+
+        params.add('filter',
+                    wrap(["Figure_%s_%s" % (figure_name, file_id)]))
+        where_clause.append("mv.name in (:filter)")
+
+        params.add('ns', wrap([ns]))
+        where_clause.append("a.ns in (:ns)")
+        where_clause.append("mv.value != '' ")
+
+        qs = conn.getQueryService()
+        q = """
+                select distinct a.id
+                    from Annotation a
+                    join a.mapValue mv where %s
+                """ % (" and ".join(where_clause))
+
+        results = qs.projection(q, params, conn.SERVICE_OPTS)
+        ann = [result[0].val for result in results]
+
+        if ann is not None and len(ann) > 0:
+            return ann[0]
+        else:
+            map_ann = omero.gateway.MapAnnotationWrapper(conn)
+            map_ann.setNs(wrap(ns))
+            map_ann.setValue([["Figure_%s_%s" % (figure_name, file_id),
+                            figure_url]])
+            map_ann.save()
+            return map_ann.getId()
+    except Exception:
+        return -1
 
 
 @login_required()
