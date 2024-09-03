@@ -415,7 +415,8 @@ def save_web_figure(request, conn=None, **kwargs):
                     join a.mapValue mv where %s
                 """ % (" and ".join(where_clause))
 
-        ann = [result[0].val for result in qs.projection(q, params, conn.SERVICE_OPTS)]
+        results = qs.projection(q, params, conn.SERVICE_OPTS)
+        ann = [result[0].val for result in results]
 
         if ann is not None and len(ann) > 0:
             map_id = ann[0]
