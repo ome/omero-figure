@@ -48,8 +48,9 @@ def get_timestamps(conn, image):
         except Exception as error:
             print(f"An exception occured: {error}\n"
                   "maybe the image has no 'timeIncrement' set")
-        for i in range(image.getSizeT()):
-            timemap[i] = i*time_increment
+        if time_increment != 0:
+            for i in range(image.getSizeT()):
+                timemap[i] = i*time_increment
     time_list = []
     for t in range(image.getSizeT()):
         if t in timemap:
