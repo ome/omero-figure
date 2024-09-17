@@ -38,7 +38,8 @@ def get_timestamps(conn, image):
                 plane_info = PlaneInfoWrapper(conn, info)
                 delta_t = plane_info.getDeltaT('SECOND')
                 timemap[t_index] = delta_t.getValue()
-    else:
+    # double check to see if timemap actually got populated
+    if len(info_list) == 0 or len(timemap) == 0:
         # get time info from the timeIncrement of the Pixels
         time_increment = 0
         try:
