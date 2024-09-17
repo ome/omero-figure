@@ -28,13 +28,27 @@ def get_timestamps(conn, image):
     info_list = conn.getQueryService().findAllByQuery(
         query, params, conn.SERVICE_OPTS)
     timemap = {}
-    for info in info_list:
-        t_index = info.theT.getValue()
-        if info.deltaT is not None:
-            # Use wrapper to help unit conversion
-            plane_info = PlaneInfoWrapper(conn, info)
-            delta_t = plane_info.getDeltaT('SECOND')
-            timemap[t_index] = delta_t.getValue()
+    # check if any PlaneInfo was found
+    if len(info_list) > 0:
+        # get time info from the PlaneInfo
+        for info in info_list:
+            t_index = info.theT.getValue()
+            if info.deltaT is not None:
+                # Use wrapper to help unit conversion
+                plane_info = PlaneInfoWrapper(conn, info)
+                delta_t = plane_info.getDeltaT('SECOND')
+                timemap[t_index] = delta_t.getValue()
+    else:
+        # get time info from the timeIncrement of the Pixels
+        time_increment = 0
+        try:
+            pixels = image.getPrimaryPixels()._obj
+            time_increment = pixels.getTimeIncrement()._value
+        except Exception as error:
+            print(f"An exception occured: {error}\n"
+                  "maybe the image has no 'timeIncrement' set")
+        for i in range(image.getSizeT()):
+            timemap[i] = i*time_increment
     time_list = []
     for t in range(image.getSizeT()):
         if t in timemap:
