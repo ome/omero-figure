@@ -17,6 +17,8 @@
 
 from omero.sys import ParametersI
 from omero.gateway import PlaneInfoWrapper
+from omero.model.enums import UnitsTime
+from omero.model import TimeI
 
 
 def get_timestamps(conn, image):
@@ -44,13 +46,18 @@ def get_timestamps(conn, image):
         time_increment = 0
         try:
             pixels = image.getPrimaryPixels()._obj
-            time_increment = pixels.getTimeIncrement()._value
+            time_increment = pixels.getTimeIncrement()
+            time_increment_unit = time_increment.getUnit()
+            converted_value = TimeI.CONVERSIONS[time_increment_unit][
+                UnitsTime.SECOND](time_increment._value)
+            converted_time_increment = TimeI(converted_value, UnitsTime.SECOND)
+
         except Exception as error:
             print(f"An exception occured: {error}\n"
                   "maybe the image has no 'timeIncrement' set")
-        if time_increment != 0:
+        if converted_time_increment != 0:
             for i in range(image.getSizeT()):
-                timemap[i] = i*time_increment
+                timemap[i] = i*converted_time_increment
     time_list = []
     for t in range(image.getSizeT()):
         if t in timemap:
