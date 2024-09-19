@@ -44,6 +44,7 @@ def get_timestamps(conn, image):
     if len(info_list) == 0 or len(timemap) == 0:
         # get time info from the timeIncrement of the Pixels
         time_increment = 0
+        converted_value = 0
         try:
             pixels = image.getPrimaryPixels()._obj
             time_increment = pixels.getTimeIncrement()
