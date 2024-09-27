@@ -48,9 +48,9 @@ def get_timestamps(conn, image):
         try:
             pixels = image.getPrimaryPixels()._obj
             time_increment = pixels.getTimeIncrement()
-            time_increment_unit = time_increment.getUnit()
-            converted_value = TimeI.CONVERSIONS[time_increment_unit][
-                UnitsTime.SECOND](time_increment._value)
+            secs_unit = getattr(UnitsTime, "SECOND")
+            seconds = TimeI(time_increment, secs_unit)
+            converted_value = seconds.getValue()
 
         except Exception as error:
             print(f"An exception occured: {error}\n"
