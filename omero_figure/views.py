@@ -487,11 +487,12 @@ def save_web_figure(request, conn=None, **kwargs):
     return HttpResponse(str(file_id))
 
 
-def delete_figure_kvp(conn, ns, figure_name, file_id):
+def delete_figure_kvp(conn, ns, file_id):
     # get kvp
-    ann = get_figure_kvp(conn, ns, figure_name, file_id)
+    ann = get_figure_kvp(conn, ns, file_id)
     if ann is not None and len(ann) > 0:
-        map_id = ann[0]
+        map_ann = ann[0]
+        map_id = map_ann[0]
         update = conn.getUpdateService()
 
         # get the links between the key-value and the linked images
@@ -543,7 +544,7 @@ def link_figure_kvp_to_images(conn, update, ns, image_ids, map_id):
 def create_or_get_figure_kvp(conn, ns, figure_name, file_id, figure_url):
     # retrieve the key-value corresponding to the current figure
     try:
-        ann = get_figure_kvp(conn, ns, figure_name, file_id)
+        ann = get_figure_kvp(conn, ns, file_id)
 
         if ann is not None and len(ann) > 0:
             map_att = ann[0]
@@ -557,7 +558,7 @@ def create_or_get_figure_kvp(conn, ns, figure_name, file_id, figure_url):
             map_ann.setNs(wrap(ns))
 
         map_ann.setValue([["Figure_%s_%s" % (file_id, figure_name),
-                            figure_url]])
+                           figure_url]])
         map_ann.save()
 
         return map_ann.getId()
@@ -565,7 +566,7 @@ def create_or_get_figure_kvp(conn, ns, figure_name, file_id, figure_url):
         return -1
 
 
-def get_figure_kvp(conn, ns, figure_name, file_id):
+def get_figure_kvp(conn, ns, file_id):
     params = omero.sys.ParametersI()
     where_clause = []
     where_clause.append(f"mv.name like 'Figure_{file_id}%'")
@@ -730,8 +731,7 @@ def delete_web_figure(request, conn=None, **kwargs):
         return HttpResponse("Need to POST 'fileId' to delete")
 
     file_id = request.POST.get('fileId')
-    figure_name = request.POST.get('figName')
-    delete_figure_kvp(conn, LINK_FIGURE_NS, figure_name, file_id)
+    delete_figure_kvp(conn, LINK_FIGURE_NS, file_id)
     conn.deleteObjects("Annotation", [file_id])
     return HttpResponse("Deleted OK")
 
