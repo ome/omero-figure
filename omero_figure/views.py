@@ -546,14 +546,21 @@ def create_or_get_figure_kvp(conn, ns, figure_name, file_id, figure_url):
         ann = get_figure_kvp(conn, ns, figure_name, file_id)
 
         if ann is not None and len(ann) > 0:
-            return ann[0]
+            map_att = ann[0]
+            map_name = map_att[1]
+            if figure_name in map_name:
+                return map_att[0]
+
+            map_ann = conn.getObject('MapAnnotation', map_att[0])
         else:
             map_ann = omero.gateway.MapAnnotationWrapper(conn)
             map_ann.setNs(wrap(ns))
-            map_ann.setValue([["Figure_%s_%s" % (figure_name, file_id),
-                               figure_url]])
-            map_ann.save()
-            return map_ann.getId()
+
+        map_ann.setValue([["Figure_%s_%s" % (file_id, figure_name),
+                            figure_url]])
+        map_ann.save()
+
+        return map_ann.getId()
     except Exception:
         return -1
 
@@ -561,10 +568,7 @@ def create_or_get_figure_kvp(conn, ns, figure_name, file_id, figure_url):
 def get_figure_kvp(conn, ns, figure_name, file_id):
     params = omero.sys.ParametersI()
     where_clause = []
-
-    params.add('filter',
-               wrap(["Figure_%s_%s" % (figure_name, file_id)]))
-    where_clause.append("mv.name in (:filter)")
+    where_clause.append(f"mv.name like 'Figure_{file_id}%'")
 
     params.add('ns', wrap([ns]))
     where_clause.append("a.ns in (:ns)")
@@ -572,13 +576,13 @@ def get_figure_kvp(conn, ns, figure_name, file_id):
 
     qs = conn.getQueryService()
     q = """
-            select distinct a.id
+            select distinct a.id, mv.name
                 from Annotation a
                 join a.mapValue mv where %s
             """ % (" and ".join(where_clause))
 
     results = qs.projection(q, params, conn.SERVICE_OPTS)
-    return [result[0].val for result in results]
+    return [[result[0].val, result[1].val] for result in results]
 
 
 @login_required()
