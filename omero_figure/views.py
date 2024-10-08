@@ -732,3 +732,20 @@ def images_details(request, conn=None, **kwargs):
         })
 
     return JsonResponse({'data': data})
+
+
+def get_lut_url(request, **kwargs):
+    """
+    Get the URL for the LUT png. Return the correct URL based on the current
+    omero-web version.
+    """
+    try:
+        # Try to reverse the URL dynamically, which might be version-dependent
+        url = reverse("webgateway_luts_png")
+        lut_url = url  # Correct dynamically generated URL
+    except NoReverseMatch:
+        # Fallback URL if the dynamic route is not available
+        # Need to handle dev vv built (omero-web) paths
+        lut_url = "../../images/luts_10.png"
+    # Return the lut_url as JSON
+    return JsonResponse({'lut_url': lut_url})
