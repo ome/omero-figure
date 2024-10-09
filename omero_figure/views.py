@@ -734,18 +734,19 @@ def images_details(request, conn=None, **kwargs):
     return JsonResponse({'data': data})
 
 
-def get_lut_url(request, **kwargs):
+@login_required()
+def is_dynamic_lut(request, **kwargs):
     """
-    Get the URL for the LUT png. Return the correct URL based on the current
-    omero-web version.
+    Return true or false for dynamic lut usage URL based on the
+    current omero-web version.
     """
+    is_dynamic_lut = False
     try:
         # Try to reverse the URL dynamically, which might be version-dependent
-        url = reverse("webgateway_luts_png")
-        lut_url = url  # Correct dynamically generated URL
+        _ = reverse("webgateway_luts_png")
+        is_dynamic_lut = True
     except NoReverseMatch:
         # Fallback URL if the dynamic route is not available
-        # Need to handle dev vv built (omero-web) paths
-        lut_url = "../../images/luts_10.png"
+        pass
     # Return the lut_url as JSON
-    return JsonResponse({'lut_url': lut_url})
+    return JsonResponse({'is_dynamic_lut': is_dynamic_lut})

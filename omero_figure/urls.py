@@ -90,5 +90,5 @@ urlpatterns = [
     path('images_details/', views.images_details, name="figure_images_details"),
 
     # Get the URL for the LUT png based on the current omero-web version.
-    path('get_lut_url/', views.get_lut_url, name='figure_lut_url')
+    path('is_dynamic_lut/', views.is_dynamic_lut, name='figure_dynamic_lut')
 ]
