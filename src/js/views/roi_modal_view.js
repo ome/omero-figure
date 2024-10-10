@@ -73,7 +73,6 @@ export const RoiModalView = Backbone.View.extend({
 
             // Here we handle init of the dialog when it's shown...
             document.getElementById('roiModal').addEventListener('shown.bs.modal', () => {
-                console.log("ROI modal shown...")
                 // Clone the 'first' selected panel as our reference for everything
                 self.m = self.model.getSelected().head().clone();
 
