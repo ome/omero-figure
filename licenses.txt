@@ -10,17 +10,21 @@ Library: backbone.mousetrap
 Site: https://github.com/elasticsales/backbone.mousetrap
 License: MIT
 
-Library: bootstrap3
+Library: bootstrap
 Site: http://getbootstrap.com/
-License: Apache Software License, Version 2
+License: MIT
 
-Library: bootstrap-colorpicker
-Site: http://mjolnic.com/bootstrap-colorpicker/
-License: Apache Software License, Version 2
+Library: bootstrap icons
+Site: https://github.com/twbs/icons
+License: MIT
 
-Library: json2js
-Site: http://www.JSON.org/json2.js
-License: Public Domain
+Library: dompurify
+Site: https://www.npmjs.com/package/dompurify
+License: Apache License Version 2.0, or Mozilla Public License Version 2.0
+
+Library: jquery
+Site: https://jquery.com/
+License: MIT
 
 Library: markdown-browser-0.6.0-beta1
 Site: https://github.com/evilstreak/markdown-js
@@ -34,13 +38,17 @@ Library: mousetrap-1.5.3
 Site: craig.is/killing/mice
 License: Apache Software License, Version 2
 
-Library: shape-editor-3.0.0
-Site: https://github.com/ome/shape-editor
-License: BSD
+Library: @popperjs/core
+Site: https://www.npmjs.com/package/@popperjs/core
+License: MIT
 
 Library: raphael
 Site: https://github.com/fanstatic/js.raphael
 License: BSD
+
+Library: sortablejs
+Site: https://www.npmjs.com/package/sortablejs
+License: MIT
 
 Library: underscore
 Site: https://github.com/jashkenas/underscore
