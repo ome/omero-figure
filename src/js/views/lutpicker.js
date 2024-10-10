@@ -23,11 +23,21 @@ import _ from 'underscore';
 import * as bootstrap from "bootstrap"
 
 import lut_picker_template from '../../templates/lut_picker.template.html?raw';
-import { showModal } from "./util";
+import { showModal, getJson } from "./util";
 
-import lutsPng from "../../images/luts_10.png";
 // Need to handle dev vv built (omero-web) paths
-const lutsPngUrl = STATIC_DIR + lutsPng;
+import lutsPng from "../../images/luts_10.png";
+
+var url = `${BASE_WEBFIGURE_URL}is_dynamic_lut/`;
+var lutsPngUrl, is_dynamic_lut;
+getJson(url).then(data => {
+    is_dynamic_lut = data.is_dynamic_lut;
+    if (is_dynamic_lut) {
+        lutsPngUrl = `${WEBGATEWAYINDEX}luts_png/`;
+    } else {
+        lutsPngUrl = STATIC_DIR + lutsPng;
+    }
+});
 
 // Should only ever have a singleton on this
 var LutPickerView = Backbone.View.extend({
@@ -36,51 +46,12 @@ var LutPickerView = Backbone.View.extend({
 
     template: _.template(lut_picker_template),
 
-    LUT_NAMES: ["16_colors.lut",
-                "3-3-2_rgb.lut",
-                "5_ramps.lut",
-                "6_shades.lut",
-                "blue_orange_icb.lut",
-                "brgbcmyw.lut",
-                "cool.lut",
-                "cyan_hot.lut",
-                "edges.lut",
-                "fire.lut",
-                "gem.lut",
-                "glasbey.lut",
-                "glasbey_inverted.lut",
-                "glow.lut",
-                "grays.lut",
-                "green_fire_blue.lut",
-                "hilo.lut",
-                "ica.lut",
-                "ica2.lut",
-                "ica3.lut",
-                "ice.lut",
-                "magenta_hot.lut",
-                "orange_hot.lut",
-                "phase.lut",
-                "physics.lut",
-                "pup_br.lut",
-                "pup_nr.lut",
-                "rainbow_rgb.lut",
-                "red-green.lut",
-                "red_hot.lut",
-                "royal.lut",
-                "sepia.lut",
-                "smart.lut",
-                "spectrum.lut",
-                "thal.lut",
-                "thallium.lut",
-                "thermal.lut",
-                "unionjack.lut",
-                "yellow_hot.lut"],
-
     initialize:function () {
         this.lutModal = new bootstrap.Modal('#lutpickerModal');
+        this.lut_names = [];
     },
 
-    
+
     events: {
         "click button[type='submit']": "handleSubmit",
         "click .lutOption": "pickLut",
@@ -110,7 +81,7 @@ var LutPickerView = Backbone.View.extend({
     },
 
     getLutBackgroundPosition: function(lutName) {
-        var lutIndex = this.LUT_NAMES.indexOf(lutName);
+        var lutIndex = this.lut_names.indexOf(lutName);
         if (lutIndex > -1) {
             return '0px -' + ((lutIndex * 50) +2) + 'px';
         } else {
@@ -138,12 +109,20 @@ var LutPickerView = Backbone.View.extend({
         this.loadLuts().then((data) => {
             console.log('data', data);
             this.luts = data.luts;
+            this.lut_names = data.png_luts;
+            if (is_dynamic_lut){
+                this.luts = this.luts.map(function(lut) {
+                    lut.png_index = lut.png_index_new;
+                    return lut;
+                });
+                this.lut_names = data.png_luts_new;
+            }
+            this.lut_names = this.lut_names.map(lut_name => lut_name.split('/').pop());
             this.render();
         });
     },
 
     render:function() {
-        
         var html = "",
             luts;
         if (!this.luts) {
@@ -156,7 +135,19 @@ var LutPickerView = Backbone.View.extend({
                         'name': lut.name,
                         'displayName': this.formatLutName(lut.name)};
             }.bind(this));
-            html = this.template({'luts': luts, lutsPngUrl});
+
+
+            var png_len = this.lut_names.length;
+            if (!is_dynamic_lut) {
+                // png of figure does not include the gradient
+                png_len = png_len - 1;
+            }
+            // Set the css variables at the document root, as it's used in different places
+            $(":root").css({
+                "--pngHeight": png_len * 50 + "px",
+                "--lutPng": "url("+lutsPngUrl+")"
+            });
+            html = this.template({'luts': luts});
         }
         $(".modal-body", this.el).html(html);
     }
