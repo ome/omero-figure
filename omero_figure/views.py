@@ -1,4 +1,3 @@
-
 #
 # Copyright (c) 2014-2020 University of Dundee.
 #
@@ -56,6 +55,7 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 JSON_FILEANN_NS = "omero.web.figure.json"
+LINK_FIGURE_NS = "omero.web.figure.link"
 SCRIPT_PATH = "/omero/figure_scripts/Figure_To_Pdf.py"
 
 
@@ -91,6 +91,8 @@ def index(request, file_id=None, conn=None, **kwargs):
     max_w, max_h = conn.getMaxPlaneSize()
     max_plane_size = max_w * max_h
     length_units = get_length_units()
+    cfg = conn.getConfigService()
+    max_bytes = cfg.getConfigValue('omero.pixeldata.max_projection_bytes')
     is_public_user = "false"
     if (hasattr(settings, 'PUBLIC_USER')
             and settings.PUBLIC_USER == user.getOmeName()):
@@ -117,6 +119,9 @@ def index(request, file_id=None, conn=None, **kwargs):
                         'const MAX_PLANE_SIZE = %s;' % max_plane_size)
     html = html.replace('const LENGTH_UNITS = LENGTHUNITS;',
                         'const LENGTH_UNITS = %s;' % json.dumps(length_units))
+    if max_bytes:
+        html = html.replace('const MAX_PROJECTION_BYTES = 1024 * 1024 * 256;',
+                            'const MAX_PROJECTION_BYTES = %s;' % max_bytes)
     if export_enabled:
         html = html.replace('const EXPORT_ENABLED = false;',
                             'const EXPORT_ENABLED = true;')
@@ -137,8 +142,40 @@ def index(request, file_id=None, conn=None, **kwargs):
 
 
 @login_required()
-def img_data_json(request, image_id, conn=None, **kwargs):
+def max_projection_range_exceeded(request, iid, z=None, t=None,
+                                  conn=None, **kwargs):
+    """
+    The app will use this URL instead of `render_image/` if the
+    requested Z-projection range exceeds the maximum projected
+    bytes (given the number of active channels)
 
+    This returns a placeholder image with suitable message
+    """
+
+    from PIL import Image, ImageDraw, ImageFont
+
+    font20 = ImageFont.load_default(20)
+    msg = "Max Z projection disabled"
+    msg_size = font20.getbbox(msg)
+    txt_w = msg_size[2]
+    txt_h = msg_size[3]
+
+    image_size = txt_w + 10
+
+    im = Image.new("RGB", (image_size, image_size), (5, 0, 0))
+    draw = ImageDraw.Draw(im)
+    text_y = im.size[1] / 2 - txt_h / 2
+    draw.text((im.size[0] / 2 - txt_w / 2, text_y), msg,
+              font=font20,
+              fill=(256, 256, 256))
+
+    rv = BytesIO()
+    im.save(rv, "jpeg", quality=90)
+    return HttpResponse(rv.getvalue(), content_type="image/jpeg")
+
+
+@login_required()
+def img_data_json(request, image_id, conn=None, **kwargs):
     image = conn.getObject("Image", image_id)
     if image is None:
         raise Http404("Image not found")
@@ -181,7 +218,6 @@ def img_data_json(request, image_id, conn=None, **kwargs):
 
 @login_required()
 def timestamps(request, conn=None, **kwargs):
-
     iids = request.GET.getlist('image')
     data = {}
     for iid in iids:
@@ -192,8 +228,26 @@ def timestamps(request, conn=None, **kwargs):
 
 
 @login_required()
-def z_scale(request, conn=None, **kwargs):
+def pixels_type(request, conn=None, **kwargs):
+    iids = request.GET.getlist('image')
+    data = {}
+    for iid in iids:
+        try:
+            iid = int(iid)
+        except ValueError:
+            pass
+        else:
+            image = conn.getObject('Image', iid)
+            if image is not None:
+                data[image.id] = {
+                    "pixelsType": image.getPixelsType(),
+                    "pixel_range": image.getPixelRange()
+                }
+    return JsonResponse(data)
 
+
+@login_required()
+def z_scale(request, conn=None, **kwargs):
     iids = request.GET.getlist('image')
     data = {}
     for iid in iids:
@@ -209,7 +263,6 @@ def z_scale(request, conn=None, **kwargs):
 
 @login_required()
 def render_scaled_region(request, iid, z, t, conn=None, **kwargs):
-
     region = request.GET.get('region')
     logger.debug("Rendering region: %s, Image: %s" % (region, iid))
 
@@ -327,7 +380,7 @@ def save_web_figure(request, conn=None, **kwargs):
         n = datetime.now()
         # time-stamp name by default: WebFigure_2013-10-29_22-43-53.json
         figure_name = "Figure_%s-%s-%s_%s-%s-%s.json" % \
-            (n.year, n.month, n.day, n.hour, n.minute, n.second)
+                      (n.year, n.month, n.day, n.hour, n.minute, n.second)
 
     # we store json in description field...
     description = {}
@@ -365,7 +418,6 @@ def save_web_figure(request, conn=None, **kwargs):
         fa.setDescription(wrap(desc))
         fa = update.saveAndReturnObject(fa, conn.SERVICE_OPTS)
         file_id = fa.getId().getValue()
-
     else:
         # Update existing Original File
         fa = conn.getObject("FileAnnotation", file_id)
@@ -387,14 +439,25 @@ def save_web_figure(request, conn=None, **kwargs):
         raw_file_store.setFileId(orig_file.getId().getValue(),
                                  conn.SERVICE_OPTS)
         raw_file_store.write(figure_json, 0, size, conn.SERVICE_OPTS)
-        raw_file_store.truncate(size, conn.SERVICE_OPTS)     # ticket #11751
+        raw_file_store.truncate(size, conn.SERVICE_OPTS)  # ticket #11751
         # Once #11928 is fixed, these last 2 lines can be replaced with
         # rawFileStore.close(conn.SERVICE_OPTS)
         raw_file_store.save(conn.SERVICE_OPTS)
         raw_file_store.close()
 
+    # create a new key-value pair for the new figure
+    figure_url = request.build_absolute_uri(reverse('load_figure',
+                                                    args=[file_id]))
+    map_id = create_or_get_figure_kvp(conn, LINK_FIGURE_NS,
+                                      figure_name, file_id, figure_url)
+
+    # Link figure URL as key-value pair to all images (remove from any others)
+    if map_id > 0:
+        link_figure_kvp_to_images(conn, update, LINK_FIGURE_NS,
+                                  image_ids, map_id)
+
     # Link file annotation to all images (remove from any others)
-    link_to_images = False      # Disabled for now
+    link_to_images = False  # Disabled for now
     if link_to_images:
         current_links = conn.getAnnotationLinks("Image", ann_ids=[file_id])
         for link in current_links:
@@ -422,6 +485,105 @@ def save_web_figure(request, conn=None, **kwargs):
                 pass
 
     return HttpResponse(str(file_id))
+
+
+def delete_figure_kvp(conn, ns, file_id):
+    # get kvp
+    ann = get_figure_kvp(conn, ns, file_id)
+    if ann is not None and len(ann) > 0:
+        map_ann = ann[0]
+        map_id = map_ann[0]
+        update = conn.getUpdateService()
+
+        # get the links between the key-value and the linked images
+        current_links = conn.getAnnotationLinks(
+            "Image",
+            ns=(wrap(ns)),
+            ann_ids=[map_id]
+        )
+        # delete links
+        for link in current_links:
+            update.deleteObject(link._obj, conn.SERVICE_OPTS)
+
+        # delete kvp
+        conn.deleteObjects("Annotation", [map_id])
+
+
+def link_figure_kvp_to_images(conn, update, ns, image_ids, map_id):
+    # get the links between the key-value and the linked images
+    current_links = conn.getAnnotationLinks(
+        "Image",
+        ns=(wrap(ns)),
+        ann_ids=[map_id]
+    )
+    for link in current_links:
+        if link.getParent().getId() not in image_ids:
+            # remove old link
+            update.deleteObject(link._obj, conn.SERVICE_OPTS)
+        else:
+            # we don't need to create links for these
+            image_ids.remove(link.getParent().getId())
+
+    # create new links if necessary
+    links = []
+    if len(image_ids) > 0:
+        for i in conn.getObjects("Image", image_ids):
+            if not i.canAnnotate():
+                continue
+            link = omero.model.ImageAnnotationLinkI()
+            link.parent = omero.model.ImageI(i.getId(), False)
+            link.child = omero.model.MapAnnotationI(map_id, False)
+            links.append(link)
+        # Don't want to fail at this point due to strange permissions combo
+        try:
+            update.saveArray(links, conn.SERVICE_OPTS)
+        except Exception:
+            pass
+
+
+def create_or_get_figure_kvp(conn, ns, figure_name, file_id, figure_url):
+    # retrieve the key-value corresponding to the current figure
+    try:
+        ann = get_figure_kvp(conn, ns, file_id)
+
+        if ann is not None and len(ann) > 0:
+            map_att = ann[0]
+            map_name = map_att[1]
+            if figure_name in map_name:
+                return map_att[0]
+
+            map_ann = conn.getObject('MapAnnotation', map_att[0])
+        else:
+            map_ann = omero.gateway.MapAnnotationWrapper(conn)
+            map_ann.setNs(wrap(ns))
+
+        map_ann.setValue([["Figure_%s_%s" % (file_id, figure_name),
+                           figure_url]])
+        map_ann.save()
+
+        return map_ann.getId()
+    except Exception:
+        return -1
+
+
+def get_figure_kvp(conn, ns, file_id):
+    params = omero.sys.ParametersI()
+    where_clause = []
+    where_clause.append(f"mv.name like 'Figure_{file_id}%'")
+
+    params.add('ns', wrap([ns]))
+    where_clause.append("a.ns in (:ns)")
+    where_clause.append("mv.value != '' ")
+
+    qs = conn.getQueryService()
+    q = """
+            select distinct a.id, mv.name
+                from Annotation a
+                join a.mapValue mv where %s
+            """ % (" and ".join(where_clause))
+
+    results = qs.projection(q, params, conn.SERVICE_OPTS)
+    return [[result[0].val, result[1].val] for result in results]
 
 
 @login_required()
@@ -499,7 +661,6 @@ def make_web_figure(request, conn=None, **kwargs):
 
 @login_required()
 def list_web_figures(request, conn=None, **kwargs):
-
     params = omero.sys.ParametersI()
     params.addString('ns', rstring(JSON_FILEANN_NS))
     q = """select new map(obj.id as id,
@@ -524,7 +685,7 @@ def list_web_figures(request, conn=None, **kwargs):
     rsp = []
     for file_ann in file_anns:
         fa = unwrap(file_ann[0])
-        date = datetime.fromtimestamp(unwrap(fa['time'])/1000)
+        date = datetime.fromtimestamp(unwrap(fa['time']) / 1000)
         first_name = unwrap(fa['firstName'])
         last_name = unwrap(fa['lastName'])
         fig_file = {
@@ -570,6 +731,7 @@ def delete_web_figure(request, conn=None, **kwargs):
         return HttpResponse("Need to POST 'fileId' to delete")
 
     file_id = request.POST.get('fileId')
+    delete_figure_kvp(conn, LINK_FIGURE_NS, file_id)
     conn.deleteObjects("Annotation", [file_id])
     return HttpResponse("Deleted OK")
 
@@ -679,7 +841,6 @@ def roi_count(request, image_id, conn=None, **kwargs):
 @require_POST
 @login_required()
 def chgrp(request, conn=None, **kwargs):
-
     group_id = int(request.POST.get("group_id"))
     ann_id = int(request.POST.get("ann_id"))
 
@@ -710,7 +871,6 @@ def chgrp(request, conn=None, **kwargs):
 
 @login_required()
 def images_details(request, conn=None, **kwargs):
-
     imgs = request.GET.get('image', '')
     img_ids = [int(i) for i in imgs.split(',') if len(i) > 0]
 
