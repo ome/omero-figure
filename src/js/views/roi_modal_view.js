@@ -14,6 +14,17 @@ import roi_zt_buttons from '../../templates/modal_dialogs/roi_zt_buttons.templat
 import RoiLoaderView from './roi_loader_view';
 import { hideModal, getJson } from "./util";
 
+const LABEL_POSITION_ICONS = {
+    "topleft": "bi-box-arrow-in-up-left",
+    "topright": "bi-box-arrow-in-up-right",
+    "bottomleft": "bi-box-arrow-in-down-left",
+    "bottomright": "bi-box-arrow-in-down-right",
+    "left": "bi-box-arrow-left",
+    "top": "bi-box-arrow-up",
+    "right": "bi-box-arrow-right",
+    "bottom": "bi-box-arrow-down"
+}
+
 export const RoiModalView = Backbone.View.extend({
 
         template: _.template(shape_toolbar_template),
@@ -113,6 +124,9 @@ export const RoiModalView = Backbone.View.extend({
             "click .shape-option .btn": "selectState",
             "click .dropdownSelect a": "select_dropdown_option",
             "change .line-width": "changeLineWidth",
+            "change .text-font-size": "changeFontSize",
+            "change .text-position": "changeTextPosition",
+            "click .add-text":"addTextToShape",
             "change .shape-color": "changeColor",
             // shapeManager triggers on canvas element
             "change:selected .roi_paper": "shapeSelected",
@@ -290,6 +304,7 @@ export const RoiModalView = Backbone.View.extend({
             event.preventDefault();
 
             var shapesJson = this.shapeManager.getShapesJson();
+            console.log(shapesJson)
             shapesJson = shapesJson.filter(function(s){
                 // Remove any temporary shapes (from hovering over OMERO shapes)
                 return (s.id !== this.TEMP_SHAPE_ID);
@@ -317,6 +332,24 @@ export const RoiModalView = Backbone.View.extend({
             lineWidth = parseFloat(lineWidth, 10);
             this.shapeManager.setStrokeWidth(lineWidth);
         },
+
+        changeFontSize: function(event) {
+            var fontSize = $("span:first", event.target).attr('data-font-size');
+            fontSize = parseFloat(fontSize, 10);
+            this.shapeManager.setTextFontSize(fontSize);
+        },
+
+        changeTextPosition: function(event){
+           var position =  $('span:first', event.target).attr('data-position');
+           this.shapeManager.setTextPosition(position);
+        },
+
+        addTextToShape: function(event){
+            var text = $("#label-text").val()
+            this.shapeManager.setText(text);
+            this.shapeManager.setTextPosition(this.shapeManager.getTextPosition());
+            this.shapeManager.setTextFontSize(this.shapeManager.getTextFontSize());
+         },
 
         changeColor: function(event) {
             var color = $("span:first", event.target).attr('data-color');
@@ -396,7 +429,11 @@ export const RoiModalView = Backbone.View.extend({
                 sel = this.shapeManager.getSelectedShapes().length > 0,
                 toPaste = this.model.get('clipboard'),
                 windows = navigator.platform.toUpperCase().indexOf('WIN') > -1,
-                lineWidths = [0.25, 0.5, 0.75, 1, 2, 3, 4, 5, 7, 10, 15, 20, 30];
+                lineWidths = [0.25, 0.5, 0.75, 1, 2, 3, 4, 5, 7, 10, 15, 20, 30],
+                textPosition = this.shapeManager.getTextPosition(),
+                fontSize = this.shapeManager.getTextFontSize(),
+                fontSizes = [6, 8, 10, 12, 14, 18, 21, 24, 36, 48],
+                text = this.shapeManager.getText();
             color = color ? color.replace("#", "") : 'FFFFFF';
             toPaste = (toPaste && (toPaste.SHAPES || toPaste.CROP));
 
@@ -409,7 +446,12 @@ export const RoiModalView = Backbone.View.extend({
                         'toPaste': toPaste,
                         'zoom': parseInt(scale * 100, 10),
                         'omeroRoiCount': this.omeroRoiCount,
-                        'roisLoaded': this.roisLoaded};
+                        'roisLoaded': this.roisLoaded,
+                        'textPosition': textPosition,
+                        'position_icon_cls': LABEL_POSITION_ICONS[textPosition],
+                        'fontSizes': fontSizes,
+                        'fontSize': fontSize,
+                        'text': text};
             $(".roi_toolbar", this.$el).html(this.template(json));
         },
 

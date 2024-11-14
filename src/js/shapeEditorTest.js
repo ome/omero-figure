@@ -10,10 +10,10 @@
 // 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following
 // disclaimer in the documentation // and/or other materials provided with the distribution.
 //
-// 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived 
+// 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived
 // from this software without specific prior written permission.
 
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, 
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING,
 // BUT NOT LIMITED TO,
 // THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
 // THE COPYRIGHT HOLDER OR CONTRIBUTORS
@@ -78,6 +78,21 @@ $(function() {
         shapeManager.setFillOpacity(fillOpacity);
     });
 
+    $("select[name='fontSize']").change(function(){
+        var fontSize = $(this).val();
+        shapeManager.setTextFontSize(fontSize);
+    });
+
+    $("select[name='textPosition']").change(function(){
+        var textPosition = $(this).val();
+        shapeManager.setTextPosition(textPosition);
+    });
+
+    $("select[name='rotateText']").change(function(){
+        var rotateText = $(this).val();
+        shapeManager.setTextRotated(rotateText);
+    });
+
     var updateZoom = function updateZoom() {
         $("#zoomDisplay").text(zoomPercent + " %");
         shapeManager.setZoom(zoomPercent);
@@ -109,6 +124,14 @@ $(function() {
 
     $("button[name='copyShapes']").click(function(){
         shapesClipboard = shapeManager.getSelectedShapesJson();
+    });
+
+    $("button[name='setText']").click(function(){
+        shapeManager.setText("A");
+    });
+
+    $("button[name='clearText']").click(function(){
+        shapeManager.setText("");
     });
 
     $("button[name='pasteShapes']").click(function(){
@@ -200,7 +223,7 @@ $(function() {
                                "strokeWidth": 4});
 
     shapeManager.addShapeJson({"id": 1234,
-                               "rotation": 45,
+                               "rotation": 25,
                                "type": "Rectangle",
                                "strokeColor": "#ff00ff",
                                "strokeWidth": 6,

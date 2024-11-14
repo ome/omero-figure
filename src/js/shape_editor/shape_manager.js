@@ -10,10 +10,10 @@
 // 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following
 // disclaimer in the documentation // and/or other materials provided with the distribution.
 //
-// 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived 
+// 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived
 // from this software without specific prior written permission.
 
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, 
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING,
 // BUT NOT LIMITED TO,
 // THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
 // THE COPYRIGHT HOLDER OR CONTRIBUTORS
@@ -31,7 +31,7 @@ import { CreateLine, Line, CreateArrow, Arrow } from "./line";
 import { CreateEllipse, Ellipse } from "./ellipse";
 import { CreatePoint, Point } from "./point";
 import { Polygon, Polyline } from "./polygon";
-
+import { Text } from "./text";
 var ShapeManager = function ShapeManager(elementId, width, height, options) {
   var self = this;
   options = options || {};
@@ -41,6 +41,10 @@ var ShapeManager = function ShapeManager(elementId, width, height, options) {
   this._state = "SELECT";
   this._strokeColor = "#ff0000";
   this._strokeWidth = 2;
+  this._text = "";
+  this._textFontSize = 12;
+  this._textPosition = "top";
+  this._rotateText = false;
   this._orig_width = width;
   this._orig_height = height;
   this._zoom = 100;
@@ -262,6 +266,55 @@ ShapeManager.prototype.getStrokeWidth = function getStrokeWidth() {
   return this._strokeWidth;
 };
 
+ShapeManager.prototype.getText = function getText() {
+  return this._text;
+};
+
+ShapeManager.prototype.setText = function setText(text) {
+  this._text = text;
+  var selected = this.getSelectedShapes();
+  for (var s = 0; s < selected.length; s++) {
+    selected[s].setText(text);
+  }
+};
+
+ShapeManager.prototype.getTextFontSize = function getTextFontSize() {
+  return this._textFontSize;
+};
+
+ShapeManager.prototype.setTextFontSize = function setTextFontSize(fontSize) {
+  fontSize = parseFloat(fontSize, 10);
+  this._textFontSize = fontSize;
+  var selected = this.getSelectedShapes();
+  for (var s = 0; s < selected.length; s++) {
+    selected[s].setFontSize(fontSize);
+  }
+};
+
+ShapeManager.prototype.getTextPosition = function getTextPosition() {
+  return this._textPosition;
+};
+
+ShapeManager.prototype.setTextPosition = function setTextPosition(position) {
+  this._textPosition = position;
+  var selected = this.getSelectedShapes();
+  for (var s = 0; s < selected.length; s++) {
+    selected[s].setTextPosition(position);
+  }
+};
+
+ShapeManager.prototype.getTextRotated = function getTextRotated() {
+  return this._rotateText;
+};
+
+ShapeManager.prototype.setTextRotated = function setTextRotated(rotateText) {
+  this._rotateText = rotateText === "true";
+  var selected = this.getSelectedShapes();
+  for (var s = 0; s < selected.length; s++) {
+    selected[s].setTextRotated(rotateText);
+  }
+};
+
 ShapeManager.prototype.getShapesJson = function getShapesJson() {
   var data = [];
   this.getShapes().forEach(function (s) {
@@ -393,6 +446,10 @@ ShapeManager.prototype.createShapeJson = function createShapeJson(jsonShape) {
     newShape,
     strokeColor = s.strokeColor || this.getStrokeColor(),
     strokeWidth = s.strokeWidth || this.getStrokeWidth(),
+    fontSize = s.fontSize || this.getTextFontSize(),
+    textPosition = s.textPosition || this.getTextPosition(),
+    text = s.text || this.getText(),
+    textId = s.textId || -1,
     zoom = this.getZoom(),
     options = {
       manager: this,
@@ -400,6 +457,7 @@ ShapeManager.prototype.createShapeJson = function createShapeJson(jsonShape) {
       strokeWidth: strokeWidth,
       zoom: zoom,
       strokeColor: strokeColor,
+      textId: textId,
     };
   if (jsonShape.id) {
     options.id = jsonShape.id;
@@ -447,6 +505,15 @@ ShapeManager.prototype.createShapeJson = function createShapeJson(jsonShape) {
   } else if (s.type === "Polyline") {
     options.points = s.points;
     newShape = new Polyline(options);
+  } else if (s.type === "Text") {
+    options.x = s.x || 0,
+    options.y = s.y || 0,
+    options.fontSize = fontSize,
+    options.textPosition = textPosition,
+    options.text = text,
+    options.textAnchor = s.textAnchor,
+    options.parentShapeCoords = s.parentShapeCoords,
+    newShape = new Text(options);
   }
   return newShape;
 };

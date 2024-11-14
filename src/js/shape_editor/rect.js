@@ -10,10 +10,10 @@
 // 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following
 // disclaimer in the documentation // and/or other materials provided with the distribution.
 //
-// 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived 
+// 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived
 // from this software without specific prior written permission.
 
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, 
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING,
 // BUT NOT LIMITED TO,
 // THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
 // THE COPYRIGHT HOLDER OR CONTRIBUTORS
@@ -24,6 +24,7 @@
 */
 
 import Raphael from "raphael";
+import { CreateText, Text } from "./text";
 
 var Rect = function Rect(options) {
   var self = this;
@@ -52,10 +53,44 @@ var Rect = function Rect(options) {
     this._zoomFraction = options.zoom / 100;
   }
   this._rotation = options.rotation || 0;
+
+  this._textId = options.textId || -1;
+  if(this._textId == -1){
+   var textShape = (new CreateText({
+      manager: this.manager,
+      paper: this.paper,
+      zoom: options.zoom,
+      text: "",
+      x: options.x,
+      y: options.y,
+      strokeColor: options.strokeColor,
+      fontSize: 12,
+      textPosition: options.textPosition || "top",
+      strokeWidth: this._strokeWidth,
+    })).getShape();
+    this._textId = textShape._id;
+  }
+  this._textShape = this.manager.getShape(this._textId)
+
   this.handle_wh = 6;
 
   this.element = this.paper.rect();
   this.element.attr({ "fill-opacity": 0.01, fill: "#fff", cursor: "pointer" });
+  /*this._textShape = options.textShape || undefined
+  var attributes = {
+    manager: this.manager,
+    paper: this.paper,
+    text: this._text,
+    x: this._x,
+    y: this._y,
+    zoom: this._zoomFraction * 100,
+    color: this._strokeColor,
+    fontSize: this._fontSize,
+    rotation: this._rotation,
+    text: "",
+  }
+
+  this._textShape = new Text(attributes)*/
 
   if (this.manager.canEdit) {
     // Drag handling of element
@@ -106,6 +141,7 @@ Rect.prototype.toJson = function toJson() {
     strokeWidth: this._strokeWidth,
     strokeColor: this._strokeColor,
     rotation: this._rotation,
+    textId: this._textId,
   };
   if (this._id) {
     rv.id = this._id;
@@ -194,11 +230,19 @@ Rect.prototype._handleMousedown = function _handleMousedown() {
 
 Rect.prototype.setSelected = function setSelected(selected) {
   this._selected = !!selected;
+  if(this._textShape || this.loadTextShape()){
+    this._textShape.setSelected(this._selected)
+  }
   this.drawShape();
 };
 
 Rect.prototype.isSelected = function isSelected() {
   return this._selected;
+};
+
+Rect.prototype.loadTextShape = function loadTextShape(){
+  this._textShape = this.manager.getShape(this._textId);
+  return this._textShape;
 };
 
 Rect.prototype.setZoom = function setZoom(zoom) {
@@ -227,6 +271,32 @@ Rect.prototype.getStrokeColor = function getStrokeColor() {
   return this._strokeColor;
 };
 
+Rect.prototype.setText = function setText(text) {
+  return;
+};
+
+Rect.prototype.getText = function getText() {
+  return this._text;
+};
+
+Rect.prototype.setTextPosition = function setTextPosition(textPosition) {
+ return;// this._textPosition = textPosition;
+ // this.drawShape();
+};
+
+/*Rect.prototype.getTextPosition = function getTextPosition() {
+  return this._textPosition;
+};*/
+
+Rect.prototype.setFontSize = function setFontSize(fontSize) {
+  this._fontSize = fontSize;
+//  this.drawShape();
+};
+
+Rect.prototype.getFontSize = function getFontSize() {
+  return this._fontSize;
+};
+
 Rect.prototype.setStrokeWidth = function setStrokeWidth(strokeWidth) {
   this._strokeWidth = strokeWidth;
   this.drawShape();
@@ -236,9 +306,29 @@ Rect.prototype.getStrokeWidth = function getStrokeWidth() {
   return this._strokeWidth;
 };
 
+Rect.prototype.setTextRotated = function setTextRotated(rotateText) {
+  this._rotateText = rotateText;
+  this.drawShape();
+};
+
+Rect.prototype.getTextRotated = function getTextRotated() {
+  return this._rotateText;
+};
+
+Rect.prototype.getTextId = function getTextId() {
+  return this._textId;
+};
+
+Rect.prototype.setTextId = function setTextId(textId) {
+  this._textId = textId;
+};
+
 Rect.prototype.destroy = function destroy() {
   this.element.remove();
   this.handles.remove();
+  if(this._textShape){
+    this._textShape.destroy()
+  }
 };
 
 Rect.prototype.drawShape = function drawShape() {
@@ -278,6 +368,10 @@ Rect.prototype.drawShape = function drawShape() {
     hy = handleIds[h_id][1];
     hnd.attr({ x: hx - this.handle_wh / 2, y: hy - this.handle_wh / 2 });
     hnd.transform("r" + this._rotation + "," + (x + (w/2)) + "," + (y + (h/2)));
+  }
+
+  if(this._textShape || this.loadTextShape()){
+    this._textShape.setParentShapeCoords({x: this._x, y: this._y, width: this._width, height: this._height})
   }
 };
 
@@ -461,11 +555,27 @@ var CreateRect = function CreateRect(options) {
 CreateRect.prototype.startDrag = function startDrag(startX, startY) {
   var strokeColor = this.manager.getStrokeColor(),
     strokeWidth = this.manager.getStrokeWidth(),
-    zoom = this.manager.getZoom();
+    zoom = this.manager.getZoom(),
+    text = this.manager.getText() || "",
+    textPosition = this.manager.getTextPosition(),
+    fontSize = this.manager.getTextFontSize();
   // Also need to get strokeWidth and zoom/size etc.
 
   this.startX = startX;
   this.startY = startY;
+
+  this.textShape = (new CreateText({
+    manager: this.manager,
+    paper: this.paper,
+    zoom: zoom,
+    text: text,
+    x: startX,
+    y: startY,
+    strokeColor: strokeColor,
+    fontSize: fontSize,
+    textPosition: textPosition,
+    strokeWidth: strokeWidth,
+  })).getShape();
 
   this.rect = new Rect({
     manager: this.manager,
@@ -478,6 +588,7 @@ CreateRect.prototype.startDrag = function startDrag(startX, startY) {
     strokeWidth: strokeWidth,
     zoom: zoom,
     strokeColor: strokeColor,
+    textId: this.textShape._id,
   });
 };
 
@@ -504,12 +615,15 @@ CreateRect.prototype.drag = function drag(dragX, dragY, shiftKey) {
     dragY = (dy - this.startY) * -1;
   }
 
-  this.rect.setCoords({
+  var newCoords = {
     x: Math.min(dragX, this.startX),
     y: Math.min(dragY, this.startY),
     width: Math.abs(dx),
     height: Math.abs(dy),
-  });
+  }
+
+  this.rect.setCoords(newCoords);
+  this.textShape.setParentShapeCoords(newCoords);
   this.rect._area = Math.abs(dx) * Math.abs(dy);
 };
 
@@ -518,6 +632,7 @@ CreateRect.prototype.stopDrag = function stopDrag() {
   if (coords.width < 2 || coords.height < 2) {
     this.rect.destroy();
     delete this.rect;
+    delete this.textShape;
     return;
   }
   // on the 'new:shape' trigger, this shape will already be selected
