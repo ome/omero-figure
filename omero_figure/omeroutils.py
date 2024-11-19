@@ -36,8 +36,7 @@ def get_timestamps(conn, image):
         params = ParametersI()
         params.addLong('pid', image.getPixelsId())
         query = """
-            from PlaneInfo Info where Info.pixels.id=:pid
-            and Info.id in (
+            from PlaneInfo Info where Info.id in (
                 select min(subInfo.id)
                 from PlaneInfo subInfo
                 where subInfo.pixels.id=:pid
