@@ -29,6 +29,23 @@ def get_timestamps(conn, image):
         " Info.theZ=0 and Info.theC=0 and pixels.id=:pid"
     info_list = conn.getQueryService().findAllByQuery(
         query, params, conn.SERVICE_OPTS)
+
+    if len(info_list) < image.getSizeT():
+        # C & Z dimensions are not always filled
+        # Remove restriction on c0 z0 to catch all timestamps
+        params = ParametersI()
+        params.addLong('pid', image.getPixelsId())
+        query = """
+            from PlaneInfo Info where Info.id in (
+                select min(subInfo.id)
+                from PlaneInfo subInfo
+                where subInfo.pixels.id=:pid
+                group by subInfo.theT
+            )
+        """
+        info_list = conn.getQueryService().findAllByQuery(
+            query, params, conn.SERVICE_OPTS)
+
     timemap = {}
     # check if any PlaneInfo was found
     if len(info_list) > 0:
@@ -40,6 +57,7 @@ def get_timestamps(conn, image):
                 plane_info = PlaneInfoWrapper(conn, info)
                 delta_t = plane_info.getDeltaT('SECOND')
                 timemap[t_index] = delta_t.getValue()
+
     # double check to see if timemap actually got populated
     if len(info_list) == 0 or len(timemap) == 0:
         # get time info from the timeIncrement of the Pixels
@@ -58,8 +76,14 @@ def get_timestamps(conn, image):
         if converted_value != 0:
             for i in range(image.getSizeT()):
                 timemap[i] = i*converted_value
+
     time_list = []
     for t in range(image.getSizeT()):
         if t in timemap:
             time_list.append(timemap[t])
+        else:
+            # Hopefully never gets here, but
+            # time_list length MUST match image.sizeT
+            time_list.append(0)
+
     return time_list
