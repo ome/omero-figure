@@ -88,8 +88,5 @@ urlpatterns = [
 
     # Get group and owner info for multiple images. ?image=1,2,3
     path('images_details/', views.images_details,
-         name="figure_images_details"),
-
-    # Get the URL for the LUT png based on the current omero-web version
-    path('is_dynamic_lut/', views.is_dynamic_lut, name='figure_dynamic_lut')
+         name="figure_images_details")
 ]
