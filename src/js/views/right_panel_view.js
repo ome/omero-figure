@@ -849,7 +849,7 @@
                 return;     // Ignore keyups except 'Enter'
             }
 
-            // get the current entered value 
+            // get the current entered value
             var value = Math.round(parseFloat(event.target.value));
             if (isNaN(value)) {
                 return;
@@ -1208,6 +1208,7 @@
             "click .z-projection": "z_projection",
             "input .rotation-slider": "rotation_input",
             "change .rotation-slider": "rotation_change",
+            "click .panel-rotation": "rotate_panel",
         },
 
         rotation_input: function(event) {
@@ -1221,6 +1222,17 @@
             this.rotation = val;
             this.models.forEach(function(m){
                 m.save('rotation', val);
+            });
+        },
+
+        rotate_panel: function(event){
+            event.preventDefault()
+            this.models.forEach(function(m){
+                var rotation = m.setPanelRotation()
+                console.log(rotation)
+                $(".vp_img").css({'transform':'rotate(' + rotation + 'deg)'});
+                $(".rotation_value").text(rotation);
+                $(".rotation-slider").val(rotation);
             });
         },
 
