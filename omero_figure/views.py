@@ -136,7 +136,7 @@ def index(request, file_id=None, conn=None, **kwargs):
     # bootstrap-icons. Use CDN when served by vite, but use static copy
     # when served by omero-web
     html = html.replace(
-        "https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/",
+        "https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/",
         static_dir)
     return HttpResponse(html)
 
