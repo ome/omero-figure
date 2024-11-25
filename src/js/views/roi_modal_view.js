@@ -10,15 +10,29 @@ import ShapeManager from "../shape_editor/shape_manager";
 import FigureColorPicker from "../views/colorpicker";
 
 import shape_toolbar_template from '../../templates/shapes/shape_toolbar.template.html?raw';
+import shape_sidebar_template from '../../templates/shapes/shape_sidebar.template.html?raw';
 import roi_zt_buttons from '../../templates/modal_dialogs/roi_zt_buttons.template.html?raw';
 import RoiLoaderView from './roi_loader_view';
 import { hideModal, getJson } from "./util";
+
+const LABEL_POSITION_ICONS = {
+    "topleft": "bi-box-arrow-in-up-left",
+    "topright": "bi-box-arrow-in-up-right",
+    "bottomleft": "bi-box-arrow-in-down-left",
+    "bottomright": "bi-box-arrow-in-down-right",
+    "left": "bi-box-arrow-left",
+    "top": "bi-box-arrow-up",
+    "right": "bi-box-arrow-right",
+    "bottom": "bi-box-arrow-down"
+}
 
 export const RoiModalView = Backbone.View.extend({
 
         template: _.template(shape_toolbar_template),
 
         roi_zt_buttons_template: _.template(roi_zt_buttons),
+
+        sidebar_template: _.template(shape_sidebar_template),
 
         el: $("#roiModal"),
 
@@ -49,8 +63,15 @@ export const RoiModalView = Backbone.View.extend({
             // Bind to 'body' instead of #roiModal since this didn't always work with
             // some events maybe getting lost to Raphael elements??
             var dialog = document.getElementById('body');
-            Mousetrap(dialog).bind(['backspace', 'del'], function(event, combo) {
+            Mousetrap(dialog).bind('backspace', function(event, combo) {
                 // Need to ignore if the dialog isn't visible
+                if(!self.$el.is(":visible")) return true;
+                var inputText = document.getElementById('label-text');
+                if(inputText === document.activeElement) return true;
+                self.deleteShapes(event);
+                return false;
+            });
+            Mousetrap(dialog).bind('del', function(event, combo) {
                 if(!self.$el.is(":visible")) return true;
                 self.deleteShapes(event);
                 return false;
@@ -96,6 +117,7 @@ export const RoiModalView = Backbone.View.extend({
                 $("#roiModalRoiList table").empty();
                 self.roisLoaded = false;
 
+                self.shapeManager.setText('');
                 self.render();
                 self.checkForRois();
                 self.renderPagination();
@@ -105,6 +127,7 @@ export const RoiModalView = Backbone.View.extend({
             self.shapeManager.setStrokeColor('#FFFFFF');
             self.shapeManager.setFillColor('#FFFFFF');
 
+
             this.$roiImg = $('.roi_image', this.$el);
         },
 
@@ -113,6 +136,10 @@ export const RoiModalView = Backbone.View.extend({
             "click .shape-option .btn": "selectState",
             "click .dropdownSelect a": "select_dropdown_option",
             "change .line-width": "changeLineWidth",
+            "change .text-font-size": "changeFontSize",
+            "change .text-position": "changeTextPosition",
+            "click .add-text":"addTextToShape",
+            "submit .add-shape-text-form":"addTextToShape",
             "change .shape-color": "changeColor",
             "change .fill-color": "changeFillColor",
             "change .fill-opacity": "changeFillOpacity",
@@ -123,7 +150,7 @@ export const RoiModalView = Backbone.View.extend({
             "click .pasteShape": "pasteShapes",
             "click .deleteShape": "deleteShapes",
             "click .selectAll": "selectAllShapes",
-            "click .loadRois": "loadRoisFirstPage",
+            "click .loadRoisBtn": "loadRoisFirstPage",
             "click .roisPrevPage": "roisPrevPage",
             "click .roisNextPage": "roisNextPage",
             "click .roisJumpPage": "roisJumpPage",
@@ -146,21 +173,20 @@ export const RoiModalView = Backbone.View.extend({
         checkForRois: function() {
             var url = BASE_WEBFIGURE_URL + 'roiCount/' + this.m.get('imageId') + '/';
 
-            var $btn = $(".loadRois", this.$el)
+            var $btn = $("#loadRois")
                 .attr({'disabled': 'disabled'});
             $btn.parent().attr('title', 'Checking for ROIs...');  // title on parent div - still works if btn disabled
 
             getJson(url).then((data) => {
                 this.omeroRoiCount = data.roi;
-                this.renderToolbar();
+                this.renderSidebar();
             });
         },
 
         loadRoisFirstPage: function (event) {
             event.preventDefault();
             // hide button and tip
-            $(".loadRois", this.$el).prop('disabled', true);
-            $("#roiModalTip").hide();
+            $("#loadRois").prop('disabled', true);
             this.roisPage = 0;
             this.loadRois();
         },
@@ -193,10 +219,11 @@ export const RoiModalView = Backbone.View.extend({
             var roiUrl = url + '?image=' + iid + '&limit=' + this.roisPageSize + '&offset=' + (this.roisPageSize * this.roisPage);
             getJson(roiUrl).then((data) => {
                 this.Rois.set(data.data);
-                $(".loadRois", this.$el).prop('disabled', false);
+                $("#loadRois").prop('disabled', false);
                 $("#roiModalRoiList table").empty();
                 this.roisLoaded = true;
-                this.renderToolbar();
+                this.renderSidebar();
+                $("#roiModalTip").hide();
                 var roiLoaderView = new RoiLoaderView({ collection: this.Rois, panel: this.m, totalCount: this.omeroRoiCount});
                 $("#roiModalRoiList table").append(roiLoaderView.el);
                 roiLoaderView.render();
@@ -296,6 +323,7 @@ export const RoiModalView = Backbone.View.extend({
             event.preventDefault();
 
             var shapesJson = this.shapeManager.getShapesJson();
+            console.log(shapesJson)
             shapesJson = shapesJson.filter(function(s){
                 // Remove any temporary shapes (from hovering over OMERO shapes)
                 return (s.id !== this.TEMP_SHAPE_ID);
@@ -323,6 +351,25 @@ export const RoiModalView = Backbone.View.extend({
             lineWidth = parseFloat(lineWidth, 10);
             this.shapeManager.setStrokeWidth(lineWidth);
         },
+
+        changeFontSize: function(event) {
+            var fontSize = $("span:first", event.target).attr('data-font-size');
+            fontSize = parseFloat(fontSize, 10);
+            this.shapeManager.setTextFontSize(fontSize);
+        },
+
+        changeTextPosition: function(event){
+           var position =  $('span:first', event.target).attr('data-position');
+           this.shapeManager.setTextPosition(position);
+        },
+
+        addTextToShape: function(event){
+            event.preventDefault()
+            var text = $("#label-text").val()
+            this.shapeManager.setText(text);
+            this.shapeManager.setTextPosition(this.shapeManager.getTextPosition());
+            this.shapeManager.setTextFontSize(this.shapeManager.getTextFontSize());
+         },
 
         changeColor: function(event) {
             var color = $("span:first", event.target).attr('data-color');
@@ -420,7 +467,11 @@ export const RoiModalView = Backbone.View.extend({
                 toPaste = this.model.get('clipboard'),
                 windows = navigator.platform.toUpperCase().indexOf('WIN') > -1,
                 lineWidths = [0.25, 0.5, 0.75, 1, 2, 3, 4, 5, 7, 10, 15, 20, 30],
-                opacities = ["0", "0.1", "0.2", "0.3", "0.4", "0.5", "0.6", "0.7", "0.8", "0.9", "1"];
+                opacities = ["0", "0.1", "0.2", "0.3", "0.4", "0.5", "0.6", "0.7", "0.8", "0.9", "1"],
+                textPosition = this.shapeManager.getTextPosition(),
+                fontSize = this.shapeManager.getTextFontSize(),
+                fontSizes = [6, 8, 10, 12, 14, 18, 21, 24, 36, 48],
+                text = this.shapeManager.getText();
             color = color ? color.replace("#", "") : 'FFFFFF';
             fillColor = fillColor ? fillColor.replace("#", "") : 'FFFFFF';
             toPaste = (toPaste && (toPaste.SHAPES || toPaste.CROP));
@@ -437,7 +488,12 @@ export const RoiModalView = Backbone.View.extend({
                         'toPaste': toPaste,
                         'zoom': parseInt(scale * 100, 10),
                         'omeroRoiCount': this.omeroRoiCount,
-                        'roisLoaded': this.roisLoaded};
+                        'roisLoaded': this.roisLoaded,
+                        'textPosition': textPosition,
+                        'position_icon_cls': LABEL_POSITION_ICONS[textPosition],
+                        'fontSizes': fontSizes,
+                        'fontSize': fontSize,
+                        'text': text};
             $(".roi_toolbar", this.$el).html(this.template(json));
         },
 
@@ -448,20 +504,22 @@ export const RoiModalView = Backbone.View.extend({
 
         // this is called each time the ROI dialog is displayed
         renderSidebar: function() {
-            var tips = [
-                // "Add ROIs to the image panel by choosing Rectangle, Line, Arrow or Ellipse from the toolbar.",
-                "You can copy and paste shapes to duplicate them or move them between panels.",
-                "If you copy a region from the Crop dialog (under the 'Preview' tab), you can paste it here to create a new Rectangle."],
-                tip;
+            var tip;
             if (this.rotated) {
-                tip = "<span class='badge text-bg-primary'>Warning</span> " +
-                      "This image panel is rotated in the figure, but this ROI editor can't work with rotated images. " +
+                tip = "This image panel is rotated in the figure, but this ROI editor can't work with rotated images. " +
                       "The image is displayed here <b>without</b> rotation, but the ROIs you add will be applied " +
                       "correctly to the image panel in the figure.";
             } else {
-                tip = "<span class='badge text-bg-primary'>Tip</span> " + tips[parseInt(Math.random() * tips.length, 10)];
+                tip = "If you copy a region from the Crop dialog (under the 'Preview' tab), you can paste it here to create a new Rectangle."
             }
-            $("#roiModalTip").show().html(tip);
+
+            var json = {
+                omeroRoiCount: this.omeroRoiCount,
+                roisLoaded: this.roisLoaded,
+                tip: tip,
+                rotated: this.rotated
+            }
+            $("#roiModalSidebar", this.$el).html(this.sidebar_template(json));
         },
 
         // for rendering bounding-box viewports for shapes
