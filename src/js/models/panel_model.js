@@ -102,12 +102,22 @@
                     // delete or update the "inset" Rectangle
                     let updated = this.get('shapes');
                     if (panelDeleted) {
-                        updated = updated.filter(shape => shape.id != insetRoiId);
+                        let rect = updated.filter(shape => shape.id == insetRoiId);
+                        updated = updated.filter(shape => (shape.id != insetRoiId && shape.id != rect[0].textId));
+                        this.save('lastInsetTextIndex', this.get('lastInsetTextIndex') - 1)
                     } else {
                         let rect = panel.getViewportAsRect();
+                        let textId = -1;
                         updated = updated.map(shape => {
                             if (shape.type == 'Rectangle' && shape.id == insetRoiId) {
+                                textId = shape.textId
                                 return {...shape, ...rect}
+                            }
+                            return shape;
+                        });
+                        updated = updated.map(shape => {
+                            if (shape.type == 'Text' && shape.id == textId) {
+                                shape.parentShapeCoords = {...rect}
                             }
                             return shape;
                         });
@@ -116,6 +126,14 @@
                     this.silenceTriggers = false;
                 }
             }
+        },
+
+        getLastInsetTextIndex: function(){
+            return this.get('lastInsetTextIndex')
+        },
+
+        setLastInsetTextIndex: function(index){
+            this.save('lastInsetTextIndex', index)
         },
 
         // When we're creating a Panel, we process the data a little here:
@@ -298,6 +316,8 @@
                 points = shape.points.split(' ').map(function(p){
                     return p.split(",");
                 });
+            } else if (shape.type === "Text"){
+                points = [[shape.x, shape.y]];
             }
             if (points) {
                 for (var p=0; p<points.length; p++) {
@@ -778,7 +798,7 @@
             if (isNaN(rotation)) {
                 rotation = 0;
             };
-            // if we have rotated the panel clockwise within the viewport 
+            // if we have rotated the panel clockwise within the viewport
             // it's as if the viewport rectangle has rotated anti-clockwise
             rotation = 360 - rotation;
 

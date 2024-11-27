@@ -31,7 +31,7 @@ import { CreateLine, Line, CreateArrow, Arrow } from "./line";
 import { CreateEllipse, Ellipse } from "./ellipse";
 import { CreatePoint, Point } from "./point";
 import { Polygon, Polyline } from "./polygon";
-
+import { Text } from "./text";
 var ShapeManager = function ShapeManager(elementId, width, height, options) {
   var self = this;
   options = options || {};
@@ -41,6 +41,10 @@ var ShapeManager = function ShapeManager(elementId, width, height, options) {
   this._state = "SELECT";
   this._strokeColor = "#ff0000";
   this._strokeWidth = 2;
+  this._text = "";
+  this._textFontSize = 12;
+  this._textPosition = "top";
+  this._rotateText = false;
   this._fillColor = "#ffffff";
   this._fillOpacity = 0;
   this._orig_width = width;
@@ -290,6 +294,55 @@ ShapeManager.prototype.setFillOpacity = function setFillOpacity(fillOpacity) {
     }
 };
 
+ShapeManager.prototype.getText = function getText() {
+  return this._text;
+};
+
+ShapeManager.prototype.setText = function setText(text) {
+  this._text = text;
+  var selected = this.getSelectedShapes();
+  for (var s = 0; s < selected.length; s++) {
+    selected[s].setText(text);
+  }
+};
+
+ShapeManager.prototype.getTextFontSize = function getTextFontSize() {
+  return this._textFontSize;
+};
+
+ShapeManager.prototype.setTextFontSize = function setTextFontSize(fontSize) {
+  fontSize = parseFloat(fontSize, 10);
+  this._textFontSize = fontSize;
+  var selected = this.getSelectedShapes();
+  for (var s = 0; s < selected.length; s++) {
+    selected[s].setFontSize(fontSize);
+  }
+};
+
+ShapeManager.prototype.getTextPosition = function getTextPosition() {
+  return this._textPosition;
+};
+
+ShapeManager.prototype.setTextPosition = function setTextPosition(position) {
+  this._textPosition = position;
+  var selected = this.getSelectedShapes();
+  for (var s = 0; s < selected.length; s++) {
+    selected[s].setTextPosition(position);
+  }
+};
+
+ShapeManager.prototype.getTextRotated = function getTextRotated() {
+  return this._rotateText;
+};
+
+ShapeManager.prototype.setTextRotated = function setTextRotated(rotateText) {
+  this._rotateText = rotateText === "true";
+  var selected = this.getSelectedShapes();
+  for (var s = 0; s < selected.length; s++) {
+    selected[s].setTextRotated(rotateText);
+  }
+};
+
 ShapeManager.prototype.getShapesJson = function getShapesJson() {
   var data = [];
   this.getShapes().forEach(function (s) {
@@ -342,25 +395,31 @@ ShapeManager.prototype.pasteShapesJson = function pasteShapesJson(
     newShapes = [],
     allPasted = true;
   // For each shape we want to paste...
-  jsonShapes.forEach(function (s) {
+  jsonShapes.forEach(function (sh) {
     // Create a shape to resolve any transform matrix -> coords
-    var temp = self.createShapeJson(s);
-    s = temp.toJson();
-    temp.destroy();
-    // check if a shape is at the same coordinates...
-    var match = self.findShapeAtCoords(s);
-    // if so, keep offsetting until we find a spot...
-    while (match) {
-      s = $.extend({}, s);
-      s = match.offsetCoords(s, 20, 10);
-      match = self.findShapeAtCoords(s);
+    var csh = $.extend(true, {}, sh);
+    if(csh.type !== "Text"){
+      csh.textId = -1
     }
-    // Create shape and test if it's in the specified region
-    var added = self.addShapeJson(s, constrainRegion);
-    if (added) {
-      newShapes.push(added);
-    } else {
-      allPasted = false;
+    var temp = self.createShapeJson(csh);
+    var s = temp.toJson();
+    temp.destroy();
+    if(s.type !== "Text"){
+      // check if a shape is at the same coordinates...
+      var match = self.findShapeAtCoords(s);
+      // if so, keep offsetting until we find a spot...
+      while (match) {
+        s = $.extend({}, s);
+        s = match.offsetCoords(s, 20, 10);
+        match = self.findShapeAtCoords(s);
+      }
+      // Create shape and test if it's in the specified region
+      var added = self.addShapeJson(s, constrainRegion);
+      if (added) {
+        newShapes.push(added);
+      } else {
+        allPasted = false;
+      }
     }
   });
   // Select the newly added shapes
@@ -423,6 +482,10 @@ ShapeManager.prototype.createShapeJson = function createShapeJson(jsonShape) {
     fillColor = s.fillColor || this.getFillColor(),
     fillOpacity = s.fillOpacity == undefined ? this.getFillOpacity() : s.fillOpacity,
     strokeWidth = s.strokeWidth || this.getStrokeWidth(),
+    fontSize = s.fontSize || this.getTextFontSize(),
+    textPosition = s.textPosition || this.getTextPosition(),
+    text = s.text || this.getText(),
+    textId = s.textId || -1,
     zoom = this.getZoom(),
     options = {
       manager: this,
@@ -431,7 +494,8 @@ ShapeManager.prototype.createShapeJson = function createShapeJson(jsonShape) {
       zoom: zoom,
       strokeColor: strokeColor,
       fillColor: fillColor,
-      fillOpacity: parseFloat(fillOpacity).toFixed(1)
+      fillOpacity: parseFloat(fillOpacity).toFixed(1),
+      textId: textId,
     };
   if (jsonShape.id) {
     options.id = jsonShape.id;
@@ -479,6 +543,15 @@ ShapeManager.prototype.createShapeJson = function createShapeJson(jsonShape) {
   } else if (s.type === "Polyline") {
     options.points = s.points;
     newShape = new Polyline(options);
+  } else if (s.type === "Text") {
+    options.x = s.x || 0,
+    options.y = s.y || 0,
+    options.fontSize = fontSize,
+    options.textPosition = textPosition,
+    options.text = text,
+    options.textAnchor = s.textAnchor,
+    options.parentShapeCoords = s.parentShapeCoords,
+    newShape = new Text(options);
   }
   return newShape;
 };
@@ -653,7 +726,7 @@ ShapeManager.prototype.selectAllShapes = function selectAllShapes(region) {
 
 // select shapes: 'shape' can be shape object or ID
 ShapeManager.prototype.selectShapes = function selectShapes(shapes) {
-  var strokeColor, strokeWidth, fillColor, fillOpacity;
+  var strokeColor, strokeWidth, fillColor, fillOpacity, text, fontSize, textPosition;
 
   // Clear selected with silent:true, since we notify again below
   this.clearSelectedShapes(true);
@@ -704,6 +777,36 @@ ShapeManager.prototype.selectShapes = function selectShapes(shapes) {
         }
       }
 
+      // for first shape, pick text
+      if (text === undefined) {
+        text = shape.getText();
+      } else {
+        // for subsequent shapes, if text don't match - set false
+        if (text !== shape.getText()) {
+          text = false;
+        }
+      }
+
+      // for first shape, pick text font size
+      if (fontSize === undefined) {
+        fontSize = shape.getFontSize();
+      } else {
+        // for subsequent shapes, if text font size don't match - set false
+        if (fontSize !== shape.getFontSize()) {
+          fontSize = false;
+        }
+      }
+
+      // for first shape, pick text position
+      if (textPosition === undefined) {
+        textPosition = shape.getTextPosition();
+      } else {
+        // for subsequent shapes, if text position don't match - set false
+        if (textPosition !== shape.getTextPosition()) {
+          textPosition = false;
+        }
+      }
+
       shape.setSelected(true);
     }
   });
@@ -718,6 +821,15 @@ ShapeManager.prototype.selectShapes = function selectShapes(shapes) {
   }
   if (fillOpacity) {
       this._fillOpacity = fillOpacity;
+  }
+  if (text) {
+    this._text = text;
+  }
+  if (textPosition) {
+    this._textPosition = textPosition;
+  }
+  if (fontSize) {
+    this._textFontSize = fontSize;
   }
   this.$el.trigger("change:selected");
 };

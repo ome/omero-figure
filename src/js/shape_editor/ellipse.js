@@ -24,6 +24,7 @@
 */
 
 import Raphael from "raphael";
+import { Text } from "./text";
 
 var Ellipse = function Ellipse(options) {
   var self = this;
@@ -77,6 +78,9 @@ var Ellipse = function Ellipse(options) {
       this._fillOpacity = 0;
   }
   this._strokeWidth = options.strokeWidth || 2;
+  this._text = options.text || "";
+  this._fontSize = options.fontSize || 10;
+  this._textPosition = options.textPosition || "top";
   this._selected = false;
   this._zoomFraction = 1;
   if (options.zoom) {
@@ -149,7 +153,10 @@ Ellipse.prototype.toJson = function toJson() {
     strokeWidth: this._strokeWidth,
     strokeColor: this._strokeColor,
     fillColor: this._fillColor,
-    fillOpacity: this._fillOpacity
+    fillOpacity: this._fillOpacity,
+    text: this._text,
+    fontSize: this._fontSize,
+    textPosition: this._textPosition,
   };
   if (this._id) {
     rv.id = this._id;
@@ -234,9 +241,39 @@ Ellipse.prototype.getFillOpacity = function getFillOpacity() {
   return this._fillOpacity;
 };
 
+Ellipse.prototype.setText = function setText(text) {
+  this._text = text;
+  this.drawShape();
+};
+
+Ellipse.prototype.geText = function geText() {
+  return this._text;
+};
+
+Ellipse.prototype.setTextPosition = function setTextPosition(textPosition) {
+  this._textPosition = textPosition;
+  this.drawShape();
+};
+
+Ellipse.prototype.geTextPosition = function geTextPosition() {
+  return this._textPosition;
+};
+
+Ellipse.prototype.setFontSize = function setFontSize(fontSize) {
+  this._fontSize = fontSize;
+  this.drawShape();
+};
+
+Ellipse.prototype.geFontSize = function geFontSize() {
+  return this._fontSize;
+};
+
 Ellipse.prototype.destroy = function destroy() {
   this.element.remove();
   this.handles.remove();
+  if(this._textShape){
+    this._textShape.destroy()
+  }
 };
 
 Ellipse.prototype.intersectRegion = function intersectRegion(region) {
@@ -420,6 +457,66 @@ Ellipse.prototype.drawShape = function drawShape() {
     hx = this._handleIds[h_id].x * this._zoomFraction;
     hy = this._handleIds[h_id].y * this._zoomFraction;
     hnd.attr({ x: hx - this.handle_wh / 2, y: hy - this.handle_wh / 2 });
+  }
+
+  // update label
+  if(this._textShape){
+    this._textShape.setText(this._text)
+    this._textShape.setFontSize(this._fontSize)
+    this._textShape.setZoom(this._zoomFraction * 100)
+
+    var dx = 0,
+        dy = 0,
+        textAnchor = "middle",
+        bbox = this.element.getBBox(),
+        sWidth = bbox.width / this._zoomFraction,
+        sHeight = bbox.height / this._zoomFraction,
+        sx = bbox.x / this._zoomFraction,
+        sy = bbox.y / this._zoomFraction,
+        textOffsetX = this._strokeWidth/2 + 6,
+        textOffsetY = this._strokeWidth/2 + (this._fontSize > 12 ? this._fontSize/2 : 6) + 2;
+
+    switch(this._textPosition){
+      case "bottom":
+          dx = sWidth/2;
+          dy = sHeight + textOffsetY;
+          break;
+      case "left":
+          dx = -textOffsetX;
+          dy = sHeight/2;
+          textAnchor = "end"
+          break;
+      case "right":
+          dx = sWidth + textOffsetX;
+          dy = sHeight/2;
+          textAnchor = "start"
+          break;
+      case "top":
+          dx = sWidth/2;
+          dy = -textOffsetY;
+          break;
+      case "topleft":
+          dx = textOffsetX;
+          dy = textOffsetY;
+          textAnchor = "start"
+          break;
+      case "topright":
+          dx = sWidth - (textOffsetX);
+          dy = textOffsetY;
+          textAnchor = "end"
+          break;
+      case "bottomleft":
+          dx = textOffsetX;
+          dy = sHeight - (textOffsetY);
+          textAnchor = "start"
+          break;
+      case "bottomright":
+          dx = sWidth - (textOffsetX);
+          dy = sHeight - (textOffsetY);
+          textAnchor = "end"
+    }
+
+    this._textShape.setTextPosition(sx + dx, sy + dy, textAnchor)
   }
 };
 
