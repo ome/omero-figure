@@ -95,5 +95,6 @@ urlpatterns = [
     path('chgrp/', views.chgrp, name='figure_chgrp'),
 
     # Get group and owner info for multiple images. ?image=1,2,3
-    path('images_details/', views.images_details, name="figure_images_details")
+    path('images_details/', views.images_details,
+         name="figure_images_details")
 ]
