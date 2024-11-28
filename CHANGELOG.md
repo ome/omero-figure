@@ -9,6 +9,15 @@
 - Add link from Images to Figure in the form of Key-Value pairs (Thanks to Rémy Dornier) ([#584](https://github.com/ome/omero-figure/pull/584))
 - Support for ROI Fill Colour (Thanks to Rémy Dornier) ([#577](https://github.com/ome/omero-figure/pull/577))
 - Panel Borders (Thanks to Rémy Dornier) ([#578](https://github.com/ome/omero-figure/pull/578))
+- Horizontal and Vertical image flipping (Thanks to Tehmina Enayat) ([#591](https://github.com/ome/omero-figure/pull/591))
+- Dynamic loading of Look-up Tables (Thanks to Tom Boissonnet) ([#596](https://github.com/ome/omero-figure/pull/596))
+- Rotate image panels by 90° (Thanks to Rémy Dornier) ([#595](https://github.com/ome/omero-figure/pull/595))
+- File Open filtering by Group & Owner improvements ([#592](https://github.com/ome/omero-figure/pull/592))
+
+Fixes:
+- Fix issues with drag sorting of labels (Thanks to Tom Boissonnet) ([#599](https://github.com/ome/omero-figure/pull/599))
+- Timestamp loading handles missing planes (Thanks to Tom Boissonnet) ([#598](https://github.com/ome/omero-figure/pull/598))
+- Fix Zool label formatting in PDF export (Thanks to Rémy Dornier) ([#597](https://github.com/ome/omero-figure/pull/597))
 
 
 7.1.0 (September 2024)
