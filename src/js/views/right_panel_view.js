@@ -126,27 +126,79 @@
             let selected = this.model.getSelected();
 
             selected.forEach(panel => {
-                let randomId = getRandomId();
+                let textRandomId = getRandomId();
+                let rectRandomId = getRandomId();
                 // Add Rectangle (square) in centre of viewport
                 let vp = panel.getViewportAsRect();
+                let lastInsetTextIndex = (panel.getLastInsetTextIndex() || 64) + 1;
                 let minSide = Math.min(vp.width, vp.height);
                 // Square is 1/3 size of the viewport
                 let rectSize = minSide / 3;
                 var color = $('.inset-color span:first', this.$el).attr('data-color');
                 var position = $('.label-position i:first', this.$el).attr('data-position');
                 var strokeWidth = parseFloat($('button.inset-width span:first', this.$el).attr('data-line-width'));
+
+                var maxSize = 550,
+                frame_w = maxSize,
+                frame_h = maxSize,
+                wh = panel.get('width') / panel.get('height');
+                if (wh <= 1) {
+                    frame_h = maxSize;
+                    frame_w = maxSize * wh;
+                } else {
+                    frame_w = maxSize;
+                    frame_h = maxSize / wh;
+                }
+
+                // Get css for the SVG (full plane)
+                var svg_css = panel.get_vp_full_plane_css(panel.get('zoom'), frame_w, frame_h);
+                var scale = svg_css.width / panel.get('orig_width');
+
+                var x = vp.x + ((vp.width - rectSize) / 2);
+                var y = vp.y + ((vp.height - rectSize) / 2);
+                var txtX = x + (strokeWidth/2 + 6) / scale,
+                    txtY = y + (strokeWidth/2 + 10)  / scale;
+
                 let rect = {
                     type: "Rectangle",
-                    strokeWidth,
+                    strokeWidth: strokeWidth,
                     strokeColor: "#" + color,
-                    x: vp.x + ((vp.width - rectSize) / 2),
-                    y: vp.y + ((vp.height - rectSize) / 2),
+                    x: x,
+                    y: y,
                     width: rectSize,
                     height: rectSize,
-                    id: randomId,
+                    id: rectRandomId,
+                    textId: textRandomId,
                     rotation: vp.rotation || 0,
                 }
-                panel.add_shapes([rect]);
+                let text = {
+                    type: "Text",
+                    strokeWidth: strokeWidth,
+                    strokeColor: "#" + color,
+                    x: txtX,
+                    y: txtY,
+                    id: textRandomId,
+                    rotation: vp.rotation || 0,
+                    fontSize: 12,
+                    textPosition: "topleft",
+                    text: String.fromCharCode(lastInsetTextIndex),
+                    textAnchor: "start",
+                    parentShapeCoords: {x: x, y: y, width: rectSize, height: rectSize},
+                }
+                panel.add_shapes([rect, text]);
+                panel.setLastInsetTextIndex(lastInsetTextIndex)
+
+                var new_label = {
+                    text: "**"+String.fromCharCode(lastInsetTextIndex)+"**",
+                    size: 18,
+                    position: "topleft",
+                    color: color,
+                    inset: true,
+                };
+                var prev_labels = panel.get('labels') || []
+                var labels = [...prev_labels]
+                labels = labels.filter(lbl => !lbl.inset)
+                labels.push(new_label)
 
                 // Create duplicate panels
                 let panelJson = panel.toJSON();
@@ -179,7 +231,9 @@
                 panelJson.zoom = Math.min(xPercent, yPercent) * 100;
                 panelJson.selected = false;
                 panelJson.shapes = [];
-                panelJson.insetRoiId = randomId;
+                panelJson.insetRoiId = rectRandomId;
+                panelJson.lastInsetTextIndex = 64;
+                panelJson.labels = labels;
 
                 this.model.panels.create(panelJson);
             });
@@ -390,10 +444,10 @@
                 'panelCount': panelCount,
                 'color': color ? color.replace('#', '') : 'FFFFFF',
                 'lineWidth': width || 2,
-                'roiCount': roiCount,
+                'roiCount': roiCount/2,
                 'canPaste': canPaste,
-                'borderWidth': border ? border.strokeWidth : 2,
-                'borderColor': border ? border.color.replace('#', '') : 'FFFFFF',
+                'borderWidth': border ? border.strokeWidth : 5,
+                'borderColor': border ? border.color.replace('#', '') : 'FFFF00',
                 'showState': show_btn_state,
             }
             $('#edit_rois_form').html(this.roisTemplate(json));
