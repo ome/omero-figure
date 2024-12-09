@@ -245,6 +245,20 @@
             this.save('scalebar', sb);
         },
 
+        hide_colorbar: function() {
+            // keep all colorbar properties, except 'show'
+            var cb = $.extend(true, {}, this.get('colorbar'));
+            cb.show = false;
+            this.save('colorbar', cb);
+        },
+
+        save_colorbar: function(new_cb) {
+            // update only the attributes of colorbar we're passed
+            var old_cb = $.extend(true, {}, this.get('colorbar') || {});
+            var cb = $.extend(true, old_cb, new_cb);
+            this.save('colorbar', cb);
+        },
+
         show_border: function(color, strokeWidth){
             var border = {
                 'color': '#'+color,
@@ -1089,6 +1103,17 @@
             y = top_labels.reduce(function(prev, l){
                 return prev - (LINE_HEIGHT * l.size);
             }, y);
+
+            var cb = this.get("colorbar");
+            if (cb && cb.show && cb.position == "top") {
+                var shift = (cb.spacing + cb.thickness +
+                    Number(cb.font_size) + cb.tick_len + cb.label_margin);
+                if (shift > 0) {
+                    y = y - shift;
+                }
+            }
+
+
             return y;
         },
 
@@ -1103,6 +1128,24 @@
             x = left_labels.reduce(function(prev, l){
                 return prev - (LINE_HEIGHT * l.size);
             }, x);
+
+            var end = "";
+            for (const chann of this.get('channels')) {
+                if(chann.active) {
+                    end = chann.window?.end;
+                    break;
+                }
+            }
+            var cb = this.get("colorbar");
+            if (cb && cb.show && cb.position == "left") {
+                const metrics = this.measureTextSize(end, cb.font_size + "px");
+                var shift = (cb.spacing + cb.thickness +
+                    metrics.width + cb.tick_len + cb.label_margin);
+                if (shift > 0) {
+                    x = x - shift;
+                }
+            }
+
             return x;
         },
 
@@ -1118,6 +1161,23 @@
                 return prev + (LINE_HEIGHT * l.size);
             }, x);
 
+            var end = "";
+            for (const chann of this.get('channels')) {
+                if(chann.active) {
+                    end = chann.window?.end;
+                    break;
+                }
+            }
+            var cb = this.get("colorbar");
+            if (cb && cb.show && cb.position == "right") {
+                const metrics = this.measureTextSize(end, cb.font_size + "px");
+                var shift = (cb.spacing + cb.thickness +
+                    metrics.width + cb.tick_len + cb.label_margin);
+                if (shift > 0) {
+                    x = x + shift;
+                }
+            }
+
             return x;
         },
 
@@ -1131,7 +1191,32 @@
             y = bottom_labels.reduce(function(prev, l){
                 return prev + (LINE_HEIGHT * l.size);
             }, y);
+
+            var cb = this.get("colorbar");
+            if (cb && cb.show && cb.position == "bottom") {
+                var shift = (cb.spacing + cb.thickness +
+                    Number(cb.font_size) + cb.tick_len + cb.label_margin);
+                if (shift > 0) {
+                    y = y + shift;
+                }
+            }
             return y;
+        },
+
+        measureTextSize: function(text, fontSize) {
+            var fontFamily = "bs-font-sans-serif";
+            // Create a canvas element
+            var canvas = document.createElement('canvas');
+            var context = canvas.getContext('2d');
+
+            // Set the font properties
+            context.font = `${fontSize} ${fontFamily}`;
+            var metrics = context.measureText(text);
+
+            context = null;
+            canvas = null;
+
+            return metrics;
         },
 
         // True if coords (x,y,width, height) overlap with panel

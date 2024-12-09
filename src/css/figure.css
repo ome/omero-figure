@@ -1368,7 +1368,96 @@
         color: white;
         border-color: #007bff;
     }
-    
+
     .flipping .btn.active i {
         color: white;
+    }
+
+    .colorbar {
+        position: absolute;
+    }
+
+    .colorbar_middle td {
+        vertical-align: middle;
+    }
+
+    .colorbar_left{
+        position: absolute;
+        top: 0%;
+        right:100%;
+        -webkit-transform: scaleX(-1) rotate(-90deg);
+        transform: scaleX(-1) rotate(-90deg);
+    }
+
+    .colorbar_right{
+        position: absolute;
+        top: 0%;
+        left: 100%;
+        -webkit-transform: rotate(-90deg);
+        transform: rotate(-90deg);
+    }
+
+    .colorbar_top {
+        bottom: 100%;
+        width: 100%;
+        left: 0%;
+        margin-bottom: 10px;
+    }
+
+    .colorbar_bottom {
+        top: 100%;
+        width: 100%;
+        left: 0%;
+        margin-top: 10px;
+    }
+
+    .colorbar_bg {
+        margin-right: 0px;
+        margin-left: 0px;
+        display: flex;
+        position: relative;
+    }
+
+    .colorbar_ticks {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        width: 100%;
+        margin: 0;
+        align-items: center;
+        position: absolute;
+    }
+
+    .colorbar_ticks .label{
+        width: 0px;
+        position: absolute;
+        display: flex;
+        justify-content: center;
+        line-height: 1;
+    }
+
+    .colorbar_ticks_left .label{
+        display: flex;
+        flex-direction: row-reverse;
+        -webkit-transform: scaleX(-1) rotate(-90deg);
+        transform: scaleX(-1) rotate(-90deg);
+    }
+
+    .colorbar_ticks_right .label{
+        display: flex;
+        flex-direction: row-reverse;
+        -webkit-transform: rotate(90deg);
+        transform: rotate(90deg);
+    }
+
+    .colorbar_ticks_top .tick .dash{
+        position: relative;
+    }
+
+    .tick {
+        display: flex;
+    }
+
+    .dash {
+        width: 2px;
     }
