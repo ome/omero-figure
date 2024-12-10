@@ -40,7 +40,7 @@
 
         initialize: function() {
             // listen for changes to the viewport...
-            this.on("change:zoom change:dx change:dy change:width change:height change:rotation", (panel) => {
+            this.on("change:zoom change:dx change:dy change:width change:height change:rotation change:labels", (panel) => {
                 // if this panel has 'insetRoiId' it is an "inset" panel so we need to
                 // notify other panels that contain the corresponding ROI (rectangle)
                 if (this.get('insetRoiId') && this.figureModel) {
@@ -81,8 +81,24 @@
 
             // find Rectangle from panel that corresponds to this panel
             let rect = (panel.get("shapes") || []).find(shape => shape.id == insetRoiId);
+
             if (rect) {
                 this.cropToRoi(rect);
+                let text = panel.get("shapes").find(shape => shape.id == rect.textId);
+                if(text){
+                    let insetLabel = (this.get("labels") || []).find(lbl => lbl.inset == true);
+                    if(insetLabel){
+                        var lbl_key = this.get_label_key(insetLabel)
+                        var new_txt = "**"+text.text+"**"
+                        if(insetLabel.text !== new_txt){
+                            insetLabel.text = new_txt
+                            var newlbls = {};
+                            newlbls[lbl_key] = insetLabel;
+                            this.edit_labels(newlbls)
+                            this.trigger("change:labels")
+                        }
+                    }
+                }
             }
 
             this.silenceTriggers = false;
@@ -92,6 +108,8 @@
             // An inset panel has zoomed/panned or deleted. If we have corresponding inset
             // Rectangle then update or delete it accordingly...
             var insetRoiId = panel.get('insetRoiId');
+            var inset_lbl = panel.get('labels').filter(lbl => lbl.inset == true);
+
             if (!insetRoiId) return;
             // find Rectangles that have insetRoiId...
             let insetShapes = this.get('shapes');
@@ -105,22 +123,49 @@
                         // Delete the inset Rectangle IF there are NO other remaining insets
                         let insets = figureModel.panels.filter(p => p.get('insetRoiId') == insetRoiId);
                         if (insets.length == 0) {
-                            updated = updated.filter(shape => shape.id != insetRoiId);
+                            let rect = updated.filter(shape => shape.id == insetRoiId);
+                            updated = updated.filter(shape => (shape.id != insetRoiId && shape.id != rect[0].textId));
+                            this.save('lastInsetTextIndex', this.get('lastInsetTextIndex') - 1)
                         }
                         this.save('shapes', updated);
                     } else {
                         let rect = panel.getViewportAsRect();
+                        let textId = -1;
                         updated = updated.map(shape => {
                             if (shape.type == 'Rectangle' && shape.id == insetRoiId) {
+                                textId = shape.textId
                                 return {...shape, ...rect}
                             }
                             return shape;
                         });
+                        updated = updated.map(shape => {
+                            if (shape.type == 'Text' && shape.id == textId) {
+                                var prev = shape.parentShapeCoords
+                                shape.parentShapeCoords = {...rect}
+                                shape.x = shape.x + rect.x - prev.x
+                                shape.y = shape.y + rect.y - prev.y
+                                if(inset_lbl && inset_lbl[0]){
+                                    if(inset_lbl[0].text !== shape.text){
+                                        shape.text = inset_lbl[0].text.replaceAll("*","")
+                                    }
+                                }
+                            }
+                            return shape;
+                        });
                         this.save('shapes', updated);
+                        this.trigger("change:shapes")
                     }
                     this.silenceTriggers = false;
                 }
             }
+        },
+
+        getLastInsetTextIndex: function(){
+            return this.get('lastInsetTextIndex')
+        },
+
+        setLastInsetTextIndex: function(index){
+            this.save('lastInsetTextIndex', index)
         },
 
         // When we're creating a Panel, we process the data a little here:
@@ -303,6 +348,8 @@
                 points = shape.points.split(' ').map(function(p){
                     return p.split(",");
                 });
+            } else if (shape.type === "Text"){
+                points = [[shape.x, shape.y]];
             }
             if (points) {
                 for (var p=0; p<points.length; p++) {
@@ -602,7 +649,11 @@
                 if (labels_map.hasOwnProperty(lbl_key)) {
                     if (labels_map[lbl_key]) {
                         // replace with the new label
-                        lbl = $.extend(true, {}, labels_map[lbl_key]);
+                        var new_lbl =  labels_map[lbl_key]
+                        if(lbl.inset){
+                            new_lbl.inset = true
+                        }
+                        lbl = $.extend(true, {}, new_lbl);
                         labs.push( lbl );
                     }
                     // else 'false' are ignored (deleted)
