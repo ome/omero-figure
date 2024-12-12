@@ -2,7 +2,7 @@
 7.2.0 (December 2024)
 ---------------------
 
-- "Interactive" Inset panels ([#549](https://github.com/ome/omero-figure/pull/549))
+- "Interactive" Inset panels ([#549](https://github.com/ome/omero-figure/pull/549) and [#603](https://github.com/ome/omero-figure/pull/603))
 - Use timeIncrement for Time if no plane-info metadata (Thanks to Jens Wendt) ([#589](https://github.com/ome/omero-figure/pull/589))
 - Add Hilo Checkbox for LUT Toggling (Thanks to Tehmina Enayat) ([#583](https://github.com/ome/omero-figure/pull/583))
 - Support for 'Points' in ROI functionality ([#555](https://github.com/ome/omero-figure/pull/555))
