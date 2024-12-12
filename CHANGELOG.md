@@ -12,7 +12,7 @@
 - Horizontal and Vertical image flipping (Thanks to Tehmina Enayat) ([#591](https://github.com/ome/omero-figure/pull/591))
 - Dynamic loading of Look-up Tables (Thanks to Tom Boissonnet) ([#596](https://github.com/ome/omero-figure/pull/596))
 - Rotate image panels by 90° (Thanks to Rémy Dornier) ([#595](https://github.com/ome/omero-figure/pull/595))
-- File Open filtering by Group & Owner improvements ([#592](https://github.com/ome/omero-figure/pull/592))
+- File Open filtering by Group and Owner improvements ([#592](https://github.com/ome/omero-figure/pull/592))
 
 Fixes:
 - Fix issues with drag sorting of labels (Thanks to Tom Boissonnet) ([#599](https://github.com/ome/omero-figure/pull/599))
