@@ -17,7 +17,7 @@
 Fixes:
 - Fix issues with drag sorting of labels (Thanks to Tom Boissonnet) ([#599](https://github.com/ome/omero-figure/pull/599))
 - Timestamp loading handles missing planes (Thanks to Tom Boissonnet) ([#598](https://github.com/ome/omero-figure/pull/598))
-- Fix Zool label formatting in PDF export (Thanks to Rémy Dornier) ([#597](https://github.com/ome/omero-figure/pull/597))
+- Fix Zoom label formatting in PDF export (Thanks to Rémy Dornier) ([#597](https://github.com/ome/omero-figure/pull/597))
 
 
 7.1.0 (September 2024)
