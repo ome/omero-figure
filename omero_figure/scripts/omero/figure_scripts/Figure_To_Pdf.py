@@ -278,13 +278,14 @@ class ShapeExport(object):
 class ShapeToPdfExport(ShapeExport):
     point_radius = 5
 
-    def __init__(self, canvas, panel, page, crop, page_height):
+    def __init__(self, canvas, panel, page, crop, page_height, page_width):
 
         self.canvas = canvas
         self.page = page
         # The crop region on the original image coordinates...
         self.crop = crop
         self.page_height = page_height
+        self.page_width = page_width
         # Get a mapping from original coordinates to the actual size of panel
         self.scale = float(panel['width']) / crop['width']
 
@@ -304,9 +305,9 @@ class ShapeToPdfExport(ShapeExport):
         h_flip = self.panel.get('horizontal_flip', False)
         v_flip = self.panel.get('vertical_flip', False)
         if h_flip:
-            shape_x = self.crop['width'] - shape_x + 2*self.crop['x']
+            shape_x = self.crop['width'] - shape_x + 2 * self.crop['x']
         if v_flip:
-            shape_y = self.crop['height'] - shape_y + 2*self.crop['y']
+            shape_y = self.crop['height'] - shape_y + 2 * self.crop['y']
 
         rotation = self.panel['rotation']
         if v_flip != h_flip:
@@ -369,6 +370,48 @@ class ShapeToPdfExport(ShapeExport):
         w, h = para.wrap(10000, 100)
         para.drawOn(
             self.canvas, center[0] - w / 2, center[1] - h / 2 + size / 4)
+
+    def draw_text(self, shape):
+        text_coords = self.panel_to_page_coords(shape['x'], shape['y'])
+        text = ""
+
+        if markdown_imported:
+            # convert markdown to html
+            text = markdown.markdown(shape.get('text'))
+
+        size = shape.get('fontSize', 12)
+        stroke_width = shape.get('strokeWidth', 2)
+        r, g, b, a = self.get_rgba(shape['strokeColor'])
+        # bump up alpha a bit to make text more readable
+        rgba = (r, g, b, 0.5 + a / 2.0)
+
+        x = text_coords["x"]
+        y = self.page_height - text_coords["y"]
+        anchor = shape['textAnchor']
+        aligment = TA_LEFT
+
+        if (anchor == 'middle'):
+            aligment = TA_CENTER
+            x = x - (self.page_width / 2)
+        elif (anchor == "end"):
+            aligment = TA_RIGHT
+            x = x - self.page_width
+
+        style = ParagraphStyle(
+            'label',
+            parent=getSampleStyleSheet()['Normal'],
+            alignment=aligment,
+            textColor=Color(*rgba),
+            fontSize=size,
+            leading=size,
+        )
+        para = Paragraph(text, style)
+
+        w, h = para.wrap(self.page_width, 100)
+        para.drawOn(
+            self.canvas,
+            x + int(stroke_width * 0.25),
+            y - h / 2 - int(size * 0.25) - int(stroke_width * 0.25))
 
     def draw_line(self, shape):
         start = self.panel_to_page_coords(shape['x1'], shape['y1'])
@@ -599,9 +642,9 @@ class ShapeToPilExport(ShapeExport):
 
         # Apply flip transformations to the shape coordinates
         if h_flip:
-            shape_x = self.crop['width'] - shape_x + 2*self.crop['x']
+            shape_x = self.crop['width'] - shape_x + 2 * self.crop['x']
         if v_flip:
-            shape_y = self.crop['height'] - shape_y + 2*self.crop['y']
+            shape_y = self.crop['height'] - shape_y + 2 * self.crop['y']
 
         rotation = self.panel['rotation']
         if v_flip != h_flip:
@@ -733,7 +776,7 @@ class ShapeToPilExport(ShapeExport):
         # with correct stroke width
         r, g, b, a = self.get_rgba_int(shape.get('fillColor', '#00000000'))
         if 'fillOpacity' in shape:
-            a = int(float(shape['fillOpacity'])*255)
+            a = int(float(shape['fillOpacity']) * 255)
         rgba = (r, g, b, a)
 
         # need to draw on separate image and then paste on to get transparency
@@ -792,7 +835,7 @@ class ShapeToPilExport(ShapeExport):
         # with correct stroke width
         r, g, b, a = self.get_rgba_int(shape.get('fillColor', '#00000000'))
         if 'fillOpacity' in shape:
-            a = int(float(shape['fillOpacity'])*255)
+            a = int(float(shape['fillOpacity']) * 255)
         rgba = (r, g, b, a)
 
         # need to draw on separate image and then paste on to get transparency
@@ -878,7 +921,7 @@ class ShapeToPilExport(ShapeExport):
 
         r, g, b, a = self.get_rgba_int(shape.get('fillColor', '#00000000'))
         if 'fillOpacity' in shape:
-            a = int(float(shape['fillOpacity'])*255)
+            a = int(float(shape['fillOpacity']) * 255)
         rgba = (r, g, b, a)
 
         # when rx is ~zero (for a Point, scaled down) don't need inner ellipse
@@ -1281,7 +1324,7 @@ class FigureExport(object):
 
         crop = self.get_crop_region(panel)
         ShapeToPdfExport(self.figure_canvas, panel, page, crop,
-                         self.page_height)
+                         self.page_height, self.page_width)
 
     def draw_labels(self, panel, page):
         """
