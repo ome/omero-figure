@@ -1,4 +1,10 @@
 
+7.2.1 (January 2025)
+--------------------
+
+- Fix loading of images with timeIncrement of None (Thanks to Rémy Dornier) ([#607](https://github.com/ome/omero-figure/pull/607))
+
+
 7.2.0 (December 2024)
 ---------------------
 
