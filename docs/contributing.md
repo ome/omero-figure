@@ -2,6 +2,12 @@
 Development and Contributing to OMERO.figure
 ============================================
 
+Planning
+--------
+
+Before starting to work on a new feature, you are encouraged to create an Issue and to
+add some outline of the expected work required. This is helpful to organise your
+thoughts but can also allow others to contribute.
 
 Development
 -----------
