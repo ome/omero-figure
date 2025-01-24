@@ -134,6 +134,8 @@ above. If using *Option 1*, you need to *replace* the existing script:
 Development
 -----------
 
+See `docs/contributing.md` for information on code layout and other details.
+
 We use `vite.js <https://vitejs.dev/>`_ to build and serve the app during development.
 
 Install Node from https://nodejs.org, then:
