@@ -94,7 +94,7 @@ def index(request, file_id=None, conn=None, **kwargs):
             for key, param in params.inputs.items():
                 if (key == "FIGURE_VERSION"):
                     script_version = unwrap(param.prototype)
-        except Exception as ex:
+        except Exception:
             logger.debug(traceback.format_exc())
 
     user = conn.getUser()
@@ -692,7 +692,7 @@ def upload_omero_script(request, conn=None, **kwargs):
     try:
         with open(script_path) as script_file:
             script_text = script_file.read()
-    except Exception as ex:
+    except Exception:
         logger.debug(traceback.format_exc())
         return JsonResponse({"Message": "Failed to load script"})
 
@@ -703,7 +703,8 @@ def upload_omero_script(request, conn=None, **kwargs):
             script_service.editScript(orig_file, script_text)
             message = "Script Replaced"
         else:
-            script_id = script_service.uploadOfficialScript(SCRIPT_PATH, script_text)
+            script_id = script_service.uploadOfficialScript(
+                SCRIPT_PATH, script_text)
             message = "Script Uploaded"
     except omero.ValidationException as ex:
         message = str(ex)
