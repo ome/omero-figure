@@ -694,7 +694,8 @@ def upload_omero_script(request, conn=None, **kwargs):
             script_text = script_file.read()
     except Exception:
         logger.debug(traceback.format_exc())
-        return JsonResponse({"Message": "Failed to load script"})
+        return JsonResponse({
+            "Error": "Failed to load script from " + script_path})
 
     # If script exists, replace. Otherwise upload
     try:
@@ -707,7 +708,7 @@ def upload_omero_script(request, conn=None, **kwargs):
                 SCRIPT_PATH, script_text)
             message = "Script Uploaded"
     except omero.ValidationException as ex:
-        message = str(ex)
+        return JsonResponse({"Error": ex.message})
 
     return JsonResponse({"Message": message, "script_id": script_id})
 
