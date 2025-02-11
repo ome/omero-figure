@@ -396,10 +396,15 @@ var ChannelSliderView = Backbone.View.extend({
                 var label = labels.reduce(allEqualFn, labels[0]) ? labels[0] : ' ';
                 var reverse = reverses.reduce(allEqualFn, reverses[0]) ? true : false;
                 var active = actives.reduce(allEqualFn, actives[0]);
-                var style = {'background-position': '0 0'}
                 var lutBgPos = FigureLutPicker.getLutBackgroundPosition(color);
+                var lutBgCss = '--bgPos: 0 0;';
                 if (color.endsWith('.lut')) {
-                    style['background-position'] = lutBgPos;
+                    var lutPng = FigureLutPicker.getLutPng(color);
+                    if (lutPng) {
+                        lutBgCss = `--bgPos: 0 0; --lutPng: url('${lutPng}'); --pngHeight: 100%;`;
+                    } else {
+                        lutBgCss = `--bgPos: ${lutBgPos};`
+                    }
                     color = "ccc";
                 } else if (color.toUpperCase() === "FFFFFF") {
                     color = "ccc";  // white slider would be invisible
@@ -420,7 +425,7 @@ var ChannelSliderView = Backbone.View.extend({
                                                 'max': max,
                                                 'step': (max - min > SLIDER_INCR_CUTOFF) ? 1 : 0.01,
                                                 'active': active,
-                                                'lutBgPos': lutBgPos,
+                                                'lutBgCss': lutBgCss,
                                                 'reverse': reverse,
                                                 'color': color,
                                                 'isDark': this.isDark(color)

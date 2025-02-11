@@ -1,5 +1,6 @@
 
 import * as zarr from "zarrita";
+import * as omezarr from "ome-zarr.js";
 import { slice } from "@zarrita/indexing";
 
 const ZARRITA_ARRAY_CACHE = {};
@@ -47,11 +48,15 @@ export async function renderZarrToSrc(source, attrs, theZ, theT, channels) {
   let activeChIndicies = [];
   let colors = [];
   let minMaxValues = [];
+  let luts = [];
+  let inverteds = [];
   channels.forEach((ch, index) => {
     if (ch.active) {
       activeChIndicies.push(index);
       colors.push(hexToRGB(ch.color));
       minMaxValues.push([ch.window.start, ch.window.end]);
+      luts.push(ch.color.endsWith(".lut") ? ch.color : undefined);
+      inverteds.push(ch.reverseIntensity);
     }
   });
   console.log("activeChIndicies", activeChIndicies);
@@ -101,8 +106,7 @@ export async function renderZarrToSrc(source, attrs, theZ, theT, channels) {
   });
 
   let ndChunks = await Promise.all(promises);
-  // let minMaxValues = ndChunks.map((ch) => getMinMaxValues(ch));
-  let rbgData = renderTo8bitArray(ndChunks, minMaxValues, colors);
+  let rbgData = omezarr.renderTo8bitArray(ndChunks, minMaxValues, colors, luts, inverteds);
 
   let width = shape.at(-1);
   let height = shape.at(-2);
@@ -114,112 +118,6 @@ export async function renderZarrToSrc(source, attrs, theZ, theT, channels) {
   context.putImageData(new ImageData(rbgData, width, height), 0, 0);
   let dataUrl = canvas.toDataURL("image/png");
   return dataUrl;
-}
-
-
-export function renderTo8bitArray(ndChunks, minMaxValues, colors) {
-  // Render chunks (array) into 2D 8-bit data for new ImageData(arr)
-  // ndChunks is list of zarr arrays
-
-  // assume all chunks are same shape
-  const shape = ndChunks[0].shape;
-  const height = shape[0];
-  const width = shape[1];
-  const pixels = height * width;
-
-  if (!minMaxValues) {
-    minMaxValues = ndChunks.map(getMinMaxValues);
-  }
-
-  // let rgb = [255, 255, 255];
-
-  let rgba = new Uint8ClampedArray(4 * height * width).fill(0);
-  let offset = 0;
-  for (let y = 0; y < pixels; y++) {
-    for (let p = 0; p < ndChunks.length; p++) {
-      let rgb = colors[p];
-      let data = ndChunks[p].data;
-      let range = minMaxValues[p];
-      let rawValue = data[y];
-      let fraction = (rawValue - range[0]) / (range[1] - range[0]);
-      // for red, green, blue,
-      for (let i = 0; i < 3; i++) {
-        // rgb[i] is 0-255...
-        let v = (fraction * rgb[i]) << 0;
-        // increase pixel intensity if value is higher
-        rgba[offset * 4 + i] = Math.max(rgba[offset * 4 + i], v);
-      }
-    }
-    rgba[offset * 4 + 3] = 255; // alpha
-    offset += 1;
-  }
-
-  return rgba;
-}
-
-export function getMinMaxValues(chunk2d) {
-  const data = chunk2d.data;
-  let maxV = 0;
-  let minV = Infinity;
-  let length = chunk2d.data.length;
-  for (let y = 0; y < length; y++) {
-    let rawValue = data[y];
-    maxV = Math.max(maxV, rawValue);
-    minV = Math.min(minV, rawValue);
-  }
-  return [minV, maxV];
-}
-
-export const MAX_CHANNELS = 4;
-export const COLORS = {
-  cyan: "#00FFFF",
-  yellow: "#FFFF00",
-  magenta: "#FF00FF",
-  red: "#FF0000",
-  green: "#00FF00",
-  blue: "#0000FF",
-  white: "#FFFFFF",
-};
-export const MAGENTA_GREEN = [COLORS.magenta, COLORS.green];
-export const RGB = [COLORS.red, COLORS.green, COLORS.blue];
-export const CYMRGB = Object.values(COLORS).slice(0, -2);
-
-export function getDefaultVisibilities(n) {
-  let visibilities;
-  if (n <= MAX_CHANNELS) {
-    // Default to all on if visibilities not specified and less than 6 channels.
-    visibilities = Array(n).fill(true);
-  } else {
-    // If more than MAX_CHANNELS, only make first set on by default.
-    visibilities = [
-      ...Array(MAX_CHANNELS).fill(true),
-      ...Array(n - MAX_CHANNELS).fill(false),
-    ];
-  }
-  return visibilities;
-}
-
-export function getDefaultColors(n, visibilities) {
-  let colors = [];
-  if (n == 1) {
-    colors = [COLORS.white];
-  } else if (n == 2) {
-    colors = MAGENTA_GREEN;
-  } else if (n === 3) {
-    colors = RGB;
-  } else if (n <= MAX_CHANNELS) {
-    colors = CYMRGB.slice(0, n);
-  } else {
-    // Default color for non-visible is white
-    colors = Array(n).fill(COLORS.white);
-    // Get visible indices
-    const visibleIndices = visibilities.flatMap((bool, i) => (bool ? i : []));
-    // Set visible indices to CYMRGB colors. visibleIndices.length === MAX_CHANNELS from above.
-    for (const [i, visibleIndex] of visibleIndices.entries()) {
-      colors[visibleIndex] = CYMRGB[i];
-    }
-  }
-  return colors.map(hexToRGB);
 }
 
 export function hexToRGB(hex) {

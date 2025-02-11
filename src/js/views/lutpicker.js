@@ -21,6 +21,7 @@ import Backbone from "backbone";
 import $ from "jquery";
 import _ from 'underscore';
 import * as bootstrap from "bootstrap"
+import * as omezarr from "ome-zarr.js";
 
 import lut_picker_template from '../../templates/lut_picker.template.html?raw';
 import { showModal, getJson } from "./util";
@@ -38,6 +39,9 @@ var LutPickerView = Backbone.View.extend({
     initialize:function () {
         this.lutModal = new bootstrap.Modal('#lutpickerModal');
         this.lut_names = [];
+    
+        // These will be overwritten with LUTs from OMERO if served by OMERO
+        this.luts = omezarr.getLuts();
     },
 
 
@@ -57,8 +61,13 @@ var LutPickerView = Backbone.View.extend({
         this.pickedLut = lutName;
 
         // Update preview to show LUT
-        var bgPos = this.getLutBackgroundPosition(lutName);
-        $(".lutPreview", this.el).css({'background-position': bgPos, 'background-image': `url(${this.lutsPngUrl})`});
+        var lut = this.luts.find(lut => lut.name == lutName);
+        if (lut.png) {
+            $(".lutPreview", this.el).css({'background-position': '0 0', 'background-image': "url('" + lut.png + "')", 'background-size': '100% 100%'});
+        } else {
+            var bgPos = this.getLutBackgroundPosition(lutName);
+            $(".lutPreview", this.el).css({'background-position': bgPos, 'background-image': `url(${this.lutsPngUrl})`});
+        }
         // Enable OK button
         $("button[type='submit']", this.el).removeAttr('disabled');
     },
@@ -67,6 +76,13 @@ var LutPickerView = Backbone.View.extend({
         var url = WEBGATEWAYINDEX + 'luts/';
         let cors_headers = { mode: 'cors', credentials: 'include' };
         return fetch(url, cors_headers).then(rsp => rsp.json());
+    },
+
+    getLutPng(lutName) {
+        var lut = this.luts.find(lut => lut.name == lutName);
+        if (lut && lut.png) {
+            return lut.png;
+        }
     },
 
     getLutBackgroundPosition: function(lutName) {
@@ -95,24 +111,31 @@ var LutPickerView = Backbone.View.extend({
             this.success = options.success;
         }
 
-        this.loadLuts().then(data => {
-            this.luts = data.luts;
-            this.lut_names = data.png_luts;
-            this.is_dynamic_lut = Boolean(data.png_luts_new);
-            if (this.is_dynamic_lut){
-                this.luts = this.luts.map(function(lut) {
-                    lut.png_index = lut.png_index_new;
-                    return lut;
-                });
-                this.lut_names = data.png_luts_new;
-                this.lutsPngUrl = `${WEBGATEWAYINDEX}luts_png/`;
-            } else {
-                this.lutsPngUrl = STATIC_DIR + lutsPng;
-            }
-            this.lut_names = this.lut_names.map(lut_name => lut_name.split('/').pop());
+        if (APP_SERVED_BY_OMERO) {
 
+            this.loadLuts().then(data => {
+                this.luts = data.luts;
+                this.lut_names = data.png_luts;
+                this.is_dynamic_lut = Boolean(data.png_luts_new);
+                if (this.is_dynamic_lut){
+                    this.luts = this.luts.map(function(lut) {
+                        lut.png_index = lut.png_index_new;
+                        return lut;
+                    });
+                    this.lut_names = data.png_luts_new;
+                    this.lutsPngUrl = `${WEBGATEWAYINDEX}luts_png/`;
+                } else {
+                    this.lutsPngUrl = STATIC_DIR + lutsPng;
+                }
+                this.lut_names = this.lut_names.map(lut_name => lut_name.split('/').pop());
+
+                this.render();
+            });
+        } else {
+            // each LUT is {'name': '16_colors.lut', 'png': 'data:image/png;base64,iVBO...'}
+            this.luts = omezarr.getLuts();
             this.render();
-        });
+        }
     },
 
     render:function() {
@@ -126,6 +149,7 @@ var LutPickerView = Backbone.View.extend({
                 // Add css background-position to each lut to offset luts_10.png
                 return {'bgPos': this.getLutBackgroundPosition(lut.name),
                         'name': lut.name,
+                        'png': lut.png,    // if LUT is from omezarr.js, we have png in hand
                         'displayName': this.formatLutName(lut.name)};
             }.bind(this));
 
