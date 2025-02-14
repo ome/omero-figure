@@ -26,7 +26,7 @@ from datetime import datetime
 import os
 from os import path
 import zipfile
-from math import atan2, atan, sin, cos, sqrt, radians, floor, ceil, log2
+from math import atan2, atan, sin, cos, sqrt, radians, floor, ceil, log2, fmod
 from copy import deepcopy
 import re
 
@@ -278,13 +278,14 @@ class ShapeExport(object):
 class ShapeToPdfExport(ShapeExport):
     point_radius = 5
 
-    def __init__(self, canvas, panel, page, crop, page_height):
+    def __init__(self, canvas, panel, page, crop, page_height, page_width):
 
         self.canvas = canvas
         self.page = page
         # The crop region on the original image coordinates...
         self.crop = crop
         self.page_height = page_height
+        self.page_width = page_width
         # Get a mapping from original coordinates to the actual size of panel
         self.scale = float(panel['width']) / crop['width']
 
@@ -304,9 +305,9 @@ class ShapeToPdfExport(ShapeExport):
         h_flip = self.panel.get('horizontal_flip', False)
         v_flip = self.panel.get('vertical_flip', False)
         if h_flip:
-            shape_x = self.crop['width'] - shape_x + 2*self.crop['x']
+            shape_x = self.crop['width'] - shape_x + 2 * self.crop['x']
         if v_flip:
-            shape_y = self.crop['height'] - shape_y + 2*self.crop['y']
+            shape_y = self.crop['height'] - shape_y + 2 * self.crop['y']
 
         rotation = self.panel['rotation']
         if v_flip != h_flip:
@@ -369,6 +370,92 @@ class ShapeToPdfExport(ShapeExport):
         w, h = para.wrap(10000, 100)
         para.drawOn(
             self.canvas, center[0] - w / 2, center[1] - h / 2 + size / 4)
+
+    def draw_text(self, shape):
+        text_coords = self.panel_to_page_coords(shape['x'], shape['y'])
+        text = ""
+
+        if markdown_imported:
+            # convert markdown to html
+            text = markdown.markdown(shape.get('text'))
+
+        size = shape.get('fontSize', 12)
+        stroke_width = shape.get('strokeWidth', 2)
+        r, g, b, a = self.get_rgba(shape['strokeColor'])
+        # bump up alpha a bit to make text more readable
+        rgba = (r, g, b, 0.5 + a / 2.0)
+
+        x = text_coords["x"]
+        y = self.page_height - text_coords["y"]
+        anchor = shape['textAnchor']
+        aligment = TA_LEFT
+
+        if (anchor == 'middle'):
+            aligment = TA_CENTER
+            x = x - (self.page_width / 2)
+        elif (anchor == "end"):
+            aligment = TA_RIGHT
+            x = x - self.page_width
+
+        style = ParagraphStyle(
+            'label',
+            parent=getSampleStyleSheet()['Normal'],
+            alignment=aligment,
+            textColor=Color(*rgba),
+            fontSize=size,
+            leading=size,
+        )
+        para = Paragraph(text, style)
+        w, h = para.wrap(self.page_width, y)
+
+        rotation = shape.get('textRotation', 0)
+        panel_rotation = shape.get('rotation', 0)
+        rotation = rotation + panel_rotation
+
+        text_position = shape['textPosition']
+        text_offset_x = stroke_width / 4 + 4
+        text_offset_y = size / 2 + stroke_width / 4 + 4
+        outPositions = ["top", "left", "bottom","right"]
+        inPositions = ["topleft", "bottomleft", "bottomright", "topright"]
+        rotationIndex = fmod(floor((360 - rotation + 45) / 90), 4)
+        finalIndex = 0
+
+        if text_position in ["bottom", "top", "right", "left"]:
+            posIndex = outPositions.index(text_position)
+            finalIndex = int(fmod((posIndex + rotationIndex), 4))
+            text_position = outPositions[finalIndex]
+        if text_position in ["topleft", "topright", "bottomleft", "bottomright"]:
+            posIndex = inPositions.index(text_position)
+            finalIndex = int(fmod((posIndex + rotationIndex), 4))
+            text_position = inPositions[finalIndex]
+
+        if text_position == "bottom":
+            dx = 0;
+            dy = text_offset_y;
+        if text_position == "left":
+            dx = -text_offset_x;
+            dy = 0;
+        if text_position == "right":
+            dx = text_offset_x;
+            dy = 0;
+        if text_position == "top":
+            dx = 0;
+            dy = -stroke_width / 2
+        if text_position == "topleft":
+            dx = text_offset_x;
+            dy = text_offset_y;
+        if text_position == "topright":
+            dx = -text_offset_x;
+            dy = text_offset_y;
+        if text_position == "bottomleft":
+            dx = text_offset_x;
+            dy = -stroke_width / 2
+        if text_position == "bottomright":
+            dx = -text_offset_x;
+            dy = -stroke_width / 2
+
+        para.drawOn(self.canvas, x + dx, y - dy)
+
 
     def draw_line(self, shape):
         start = self.panel_to_page_coords(shape['x1'], shape['y1'])
@@ -599,9 +686,9 @@ class ShapeToPilExport(ShapeExport):
 
         # Apply flip transformations to the shape coordinates
         if h_flip:
-            shape_x = self.crop['width'] - shape_x + 2*self.crop['x']
+            shape_x = self.crop['width'] - shape_x + 2 * self.crop['x']
         if v_flip:
-            shape_y = self.crop['height'] - shape_y + 2*self.crop['y']
+            shape_y = self.crop['height'] - shape_y + 2 * self.crop['y']
 
         rotation = self.panel['rotation']
         if v_flip != h_flip:
@@ -653,6 +740,90 @@ class ShapeToPilExport(ShapeExport):
         width = box[2] - box[0]
         height = box[3] - box[1]
         xy = (int(center[0] - width / 2.0), int(center[1] - height / 2.0))
+        self.draw.text(xy, text, fill=rgba, font=font)
+
+    def draw_text(self, shape):
+        text_coords = self.get_panel_coords(shape['x'], shape['y'])
+        text = ""
+
+        text = shape.get('text')
+
+        font_size_dpi = scale_to_export_dpi(shape.get('fontSize', 12))
+        stroke_width = shape.get('strokeWidth', 2)
+        stroke_width_dpi = scale_to_export_dpi(float(stroke_width))
+
+        r, g, b, a = self.get_rgba_int(shape['strokeColor'])
+        # bump up alpha a bit to make text more readable
+        rgba = (r, g, b, int(128 + a / 2))
+        font_name = "FreeSans.ttf"
+        from omero.gateway import THISPATH
+        path_to_font = os.path.join(THISPATH, "pilfonts", font_name)
+        try:
+            font = ImageFont.truetype(path_to_font, font_size_dpi)
+        except Exception:
+            font = ImageFont.load(
+                '%s/pilfonts/B%0.2d.pil' % (self.GATEWAYPATH, font_size_dpi))
+
+        box = font.getbbox(text)
+        txt_w = box[2] - box[0]
+        txt_h = box[3] - box[1]
+
+        x = text_coords["x"]
+        y = text_coords["y"]
+        anchor = shape['textAnchor']
+
+        if (anchor == 'middle'):
+            x = x - txt_w / 2
+        elif (anchor == "end"):
+            x = x - txt_w
+
+        rotation = shape.get('textRotation', 0)
+        panel_rotation = shape.get('rotation', 0)
+        rotation = rotation + panel_rotation
+
+        text_position = shape['textPosition']
+        text_offset_x = scale_to_export_dpi(stroke_width / 4 + 4)
+        outPositions = ["top", "left", "bottom","right"]
+        inPositions = ["topleft", "bottomleft", "bottomright", "topright"]
+        rotationIndex = fmod(floor((360 - rotation + 45) / 90), 4)
+        finalIndex = 0
+
+        if text_position in ["bottom", "top", "right", "left"]:
+            posIndex = outPositions.index(text_position)
+            finalIndex = int(fmod((posIndex + rotationIndex), 4))
+            text_position = outPositions[finalIndex]
+        if text_position in ["topleft", "topright", "bottomleft", "bottomright"]:
+            posIndex = inPositions.index(text_position)
+            finalIndex = int(fmod((posIndex + rotationIndex), 4))
+            text_position = inPositions[finalIndex]
+
+        if text_position == "bottom":
+            dx = 0;
+            dy = stroke_width_dpi / 4
+        if text_position == "left":
+            dx = -text_offset_x;
+            dy = -txt_h / 2;
+        if text_position == "right":
+            dx = text_offset_x;
+            dy = -txt_h / 2;
+        if text_position == "top":
+            dx = 0;
+            dy = -font_size_dpi - stroke_width_dpi / 2
+        if text_position == "topleft":
+            dx = text_offset_x;
+            dy = 2;
+        if text_position == "topright":
+            dx = -text_offset_x;
+            dy = 2;
+        if text_position == "bottomleft":
+            dx = text_offset_x;
+            dy = -font_size_dpi - stroke_width_dpi / 2
+        if text_position == "bottomright":
+            dx = -text_offset_x;
+            dy = -font_size_dpi - stroke_width_dpi / 2
+
+        xy = (x + dx, y + dy)
+
         self.draw.text(xy, text, fill=rgba, font=font)
 
     def draw_arrow(self, shape):
@@ -733,7 +904,7 @@ class ShapeToPilExport(ShapeExport):
         # with correct stroke width
         r, g, b, a = self.get_rgba_int(shape.get('fillColor', '#00000000'))
         if 'fillOpacity' in shape:
-            a = int(float(shape['fillOpacity'])*255)
+            a = int(float(shape['fillOpacity']) * 255)
         rgba = (r, g, b, a)
 
         # need to draw on separate image and then paste on to get transparency
@@ -792,7 +963,7 @@ class ShapeToPilExport(ShapeExport):
         # with correct stroke width
         r, g, b, a = self.get_rgba_int(shape.get('fillColor', '#00000000'))
         if 'fillOpacity' in shape:
-            a = int(float(shape['fillOpacity'])*255)
+            a = int(float(shape['fillOpacity']) * 255)
         rgba = (r, g, b, a)
 
         # need to draw on separate image and then paste on to get transparency
@@ -878,7 +1049,7 @@ class ShapeToPilExport(ShapeExport):
 
         r, g, b, a = self.get_rgba_int(shape.get('fillColor', '#00000000'))
         if 'fillOpacity' in shape:
-            a = int(float(shape['fillOpacity'])*255)
+            a = int(float(shape['fillOpacity']) * 255)
         rgba = (r, g, b, a)
 
         # when rx is ~zero (for a Point, scaled down) don't need inner ellipse
@@ -1281,7 +1452,7 @@ class FigureExport(object):
 
         crop = self.get_crop_region(panel)
         ShapeToPdfExport(self.figure_canvas, panel, page, crop,
-                         self.page_height)
+                         self.page_height, self.page_width)
 
     def draw_labels(self, panel, page):
         """
