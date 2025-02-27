@@ -19,8 +19,12 @@ Code notes
 ----------
 
 The JavaScript code is based on the [Backbone.js](http://backbonejs.org/) framework.
-We listen for changes to the Model objects, then `render()` the View objects to update the html
-using `underscore.js` templates.
+The majority of the UI code is in Backbone `View` objects. These objects render html using
+`underscore.js` templates and then use `jQuery` to update the DOM with the html.
+The `View` objects get the data to render from a single `FigureModel` instance and its associated
+collection of `PanelModel` objects.
+The `View` code saves changes to the Model objects in response to user events, and the View objects
+also listen for changes to these Model objects, then re-render to update the page.
 
 All the front-end code is under `/src/` directory. The `index.html` includes the `js/main.js` as
 the JavaScript entry point. This sets up all the Backbone.js objects and listens for changes to the
@@ -39,6 +43,10 @@ when rendering the UI as this will add to the Undo/Redo queue.
 Dev server and build
 --------------------
 
+See [development](https://github.com/ome/omero-figure?tab=readme-ov-file#development) section for
+development and build commands.
+You should edit the code under `src/` such as the main `index.html` page, `underscore.js` templates and `js` code. Do not modify files under `omero_figure/static` and `omero_figure/template`, as they are created during the build process.
+
 The application can be served from the `vite.js` dev server during development at `http://localhost:8080/`.
 This includes "hot module reload" of edited code without needing to refresh the page.
 However, the app doesn't have any OMERO server context when it is served like this, such as the logged-in user details.
@@ -49,6 +57,12 @@ The app can `GET` data via a cross-origin request to your `omero-web` server at 
 When the compiled html is served by the `omero-web` OMERO.figure app, we use simple `string.replace()`
 to inject OMERO server information into the `index.html` page. This includes the logged-in user details,
 the omero-web server address and various config values.
+
+Figure_To_Pdf export script
+---------------------------
+
+We use an OMERO.server python script to generate `PDF` and `TIFF` figures from the figure JSON data.
+This script is located under `omero_figure/scripts/omero/figure_scripts`. If modified, and to test changes, you can replace the script [as described here](https://github.com/ome/omero-figure?tab=readme-ov-file#upgrading-omerofigure).
 
 Testing
 -------
