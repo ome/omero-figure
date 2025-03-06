@@ -21,5 +21,5 @@ export default {
   },
 
   assetsInclude: ["**/*.template.html"],
-  base: "/figure/"
+  base: "/omero-figure/"
 }
