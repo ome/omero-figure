@@ -148,8 +148,8 @@ def index(request, file_id=None, conn=None, **kwargs):
 
     # update links to static files
     static_dir = static.static('omero_figure/')
-    html = html.replace('href="/assets', 'href="%sassets' % static_dir)
-    html = html.replace('src="/assets', 'src="%sassets' % static_dir)
+    html = html.replace('href="/omero-figure/assets', 'href="%sassets' % static_dir)
+    html = html.replace('src="/omero-figure/assets', 'src="%sassets' % static_dir)
     html = html.replace('const STATIC_DIR = "";',
                         'const STATIC_DIR = "%s";' % static_dir[0:-1])
 
