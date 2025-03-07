@@ -58,6 +58,32 @@ export const OpenLocalFileModalView = Backbone.View.extend({
         
         if (localFile) {
             // upload JSON file and open figure
+            const [file] = document.querySelector("#openLocalFileModal input[type=file]").files;
+            const reader = new FileReader();
+
+            reader.addEventListener("load", () => {
+                console.log("reader.result", reader.result);
+                let parsed;
+                try {
+                    parsed = JSON.parse(reader.result);
+                } catch (e) {
+                    alert("Invalid JSON file");
+                }
+                const app = this.app;
+                const figureModel = this.model;
+                if (parsed) {
+                    var cb = function () {
+                        app.navigate("/omero-figure/", {trigger: false});
+                        figureModel.load_from_JSON(parsed);
+                        figureModel.set('unsaved', false);
+                    };
+                    figureModel.checkSaveAndClear(cb);
+                }
+            });
+
+            if (file) {
+                reader.readAsText(file);
+            }
         } else if (figureFileUrl) {
             console.log("/omero-figure/?file=" + figureFileUrl);
             // go to ?file=figureFileUrl
