@@ -195,14 +195,12 @@ export async function renderZarrToSrc(source, attrs, theZ, theT, channels, rect)
 
   for (let p of paths) {
     let arrayAttrs = zarrays[p];
-    console.log("checking path...", p, arrayAttrs.shape);
     let shape = arrayAttrs.shape;
     // E.g. if dataset shape is 1/2 of fullShape then crop size will be half
     let crop_w = region_width * shape.at(-1) / fullShape.at(-1);
     let crop_h = region_height * shape.at(-2) / fullShape.at(-2);
 
     if (crop_w * crop_h < MAX_SIZE * MAX_SIZE) {
-      console.log("crop_w * crop_h < MAX_SIZE", crop_w * crop_h, MAX_SIZE * MAX_SIZE);
       array_rect = {
         x: Math.floor(region_x * shape.at(-1) / fullShape.at(-1)),
         y: Math.floor(region_y * shape.at(-2) / fullShape.at(-2)),
@@ -213,7 +211,6 @@ export async function renderZarrToSrc(source, attrs, theZ, theT, channels, rect)
       break;
     }
   }
-  console.log("Orign array_rect", array_rect);
 
   // We can create canvas of the size of the array_rect
   const canvas = document.createElement("canvas");
@@ -227,7 +224,6 @@ export async function renderZarrToSrc(source, attrs, theZ, theT, channels, rect)
     return;
   }
 
-  console.log("Init zarr.FetchStore:", source + "/" + path);
   let storeArrayPath = source + "/" + path;
   let arr;
   if (ZARRITA_ARRAY_CACHE[storeArrayPath]) {
@@ -256,9 +252,6 @@ export async function renderZarrToSrc(source, attrs, theZ, theT, channels, rect)
       inverteds.push(ch.reverseIntensity);
     }
   });
-  // console.log("activeChIndicies", activeChIndicies);
-  // console.log("colors", colors);
-  // console.log("minMaxValues", minMaxValues);
 
   // Need same logic as https://github.com/ome/omero-figure/blob/9cc36cde05bde4def7b62b07c2e9ae5f66712e96/omero_figure/views.py#L310
   // if we have a crop region outside the bounds of the image
@@ -284,11 +277,6 @@ export async function renderZarrToSrc(source, attrs, theZ, theT, channels, rect)
   if (array_rect.y + array_rect.height > size_y) {
     array_rect.height = size_y - array_rect.y;
   }
-
-  console.log("array_shape", array_shape);
-  console.log("array_rect", array_rect);
-  console.log("paste_x", paste_x);
-  console.log("paste_y", paste_y);
 
   let promises = activeChIndicies.map((chIndex) => {
     let sliceKey = [];
