@@ -393,6 +393,7 @@
             let fileName = figureJSON.figureName || "figure";
             let jsonText = JSON.stringify(this.figure_toJSON());
             downloadAsFile(jsonText, "application/json", fileName + ".json");
+            this.set({unsaved: false});
         },
 
         save_to_OMERO: function(options) {
