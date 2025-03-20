@@ -42,6 +42,8 @@ var LutPickerView = Backbone.View.extend({
     
         // These will be overwritten with LUTs from OMERO if served by OMERO
         this.luts = omezarr.getLuts();
+
+        this.loadLuts();
     },
 
 
@@ -72,10 +74,46 @@ var LutPickerView = Backbone.View.extend({
         $("button[type='submit']", this.el).removeAttr('disabled');
     },
 
-    loadLuts: function() {
+    loadLuts: async function(force_reload = false) {
+        if (!APP_SERVED_BY_OMERO) {
+            $(":root").css({
+                "--pngHeight": "100%"
+            });
+            return;
+        }
         var url = WEBGATEWAYINDEX + 'luts/';
         let cors_headers = { mode: 'cors', credentials: 'include' };
-        return fetch(url, cors_headers).then(rsp => rsp.json());
+        if (force_reload || this.lut_names === undefined || this.lutsPngUrl === undefined || this.luts === undefined) {
+            const rsp = await fetch(url, cors_headers);
+            const data = await rsp.json();
+
+            this.luts = data.luts;
+            this.lut_names = data.png_luts;
+            this.is_dynamic_lut = Boolean(data.png_luts_new);
+            if (this.is_dynamic_lut){
+                this.luts = this.luts.map(function(lut) {
+                    lut.png_index = lut.png_index_new;
+                    return lut;
+                });
+                this.lut_names = data.png_luts_new;
+                this.lutsPngUrl = `${WEBGATEWAYINDEX}luts_png/`;
+            } else {
+                this.lutsPngUrl = STATIC_DIR + lutsPng;
+            }
+            this.lut_names = this.lut_names.map(lut_name => lut_name.split('/').pop());
+
+            var png_len = this.lut_names.length;
+            if (!this.is_dynamic_lut) {
+                // png of figure does not include the gradient
+                png_len = png_len - 1;
+            }
+            // Set the css variables at the document root, as it's used in different places
+            $(":root").css({
+                "--pngHeight": png_len * 1000 + "px",
+                "--lutPng": "url("+this.lutsPngUrl+")"
+            });
+        }
+        return this.lutsPngUrl
     },
 
     getLutPng(lutName) {
@@ -88,7 +126,7 @@ var LutPickerView = Backbone.View.extend({
     getLutBackgroundPosition: function(lutName) {
         var lutIndex = this.lut_names.indexOf(lutName);
         if (lutIndex > -1) {
-            return '0px -' + ((lutIndex * 50) +2) + 'px';
+            return '0px -' + ((lutIndex * 1000) +2) + 'px';
         } else {
             return '0px 100px';  // hides background
         }
@@ -110,32 +148,7 @@ var LutPickerView = Backbone.View.extend({
         if (options.success) {
             this.success = options.success;
         }
-
-        if (APP_SERVED_BY_OMERO) {
-
-            this.loadLuts().then(data => {
-                this.luts = data.luts;
-                this.lut_names = data.png_luts;
-                this.is_dynamic_lut = Boolean(data.png_luts_new);
-                if (this.is_dynamic_lut){
-                    this.luts = this.luts.map(function(lut) {
-                        lut.png_index = lut.png_index_new;
-                        return lut;
-                    });
-                    this.lut_names = data.png_luts_new;
-                    this.lutsPngUrl = `${WEBGATEWAYINDEX}luts_png/`;
-                } else {
-                    this.lutsPngUrl = STATIC_DIR + lutsPng;
-                }
-                this.lut_names = this.lut_names.map(lut_name => lut_name.split('/').pop());
-
-                this.render();
-            });
-        } else {
-            // each LUT is {'name': '16_colors.lut', 'png': 'data:image/png;base64,iVBO...'}
-            this.luts = omezarr.getLuts();
-            this.render();
-        }
+        this.render();
     },
 
     render:function() {
@@ -153,17 +166,6 @@ var LutPickerView = Backbone.View.extend({
                         'displayName': this.formatLutName(lut.name)};
             }.bind(this));
 
-
-            var png_len = this.lut_names.length;
-            if (!this.is_dynamic_lut) {
-                // png of figure does not include the gradient
-                png_len = png_len - 1;
-            }
-            // Set the css variables at the document root, as it's used in different places
-            $(":root").css({
-                "--pngHeight": png_len * 50 + "px",
-                "--lutPng": "url("+this.lutsPngUrl+")"
-            });
             html = this.template({'luts': luts});
         }
         $(".modal-body", this.el).html(html);
