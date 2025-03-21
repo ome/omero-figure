@@ -117,6 +117,7 @@ var LutPickerView = Backbone.View.extend({
     },
 
     getLutPng(lutName) {
+        // This will return undefined if the LUTs are loaded from OMERO
         var lut = this.luts.find(lut => lut.name == lutName);
         if (lut && lut.png) {
             return lut.png;

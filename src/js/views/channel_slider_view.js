@@ -400,16 +400,17 @@ var ChannelSliderView = Backbone.View.extend({
                 var reverse = reverses.reduce(allEqualFn, reverses[0]) ? true : false;
                 var active = actives.reduce(allEqualFn, actives[0]);
                 var lutBgPos = FigureLutPicker.getLutBackgroundPosition(color);
+                var lutPng = FigureLutPicker.getLutPng(color);
+                console.log("lutPng", lutPng);
                 var lutBgCss = '--bgPos: 0 0;';
-                if (color.endsWith('.lut')) {
-                    var lutPng = FigureLutPicker.getLutPng(color);
-                    if (lutPng) {
-                        lutBgCss = `--bgPos: 0 0; --lutPng: url('${lutPng}'); --pngHeight: 100%;`;
-                    } else {
-                        lutBgCss = `--bgPos: ${lutBgPos};`
-                    }
+                if (color.endsWith('.lut') && lutPng) {
+                    // lutPng means we have LUT from ome-zarr.js. Apply without offset
+                    lutBgCss = `--bgPos: 0 0; --lutPng: url('${lutPng}'); --pngHeight: 100%;`;
                     color = "ccc";
-                } else if (color.toUpperCase() === "FFFFFF") {
+                } else {
+                    lutBgCss = `--bgPos: ${lutBgPos};`
+                }
+                if (color.toUpperCase() === "FFFFFF") {
                     color = "ccc";  // white slider would be invisible
                 }
                 if (color == "FFFFFF") color = "ccc";  // white slider would be invisible
