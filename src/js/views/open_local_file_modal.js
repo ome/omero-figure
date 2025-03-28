@@ -18,7 +18,7 @@ export const OpenLocalFileModalView = Backbone.View.extend({
         this.app = options.app;
     
         // TEMP? show a default file to open
-        let demoUrl = "https://gist.githubusercontent.com/will-moore/fe0e260544b46af6e1e523b288fc85bc/raw/3772939e68769e1c9d30db8d7fee528f14888ef3/OMERO.figure_NGFF_demo.json";
+        let demoUrl = "https://gist.githubusercontent.com/will-moore/fe0e260544b46af6e1e523b288fc85bc/raw/30547e61d4d8753ef0016f0a70435f1aafb43c2f/OMERO.figure_NGFF_demo.json";
         $(".figureFileUrl", this.el).val(demoUrl);
         this.enableSubmit();
 
