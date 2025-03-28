@@ -96,6 +96,14 @@
                 $("button.export_pdf").removeAttr("disabled");
             }
 
+            // if we're NOT served by OMERO, hide elements such as Delete and Chgrp menu-items
+            if (!APP_SERVED_BY_OMERO) {
+                $(".omero_only_element").hide();
+            } else {
+                // otherwise hide elements with stand-alone specific content
+                $(".standalone_only_element").hide();
+            }
+
             // respond to zoom changes
             this.listenTo(this.model, 'change:curr_zoom', this.renderZoom);
             this.listenTo(this.model, 'change:selection', this.renderSelectionChange);
