@@ -340,6 +340,8 @@
                 sb_json.color = sb.color;
                 sb_json.length = sb.length;
                 sb_json.height = sb.height;
+                sb_json.margin = sb.margin;
+                sb_json.margin_unit = sb.margin_unit;
                 sb_json.font_size = sb.font_size;
                 sb_json.show_label = sb.show_label;
                 sb_json.symbol = sb.units;

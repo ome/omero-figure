@@ -36,7 +36,7 @@ This is an example of a minimal OMERO.figure JSON file::
 
     {
     // see older versions below
-    "version": 7,
+    "version": 9,
     "panels": [
         {
             // position of the panel on the page
@@ -92,6 +92,8 @@ Optional settings for each panel::
         "show": true,
         "length": 10,
         "height": 3,
+        "margin": 5,
+        "margin_unit": "%"
         "units": "MICROMETER",
         "position": "bottomright",  // topright, topleft, bottomleft
         "color": "FFFFFF",
@@ -178,7 +180,7 @@ the following defaults will be used::
     'page_color': 'FFFFFF',
     'page_count': 1,
     'orientation': 'vertical',
-    // If using page_size mm, 
+    // If using page_size mm,
     'width_mm': 210,
     'height_mm': 297,
     'legend': '',       // Figure legend in markdown format.
@@ -235,6 +237,10 @@ that lines will not appear thicker on a panel when it is zoomed in. Supported Sh
 Version history
 ----------------
 
+New in version 9:
+
+- `scalebar`: added 'margin': <integer> and 'margin_unit': <string>
+
 New in version 7:
 
 - `scalebar`: added 'height': <integer>
@@ -246,7 +252,7 @@ New in version 6:
 
 New in version 5:
 
-- `scalebar`: added 'pixel_size_x_unit': "MICROMETER". 
+- `scalebar`: added 'pixel_size_x_unit': "MICROMETER".
 - 'panel': `deltaT` values loaded with rounding to integer seconds
 
 New in version 4:
