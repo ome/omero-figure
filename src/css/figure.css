@@ -927,6 +927,10 @@
         padding-left: 3px;
         padding-right: 3px;
     }
+    .text-group{
+        padding-left: 0px;
+        padding-right: 0px;
+    }
     .navbar-nav > li > a {
         padding-bottom: 12px;
         padding-top: 12px;
@@ -1284,6 +1288,10 @@
         background-image: url("../images/point-icon-24.png");
         background-position: center;
     }
+    .text-icon{
+        background-image: url("../images/text-icon-24.png");
+        background-position: center;
+    }
     .polygon-icon{
         background-image: url("../images/polygon-icon-16.png");
     }
@@ -1367,7 +1375,7 @@
         color: white;
         border-color: #007bff;
     }
-    
+
     .flipping .btn.active i {
         color: white;
     }

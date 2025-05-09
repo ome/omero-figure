@@ -126,27 +126,81 @@
             let selected = this.model.getSelected();
 
             selected.forEach(panel => {
-                let randomId = getRandomId();
+                let textRandomId = getRandomId();
+                let rectRandomId = getRandomId();
                 // Add Rectangle (square) in centre of viewport
                 let vp = panel.getViewportAsRect();
+                let lastInsetTextIndex = (panel.getLastInsetTextIndex() || 64) + 1;
                 let minSide = Math.min(vp.width, vp.height);
                 // Square is 1/3 size of the viewport
                 let rectSize = minSide / 3;
                 var color = $('.inset-color span:first', this.$el).attr('data-color');
                 var position = $('.label-position i:first', this.$el).attr('data-position');
                 var strokeWidth = parseFloat($('button.inset-width span:first', this.$el).attr('data-line-width'));
+
+                var maxSize = 550,
+                frame_w = maxSize,
+                frame_h = maxSize,
+                wh = panel.get('width') / panel.get('height');
+                if (wh <= 1) {
+                    frame_h = maxSize;
+                    frame_w = maxSize * wh;
+                } else {
+                    frame_w = maxSize;
+                    frame_h = maxSize / wh;
+                }
+
+                // Get css for the SVG (full plane)
+                var svg_css = panel.get_vp_full_plane_css(panel.get('zoom'), frame_w, frame_h);
+                var scale = svg_css.width / panel.get('orig_width');
+
+                var x = vp.x + ((vp.width - rectSize) / 2);
+                var y = vp.y + ((vp.height - rectSize) / 2);
+                var txtX = x + (strokeWidth/2 + 6) / scale,
+                    txtY = y + (strokeWidth/2 + 10)  / scale;
+
                 let rect = {
                     type: "Rectangle",
-                    strokeWidth,
+                    strokeWidth: strokeWidth,
                     strokeColor: "#" + color,
-                    x: vp.x + ((vp.width - rectSize) / 2),
-                    y: vp.y + ((vp.height - rectSize) / 2),
+                    x: x,
+                    y: y,
                     width: rectSize,
                     height: rectSize,
-                    id: randomId,
+                    id: rectRandomId,
+                    textId: textRandomId,
                     rotation: vp.rotation || 0,
                 }
-                panel.add_shapes([rect]);
+                let text = {
+                    type: "Text",
+                    strokeWidth: strokeWidth,
+                    strokeColor: "#" + color,
+                    x: txtX,
+                    y: txtY,
+                    id: textRandomId,
+                    linkedShapeId: rectRandomId,
+                    rotation: vp.rotation || 0,
+                    textRotation: -vp.rotation || 0,
+                    fontSize: 12,
+                    textPosition: "topleft",
+                    text: String.fromCharCode(lastInsetTextIndex),
+                    textAnchor: "start",
+                    parentShapeCoords: {x: x, y: y, width: rectSize, height: rectSize},
+                }
+                panel.add_shapes([rect, text]);
+                panel.setLastInsetTextIndex(lastInsetTextIndex)
+
+                var new_label = {
+                    text: String.fromCharCode(lastInsetTextIndex),
+                    size: 18,
+                    position: "topleft",
+                    color: color,
+                    inset: true,
+                };
+                var prev_labels = panel.get('labels') || []
+                var labels = [...prev_labels]
+                labels = labels.filter(lbl => !lbl.inset)
+                labels.push(new_label)
 
                 // Create duplicate panels
                 let panelJson = panel.toJSON();
@@ -179,7 +233,9 @@
                 panelJson.zoom = Math.min(xPercent, yPercent) * 100;
                 panelJson.selected = false;
                 panelJson.shapes = [];
-                panelJson.insetRoiId = randomId;
+                panelJson.insetRoiId = rectRandomId;
+                panelJson.lastInsetTextIndex = 64;
+                panelJson.labels = labels;
 
                 this.model.panels.create(panelJson);
             });
@@ -1201,6 +1257,17 @@
                     'width': m.get('orig_width'),
                     'height': m.get('orig_height'),
                 });
+
+                var shapes = m.get('shapes');
+                if(shapes){
+                    shapes.forEach(function(sh){
+                        if(sh.type == "Text"){
+                            sh.textRotation = 0;
+                        }
+                    })
+                    m.save('shapes', shapes);
+                    m.trigger('change:vertical_flip')
+                }
             });
         },
 
@@ -1301,7 +1368,17 @@
             let val = parseInt(event.target.value);
             this.rotation = val;
             this.models.forEach(function(m){
-                m.save('rotation', val);
+                var shapes = m.get('shapes');
+                if(shapes){
+                    shapes.forEach(function(sh){
+                        if(sh.type == "Text"){
+                            sh.textRotation = val;
+                        }
+                    })
+                    m.save({'rotation': val, 'shapes': shapes});
+                }else{
+                    m.save('rotation', val);
+                }
             });
         },
 
@@ -1312,7 +1389,17 @@
             const isVerticalFlipped = $button.hasClass('active');
 
             this.models.forEach(function(m) {
-                m.save('vertical_flip', isVerticalFlipped);
+                var shapes = m.get('shapes');
+                if(shapes){
+                    shapes.forEach(function(sh){
+                        if(sh.type == "Text"){
+                            sh.vFlip = isVerticalFlipped ? -1 : 1;
+                        }
+                    })
+                    m.save({'vertical_flip': isVerticalFlipped, 'shapes': shapes});
+                }else{
+                    m.save('vertical_flip', isVerticalFlipped);
+                }
             });
         },
 
@@ -1320,10 +1407,20 @@
             const $button = $(event.currentTarget);
             $button.toggleClass('active');
 
-            const ishorizontalFlipped = $button.hasClass('active');
+            const isHorizontalFlipped = $button.hasClass('active');
 
             this.models.forEach(function(m) {
-                m.save('horizontal_flip', ishorizontalFlipped);
+                var shapes = m.get('shapes');
+                if(shapes){
+                    shapes.forEach(function(sh){
+                        if(sh.type == "Text"){
+                            sh.hFlip = isHorizontalFlipped ? -1 : 1;
+                        }
+                    })
+                    m.save({'horizontal_flip': isHorizontalFlipped, 'shapes': shapes});
+                }else{
+                    m.save('horizontal_flip', isHorizontalFlipped);
+                }
             });
         },
 
@@ -1353,7 +1450,6 @@
             event.preventDefault()
             this.models.forEach(function(m){
                 var rotation = m.setPanelRotation()
-                console.log(rotation)
                 $(".vp_img").css({'transform':'rotate(' + rotation + 'deg)'});
                 $(".rotation_value").text(rotation);
                 $(".rotation-slider").val(rotation);

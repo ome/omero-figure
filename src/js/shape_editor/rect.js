@@ -24,6 +24,8 @@
 */
 
 import Raphael from "raphael";
+import {Text} from "./text";
+
 
 var Rect = function Rect(options) {
   var self = this;
@@ -64,6 +66,10 @@ var Rect = function Rect(options) {
     this._zoomFraction = options.zoom / 100;
   }
   this._rotation = options.rotation || 0;
+
+  this._textId = options.textId || -1;
+  this._textShape = this.manager.getShape(this._textId)
+
   this.handle_wh = 6;
 
   this.element = this.paper.rect();
@@ -119,7 +125,8 @@ Rect.prototype.toJson = function toJson() {
     strokeColor: this._strokeColor,
     rotation: this._rotation,
     fillColor: this._fillColor,
-    fillOpacity: this._fillOpacity
+    fillOpacity: this._fillOpacity,
+    textId: this._textId,
   };
   if (this._id) {
     rv.id = this._id;
@@ -208,11 +215,19 @@ Rect.prototype._handleMousedown = function _handleMousedown() {
 
 Rect.prototype.setSelected = function setSelected(selected) {
   this._selected = !!selected;
+  if(this._textShape || this.loadTextShape()){
+    this._textShape.setSelected(this._selected)
+  }
   this.drawShape();
 };
 
 Rect.prototype.isSelected = function isSelected() {
   return this._selected;
+};
+
+Rect.prototype.loadTextShape = function loadTextShape(){
+  this._textShape = this.manager.getShape(this._textId);
+  return this._textShape;
 };
 
 Rect.prototype.setZoom = function setZoom(zoom) {
@@ -259,6 +274,45 @@ Rect.prototype.getFillOpacity = function getFillOpacity() {
   return this._fillOpacity;
 };
 
+Rect.prototype.setText = function setText(text) {
+  if(this._textShape){
+    this._textShape.setText(text)
+  }
+};
+
+Rect.prototype.getText = function getText() {
+  if(this._textShape){
+    return this._textShape.getText()
+  }
+  return "";
+};
+
+Rect.prototype.setTextPosition = function setTextPosition(textPosition) {
+  if(this._textShape){
+    this._textShape.setTextPosition(textPosition)
+  }
+};
+
+Rect.prototype.getTextPosition = function getTextPosition() {
+  if(this._textShape){
+    return this._textShape.getTextPosition()
+  }
+  return "";
+};
+
+Rect.prototype.setFontSize = function setFontSize(fontSize) {
+  if(this._textShape){
+    this._textShape.setFontSize(fontSize)
+  }
+};
+
+Rect.prototype.getFontSize = function getFontSize() {
+  if(this._textShape){
+    return this._textShape.getFontSize()
+  }
+  return;
+};
+
 Rect.prototype.setStrokeWidth = function setStrokeWidth(strokeWidth) {
   this._strokeWidth = strokeWidth;
   this.drawShape();
@@ -268,10 +322,94 @@ Rect.prototype.getStrokeWidth = function getStrokeWidth() {
   return this._strokeWidth;
 };
 
+Rect.prototype.getTextId = function getTextId() {
+  return this._textId;
+};
+
+Rect.prototype.setTextId = function setTextId(textId) {
+  this._textId = textId;
+};
+
+Rect.prototype.setInModalView = function setInModalView(inModalView) {
+  if(this._textShape){
+    this._textShape.setInModalView(inModalView)
+  }
+
+};
+
+Rect.prototype.setTextRotation = function setTextRotation(textRotation) {
+  if(this._textShape){
+    this._textShape.setTextRotation(textRotation)
+  }
+
+};
+
+Rect.prototype.setVerticalFlip = function setVerticalFlip(vFlip) {
+  if(this._textShape){
+    this._textShape.setVerticalFlip(vFlip)
+  }
+
+};
+
+Rect.prototype.setHorizontalFlip = function setHorizontalFlip(hFlip) {
+  if(this._textShape){
+    this._textShape.setHorizontalFlip(hFlip)
+  }
+
+};
+
 Rect.prototype.destroy = function destroy() {
+  if(this._textShape){
+    this.manager.deleteShapesByIds([this._textShape._id])
+    this.destroyTextShape()
+  }
   this.element.remove();
   this.handles.remove();
 };
+
+Rect.prototype.destroyTextShape = function destroyTextShape() {
+  this._textId = -1
+  this._textShape = undefined;
+}
+
+Rect.prototype.createShapeText = function createShapeText(){
+  if(!this._textShape){
+    var textPosition = this.manager.getTextPosition(),
+          fontSize = this.manager.getTextFontSize(),
+          inModalView = this.manager.getInModalView(),
+          vFlip = this.manager.getVerticalFlip(),
+          hFlip = this.manager.getHorizontalFlip(),
+          textRotation = this.manager.getTextRotation();
+
+      if(textPosition == "freehand"){
+        textPosition = "top"
+        this.manager.setTextPosition(textPosition)
+      }
+
+      var textShape = new Text({
+          manager: this.manager,
+          paper: this.paper,
+          inModalView: inModalView,
+          vFlip: vFlip,
+          hFlip: hFlip,
+          textRotation: textRotation,
+          linkedShapeId: this._id,
+          zoom: this._zoomFraction * 100,
+          text: "text",
+          x: this._x,
+          y: this._y,
+          strokeColor: this._strokeColor,
+          fontSize: fontSize,
+          textPosition: textPosition,
+          strokeWidth: this._strokeWidth,
+          parentShapeCoords: {x:this._x, y:this._y, width:this._width, height:this._height}
+      })
+
+      this.manager.addShape(textShape);
+      this._textId = textShape._id;
+      this._textShape = textShape;
+  }
+}
 
 Rect.prototype.drawShape = function drawShape() {
   var strokeColor = this._strokeColor,
@@ -314,6 +452,10 @@ Rect.prototype.drawShape = function drawShape() {
     hy = handleIds[h_id][1];
     hnd.attr({ x: hx - this.handle_wh / 2, y: hy - this.handle_wh / 2 });
     hnd.transform("r" + this._rotation + "," + (x + (w/2)) + "," + (y + (h/2)));
+  }
+
+  if(this._textShape || this.loadTextShape()){
+    this._textShape.setParentShapeCoords({x: this._x, y: this._y, width: this._width, height: this._height})
   }
 };
 
@@ -495,12 +637,14 @@ var CreateRect = function CreateRect(options) {
 };
 
 CreateRect.prototype.startDrag = function startDrag(startX, startY) {
+  // reset the text in the manager
+  this.manager.setText("")
+
   var strokeColor = this.manager.getStrokeColor(),
     strokeWidth = this.manager.getStrokeWidth(),
     fillColor = this.manager.getFillColor(),
     fillOpacity = this.manager.getFillOpacity(),
     zoom = this.manager.getZoom();
-  // Also need to get strokeWidth and zoom/size etc.
 
   this.startX = startX;
   this.startY = startY;
@@ -517,7 +661,8 @@ CreateRect.prototype.startDrag = function startDrag(startX, startY) {
     zoom: zoom,
     strokeColor: strokeColor,
     fillColor: fillColor,
-    fillOpacity: fillOpacity
+    fillOpacity: fillOpacity,
+    textId: -1,
   });
 };
 
@@ -544,12 +689,14 @@ CreateRect.prototype.drag = function drag(dragX, dragY, shiftKey) {
     dragY = (dy - this.startY) * -1;
   }
 
-  this.rect.setCoords({
+  var newCoords = {
     x: Math.min(dragX, this.startX),
     y: Math.min(dragY, this.startY),
     width: Math.abs(dx),
     height: Math.abs(dy),
-  });
+  }
+
+  this.rect.setCoords(newCoords);
   this.rect._area = Math.abs(dx) * Math.abs(dy);
 };
 

@@ -10,10 +10,10 @@
 // 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following
 // disclaimer in the documentation // and/or other materials provided with the distribution.
 //
-// 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived 
+// 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived
 // from this software without specific prior written permission.
 
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, 
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING,
 // BUT NOT LIMITED TO,
 // THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
 // THE COPYRIGHT HOLDER OR CONTRIBUTORS
@@ -24,6 +24,8 @@
 */
 
 import Raphael from "raphael";
+import {Text} from "./text";
+
 
 var Line = function Line(options) {
   var self = this;
@@ -52,6 +54,9 @@ var Line = function Line(options) {
   if (options.zoom) {
     this._zoomFraction = options.zoom / 100;
   }
+
+  this._textId = options.textId || -1;
+  this._textShape = this.manager.getShape(this._textId)
 
   this.element = this.paper.path();
   this.element.attr({ cursor: "pointer" });
@@ -110,6 +115,7 @@ Line.prototype.toJson = function toJson() {
       ) * this._strokeWidth,
     strokeWidth: this._strokeWidth,
     strokeColor: this._strokeColor,
+    textId: this._textId,
   };
   if (this._id) {
     rv.id = this._id;
@@ -202,13 +208,98 @@ Line.prototype.setFillOpacity = function setFillOpacity(fillOpacity) {
 };
 
 Line.prototype.getFillOpacity = function getFillOpacity() {
-  return 1;
+  return 0;
+};
+
+Line.prototype.loadTextShape = function loadTextShape(){
+  this._textShape = this.manager.getShape(this._textId);
+  return this._textShape;
+};
+
+Line.prototype.setText = function setText(text) {
+  if(this._textShape){
+    this._textShape.setText(text)
+  }
+};
+
+Line.prototype.getText = function getText() {
+  if(this._textShape){
+    return this._textShape.getText()
+  }
+  return "";
+};
+
+Line.prototype.setTextPosition = function setTextPosition(textPosition) {
+  if(this._textShape){
+    this._textShape.setTextPosition(textPosition)
+  }
+};
+
+Line.prototype.getTextPosition = function getTextPosition() {
+  if(this._textShape){
+    return this._textShape.getTextPosition()
+  }
+  return "";
+};
+
+Line.prototype.setFontSize = function setFontSize(fontSize) {
+  if(this._textShape){
+    this._textShape.setFontSize(fontSize)
+  }
+};
+
+Line.prototype.getFontSize = function getFontSize() {
+  if(this._textShape){
+    return this._textShape.getFontSize()
+  }
+  return;
+};
+
+Line.prototype.getTextId = function getTextId() {
+  return this._textId;
+};
+
+Line.prototype.setInModalView = function setInModalView(inModalView) {
+  if(this._textShape){
+    this._textShape.setInModalView(inModalView)
+  }
+};
+
+Line.prototype.setTextRotation = function setTextRotation(textRotation) {
+  if(this._textShape){
+    this._textShape.setTextRotation(textRotation)
+  }
+};
+
+Line.prototype.setVerticalFlip = function setVerticalFlip(vFlip) {
+  if(this._textShape){
+    this._textShape.setVerticalFlip(vFlip)
+  }
+};
+
+Line.prototype.setHorizontalFlip = function setHorizontalFlip(hFlip) {
+  if(this._textShape){
+    this._textShape.setHorizontalFlip(hFlip)
+  }
+};
+
+Line.prototype.setTextId = function setTextId(textId) {
+  this._textId = textId;
 };
 
 Line.prototype.destroy = function destroy() {
+  if(this._textShape){
+    this.manager.deleteShapesByIds([this._textShape._id])
+    this.destroyTextShape()
+  }
   this.element.remove();
   this.handles.remove();
 };
+
+Line.prototype.destroyTextShape = function destroyTextShape() {
+  this._textId = -1
+  this._textShape = undefined;
+}
 
 Line.prototype.intersectRegion = function intersectRegion(region) {
   var path = this.manager.regionToPath(region, this._zoomFraction * 100);
@@ -246,6 +337,46 @@ Line.prototype._getLineWidth = function _getLineWidth() {
   return this._strokeWidth;
 };
 
+Line.prototype.createShapeText = function createShapeText(){
+  if(!this._textShape){
+    var textPosition = this.manager.getTextPosition(),
+        fontSize = this.manager.getTextFontSize(),
+        inModalView = this.manager.getInModalView(),
+        vFlip = this.manager.getVerticalFlip(),
+        hFlip = this.manager.getHorizontalFlip(),
+        textRotation = this.manager.getTextRotation();
+
+    if(textPosition == "freehand"){
+      textPosition = "top"
+      this.manager.setTextPosition(textPosition)
+    }
+
+    var textShape = new Text({
+        manager: this.manager,
+        paper: this.paper,
+        inModalView: inModalView,
+        textRotation: textRotation,
+        vFlip: vFlip,
+        hFlip: hFlip,
+        linkedShapeId: this._id,
+        zoom: this._zoomFraction * 100,
+        text: "text",
+        x: this._x,
+        y: this._y,
+        strokeColor: this._strokeColor,
+        fontSize: fontSize,
+        textPosition: textPosition,
+        strokeWidth: this._strokeWidth,
+        parentShapeCoords: {x:Math.min(this._x1, this._x2), y: Math.min(this._y1, this._y2),
+          width: Math.abs(this._x1 - this._x2), height: Math.abs(this._y1 - this._y2)}
+      })
+
+      this.manager.addShape(textShape);
+      this._textId = textShape._id;
+      this._textShape = textShape;
+  }
+}
+
 Line.prototype.drawShape = function drawShape() {
   var p = this.getPath(),
     strokeColor = this._strokeColor,
@@ -274,10 +405,21 @@ Line.prototype.drawShape = function drawShape() {
     hy = handleIds[h_id].y;
     hnd.attr({ x: hx - this.handle_wh / 2, y: hy - this.handle_wh / 2 });
   }
+
+  if(this._textShape || this.loadTextShape()){
+    var x = Math.min(this._x1, this._x2)
+    var y = Math.min(this._y1, this._y2)
+    var width = Math.abs(this._x1 - this._x2)
+    var height = Math.abs(this._y1 - this._y2)
+    this._textShape.setParentShapeCoords({x: x, y: y, width: width, height: height})
+  }
 };
 
 Line.prototype.setSelected = function setSelected(selected) {
   this._selected = !!selected;
+  if(this._textShape || this.loadTextShape()){
+    this._textShape.setSelected(this._selected)
+  }
   this.drawShape();
 };
 
@@ -512,6 +654,9 @@ var CreateLine = function CreateLine(options) {
 };
 
 CreateLine.prototype.startDrag = function startDrag(startX, startY) {
+  // reset the text in the manager
+  this.manager.setText("")
+
   var strokeColor = this.manager.getStrokeColor(),
     strokeWidth = this.manager.getStrokeWidth(),
     zoom = this.manager.getZoom();
@@ -530,6 +675,7 @@ CreateLine.prototype.startDrag = function startDrag(startX, startY) {
     strokeWidth: strokeWidth,
     zoom: zoom,
     strokeColor: strokeColor,
+    textId: -1,
   });
 };
 
@@ -575,6 +721,9 @@ var CreateArrow = function CreateArrow(options) {
   var that = new CreateLine(options);
 
   that.startDrag = function startDrag(startX, startY) {
+    // reset the text in the manager
+    this.manager.setText("")
+
     var strokeColor = this.manager.getStrokeColor(),
       strokeWidth = this.manager.getStrokeWidth(),
       zoom = this.manager.getZoom();
@@ -593,6 +742,7 @@ var CreateArrow = function CreateArrow(options) {
       strokeWidth: strokeWidth,
       zoom: zoom,
       strokeColor: strokeColor,
+      textId: -1,
     });
   };
 

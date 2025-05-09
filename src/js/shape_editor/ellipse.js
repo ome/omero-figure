@@ -24,6 +24,8 @@
 */
 
 import Raphael from "raphael";
+import {Text} from "./text";
+
 
 var Ellipse = function Ellipse(options) {
   var self = this;
@@ -87,6 +89,10 @@ var Ellipse = function Ellipse(options) {
   } else {
     this._area = this._radiusX * this._radiusY * Math.PI;
   }
+
+  this._textId = options.textId || -1;
+  this._textShape = this.manager.getShape(this._textId)
+
   this.handle_wh = 6;
 
   this.element = this.paper.ellipse();
@@ -149,7 +155,8 @@ Ellipse.prototype.toJson = function toJson() {
     strokeWidth: this._strokeWidth,
     strokeColor: this._strokeColor,
     fillColor: this._fillColor,
-    fillOpacity: this._fillOpacity
+    fillOpacity: this._fillOpacity,
+    textId: this._textId,
   };
   if (this._id) {
     rv.id = this._id;
@@ -234,10 +241,95 @@ Ellipse.prototype.getFillOpacity = function getFillOpacity() {
   return this._fillOpacity;
 };
 
+Ellipse.prototype.loadTextShape = function loadTextShape(){
+  this._textShape = this.manager.getShape(this._textId);
+  return this._textShape;
+};
+
+Ellipse.prototype.setText = function setText(text) {
+  if(this._textShape){
+    this._textShape.setText(text)
+  }
+};
+
+Ellipse.prototype.getText = function getText() {
+  if(this._textShape){
+    return this._textShape.getText()
+  }
+  return "";
+};
+
+Ellipse.prototype.setTextPosition = function setTextPosition(textPosition) {
+  if(this._textShape){
+    this._textShape.setTextPosition(textPosition)
+  }
+};
+
+Ellipse.prototype.getTextPosition = function getTextPosition() {
+  if(this._textShape){
+    return this._textShape.getTextPosition()
+  }
+  return "";
+};
+
+Ellipse.prototype.setFontSize = function setFontSize(fontSize) {
+  if(this._textShape){
+    this._textShape.setFontSize(fontSize)
+  }
+};
+
+Ellipse.prototype.getFontSize = function getFontSize() {
+  if(this._textShape){
+    return this._textShape.getFontSize()
+  }
+  return;
+};
+
+Ellipse.prototype.getTextId = function getTextId() {
+  return this._textId;
+};
+
+Ellipse.prototype.setTextId = function setTextId(textId) {
+  this._textId = textId;
+};
+
+Ellipse.prototype.setInModalView = function setInModalView(inModalView) {
+  if(this._textShape){
+    this._textShape.setInModalView(inModalView)
+  }
+};
+
+Ellipse.prototype.setTextRotation = function setTextRotation(textRotation) {
+  if(this._textShape){
+    this._textShape.setTextRotation(textRotation)
+  }
+};
+
+Ellipse.prototype.setVerticalFlip = function setVerticalFlip(vFlip) {
+  if(this._textShape){
+    this._textShape.setVerticalFlip(vFlip)
+  }
+};
+
+Ellipse.prototype.setHorizontalFlip = function setHorizontalFlip(hFlip) {
+  if(this._textShape){
+    this._textShape.setHorizontalFlip(hFlip)
+  }
+};
+
 Ellipse.prototype.destroy = function destroy() {
+  if(this._textShape){
+    this.manager.deleteShapesByIds([this._textShape._id])
+    this.destroyTextShape()
+  }
   this.element.remove();
   this.handles.remove();
 };
+
+Ellipse.prototype.destroyTextShape = function destroyTextShape() {
+  this._textId = -1
+  this._textShape = undefined;
+}
 
 Ellipse.prototype.intersectRegion = function intersectRegion(region) {
   var path = this.manager.regionToPath(region, this._zoomFraction * 100);
@@ -381,6 +473,44 @@ Ellipse.prototype.updateShapeFromHandles = function updateShapeFromHandles(
   this.drawShape();
 };
 
+Ellipse.prototype.createShapeText = function createShapeText(){
+  if(!this._textShape){
+    var textPosition = this.manager.getTextPosition(),
+          fontSize = this.manager.getTextFontSize(),
+          inModalView = this.manager.getInModalView(),
+          vFlip = this.manager.getVerticalFlip(),
+          hFlip = this.manager.getHorizontalFlip(),
+          textRotation = this.manager.getTextRotation();
+
+    if(textPosition == "freehand"){
+      textPosition = "top"
+      this.manager.setTextPosition(textPosition)
+    }
+
+    var textShape = new Text({
+        manager: this.manager,
+        paper: this.paper,
+        inModalView: inModalView,
+        textRotation: textRotation,
+        vFlip: vFlip,
+        hFlip: hFlip,
+        linkedShapeId: this._id,
+        zoom: this._zoomFraction * 100,
+        text: "text",
+        x: this._x,
+        y: this._y,
+        strokeColor: this._strokeColor,
+        fontSize: fontSize,
+        textPosition: textPosition,
+        strokeWidth: this._strokeWidth,
+        parentShapeCoords: {x: this._x - this._radiusX, y: this._y - this._radiusY, width: 2*this._radiusX, height: 2*this._radiusY}
+      })
+      this.manager.addShape(textShape);
+      this._textId = textShape._id;
+      this._textShape = textShape;
+  }
+}
+
 Ellipse.prototype.drawShape = function drawShape() {
   var strokeColor = this._strokeColor,
     strokeW = this._strokeWidth,
@@ -421,10 +551,18 @@ Ellipse.prototype.drawShape = function drawShape() {
     hy = this._handleIds[h_id].y * this._zoomFraction;
     hnd.attr({ x: hx - this.handle_wh / 2, y: hy - this.handle_wh / 2 });
   }
+
+  if(this._textShape || this.loadTextShape()){
+    this._textShape.setParentShapeCoords({x: this._x - this._radiusX, y: this._y - this._radiusY, width: 2*this._radiusX, height: 2*this._radiusY})
+    this._textShape.setRotation(this._rotation)
+  }
 };
 
 Ellipse.prototype.setSelected = function setSelected(selected) {
   this._selected = !!selected;
+  if(this._textShape || this.loadTextShape()){
+    this._textShape.setSelected(this._selected)
+  }
   this.drawShape();
 };
 
@@ -552,11 +690,17 @@ var CreateEllipse = function CreateEllipse(options) {
 };
 
 CreateEllipse.prototype.startDrag = function startDrag(startX, startY) {
+  // reset the text in the manager
+  this.manager.setText("")
+
   var strokeColor = this.manager.getStrokeColor(),
     strokeWidth = this.manager.getStrokeWidth(),
     fillColor = this.manager.getFillColor(),
     fillOpacity = this.manager.getFillOpacity(),
     zoom = this.manager.getZoom();
+
+  this.startX = startX;
+  this.startY = startY;
 
   this.ellipse = new Ellipse({
     manager: this.manager,
@@ -571,7 +715,8 @@ CreateEllipse.prototype.startDrag = function startDrag(startX, startY) {
     zoom: zoom,
     strokeColor: strokeColor,
     fillColor: fillColor,
-    fillOpacity: fillOpacity
+    fillOpacity: fillOpacity,
+    textId: -1,
   });
 };
 
