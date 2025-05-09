@@ -42,6 +42,9 @@ urlpatterns = [
     path('make_web_figure/', views.make_web_figure,
          name='make_web_figure'),
 
+    path('upload_omero_script/', views.upload_omero_script,
+         name="figure_upload_omero_script"),
+
     # Save json to file annotation
     path('save_web_figure/', views.save_web_figure, name='save_web_figure'),
 
