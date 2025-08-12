@@ -29,6 +29,7 @@ export const RoiModalView = Backbone.View.extend({
 
         // This gets populated when dialog loads
         omeroRoiCount: 0,
+        visibleOmeroRoiCount:0,
         roisLoaded: false,
         roisPageSize: 500,
         roisPage: 0,
@@ -195,6 +196,11 @@ export const RoiModalView = Backbone.View.extend({
             var roiUrl = url + '?image=' + iid + '&limit=' + this.roisPageSize + '&offset=' + (this.roisPageSize * this.roisPage);
             getJson(roiUrl).then((data) => {
                 this.Rois.set(data.data);
+                // filter only ROIs that are in the viewport
+                var filteredRois = this.filterShapesInViewport(this.Rois, this.shapeManager)
+                this.visibleOmeroRoiCount = filteredRois.length
+                this.Rois.set(filteredRois);
+                // render UI
                 $(".loadRois", this.$el).prop('disabled', false);
                 $("#roiModalRoiList table").empty();
                 this.roisLoaded = true;
@@ -219,6 +225,25 @@ export const RoiModalView = Backbone.View.extend({
                 this.m.set(newPlane);
                 this.renderImagePlane();
             }
+        },
+
+        filterShapesInViewport: function(roiList, sm){
+            var viewport = this.m.getViewportAsRect();
+            var filteredRois = []
+            roiList.forEach(function (roi) {
+                var isIntersecting = false
+                roi.shapes.forEach(function (s) {
+                    var newShape = sm.createShapeJson(s.toJSON());
+                    if (newShape.intersectRegion(viewport)) {
+                        isIntersecting = true
+                    }
+                    newShape.destroy()
+                })
+                if(isIntersecting == true){
+                    filteredRois.push(roi)
+                }
+            })
+            return filteredRois
         },
 
         addShapeFromOmero: function(args) {
@@ -524,7 +549,7 @@ export const RoiModalView = Backbone.View.extend({
                 return;
             }
             var pageCount = Math.ceil(this.omeroRoiCount / this.roisPageSize);
-            var html = `<span>${ this.omeroRoiCount} ROIs`
+            var html = `<span>${ this.visibleOmeroRoiCount} / ${this.omeroRoiCount} ROIs`
             // Only show pagination controls if needed
             if (pageCount > 1) {
                 html += `: page ${ this.roisPage + 1}/${pageCount}</span>
