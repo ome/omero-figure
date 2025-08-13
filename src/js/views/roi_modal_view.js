@@ -31,7 +31,7 @@ export const RoiModalView = Backbone.View.extend({
         omeroRoiCount: 0,
         visibleOmeroRoiCount:0,
         roisLoaded: false,
-        roisPageSize: 1,//500,
+        roisPageSize: 500,
         roisPage: 0,
 
         initialize: function() {
@@ -579,7 +579,7 @@ export const RoiModalView = Backbone.View.extend({
             var pageCount = Math.ceil(this.omeroRoiCount / this.roisPageSize);
             var htmlAllRoisButton = `<div class="btn-group" style="float:right">
                                         <button title="Add all visible ROIs"
-                                            type="button" class="btn btn-default btn-sm float-end addAllOmeroShapes">
+                                            type="button" class="btn btn-sm btn-success float-end addAllOmeroShapes">
                                             Add all
                                         </button>
                                     </div>`
