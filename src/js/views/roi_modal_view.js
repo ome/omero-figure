@@ -29,7 +29,8 @@ export const RoiModalView = Backbone.View.extend({
 
         // This gets populated when dialog loads
         omeroRoiCount: 0,
-        visibleOmeroRoiCount:0,
+        maxRoisToAdd: 200,
+        visibleOmeroRoiCount: 0,
         roisLoaded: false,
         roisPageSize: 500,
         roisPage: 0,
@@ -254,7 +255,6 @@ export const RoiModalView = Backbone.View.extend({
         },
 
         addShapeFromOmero: function(args) {
-
             var shapeJson = args[0],
                 shape;
             // Remove the temp shape
@@ -269,23 +269,15 @@ export const RoiModalView = Backbone.View.extend({
         },
 
         addAllShapesFromOmero: function(){
-            var pageCount = Math.ceil(this.omeroRoiCount / this.roisPageSize);
-
-            for(var page = 0; page < pageCount; page++){
-                 var roiUrl = this.getRoisUrl(this.roisPageSize, page)
-                  getJson(roiUrl).then((data) => {
-                    var tmpRoiList = new RoiList()
-                    tmpRoiList.set(data.data);
-
-                    // filter only ROIs that are in the viewport
-                    var filteredRois = this.filterShapesInViewport(tmpRoiList, this.shapeManager)
-                    tmpRoiList.set(filteredRois);
-                    tmpRoiList.forEach(function (roi) {
-                        roi.shapes.forEach(function (s) {
-                           this.addShapeFromOmero([s.toJSON()]);
-                        }, this)
+            // add all currently loaded shapes
+            if(this.Rois.length <= this.maxRoisToAdd){
+                this.Rois.forEach(function (roi) {
+                    roi.shapes.forEach(function (s) {
+                        this.addShapeFromOmero([s.toJSON()]);
                     }, this)
-                });
+                }, this)
+            }else{
+                alert("Too much ROIs to add. Please crop the panel to smaller FoV to reduce the number of visible ROIs to lower than "+this.maxRoisToAdd);
             }
         },
 
