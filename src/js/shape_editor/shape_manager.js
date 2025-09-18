@@ -235,6 +235,15 @@ ShapeManager.prototype.setZoom = function setZoom(zoomPercent) {
   //                          'top': (currTop - deltaTop) + "px"});
 };
 
+ShapeManager.prototype.setArrowZoom = function setArrowZoom(zoomPercent) {
+  this._shapes.forEach(function (shape) {
+    if (shape.setArrowZoom) {
+      shape.setArrowZoom(zoomPercent);
+    }
+  });
+}
+
+
 ShapeManager.prototype.getZoom = function getZoom(zoomPercent) {
   return this._zoom;
 };
