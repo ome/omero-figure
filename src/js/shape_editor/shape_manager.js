@@ -438,11 +438,13 @@ ShapeManager.prototype.createShapeJson = function createShapeJson(jsonShape) {
     fillColor = s.fillColor || this.getFillColor(),
     fillOpacity = s.fillOpacity == undefined ? this.getFillOpacity() : s.fillOpacity,
     strokeWidth = s.strokeWidth || this.getStrokeWidth(),
+    shapeScalingFactor = s.shapeScalingFactor || this.getShapeScalingFactor(),
     zoom = this.getZoom(),
     options = {
       manager: this,
       paper: this.paper,
       strokeWidth: strokeWidth,
+      shapeScalingFactor: shapeScalingFactor,
       zoom: zoom,
       strokeColor: strokeColor,
       fillColor: fillColor,
