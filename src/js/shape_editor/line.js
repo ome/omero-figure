@@ -257,13 +257,13 @@ Line.prototype.drawShape = function drawShape() {
   var p = this.getPath(),
     shapeScalingFactor = this._shapeScalingFactor / 100,
     strokeColor = this._strokeColor,
-    strokeW = this._getLineWidth() * shapeScalingFactor;
+    strokeW = this._getLineWidth();
 
   this.element.attr({
     path: p,
     stroke: strokeColor,
     fill: strokeColor,
-    "stroke-width": strokeW,
+    "stroke-width": strokeW * shapeScalingFactor,
   });
 
   if (this.isSelected()) {
