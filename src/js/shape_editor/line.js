@@ -49,7 +49,7 @@ var Line = function Line(options) {
   this.handle_wh = 6;
   this._selected = false;
   this._zoomFraction = 1;
-  this._arrowZoom = 100;
+  this._shapeScalingFactor = options.shapeScalingFactor || 100;
   if (options.zoom) {
     this._zoomFraction = options.zoom / 100;
   }
@@ -97,10 +97,11 @@ var Line = function Line(options) {
   this.drawShape();
 };
 
-Line.prototype.setArrowZoom = function setArrowZoom(zoomPercent) {
-  this._arrowZoom = zoomPercent ? zoomPercent : 100;
+Line.prototype.setShapeScalingFactor = function setShapeScalingFactor(zoomPercent) {
+  this._shapeScalingFactor = zoomPercent ? zoomPercent : 100;
   this.drawShape();
 }
+
 
 Line.prototype.toJson = function toJson() {
   var rv = {
@@ -254,8 +255,9 @@ Line.prototype._getLineWidth = function _getLineWidth() {
 
 Line.prototype.drawShape = function drawShape() {
   var p = this.getPath(),
+    shapeScalingFactor = this._shapeScalingFactor / 100,
     strokeColor = this._strokeColor,
-    strokeW = this._getLineWidth();
+    strokeW = this._getLineWidth() * shapeScalingFactor;
 
   this.element.attr({
     path: p,
@@ -425,15 +427,15 @@ var Arrow = function Arrow(options) {
     // We want the arrow tip to be precisely at x2, y2, so we
     // can't have a fat line at x2, y2. Instead we need to
     // trace the whole outline of the arrow with a thin line
-    var arrowScalineFactor = this._arrowZoom / 100
+    var shapeScalingFactor = this._shapeScalingFactor / 100
     var zf = this._zoomFraction,
       x1 = this._x1 * zf,
       y1 = this._y1 * zf,
       x2 = this._x2 * zf,
       y2 = this._y2 * zf,
-      w = this._strokeWidth * 0.5  * arrowScalineFactor;
+      w = this._strokeWidth * 0.5  * shapeScalingFactor;
 
-    var headSize = (this._strokeWidth * 4 + 5) * arrowScalineFactor,
+    var headSize = (this._strokeWidth * 4 + 5) * shapeScalingFactor,
       dx = x2 - x1,
       dy = y2 - y1;
 
@@ -520,6 +522,7 @@ var CreateLine = function CreateLine(options) {
 CreateLine.prototype.startDrag = function startDrag(startX, startY) {
   var strokeColor = this.manager.getStrokeColor(),
     strokeWidth = this.manager.getStrokeWidth(),
+    shapeScalingFactor = this.manager.getShapeScalingFactor(),
     zoom = this.manager.getZoom();
 
   this.startX = startX;
@@ -534,6 +537,7 @@ CreateLine.prototype.startDrag = function startDrag(startX, startY) {
     y2: startY,
     area: 0,
     strokeWidth: strokeWidth,
+    shapeScalingFactor: shapeScalingFactor,
     zoom: zoom,
     strokeColor: strokeColor,
   });
@@ -583,6 +587,7 @@ var CreateArrow = function CreateArrow(options) {
   that.startDrag = function startDrag(startX, startY) {
     var strokeColor = this.manager.getStrokeColor(),
       strokeWidth = this.manager.getStrokeWidth(),
+      shapeScalingFactor = this.manager.getShapeScalingFactor(),
       zoom = this.manager.getZoom();
 
     this.startX = startX;
@@ -597,6 +602,7 @@ var CreateArrow = function CreateArrow(options) {
       y2: startY,
       area: 0,
       strokeWidth: strokeWidth,
+      shapeScalingFactor: shapeScalingFactor,
       zoom: zoom,
       strokeColor: strokeColor,
     });

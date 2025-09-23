@@ -46,6 +46,7 @@ var ShapeManager = function ShapeManager(elementId, width, height, options) {
   this._orig_width = width;
   this._orig_height = height;
   this._zoom = 100;
+  this._shapeScalingFactor = 100;
   // Don't allow editing of shapes - no drag/click events
   this.canEdit = !options.readOnly;
 
@@ -235,13 +236,18 @@ ShapeManager.prototype.setZoom = function setZoom(zoomPercent) {
   //                          'top': (currTop - deltaTop) + "px"});
 };
 
-ShapeManager.prototype.setArrowZoom = function setArrowZoom(zoomPercent) {
+ShapeManager.prototype.setShapeScalingFactor = function setShapeScalingFactor(shapeScalingFactor) {
+  this._shapeScalingFactor = shapeScalingFactor;
   this._shapes.forEach(function (shape) {
-    if (shape.setArrowZoom) {
-      shape.setArrowZoom(zoomPercent);
+    if (shape.setShapeScalingFactor) {
+      shape.setShapeScalingFactor(shapeScalingFactor);
     }
   });
 }
+
+ShapeManager.prototype.getShapeScalingFactor = function getShapeScalingFactor() {
+  return this._shapeScalingFactor;
+};
 
 
 ShapeManager.prototype.getZoom = function getZoom(zoomPercent) {

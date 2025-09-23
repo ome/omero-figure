@@ -587,7 +587,7 @@ export const RoiModalView = Backbone.View.extend({
             this.shapeManager._orig_width = w;
             this.shapeManager._orig_height = h;
             this.shapeManager.setZoom(scale * 100);
-            this.shapeManager.setArrowZoom(sc * 100);
+            this.shapeManager.setShapeScalingFactor(sc * 100);
             $("#roi_paper").css(svg_css);
 
             $("#roiViewer").css({'width': frame_w + 'px', 'height': frame_h + 'px'});
