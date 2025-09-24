@@ -45,8 +45,14 @@ var ShapeManager = function ShapeManager(elementId, width, height, options) {
   this._fillOpacity = 0;
   this._orig_width = width;
   this._orig_height = height;
+
+  // current size of the panel expressed in percentage of its original size
   this._zoom = 100;
+
+  // How much shapes should be scaled in the ROI editor to match their appearance on the panel.
+  // see https://github.com/ome/omero-figure/pull/643
   this._shapeScalingFactor = 100;
+
   // Don't allow editing of shapes - no drag/click events
   this.canEdit = !options.readOnly;
 
