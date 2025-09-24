@@ -93,7 +93,6 @@ Optional settings for each panel::
         "length": 10,
         "height": 3,
         "margin": 10,
-        "margin_unit": "px"
         "units": "MICROMETER",
         "position": "bottomright",  // topright, topleft, bottomleft
         "color": "FFFFFF",
