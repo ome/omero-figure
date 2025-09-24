@@ -92,8 +92,8 @@ Optional settings for each panel::
         "show": true,
         "length": 10,
         "height": 3,
-        "margin": 5,
-        "margin_unit": "%"
+        "margin": 10,
+        "margin_unit": "px"
         "units": "MICROMETER",
         "position": "bottomright",  // topright, topleft, bottomleft
         "color": "FFFFFF",
@@ -239,7 +239,7 @@ Version history
 
 New in version 9:
 
-- `scalebar`: added 'margin': <integer> and 'margin_unit': <string>
+- `scalebar`: added 'margin': <integer>
 
 New in version 7:
 
