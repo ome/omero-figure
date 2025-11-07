@@ -105,12 +105,6 @@
         -ms-interpolation-mode:nearest-neighbor;   /* IE8+           */
     }
 
-
-    /* Fix word wrapping for long names in info panel */
-    #info-tab-pane {
-        word-break: break-word;
-    }
-
     /* #figure is a container of .paper */
     #figure {
         position: absolute;
