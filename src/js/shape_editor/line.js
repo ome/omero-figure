@@ -10,10 +10,10 @@
 // 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following
 // disclaimer in the documentation // and/or other materials provided with the distribution.
 //
-// 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived 
+// 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived
 // from this software without specific prior written permission.
 
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, 
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING,
 // BUT NOT LIMITED TO,
 // THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
 // THE COPYRIGHT HOLDER OR CONTRIBUTORS
@@ -49,6 +49,7 @@ var Line = function Line(options) {
   this.handle_wh = 6;
   this._selected = false;
   this._zoomFraction = 1;
+  this._shapeScalingFactor = options.shapeScalingFactor || 100;
   if (options.zoom) {
     this._zoomFraction = options.zoom / 100;
   }
@@ -95,6 +96,12 @@ var Line = function Line(options) {
 
   this.drawShape();
 };
+
+Line.prototype.setShapeScalingFactor = function setShapeScalingFactor(zoomPercent) {
+  this._shapeScalingFactor = zoomPercent ? zoomPercent : 100;
+  this.drawShape();
+}
+
 
 Line.prototype.toJson = function toJson() {
   var rv = {
@@ -248,6 +255,7 @@ Line.prototype._getLineWidth = function _getLineWidth() {
 
 Line.prototype.drawShape = function drawShape() {
   var p = this.getPath(),
+    shapeScalingFactor = this._shapeScalingFactor / 100,
     strokeColor = this._strokeColor,
     strokeW = this._getLineWidth();
 
@@ -255,7 +263,7 @@ Line.prototype.drawShape = function drawShape() {
     path: p,
     stroke: strokeColor,
     fill: strokeColor,
-    "stroke-width": strokeW,
+    "stroke-width": strokeW * shapeScalingFactor,
   });
 
   if (this.isSelected()) {
@@ -419,15 +427,15 @@ var Arrow = function Arrow(options) {
     // We want the arrow tip to be precisely at x2, y2, so we
     // can't have a fat line at x2, y2. Instead we need to
     // trace the whole outline of the arrow with a thin line
-
+    var shapeScalingFactor = this._shapeScalingFactor / 100
     var zf = this._zoomFraction,
       x1 = this._x1 * zf,
       y1 = this._y1 * zf,
       x2 = this._x2 * zf,
       y2 = this._y2 * zf,
-      w = this._strokeWidth * 0.5;
+      w = this._strokeWidth * 0.5  * shapeScalingFactor;
 
-    var headSize = this._strokeWidth * 4 + 5,
+    var headSize = (this._strokeWidth * 4 + 5) * shapeScalingFactor,
       dx = x2 - x1,
       dy = y2 - y1;
 
@@ -514,6 +522,7 @@ var CreateLine = function CreateLine(options) {
 CreateLine.prototype.startDrag = function startDrag(startX, startY) {
   var strokeColor = this.manager.getStrokeColor(),
     strokeWidth = this.manager.getStrokeWidth(),
+    shapeScalingFactor = this.manager.getShapeScalingFactor(),
     zoom = this.manager.getZoom();
 
   this.startX = startX;
@@ -528,6 +537,7 @@ CreateLine.prototype.startDrag = function startDrag(startX, startY) {
     y2: startY,
     area: 0,
     strokeWidth: strokeWidth,
+    shapeScalingFactor: shapeScalingFactor,
     zoom: zoom,
     strokeColor: strokeColor,
   });
@@ -577,6 +587,7 @@ var CreateArrow = function CreateArrow(options) {
   that.startDrag = function startDrag(startX, startY) {
     var strokeColor = this.manager.getStrokeColor(),
       strokeWidth = this.manager.getStrokeWidth(),
+      shapeScalingFactor = this.manager.getShapeScalingFactor(),
       zoom = this.manager.getZoom();
 
     this.startX = startX;
@@ -591,6 +602,7 @@ var CreateArrow = function CreateArrow(options) {
       y2: startY,
       area: 0,
       strokeWidth: strokeWidth,
+      shapeScalingFactor: shapeScalingFactor,
       zoom: zoom,
       strokeColor: strokeColor,
     });

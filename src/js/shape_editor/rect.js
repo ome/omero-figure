@@ -60,6 +60,7 @@ var Rect = function Rect(options) {
   this._strokeWidth = options.strokeWidth || 2;
   this._selected = false;
   this._zoomFraction = 1;
+  this._shapeScalingFactor = options.shapeScalingFactor || 100;
   if (options.zoom) {
     this._zoomFraction = options.zoom / 100;
   }
@@ -215,6 +216,11 @@ Rect.prototype.isSelected = function isSelected() {
   return this._selected;
 };
 
+Rect.prototype.setShapeScalingFactor = function setShapeScalingFactor(zoomPercent) {
+  this._shapeScalingFactor = zoomPercent ? zoomPercent : 100;
+  this.drawShape();
+}
+
 Rect.prototype.setZoom = function setZoom(zoom) {
   this._zoomFraction = zoom / 100;
   this.drawShape();
@@ -275,6 +281,7 @@ Rect.prototype.destroy = function destroy() {
 
 Rect.prototype.drawShape = function drawShape() {
   var strokeColor = this._strokeColor,
+    shapeScalingFactor = this._shapeScalingFactor / 100,
     lineW = this._strokeWidth,
     fillColor = this._fillColor,
     fillOpacity = this._fillOpacity;
@@ -291,7 +298,7 @@ Rect.prototype.drawShape = function drawShape() {
     width: w,
     height: h,
     stroke: strokeColor,
-    "stroke-width": lineW,
+    "stroke-width": lineW * shapeScalingFactor,
     fill: fillColor,
     "fill-opacity": fillOpacity
   });
@@ -496,6 +503,7 @@ var CreateRect = function CreateRect(options) {
 
 CreateRect.prototype.startDrag = function startDrag(startX, startY) {
   var strokeColor = this.manager.getStrokeColor(),
+    shapeScalingFactor = this.manager.getShapeScalingFactor(),
     strokeWidth = this.manager.getStrokeWidth(),
     fillColor = this.manager.getFillColor(),
     fillOpacity = this.manager.getFillOpacity(),
@@ -514,6 +522,7 @@ CreateRect.prototype.startDrag = function startDrag(startX, startY) {
     height: 0,
     area: 0,
     strokeWidth: strokeWidth,
+    shapeScalingFactor: shapeScalingFactor,
     zoom: zoom,
     strokeColor: strokeColor,
     fillColor: fillColor,

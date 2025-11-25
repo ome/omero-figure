@@ -64,6 +64,7 @@ var Point = function Point(options) {
   this._strokeWidth = options.strokeWidth || 2;
   this._selected = false;
   this._zoomFraction = 1;
+  this._shapeScalingFactor = options.shapeScalingFactor || 100;
   if (options.zoom) {
     this._zoomFraction = options.zoom / 100;
   }
@@ -173,6 +174,11 @@ Point.prototype._handleMousedown = function _handleMousedown() {
     this.manager.selectShapes([this]);
   }
 };
+
+Point.prototype.setShapeScalingFactor = function setShapeScalingFactor(zoomPercent) {
+  this._shapeScalingFactor = zoomPercent ? zoomPercent : 100;
+  this.drawShape();
+}
 
 Point.prototype.setColor = function setColor(strokeColor) {
   this._strokeColor = strokeColor;
@@ -360,6 +366,7 @@ Point.prototype.updateShapeFromHandles = function updateShapeFromHandles(
 
 Point.prototype.drawShape = function drawShape() {
   var strokeColor = this._strokeColor,
+    shapeScalingFactor = this._shapeScalingFactor / 100,
     strokeW = this._strokeWidth,
     fillColor = this._fillColor,
     fillOpacity = this._fillOpacity;
@@ -376,7 +383,7 @@ Point.prototype.drawShape = function drawShape() {
     rx: radiusX,
     ry: radiusY,
     stroke: strokeColor,
-    "stroke-width": strokeW,
+    "stroke-width": strokeW * shapeScalingFactor,
     fill: fillColor,
     'fill-opacity': fillOpacity
   });
@@ -477,6 +484,7 @@ var CreatePoint = function CreatePoint(options) {
 CreatePoint.prototype.startDrag = function startDrag(startX, startY) {
   var strokeColor = this.manager.getStrokeColor(),
     strokeWidth = this.manager.getStrokeWidth(),
+    shapeScalingFactor = this.manager.getShapeScalingFactor(),
     fillColor = this.manager.getFillColor(),
     fillOpacity = this.manager.getFillOpacity(),
     zoom = this.manager.getZoom();
@@ -491,6 +499,7 @@ CreatePoint.prototype.startDrag = function startDrag(startX, startY) {
     area: 0,
     rotation: 0,
     strokeWidth: strokeWidth,
+    shapeScalingFactor: shapeScalingFactor,
     zoom: zoom,
     strokeColor: strokeColor,
     fillColor: fillColor,

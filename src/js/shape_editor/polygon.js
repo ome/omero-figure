@@ -48,6 +48,7 @@ var Polygon = function Polygon(options) {
   this._strokeWidth = options.strokeWidth || 2;
   this._selected = false;
   this._zoomFraction = 1;
+  this._shapeScalingFactor = options.shapeScalingFactor || 100;
   if (options.zoom) {
     this._zoomFraction = options.zoom / 100;
   }
@@ -183,6 +184,11 @@ Polygon.prototype._handleMousedown = function _handleMousedown() {
     this.manager.selectShapes([this]);
   }
 };
+
+Polygon.prototype.setShapeScalingFactor = function setShapeScalingFactor(zoomPercent) {
+  this._shapeScalingFactor = zoomPercent ? zoomPercent : 100;
+  this.drawShape();
+}
 
 Polygon.prototype.setColor = function setColor(strokeColor) {
   this._strokeColor = strokeColor;
@@ -321,6 +327,7 @@ Polygon.prototype.updateHandle = function updateHandle(
 Polygon.prototype.drawShape = function drawShape() {
   var strokeColor = this._strokeColor,
     strokeW = this._strokeWidth,
+    shapeScalingFactor = this._shapeScalingFactor / 100,
     fillColor = this._fillColor,
     fillOpacity = this._fillOpacity;
 
@@ -330,7 +337,7 @@ Polygon.prototype.drawShape = function drawShape() {
   this.element.attr({
     path: path,
     stroke: strokeColor,
-    "stroke-width": strokeW,
+    "stroke-width": strokeW * shapeScalingFactor,
     fill: fillColor,
     'fill-opacity': fillOpacity
   });
