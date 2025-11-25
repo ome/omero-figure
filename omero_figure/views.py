@@ -238,7 +238,7 @@ def parents(request, conn=None, **kwargs):
     except ValueError:
         return Http404("Invalid 'image' id")
 
-    parents = []
+    parents = {}
     for img_id in image_ids:
         img_parents = {}
         for img_path in paths_to_object(conn, image_id=img_id):
