@@ -98,4 +98,4 @@ def get_wellsample_index(conn, wellsample_id):
         """
     qs = conn.getQueryService()
     rsp = qs.projection(query, params, conn.SERVICE_OPTS)
-    return rsp[0][0].val
+    return rsp[0][0].val + 1
