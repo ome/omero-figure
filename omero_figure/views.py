@@ -42,7 +42,7 @@ from omero_marshal import get_encoder
 from io import BytesIO
 
 from omeroweb.webclient.decorators import login_required
-from .omeroutils import get_timestamps
+from .omeroutils import get_timestamps, get_wellsample_index
 
 import logging
 
