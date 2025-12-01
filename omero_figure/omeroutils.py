@@ -98,4 +98,5 @@ def get_wellsample_index(conn, wellsample_id):
         """
     qs = conn.getQueryService()
     rsp = qs.projection(query, params, conn.SERVICE_OPTS)
+    # increment field by 1, because OMERO returns 0-based index
     return rsp[0][0].val + 1
