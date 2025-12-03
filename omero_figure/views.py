@@ -254,9 +254,10 @@ def parents(request, conn=None, **kwargs):
                     item["label"] = obj.getWellPos()
                 else:
                     item["name"] = obj.getName()
-        parents[img_id] = img_parents   
+        parents[img_id] = img_parents
 
     return JsonResponse({"parents": parents})
+
 
 @login_required()
 def pixels_type(request, conn=None, **kwargs):
@@ -275,6 +276,7 @@ def pixels_type(request, conn=None, **kwargs):
                     "pixel_range": image.getPixelRange()
                 }
     return JsonResponse(data)
+
 
 @login_required()
 def z_scale(request, conn=None, **kwargs):
