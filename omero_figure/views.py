@@ -22,6 +22,7 @@ from django.conf import settings
 from django.template import loader
 from django.templatetags import static
 from datetime import datetime
+import os
 import traceback
 import json
 import time
@@ -86,7 +87,18 @@ def index(request, file_id=None, conn=None, **kwargs):
     script_service = conn.getScriptService()
     sid = script_service.getScriptID(SCRIPT_PATH)
     export_enabled = sid > 0
+    script_version = None
+    if export_enabled:
+        try:
+            params = script_service.getParams(sid)
+            for key, param in params.inputs.items():
+                if (key == "FIGURE_VERSION"):
+                    script_version = unwrap(param.prototype)
+        except Exception:
+            logger.debug(traceback.format_exc())
+
     user = conn.getUser()
+    is_admin = conn.isAdmin()
     user_full_name = "%s %s" % (user.firstName, user.lastName)
     max_w, max_h = conn.getMaxPlaneSize()
     max_plane_size = max_w * max_h
@@ -125,6 +137,11 @@ def index(request, file_id=None, conn=None, **kwargs):
     if export_enabled:
         html = html.replace('const EXPORT_ENABLED = false;',
                             'const EXPORT_ENABLED = true;')
+        html = html.replace('const SCRIPT_VERSION = "";',
+                            f'const SCRIPT_VERSION = "{script_version}"')
+    if is_admin:
+        html = html.replace('const IS_ADMIN = false;',
+                            'const IS_ADMIN = true;')
 
     # update links to static files
     static_dir = static.static('omero_figure/')
@@ -657,6 +674,43 @@ def make_web_figure(request, conn=None, **kwargs):
 
     rsp = run_script(request, conn, sid, input_map, scriptName='Figure.pdf')
     return HttpResponse(json.dumps(rsp), content_type='json')
+
+
+@login_required(isAdmin=True)
+def upload_omero_script(request, conn=None, **kwargs):
+    """Uploads or Replaces the Figure_To_Pdf.py"""
+
+    if not request.method == 'POST':
+        return HttpResponse("Need to use POST")
+
+    script_service = conn.getScriptService()
+    script_id = script_service.getScriptID(SCRIPT_PATH)
+
+    this_dir = os.path.dirname(os.path.abspath(__file__))
+    script_path = os.path.join(this_dir, "scripts", SCRIPT_PATH[1:])
+
+    try:
+        with open(script_path) as script_file:
+            script_text = script_file.read()
+    except Exception:
+        logger.debug(traceback.format_exc())
+        return JsonResponse({
+            "Error": "Failed to load script from " + script_path})
+
+    # If script exists, replace. Otherwise upload
+    try:
+        if script_id > 0:
+            orig_file = omero.model.OriginalFileI(script_id, False)
+            script_service.editScript(orig_file, script_text)
+            message = "Script Replaced"
+        else:
+            script_id = script_service.uploadOfficialScript(
+                SCRIPT_PATH, script_text)
+            message = "Script Uploaded"
+    except omero.ValidationException as ex:
+        return JsonResponse({"Error": ex.message})
+
+    return JsonResponse({"Message": message, "script_id": script_id})
 
 
 @login_required()
