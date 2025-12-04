@@ -2690,6 +2690,8 @@ def export_figure(conn, script_params):
         fig_export = TiffExport(conn, script_params, export_images=True)
     elif export_option == 'OMERO':
         fig_export = OmeroExport(conn, script_params)
+    elif export_option == 'PNG':
+        fig_export = PngExport(conn, script_params)
     return fig_export.build_figure()
 
 
@@ -2701,6 +2703,7 @@ def run_script():
 
     export_options = [rstring('PDF'), rstring('PDF_IMAGES'),
                       rstring('TIFF'), rstring('TIFF_IMAGES'),
+                      rstring('PNG'),
                       rstring('OMERO')]
 
     client = scripts.client(
