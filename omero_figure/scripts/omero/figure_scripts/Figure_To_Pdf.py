@@ -2627,7 +2627,7 @@ class PngExport(TiffExport):
         Creates a new PIL image ready to receive panels, labels etc.
         This is created for each page in the figure at 72 dpi.
         """
-        # No scaling needed since image is already 72 dpi
+        # Scaling removed here, since image is already 72 dpi
         png_width = int(self.page_width)
         png_height = int(self.page_height)
         rgb = (255, 255, 255)
@@ -2657,7 +2657,7 @@ class PngExport(TiffExport):
         x = x - page['x']
         y = y - page['y']
 
-        # we directly round since we are at 72 dpi, so no scaling needed here
+        # Scaling removed here, since image is already 72 dpi
         x = int(round(x))
         y = int(round(y))
         width = int(round(width))
@@ -2707,7 +2707,7 @@ class PngExport(TiffExport):
         """ Draw line on the current figure page """
         draw = ImageDraw.Draw(self.tiff_figure)
 
-        # scaling removed here, since we are at 72 dpi
+        # Scaling removed here, since image is already 72 dpi
         x = int(round(x))
         y = int(round(y))
         x2 = int(round(x2))
@@ -2719,7 +2719,7 @@ class PngExport(TiffExport):
 
     def draw_text(self, text, x, y, fontsize, rgb, align="center"):
         """ Add text to the current figure page """
-        # scaling removed here, since we are at 72 dpi
+        # Scaling removed here, since image is already 72 dpi
 
         if markdown_imported:
             # convert markdown to html
