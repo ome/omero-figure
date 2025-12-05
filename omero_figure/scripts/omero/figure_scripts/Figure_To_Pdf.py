@@ -1009,7 +1009,7 @@ class FigureExport(object):
         full_name = full_name.replace(",", ".")
 
         index = page if page is not None else 1
-        if fext == "tiff" and self.page_count > 1:
+        if fext in ("tiff", "png") and self.page_count > 1:
             full_name = "%s_page_%02d.%s" % (name, index, fext)
         if self.zip_folder_name is not None:
             full_name = os.path.join(self.zip_folder_name, full_name)
@@ -1045,12 +1045,12 @@ class FigureExport(object):
         page_col_count = ('page_col_count' in self.figure_json and
                           int(self.figure_json['page_col_count']) or 1)
 
-        # Create a zip if we have multiple TIFF pages or we're exporting Images
+        # Create a zip if we have multiple TIFF/PNG pages or we're exporting Images
         export_option = self.script_params['Export_Option']
         create_zip = False
         if self.export_images:
             create_zip = True
-        if (self.page_count > 1) and (export_option.startswith("TIFF")):
+        if (self.page_count > 1) and (export_option.startswith("TIFF") or export_option == "PNG"):
             create_zip = True
 
         # somewhere to put PDF and images
@@ -2282,6 +2282,7 @@ class FigureExport(object):
         y = panel['y']
         width = panel['width']
         height = panel['height']
+
         # Handle page offsets
         x = x - page['x']
         y = y - page['y']
@@ -2600,6 +2601,156 @@ class TiffExport(FigureExport):
         if not reportlab_installed:
             return
         self.figure_canvas.save()
+
+
+class PngExport(TiffExport):
+    """
+    Subclass to handle export of Figure as PNGs, 1 per page at 72 dpi.
+    We override all methods that put content on the PNG instead of TIFF,
+    and handle the lower resolution at 72 dpi.
+    """
+
+    def __init__(self, conn, script_params, export_images=None):
+        super(PngExport, self).__init__(conn, script_params, export_images)
+        # Override namespace and mimetype for PNG export
+        self.ns = "omero.web.figure.png"
+        self.mimetype = "image/png"
+
+    def get_figure_file_ext(self):
+        return "png"
+
+    def create_figure(self):
+        """
+        Creates a new PIL image ready to receive panels, labels etc.
+        This is created for each page in the figure at 72 dpi.
+        """
+        # No scaling needed since image is already 72 dpi
+        png_width = int(self.page_width)
+        png_height = int(self.page_height)
+        rgb = (255, 255, 255)
+        page_color = self.figure_json.get('page_color')
+        if page_color is not None:
+            rgb = ShapeToPdfExport.get_rgb('#' + page_color)
+        self.tiff_figure = Image.new("RGBA", (png_width, png_height), rgb)
+
+    def paste_image(self, pil_img, img_name, panel, page, dpi=None):
+        """ Add the PIL image to the current figure page at 72 dpi """
+
+        # Apply flip transformations before drawing the image
+        h_flip = panel.get('horizontal_flip', False)
+        v_flip = panel.get('vertical_flip', False)
+
+        if h_flip:
+            pil_img = pil_img.transpose(Image.FLIP_LEFT_RIGHT)
+        if v_flip:
+            pil_img = pil_img.transpose(Image.FLIP_TOP_BOTTOM)
+
+        x = panel['x']
+        y = panel['y']
+        width = panel['width']
+        height = panel['height']
+
+        # Handle page offsets
+        x = x - page['x']
+        y = y - page['y']
+
+        # we directly round since we are at 72 dpi, so no scaling needed here
+        x = int(round(x))
+        y = int(round(y))
+        width = int(round(width))
+        height = int(round(height))
+
+        # Save image BEFORE resampling
+        if self.export_images:
+            rs_name = os.path.join(self.zip_folder_name, RESAMPLED_DIR,
+                                   img_name)
+            pil_img.save(rs_name)
+
+        # Resize to our target size to match DPI of figure
+        pil_img = pil_img.resize((width, height), Image.BICUBIC)
+
+        if self.export_images:
+            img_name = os.path.join(self.zip_folder_name, FINAL_DIR, img_name)
+            pil_img.save(img_name)
+
+        # Now at full figure resolution - Good time to add shapes...
+        crop = self.get_crop_region(panel)
+        exporter = ShapeToPilExport(pil_img, panel, crop)
+
+        width, height = pil_img.size
+
+        # Add border if needed - Rectangle around the whole panel
+        if 'border' in panel and panel['border'].get('showBorder'):
+            sw = panel['border'].get('strokeWidth')
+            # scalling removed here, since we are at 72 dpi
+            border_width = int(round(sw))
+            border_color = panel['border'].get('color')
+            padding = border_width * 2
+
+            canvas = Image.new("RGB", (width + padding, height + padding),
+                               exporter.get_rgb(border_color))
+            canvas.paste(pil_img, (border_width, border_width))
+            pil_img = canvas
+            box = (x - border_width,
+                   y - border_width,
+                   x + width + border_width,
+                   y + height + border_width)
+        else:
+            box = (x, y, x + width, y + height)
+
+        self.tiff_figure.paste(pil_img, box)
+
+    def draw_scalebar_line(self, x, y, x2, y2, width, rgb):
+        """ Draw line on the current figure page """
+        draw = ImageDraw.Draw(self.tiff_figure)
+
+        # scaling removed here, since we are at 72 dpi
+        x = int(round(x))
+        y = int(round(y))
+        x2 = int(round(x2))
+        y2 = int(round(y2))
+        width = int(round(width))
+
+        for value in range(-width // 2, width // 2):
+            draw.line([(x, y + value), (x2, y2 + value)], fill=rgb)
+
+    def draw_text(self, text, x, y, fontsize, rgb, align="center"):
+        """ Add text to the current figure page """
+        # scaling removed here, since we are at 72 dpi
+
+        if markdown_imported:
+            # convert markdown to html
+            text = markdown.markdown(text)
+
+        temp_label = self.draw_temp_label(text, fontsize, rgb)
+
+        if align == "left-vertical":
+            temp_label = temp_label.rotate(90, expand=True)
+            y = y - (temp_label.size[1] / 2)
+        elif align == "right-vertical":
+            temp_label = temp_label.rotate(-90, expand=True)
+            y = y - (temp_label.size[1] / 2)
+            x = x - temp_label.size[0]
+        elif align == "center":
+            x = x - (temp_label.size[0] / 2)
+        elif align == "right":
+            x = x - temp_label.size[0]
+        x = int(round(x))
+        y = int(round(y))
+        # Use label as mask, so transparent part is not pasted
+        self.tiff_figure.paste(temp_label, (x, y), mask=temp_label)
+
+    def save_page(self, page=None):
+        """
+        Save the current PIL image page as a PNG and start a new
+        PIL image for the next page
+        """
+        self.figure_file_name = self.get_figure_file_name()
+
+        self.tiff_figure.save(self.figure_file_name)
+
+        # Create a new blank pngFigure for subsequent pages
+        self.create_figure()
 
 
 class OmeroExport(TiffExport):
