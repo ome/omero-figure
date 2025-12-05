@@ -1045,12 +1045,15 @@ class FigureExport(object):
         page_col_count = ('page_col_count' in self.figure_json and
                           int(self.figure_json['page_col_count']) or 1)
 
-        # Create a zip if we have multiple TIFF/PNG pages or we're exporting Images
+        # Create a zip if we have multiple TIFF/PNG pages
+        # or we're exporting Images
         export_option = self.script_params['Export_Option']
         create_zip = False
         if self.export_images:
             create_zip = True
-        if (self.page_count > 1) and (export_option.startswith("TIFF") or export_option == "PNG"):
+        if (self.page_count > 1) and (
+            export_option.startswith("TIFF") or export_option == "PNG"
+        ):
             create_zip = True
 
         # somewhere to put PDF and images
