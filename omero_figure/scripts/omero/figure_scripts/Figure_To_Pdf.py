@@ -2610,7 +2610,7 @@ class PngExport(TiffExport):
     """
     Subclass to handle export of Figure as PNGs, 1 per page at 72 dpi.
     We override all methods that put content on the PNG instead of TIFF,
-    and handle the lower resolution at 72 dpi.
+    and remove scaling to keep resolution at 72 dpi.
     """
 
     def __init__(self, conn, script_params, export_images=None):
