@@ -82,10 +82,6 @@ urlpatterns = [
     # Get pixelsType for images. Use query ?image=1&image=2
     path('pixels_type/', views.pixels_type, name='figure_pixels_type'),
 
-    # Get parents (e.g. Plate, Well, WellSample) for images
-    # Use query ?image=1&image=2
-    re_path(r'^parents/$', views.parents, name='figure_parents'),
-
     # Get Z scale for images
     # Use query ?image=1&image=2
     path('z_scale/', views.z_scale, name='figure_z_scale'),

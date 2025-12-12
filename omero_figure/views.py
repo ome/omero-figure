@@ -215,6 +215,24 @@ def img_data_json(request, image_id, conn=None, **kwargs):
         time_list = get_timestamps(conn, image)
     rv['deltaT'] = time_list
 
+    img_parents = {}
+    for img_path in paths_to_object(conn, image_id=image_id):
+        for item in img_path:
+            o_type = item["type"]
+            del item["type"]
+            img_parents[o_type] = item
+            if o_type == "wellsample":
+                idx_plate, idx_run = get_wellsample_index(conn, item["id"])
+                item["index"] = idx_plate
+                item["index_run"] = idx_run
+                continue
+            obj = conn.getObject(o_type, item["id"])
+            if o_type == "well":
+                item["label"] = obj.getWellPos()
+            else:
+                item["name"] = obj.getName()
+    rv['parents'] = img_parents
+
     return HttpResponse(json.dumps(rv), content_type='json')
 
 
@@ -227,36 +245,6 @@ def timestamps(request, conn=None, **kwargs):
         if image is not None:
             data[image.id] = get_timestamps(conn, image)
     return JsonResponse(data)
-
-
-@login_required()
-def parents(request, conn=None, **kwargs):
-
-    image_ids = request.GET.getlist('image')
-    try:
-        image_ids = [int(iid) for iid in image_ids]
-    except ValueError:
-        return Http404("Invalid 'image' id")
-
-    parents = {}
-    for img_id in image_ids:
-        img_parents = {}
-        for img_path in paths_to_object(conn, image_id=img_id):
-            for item in img_path:
-                o_type = item["type"]
-                del item["type"]
-                img_parents[o_type] = item
-                if o_type == "wellsample":
-                    item["index"] = get_wellsample_index(conn, item["id"])
-                    continue
-                obj = conn.getObject(o_type, item["id"])
-                if o_type == "well":
-                    item["label"] = obj.getWellPos()
-                else:
-                    item["name"] = obj.getName()
-        parents[img_id] = img_parents
-
-    return JsonResponse({"parents": parents})
 
 
 @login_required()
