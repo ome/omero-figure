@@ -102,7 +102,8 @@ def get_wellsample_index(conn, wellsample_id):
     qs = conn.getQueryService()
     rsp = qs.projection(query, params, conn.SERVICE_OPTS)
 
-    ws_idx = rsp[0][0].val + 1  # increment index by 1, because OMERO returns 0-based index
+    # increment index by 1, because OMERO returns 0-based index
+    ws_idx = rsp[0][0].val + 1
     ws_run_idx = ws_idx  # index of the well sample in the plate
 
     if rsp[0][1] is not None:
