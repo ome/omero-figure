@@ -192,7 +192,18 @@ To convert mm to points (for paper_width and paper_height) multiply by 72 (dpi) 
 
 
 Shapes on a panel use the Image coordinates. However, ``strokeWidth`` uses Page units (points), so
-that lines will not appear thicker on a panel when it is zoomed in. Supported Shapes are::
+that lines will not appear thicker on a panel when it is zoomed in.
+All Shapes support the following attributes::
+
+    {
+        "type": "<shape type>",   // see below
+        "strokeColor": "#RRGGBB",
+        "strokeWidth": 2,
+        "fillColor": "#RRGGBB",
+        "fillOpacity": 1.0,
+    }
+
+ Supported Shapes are::
 
     {
         "type": "Rectangle",
@@ -200,8 +211,6 @@ that lines will not appear thicker on a panel when it is zoomed in. Supported Sh
         "y": 89.4,
         "width": 64.3,
         "height": 58.18,
-        "strokeWidth": 2,
-        "strokeColor": "#FFFFFF",
     },
     {
         "type", "Ellipse",
@@ -230,6 +239,14 @@ that lines will not appear thicker on a panel when it is zoomed in. Supported Sh
     {
         "type": "Polygon",
         "points": "105.4,63.1 98.2,85.1 117.2,109.2 165.4,97.7",
+    },
+    {
+        "type": "Text",
+        "x": 150.0,
+        "y": 50.0,
+        "text": "Sample Text",
+        "fontSize": 14,
+        "textAnchor": "start"  // options: start, middle, end
     }
 
 
