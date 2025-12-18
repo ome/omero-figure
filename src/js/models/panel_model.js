@@ -602,12 +602,9 @@
                     var pathnames = this.get('name').split('/');
                     text = pathnames[pathnames.length-1];
                 }
-            } else if (property === "dataset") {
-                if (format === "id") {
-                    text = ""+this.get('datasetId');
-                } else if (format === "name") {
-                    text = this.get('datasetName') ? this.get('datasetName') : "No/Many Datasets";
-                }
+            } else{
+                // screen, plate, well, (name or id)
+                text = "" + this.get("parents")?.[property]?.[format] ?? "Not Found";
             }
             return text;
         },
