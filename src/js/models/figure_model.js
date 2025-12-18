@@ -631,6 +631,77 @@
                 });
         },
 
+        reloadMetadata: function() {
+            // Reload metadata (name, dataset, channels, pixel sizes, ...) for all panels
+            // Fetch each image's data once per id, then apply to all panels with that imageId.
+            // Reload here must not change edits made by the user (channel LUT, contrast, field of view, ...)
+
+            var panels = this.panels;
+            var ids = {};
+            panels.each(function(panel){
+                // Make a set of imageIds
+                ids[panel.get('imageId')] = true;
+            });
+            var imageIds = Object.keys(ids);
+            if (imageIds.length === 0) return;
+
+            let cors_headers = { mode: 'cors', credentials: 'include', headers: {"Content-Type": "application/json"} };
+            var fetches = imageIds.map(function(iid){
+                // singe fetch per imageId
+                var imgDataUrl = BASE_WEBFIGURE_URL + 'imgData/' + iid + '/';
+                return fetch(imgDataUrl, cors_headers)
+                    .then(rsp => rsp.json())
+                    .then(data => {
+
+                        // values returned here are caught below in the Promise.all handler
+                        if (data.Exception || data.ConcurrencyException) {
+                            return {id: iid, error: true, msg: data.Exception || "ConcurrencyException", url: imgDataUrl};
+                        }
+                        return {id: iid, data: data, url: imgDataUrl};
+                    })
+                    .catch(err => ({id: iid, error: true, msg: err && err.message ? err.message : String(err), url: imgDataUrl}));
+            });
+
+            Promise.all(fetches).then(function(results){
+                results.forEach(function(res){
+                    var iid = res.id;
+                    if (res.error) {
+                        // Show an alert but continue updating other images
+                        alert(`Image loading from ${res.url} included an Error: ${res.msg}`);
+                        return;
+                    }
+
+                    var data = res.data;
+                    // Update all panels that share this imageId
+                    panels.each(function(panel){
+                        if (panel.get('imageId') == iid) {
+                            var new_channels = JSON.parse(JSON.stringify(panel.attributes.channels));
+                            for (var i=0; i < data.channels.length; i++) {
+                                new_channels[i].label = data.channels[i].label;
+                            }
+
+                            panel.set({
+                                'name': data.meta.imageName,
+                                'datasetName': data.meta.datasetName,
+                                'datasetId': data.meta.datasetId,
+                                'pixel_size_x': data.pixel_size.valueX,
+                                'pixel_size_y': data.pixel_size.valueY,
+                                'pixel_size_z': data.pixel_size.valueZ,
+                                'pixel_size_x_symbol': data.pixel_size.symbolX,
+                                'pixel_size_z_symbol': data.pixel_size.symbolZ,
+                                'pixel_size_x_unit': data.pixel_size.unitX,
+                                'pixel_size_z_unit': data.pixel_size.unitZ,
+                                'channels': new_channels
+                            });
+                            panel.trigger('change:labels');
+                        }
+                    });
+                });
+            });
+            this.set('unsaved', true);
+            alert("Metadata reloaded for " + this.panels.length + " panel" + (this.panels.length > 1 ? 's.' : '.'));
+        },
+
         // Used to position the #figure within canvas and also to coordinate svg layout.
         getFigureSize: function() {
             var pc = this.get('page_count'),
