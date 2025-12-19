@@ -3,6 +3,7 @@
     import _ from "underscore";
     import $ from "jquery";
     import {renderZarrToSrc} from "./zarr_utils";
+    import { rotatePoint } from "../views/util";
 
     // Corresponds to css - allows us to calculate size of labels
     var LINE_HEIGHT = 1.43;
@@ -41,7 +42,7 @@
 
         initialize: function() {
             // listen for changes to the viewport...
-            this.on("change:zoom change:dx change:dy change:width change:height change:rotation", (panel) => {
+            this.on("change:zoom change:dx change:dy change:width change:height change:rotation change:labels", (panel) => {
                 // if this panel has 'insetRoiId' it is an "inset" panel so we need to
                 // notify other panels that contain the corresponding ROI (rectangle)
                 if (this.get('insetRoiId') && this.figureModel) {
@@ -82,8 +83,24 @@
 
             // find Rectangle from panel that corresponds to this panel
             let rect = (panel.get("shapes") || []).find(shape => shape.id == insetRoiId);
+
             if (rect) {
                 this.cropToRoi(rect);
+                let text = panel.get("shapes").find(shape => shape.id == rect.textId);
+                if(text){
+                    let insetLabel = (this.get("labels") || []).find(lbl => lbl.inset == true);
+                    if(insetLabel){
+                        var lbl_key = this.get_label_key(insetLabel)
+                        var new_txt = text.text
+                        if(insetLabel.text !== new_txt){
+                            insetLabel.text = new_txt
+                            var newlbls = {};
+                            newlbls[lbl_key] = insetLabel;
+                            this.edit_labels(newlbls)
+                            this.trigger("change:labels")
+                        }
+                    }
+                }
             }
 
             this.silenceTriggers = false;
@@ -93,6 +110,8 @@
             // An inset panel has zoomed/panned or deleted. If we have corresponding inset
             // Rectangle then update or delete it accordingly...
             var insetRoiId = panel.get('insetRoiId');
+            var inset_lbl = panel.get('labels').filter(lbl => lbl.inset == true);
+
             if (!insetRoiId) return;
             // find Rectangles that have insetRoiId...
             let insetShapes = this.get('shapes');
@@ -103,20 +122,87 @@
                     // delete or update the "inset" Rectangle
                     let updated = this.get('shapes');
                     if (panelDeleted) {
-                        updated = updated.filter(shape => shape.id != insetRoiId);
+                        // Delete the inset Rectangle IF there are NO other remaining insets
+                        let insets = figureModel.panels.filter(p => p.get('insetRoiId') == insetRoiId);
+                        if (insets.length == 0) {
+                            let rect = updated.filter(shape => shape.id == insetRoiId);
+                            updated = updated.filter(shape => (shape.id != insetRoiId && shape.id != rect[0].textId));
+                            this.save('lastInsetTextIndex', this.get('lastInsetTextIndex') - 1)
+                        }
+                        this.save('shapes', updated);
                     } else {
                         let rect = panel.getViewportAsRect();
+                        let textId = -1;
+                        // update Rectangle with `rect` coordinates and note the OLD coords so we can transform Text
+                        let prevCoords = {};
                         updated = updated.map(shape => {
                             if (shape.type == 'Rectangle' && shape.id == insetRoiId) {
+                                textId = shape.textId;
+                                prevCoords = {x: shape.x, y: shape.y, rotation: shape.rotation || 0, width: shape.width, height: shape.height};
                                 return {...shape, ...rect}
                             }
                             return shape;
                         });
+                        updated = updated.map(shape => {
+                            if (shape.type == 'Text' && shape.id == textId) {
+                                let txtShape = shape;
+                                // apply any translation and rotation to Text
+                                let newCoords = {x: txtShape.x, y: txtShape.y};
+                                // If the Inset was previously rotated, we need to 'undo' that rotation first 
+                                if (prevCoords.rotation && prevCoords.rotation != 360) {
+                                    let prevCx = prevCoords.x + prevCoords.width / 2;
+                                    let prevCy = prevCoords.y + prevCoords.height / 2;
+                                    newCoords = rotatePoint(newCoords.x, newCoords.y, prevCx, prevCy, 360-prevCoords.rotation)
+                                }
+                                // Move x and y wrt to the closest edge.
+                                // If x < centerX, move wrt left edge, else right edge
+                                if (newCoords.x < prevCoords.x + prevCoords.width / 2) {
+                                    newCoords.x += (rect.x - prevCoords.x);
+                                } else {
+                                    newCoords.x += ((rect.x + rect.width) - (prevCoords.x + prevCoords.width));
+                                }
+                                // If y < centerY, move wrt top edge, else bottom edge
+                                if (newCoords.y < prevCoords.y + prevCoords.height / 2) {
+                                    newCoords.y += (rect.y - prevCoords.y);
+                                } else {
+                                    newCoords.y += ((rect.y + rect.height) - (prevCoords.y + prevCoords.height));
+                                }
+                                // Now apply any new rotation
+                                if (rect.rotation != 0) {
+                                    let newCentreX = rect.x + rect.width / 2;
+                                    let newCentreY = rect.y + rect.height / 2;
+                                    newCoords = rotatePoint(newCoords.x, newCoords.y, newCentreX, newCentreY, rect.rotation)
+                                }
+                                // also update the text to match Inset Label
+                                if(inset_lbl && inset_lbl[0]){
+                                    if(inset_lbl[0].text !== txtShape.text){
+                                        txtShape.text = inset_lbl[0].text.replaceAll("*","")
+                                    }
+                                } else {
+                                    // No label found for inset - remove the Text shape
+                                    // return undefined to filter out this shape
+                                    return;
+                                }
+                                return {...txtShape, ...newCoords};
+                            }
+                            return shape;
+                        });
+                        // filter out any undefined shapes (deleted Text)
+                        updated = updated.filter(shape => shape !== undefined);
+                        this.save('shapes', updated);
+                        this.trigger("change:shapes")
                     }
-                    this.save('shapes', updated);
                     this.silenceTriggers = false;
                 }
             }
+        },
+
+        getLastInsetTextIndex: function(){
+            return this.get('lastInsetTextIndex')
+        },
+
+        setLastInsetTextIndex: function(index){
+            this.save('lastInsetTextIndex', index)
         },
 
         // When we're creating a Panel, we process the data a little here:
@@ -313,6 +399,8 @@
                 points = shape.points.split(' ').map(function(p){
                     return p.split(",");
                 });
+            } else if (shape.type === "Text"){
+                points = [[shape.x, shape.y]];
             }
             if (points) {
                 for (var p=0; p<points.length; p++) {
@@ -346,7 +434,7 @@
             this.save('shapes', rois);
         },
 
-        setPanelRotation(){
+        rotatePanel90(){
             var rotation = this.get('rotation') || "0"
             var panelRotationAngle =  (parseInt(rotation) + 90) % 360
 
@@ -356,6 +444,7 @@
             var xPercent = this.get('orig_width') / viewport.height;
             var yPercent = this.get('orig_height') / viewport.width;
             var zoom = Math.min(xPercent, yPercent) * 100;
+
             this.save({'rotation': panelRotationAngle, 'height': width, 'width': height, 'zoom': zoom});
 
             return panelRotationAngle
@@ -612,7 +701,11 @@
                 if (labels_map.hasOwnProperty(lbl_key)) {
                     if (labels_map[lbl_key]) {
                         // replace with the new label
-                        lbl = $.extend(true, {}, labels_map[lbl_key]);
+                        var new_lbl =  labels_map[lbl_key]
+                        if(lbl.inset){
+                            new_lbl.inset = true
+                        }
+                        lbl = $.extend(true, {}, new_lbl);
                         labs.push( lbl );
                     }
                     // else 'false' are ignored (deleted)
@@ -1119,6 +1212,10 @@
             shift = top_labels.reduce(function(prev, l){
                 return prev + (LINE_HEIGHT * l.size);
             }, shift);
+            var border = this.get("border");
+            if (border && border["showBorder"]) {
+                shift = shift + border["strokeWidth"];
+            }
 
             var shift_cbar = 0;
             var cb = this.get("colorbar");
@@ -1152,6 +1249,10 @@
             for (const l of left_labels) {
                 const width = this.measureTextSize(l.text, l.size + "px");
                 shift = Math.max(shift, width);
+            }
+            var border = this.get("border");
+            if (border && border["showBorder"]) {
+                shift = shift + border["strokeWidth"];
             }
 
             var start = "";
@@ -1200,6 +1301,10 @@
                 const width = this.measureTextSize(l.text, l.size + "px");
                 shift = Math.max(shift, width);
             }
+            var border = this.get("border");
+            if (border && border["showBorder"]) {
+                shift = shift + border["strokeWidth"];
+            }
 
             var start = "";
             var end = "";
@@ -1241,6 +1346,10 @@
             shift = bottom_labels.reduce(function(prev, l){
                 return prev + (LINE_HEIGHT * l.size);
             }, shift);
+            var border = this.get("border");
+            if (border && border["showBorder"]) {
+                shift = shift + border["strokeWidth"];
+            }
 
             var shift_cbar = 0;
             var cb = this.get("colorbar");

@@ -1,6 +1,6 @@
 import * as zarr from "zarrita";
 import * as omezarr from "ome-zarr.js";
-import { slice } from "@zarrita/indexing";
+import { slice } from "zarrita";
 import _ from 'underscore';
 
 const ZARRITA_ARRAY_CACHE = {};

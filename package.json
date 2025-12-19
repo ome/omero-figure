@@ -29,7 +29,7 @@
   "homepage": "https://github.com/ome/omero-figure",
   "devDependencies": {
     "sass": "^1.54.1",
-    "vite": "^5.4.8",
+    "vite": "^6.4.1",
     "watch": "^0.13.0"
   },
   "dependencies": {
@@ -37,14 +37,15 @@
     "backbone": "^1.4.1",
     "bootstrap": "^5.2.0",
     "bootstrap-icons": "^1.11.0",
-    "dompurify": "^2.5.4",
+    "dompurify": "^3.2.4",
     "jquery": "^3.6.0",
     "marked": "^4.2.12",
     "mousetrap": "^1.6.5",
-    "ome-zarr.js": "^0.0.6",
+    "ome-zarr.js": "^0.0.17",
     "raphael": "^2.3.0",
     "sortablejs": "^1.15.2",
     "underscore": "^1.13.4",
-    "zarrita": "^0.4.0-next.19"
+    "vite-plugin-html-inject": "^1.1.2",
+    "zarrita": "^0.5.4"
   }
 }

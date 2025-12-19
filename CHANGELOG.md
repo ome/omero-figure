@@ -1,4 +1,31 @@
 
+7.2.1 (January 2025)
+--------------------
+
+- Fix loading of images with timeIncrement of None (Thanks to Rémy Dornier) ([#607](https://github.com/ome/omero-figure/pull/607))
+
+
+7.2.0 (December 2024)
+---------------------
+
+- "Interactive" Inset panels ([#549](https://github.com/ome/omero-figure/pull/549) and [#603](https://github.com/ome/omero-figure/pull/603))
+- Use timeIncrement for Time if no plane-info metadata (Thanks to Jens Wendt) ([#589](https://github.com/ome/omero-figure/pull/589))
+- Add Hilo Checkbox for LUT Toggling (Thanks to Tehmina Enayat) ([#583](https://github.com/ome/omero-figure/pull/583))
+- Support for 'Points' in ROI functionality ([#555](https://github.com/ome/omero-figure/pull/555))
+- Add link from Images to Figure in the form of Key-Value pairs (Thanks to Rémy Dornier) ([#584](https://github.com/ome/omero-figure/pull/584))
+- Support for ROI Fill Colour (Thanks to Rémy Dornier) ([#577](https://github.com/ome/omero-figure/pull/577))
+- Panel Borders (Thanks to Rémy Dornier) ([#578](https://github.com/ome/omero-figure/pull/578))
+- Horizontal and Vertical image flipping (Thanks to Tehmina Enayat) ([#591](https://github.com/ome/omero-figure/pull/591))
+- Dynamic loading of Look-up Tables (Thanks to Tom Boissonnet) ([#596](https://github.com/ome/omero-figure/pull/596))
+- Rotate image panels by 90° (Thanks to Rémy Dornier) ([#595](https://github.com/ome/omero-figure/pull/595))
+- File Open filtering by Group and Owner improvements ([#592](https://github.com/ome/omero-figure/pull/592))
+
+Fixes:
+- Fix issues with drag sorting of labels (Thanks to Tom Boissonnet) ([#599](https://github.com/ome/omero-figure/pull/599))
+- Timestamp loading handles missing planes (Thanks to Tom Boissonnet) ([#598](https://github.com/ome/omero-figure/pull/598))
+- Fix Zoom label formatting in PDF export (Thanks to Rémy Dornier) ([#597](https://github.com/ome/omero-figure/pull/597))
+
+
 7.1.0 (September 2024)
 ----------------------
 

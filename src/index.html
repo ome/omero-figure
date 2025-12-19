@@ -12,10 +12,13 @@
       const APP_SERVED_BY_OMERO = false;
       const BASE_OMEROWEB_URL = dev_omeroweb_url;
       const EXPORT_ENABLED = false;
+      const SCRIPT_VERSION = "";
+      const IS_ADMIN = false;
       const WEBINDEX_URL = BASE_OMEROWEB_URL + "webclient/";
       const BASE_WEBFIGURE_URL = BASE_OMEROWEB_URL + "figure/";
       const WEBGATEWAYINDEX = BASE_OMEROWEB_URL + "webgateway/";
       const MAKE_WEBFIGURE_URL = BASE_WEBFIGURE_URL + "make_web_figure/";
+      const UPLOAD_OMERO_SCRIPT_URL = BASE_WEBFIGURE_URL + "upload_omero_script/";
       const ACTIVITIES_JSON_URL = WEBINDEX_URL + "activities_json/";
       const API_BASE_URL_V0 = BASE_OMEROWEB_URL + "api/v0/"
       const STATIC_DIR = "";
@@ -53,7 +56,7 @@
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css"
     />
-    
+
   </head>
   <body id="body">
     <!-- Welcome splash-screen Modal -->
@@ -167,7 +170,7 @@
       role="dialog"
       aria-hidden="true"
     >
-      <div class="modal-dialog" style="width: 920px; max-width: 920px;">
+      <div class="modal-dialog" style="width: 950px; max-width: 950px;">
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title" style="float: left; padding-right: 20px">
@@ -177,16 +180,19 @@
               Draw & edit ROIs and load ROIs from OMERO
             </p>
           </div>
-          <form class="roiModalForm" role="form">
-            <div
+          <div
             id="roi_toolbar"
             class="roi_toolbar btn-toolbar"
             role="toolbar"
             aria-label="..."
           ></div>
+          <form class="roiModalForm" role="form">
+            <div id="roi_zt_buttons" style="margin-left: 25px"></div>
             <div class="modal-body row">
               <div class="col-8">
+
                 <div id="roiViewer" class="roiViewer">
+
                   <!-- Show / add ROIs on image -->
                   <!-- <div id="roi_image" style="position: absolute"> -->
                   <img class="roi_image" style="position: absolute" />
@@ -203,41 +209,16 @@
                   >
                     <!-- svg is added here by Raphael.js -->
                   </div>
-
-                  <div
-                    id="roi_zt_buttons"
-                    style="position: absolute; top: 5px; left: 5px"
-                  ></div>
                 </div>
               </div>
-              <div id="roiModalSidebar" class="col-4" style="padding: 0">
-                <span
-                  id="roiPageControls"
-                  style="color: #999; line-height: 30px"
-                >
-                </span>
-                <div style="clear: both"></div>
-                <div style="padding: 0; height: 550px; overflow-y: auto; position: relative;">
-                  <div id="roiModalRoiList">
-                    <table
-                      style="width: 100%"
-                      class="table table-hover table-condensed"
-                    ></table>
-                  </div>
-                  <p id="roiModalTip" style="position: absolute; top: 0"></p>
-                </div>
-              </div>
+              <div id="roiModalSidebar" class="col-4" style="padding: 0"></div>
             </div>
+
             <div class="modal-footer" style="margin-top: 0">
-              <button
-                type="button"
-                class="btn btn-default"
-                data-bs-dismiss="modal"
-              >
-                Cancel
-              </button>
+              <button type="button" class="btn btn-default" data-bs-dismiss="modal">Cancel</button>
               <button type="submit" class="btn btn-primary">OK</button>
             </div>
+
           </form>
         </div>
       </div>
@@ -1025,7 +1006,7 @@
       role="dialog"
       aria-hidden="true"
     >
-      <div class="modal-dialog modal-lg">
+      <div class="modal-dialog modal-lg" style="--bs-modal-width: 900px">
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title">Open</h5>
@@ -1041,8 +1022,8 @@
             <table class="table table-sm">
               <thead>
                 <tr>
-                  <th style="width: 7%"></th>
-                  <th style="width: 45%">
+                  <th></th>
+                  <th>
                     <form class="row" role="form">
                       <div class="col-auto">
                         <label class="col-sm-2 control-label">Name</label>
@@ -1068,8 +1049,8 @@
                       </div>
                     </form>
                   </th>
-                  <th style="width: 25%">
-                    <form class="row" role="form">
+                  <th>
+                    <form class="row" role="form" style="flex-wrap: nowrap;">
                       <div class="col-auto">
                         <label class="col-sm-2 control-label">Created</label>
                       </div>
@@ -1087,32 +1068,16 @@
                       </button>
                     </form>
                   </th>
-                  <th style="width: 12%">
-                    <div class="btn-group" title="Filter files by owner">
-                      <button
-                        type="button"
-                        class="btn dropdown-toggle"
-                        data-bs-toggle="dropdown"
-                      >
-                        <b>Owner</b> <span class="caret"></span>
-                      </button>
-                      <ul
-                        id="owner-menu"
-                        class="dropdown-menu float-end"
-                        role="menu"
-                      >
-                        <!-- owners added here -->
-                      </ul>
-                    </div>
-                  </th>
-                  <th style="width: 12%">
+                  <th>
+                    Group:<br>
                     <div class="btn-group" title="Filter files by group">
                       <button
+                        style="max-width: 120px; overflow: hidden;"
                         type="button"
-                        class="btn dropdown-toggle"
+                        class="btn dropdown-toggle btn-outline-secondary"
                         data-bs-toggle="dropdown"
                       >
-                        <b>Group</b> <span class="caret"></span>
+                        <span id="selected_group">Group</span> <span class="caret"></span>
                       </button>
                       <ul
                         id="group-menu"
@@ -1120,6 +1085,26 @@
                         role="menu"
                       >
                         <!-- groups added here -->
+                      </ul>
+                    </div>
+                  </th>
+                  <th>
+                    Owner:<br>
+                    <div class="btn-group" title="Filter files by owner">
+                      <button
+                        style="max-width: 120px; overflow: hidden;"
+                        type="button"
+                        class="btn dropdown-toggle btn-outline-secondary"
+                        data-bs-toggle="dropdown"
+                      >
+                        <span id="selected_owner">Owner</span> <span class="caret"></span>
+                      </button>
+                      <ul
+                        id="owner-menu"
+                        class="dropdown-menu float-end"
+                        role="menu"
+                      >
+                        <!-- owners added here -->
                       </ul>
                     </div>
                   </th>
@@ -1265,6 +1250,8 @@
         </div>
       </div>
     </div>
+
+    <load src="html/dialogs/scriptManagerDialog.html" />
 
     <!-- -- END OF MODAL DIALOGS -- -->
 
@@ -1637,14 +1624,6 @@
                 <i class="bi-exclamation-triangle"></i>
             </a>
 
-            <button
-              type="button"
-              style="display: none"
-              class="btn btn-danger btn-sm"
-            >
-              <i class="bi-exclamation-triangle"></i>
-            </button>
-
             <div class="btn-group">
               <!-- button enabled if EXPORT_ENABLED is true -->
               <button
@@ -1654,6 +1633,13 @@
                 class="btn btn-success btn-sm export_pdf"
               >
                 Export PDF
+              </button>
+              <!-- script warning shown in FigureView.initialise() if needed -->
+              <button
+                type="button" style="display: none"
+                class="btn btn-danger btn-sm script_version_warning"
+              >
+                <i class="bi-exclamation-circle"></i>
               </button>
               <button
                 type="button"

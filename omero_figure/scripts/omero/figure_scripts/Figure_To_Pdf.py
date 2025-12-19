@@ -38,6 +38,8 @@ from omero.model.enums import UnitsLength
 
 from io import BytesIO
 
+from reportlab.pdfbase.pdfmetrics import stringWidth
+
 try:
     from PIL import Image, ImageDraw, ImageFont
 except ImportError:
@@ -67,6 +69,7 @@ except ImportError:
     reportlab_installed = False
     logger.error("Reportlab not installed.")
 
+VERSION = "7.2.2.dev0"
 DEFAULT_OFFSET = 0
 
 ORIGINAL_DIR = "1_originals"
@@ -186,7 +189,19 @@ class ShapeExport(object):
 
     def __init__(self, panel):
         self.panel = panel
+        sorted_shapes = []
+        text_shapes = []
+
+        # sort shapes to draw text last
         for s in panel.get("shapes", ()):
+            if s['type'].lower() == "text":
+                text_shapes.append(s)
+            else:
+                sorted_shapes.append(s)
+
+        sorted_shapes.extend(text_shapes)
+
+        for s in sorted_shapes:
             getattr(self, 'draw_%s' % s['type'].lower(), lambda s: None)(s)
 
     @staticmethod
@@ -278,13 +293,14 @@ class ShapeExport(object):
 class ShapeToPdfExport(ShapeExport):
     point_radius = 5
 
-    def __init__(self, canvas, panel, page, crop, page_height):
+    def __init__(self, canvas, panel, page, crop, page_height, page_width):
 
         self.canvas = canvas
         self.page = page
         # The crop region on the original image coordinates...
         self.crop = crop
         self.page_height = page_height
+        self.page_width = page_width
         # Get a mapping from original coordinates to the actual size of panel
         self.scale = float(panel['width']) / crop['width']
 
@@ -304,9 +320,9 @@ class ShapeToPdfExport(ShapeExport):
         h_flip = self.panel.get('horizontal_flip', False)
         v_flip = self.panel.get('vertical_flip', False)
         if h_flip:
-            shape_x = self.crop['width'] - shape_x + 2*self.crop['x']
+            shape_x = self.crop['width'] - shape_x + 2 * self.crop['x']
         if v_flip:
-            shape_y = self.crop['height'] - shape_y + 2*self.crop['y']
+            shape_y = self.crop['height'] - shape_y + 2 * self.crop['y']
 
         rotation = self.panel['rotation']
         if v_flip != h_flip:
@@ -370,6 +386,56 @@ class ShapeToPdfExport(ShapeExport):
         para.drawOn(
             self.canvas, center[0] - w / 2, center[1] - h / 2 + size / 4)
 
+    def draw_text(self, shape):
+        text = shape.get('text', '')
+        if not shape.get('showText', True) or text == '':
+            return
+
+        font_size = shape.get('fontSize', 12)
+        stroke_color = shape.get('strokeColor', '#FFFFFF')
+        fill_color = shape.get('fillColor', '#000000')
+        fill_opacity = float(shape.get('fillOpacity', 0))
+        anchor = shape.get('textAnchor', "start")
+        text_coords = self.panel_to_page_coords(shape['x'], shape['y'])
+        font = "Helvetica"
+
+        # if markdown_imported:
+        #     # markdown not supported in JS for text shapes (yet)
+        #     text = markdown.markdown(text)
+
+        r, g, b, a = self.get_rgba(stroke_color)
+        rgba_text = (r, g, b, a)
+        r, g, b, _ = self.get_rgba(fill_color)
+        rgba_fill = (r, g, b, fill_opacity)
+
+        x = text_coords["x"]
+        y = self.page_height - text_coords["y"]
+
+        text_width = stringWidth(text, font, font_size)
+        x0 = 0  # default to left align
+        hflip = self.panel.get('horizontal_flip', False)
+        if anchor == 'middle':
+            x0 = text_width/2
+        elif (anchor == "end" and not hflip) or (anchor == "start" and hflip):
+            x0 = text_width
+
+        # draw the text background color
+        if fill_opacity > 0:
+            self.canvas.setFillColorRGB(*rgba_fill)
+            pad = 1
+            self.canvas.rect(x - x0 - pad,
+                             y - font_size * .57 - pad,
+                             text_width + pad * 2,
+                             font_size * 1.11 + pad, fill=1, stroke=0)
+
+        # draw text
+        self.canvas.setFont(font, font_size)
+        self.canvas.setFillColorRGB(*rgba_text)
+        self.canvas.drawString(
+            x - x0,
+            y - font_size*.35 - .2,  # Fine tune positioning to match JS layout
+            text)
+
     def draw_line(self, shape):
         start = self.panel_to_page_coords(shape['x1'], shape['y1'])
         end = self.panel_to_page_coords(shape['x2'], shape['y2'])
@@ -413,7 +479,7 @@ class ShapeToPdfExport(ShapeExport):
         g = float(rgb[1]) / 255
         b = float(rgb[2]) / 255
         self.canvas.setStrokeColorRGB(r, g, b)
-        self.canvas.setFillColorRGB(r, g, b)
+        self.canvas.setFillColorRGB(r, g, b, alpha=1)
 
         head_size = (stroke_width * 4) + 5
         dx = x2 - x1
@@ -585,6 +651,10 @@ class ShapeToPilExport(ShapeExport):
         self.crop = crop
         self.scale = pil_img.size[0] / crop['width']
         self.draw = ImageDraw.Draw(pil_img)
+
+        from omero.gateway import THISPATH
+        self.GATEWAYPATH = THISPATH
+
         super(ShapeToPilExport, self).__init__(panel)
 
     def get_panel_coords(self, shape_x, shape_y):
@@ -599,9 +669,9 @@ class ShapeToPilExport(ShapeExport):
 
         # Apply flip transformations to the shape coordinates
         if h_flip:
-            shape_x = self.crop['width'] - shape_x + 2*self.crop['x']
+            shape_x = self.crop['width'] - shape_x + 2 * self.crop['x']
         if v_flip:
-            shape_y = self.crop['height'] - shape_y + 2*self.crop['y']
+            shape_y = self.crop['height'] - shape_y + 2 * self.crop['y']
 
         rotation = self.panel['rotation']
         if v_flip != h_flip:
@@ -642,8 +712,7 @@ class ShapeToPilExport(ShapeExport):
         # bump up alpha a bit to make text more readable
         rgba = (r, g, b, int(128 + a / 2))
         font_name = "FreeSans.ttf"
-        from omero.gateway import THISPATH
-        path_to_font = os.path.join(THISPATH, "pilfonts", font_name)
+        path_to_font = os.path.join(self.GATEWAYPATH, "pilfonts", font_name)
         try:
             font = ImageFont.truetype(path_to_font, size)
         except Exception:
@@ -654,6 +723,65 @@ class ShapeToPilExport(ShapeExport):
         height = box[3] - box[1]
         xy = (int(center[0] - width / 2.0), int(center[1] - height / 2.0))
         self.draw.text(xy, text, fill=rgba, font=font)
+
+    def draw_text(self, shape):
+        text = shape.get('text', '')
+        if not shape.get('showText', True) or text == '':
+            return
+
+        font_size = scale_to_export_dpi(shape.get('fontSize', 12))
+        stroke_color = shape.get('strokeColor', '#FFFFFF')
+        fill_color = shape.get('fillColor', '#000000')
+        fill_opacity = float(shape.get('fillOpacity', 0))
+        anchor = shape.get('textAnchor', "start")
+        text_coords = self.get_panel_coords(shape['x'], shape['y'])
+        x, y = text_coords['x'], text_coords['y']
+
+        r, g, b, a = self.get_rgba_int(stroke_color)
+
+        font_name = "FreeSans.ttf"
+        path_to_font = os.path.join(self.GATEWAYPATH, "pilfonts", font_name)
+        try:
+            font = ImageFont.truetype(path_to_font, font_size)
+        except Exception:
+            font = ImageFont.load(
+                '%s/pilfonts/B%0.2d.pil' % (self.GATEWAYPATH, font_size))
+
+        box = font.getbbox(text)
+        txt_w = box[2] - box[0]
+        box = font.getbbox("Mg")  # height including acsenders & descenders
+        txt_h = box[3] - box[1]
+        temp_label = Image.new('RGBA', (txt_w, txt_h), (255, 255, 255, 0))
+        textdraw = ImageDraw.Draw(temp_label)
+        textdraw.text((0, -box[1]), text, font=font, fill=(r, g, b))
+
+        hflip = self.panel.get('horizontal_flip', False)
+        if anchor == "middle":
+            x = x - temp_label.size[0] / 2
+        elif (anchor == "end" and not hflip) or (anchor == "start" and hflip):
+            x = x - temp_label.size[0]
+
+        y = y - txt_h * 0.4
+        x = int(round(x))  # Round before drawing background
+        y = int(round(y))  # to fix text position within the background box
+
+        # draw background color
+        if fill_opacity > 0:
+            pad = scale_to_export_dpi(1)
+            r, g, b, _ = self.get_rgba_int(fill_color)
+            a = int(fill_opacity * 255)
+            height_scale = 0.15
+            box_x = round(x - pad)
+            box_y = round(y - txt_h * height_scale)
+            box_w = round(txt_w + 2 * pad)
+            box_h = round(txt_h * (1 + height_scale) + pad/2)
+            temp_image = Image.new('RGBA', (box_w, box_h))
+            temp_draw = ImageDraw.Draw(temp_image)
+            temp_draw.rectangle((0, 0, box_w, box_h), fill=(r, g, b, a))
+            self.pil_img.paste(temp_image, (box_x, box_y), mask=temp_image)
+
+        # Use label as mask, so transparent part is not pasted
+        self.pil_img.paste(temp_label, (x, y), mask=temp_label)
 
     def draw_arrow(self, shape):
 
@@ -733,7 +861,7 @@ class ShapeToPilExport(ShapeExport):
         # with correct stroke width
         r, g, b, a = self.get_rgba_int(shape.get('fillColor', '#00000000'))
         if 'fillOpacity' in shape:
-            a = int(float(shape['fillOpacity'])*255)
+            a = int(float(shape['fillOpacity']) * 255)
         rgba = (r, g, b, a)
 
         # need to draw on separate image and then paste on to get transparency
@@ -792,7 +920,7 @@ class ShapeToPilExport(ShapeExport):
         # with correct stroke width
         r, g, b, a = self.get_rgba_int(shape.get('fillColor', '#00000000'))
         if 'fillOpacity' in shape:
-            a = int(float(shape['fillOpacity'])*255)
+            a = int(float(shape['fillOpacity']) * 255)
         rgba = (r, g, b, a)
 
         # need to draw on separate image and then paste on to get transparency
@@ -878,7 +1006,7 @@ class ShapeToPilExport(ShapeExport):
 
         r, g, b, a = self.get_rgba_int(shape.get('fillColor', '#00000000'))
         if 'fillOpacity' in shape:
-            a = int(float(shape['fillOpacity'])*255)
+            a = int(float(shape['fillOpacity']) * 255)
         rgba = (r, g, b, a)
 
         # when rx is ~zero (for a Point, scaled down) don't need inner ellipse
@@ -1281,7 +1409,7 @@ class FigureExport(object):
 
         crop = self.get_crop_region(panel)
         ShapeToPdfExport(self.figure_canvas, panel, page, crop,
-                         self.page_height)
+                         self.page_height, self.page_width)
 
     def draw_labels(self, panel, page):
         """
@@ -1294,14 +1422,13 @@ class FigureExport(object):
         y = panel['y']
         width = panel['width']
         height = panel['height']
+        border = panel.get('border')
 
         viewport_region = self.get_crop_region(panel)
 
         # Handle page offsets
         x = x - page['x']
         y = y - page['y']
-
-        spacer = 5
 
         # group by 'position':
         positions = {'top': [], 'bottom': [], 'left': [],
@@ -1495,6 +1622,13 @@ class FigureExport(object):
             self.draw_text(text, lx, ly, fontsize, rgb, align=align)
             return label_h
 
+        spacer = 5
+        border_width = 0
+        if border is not None and border['showBorder']:
+            border_width = border['strokeWidth']
+
+        border_spacer = spacer + border_width
+
         # Render each position:
         for key, labels in positions.items():
             if key == 'topleft':
@@ -1525,19 +1659,19 @@ class FigureExport(object):
                     draw_lab(label, lx, ly, align='right')
             elif key == 'top':
                 lx = x + (width / 2)
-                ly = y
+                ly = y - border_width
                 labels.reverse()
                 for label in labels:
                     ly = ly - label['size'] - spacer
                     draw_lab(label, lx, ly, align='center')
             elif key == 'bottom':
                 lx = x + (width / 2)
-                ly = y + height + spacer
+                ly = y + height + border_spacer
                 for label in labels:
                     label_h = draw_lab(label, lx, ly, align='center')
                     ly += label_h + spacer
             elif key == 'left':
-                lx = x - spacer
+                lx = x - border_spacer
                 sizes = [label['size'] for label in labels]
                 total_h = sum(sizes) + spacer * (len(labels) - 1)
                 ly = y + (height - total_h) / 2
@@ -1545,7 +1679,7 @@ class FigureExport(object):
                     label_h = draw_lab(label, lx, ly, align='right')
                     ly += label_h + spacer
             elif key == 'right':
-                lx = x + width + spacer
+                lx = x + width + border_spacer
                 sizes = [label['size'] for label in labels]
                 total_h = sum(sizes) + spacer * (len(labels) - 1)
                 ly = y + (height - total_h) / 2
@@ -1553,14 +1687,14 @@ class FigureExport(object):
                     label_h = draw_lab(label, lx, ly)
                     ly += label_h + spacer
             elif key == 'leftvert':
-                lx = x - spacer
+                lx = x - border_spacer
                 ly = y + (height / 2)
                 labels.reverse()
                 for label in labels:
                     lx = lx - label['size'] - spacer
                     draw_lab(label, lx, ly, align='left-vertical')
             elif key == 'rightvert':
-                lx = x + width + spacer
+                lx = x + width + border_spacer
                 ly = y + (height / 2)
                 labels.reverse()
                 for label in labels:
@@ -1593,8 +1727,7 @@ class FigureExport(object):
             return
 
         sb = panel['scalebar']
-
-        spacer = 0.05 * max(height, width)
+        spacer = sb.get('margin', 10)
 
         color = sb['color']
         red = int(color[0:2], 16)
@@ -3064,7 +3197,11 @@ def run_script():
                        description="Name of the Pdf Figure"),
 
         scripts.String("Figure_URI",
-                       description="URL to the Figure")
+                       description="URL to the Figure"),
+
+        # This allows clients to query the script version
+        # by listing script params and getting default value
+        scripts.String("FIGURE_VERSION", default=VERSION)
     )
 
     try:

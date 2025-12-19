@@ -1,6 +1,8 @@
 *.pyc
 .DS_Store
 .omero
+.idea
+.vscode
 demo/omero_figure/
 demo/figure.js
 demo/index.html

@@ -42,7 +42,7 @@
             this.listenTo(this.model,
                 'change:channels change:zoom change:dx change:dy change:width change:height change:rotation change:labels change:theT change:deltaT change:theZ change:deltaZ change:z_projection change:z_start change:z_end',
                 this.render_labels);
-            this.listenTo(this.model, 'change:shapes', this.render_shapes);
+            this.listenTo(this.model, 'change:shapes change:rotation change:vertical_flip change:horizontal_flip', this.render_shapes);
             this.listenTo(this.model, 'change:border', this.render_layout);
             // During drag or resize, model isn't updated, but we trigger 'drag'
             this.model.on('drag_resize', this.drag_resize, this);
@@ -51,7 +51,6 @@
             if (opts.page_color) {
                 this.page_color = opts.page_color;
             }
-            this.render();
         },
 
         events: {
@@ -104,7 +103,7 @@
                 x = x - sw;
                 y = y - sw;
                 page_w = w + (sw * 2);
-               page_h = h + (sw * 2);
+                page_h = h + (sw * 2);
             } else {
                 this.$el.css({'border': ''})
             }
@@ -178,6 +177,9 @@
                     this.shapeManager.setZoom(panel_scale * 100);
                 }
                 this.shapeManager.setShapesJson(shapes);
+                this.shapeManager.setTextRotation(this.model.get('rotation'));
+                this.shapeManager.setHorizontalFlip(this.model.get('horizontal_flip') ? -1 : 1);
+                this.shapeManager.setVerticalFlip(this.model.get('vertical_flip') ? -1 : 1);
             } else {
                 // delete shapes
                 if (this.shapeManager) {
@@ -314,23 +316,21 @@
             $('.right_vlabels', self.$el).css('width', 3 * self.$el.height() + 'px');
 
             var border = this.model.get('border')
-            if(border != undefined){
+            if(border?.showBorder){
                 var margin =  5 + border.strokeWidth
                 $('.left_vlabels>div', self.$el).css('margin-bottom', margin + 'px');
                 $('.right_vlabels>div', self.$el).css('margin-bottom', margin + 'px');
-                margin =  3 + border.strokeWidth
                 $('.label_top', self.$el).css('margin-bottom', margin + 'px');
-                margin =  border.strokeWidth
                 $('.label_bottom', self.$el).css('margin-top', margin + 'px');
                 $('.label_left', self.$el).css('margin-right', margin + 'px');
                 $('.label_right', self.$el).css('margin-left', margin + 'px');
             }else{
-                $('.left_vlabels>div', self.$el).css('mSargin-bottom', '5px');
+                $('.left_vlabels>div', self.$el).css('margin-bottom', '5px');
                 $('.right_vlabels>div', self.$el).css('margin-bottom', '5px');
-                $('.label_top', self.$el).css('margin-bottom', '3px');
-                $('.label_bottom', self.$el).css('margin-top', '');
-                $('.label_left', self.$el).css('margin-right', '');
-                $('.label_right', self.$el).css('margin-left', '');
+                $('.label_top', self.$el).css('margin-bottom', '5px');
+                $('.label_bottom', self.$el).css('margin-top', '5px');
+                $('.label_left', self.$el).css('margin-right', '5px');
+                $('.label_right', self.$el).css('margin-left', '5px');
             }
 
             return this;
@@ -348,6 +348,7 @@
                 sb_json.color = sb.color;
                 sb_json.length = sb.length;
                 sb_json.height = sb.height;
+                sb_json.margin = sb.margin;
                 sb_json.font_size = sb.font_size;
                 sb_json.show_label = sb.show_label;
                 sb_json.symbol = sb.units;
@@ -460,8 +461,7 @@
 
             // update src, layout etc.
             this.render_image();
-            this.render_labels();
-            this.render_scalebar();     // also calls render_layout()
+            this.render_scalebar();     // also calls render_layout() -> render_labels()
             this.render_colorbar();
 
             // At this point, element is not ready for Raphael svg
@@ -470,6 +470,7 @@
             setTimeout(function(){
                 self.render_shapes();
             }, 10);
+            this.render_scalebar();     // also calls render_layout() -> render_labels()
 
             return this;
         }
