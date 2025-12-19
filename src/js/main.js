@@ -73,17 +73,46 @@ var undoManager = new UndoManager({ figureModel: figureModel }),
 // Finally, start listening for changes to panels
 undoManager.listenToCollection(figureModel.panels);
 
+
+let routes = {
+  "": "index",
+  "new(/)": "newFigure",
+  "recover(/)": "recoverFigure",
+  "open(/)": "openFigure",
+  "file/:id(/)": "loadFigure",
+};
+
+if (!APP_SERVED_BY_OMERO) {
+  // vite.config.js has base: "/omero-figure/"
+  // so we deploy with gh-pages to https://ome.github.io/omero-figure/
+  routes = {
+    "omero-figure(/)": "index",
+    "omero-figure/new(/)": "newFigure",
+    "omero-figure/recover(/)": "recoverFigure",
+    "omero-figure/open(/)": "openFigure",
+    // only for development
+    "omero-figure/file/:id(/)": "loadFigure",
+  };
+}
+
 var FigureRouter = Backbone.Router.extend({
-  routes: {
-    "": "index",
-    "new(/)": "newFigure",
-    "recover(/)": "recoverFigure",
-    "open(/)": "openFigure",
-    "file/:id(/)": "loadFigure",
-  },
+  routes: routes,
 
   index: function () {
     console.log("index");
+    // Check for ?file=http://...json
+    // TODO: do we ONLY want to do this on index?
+    if (window.location.search.length > 1) {
+      const searchParams = new URLSearchParams(window.location.search.substring(1));
+      if (searchParams.has("file")) {
+        const file = searchParams.get("file");
+        var cb = function () {
+          figureModel.load_from_url(file);
+        };
+        figureModel.checkSaveAndClear(cb);
+        return;
+      }
+    }
     hideModals();
     var cb = () => {
       showModal("welcomeModal");
@@ -161,7 +190,8 @@ $(document).on("click", "a", function (ev) {
   // check that links are 'internal' to this app
   if (href.substring(0, BASE_WEBFIGURE_URL.length) === BASE_WEBFIGURE_URL) {
     ev.preventDefault();
-    href = href.replace(BASE_WEBFIGURE_URL, "/");
+    let baseUrl = APP_SERVED_BY_OMERO ? "/" : "/omero-figure/";
+    href = href.replace(BASE_WEBFIGURE_URL, baseUrl);
     app.navigate(href, { trigger: true });
   }
 });

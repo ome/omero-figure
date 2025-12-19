@@ -11,6 +11,7 @@
     import {FigureFileList, FileListView} from "./files";
 
     import {AddImagesModalView, DpiModalView, PaperSetupModalView, SetIdModalView } from "./modal_views";
+    import {OpenLocalFileModalView} from "./open_local_file_modal";
 
     import {CropModalView} from "./crop_modal_view";
     import {ChgrpModalView} from "./chgrp_modal_view";
@@ -52,6 +53,7 @@
             new DpiModalView({model: this.model});
             new LegendView({model: this.model});
             new LabelFromMapsModal({model: this.model});
+            new OpenLocalFileModalView({model: this.model, app: this.app});
 
             this.figureFiles = new FigureFileList();
             this.fileListViewModal = new FileListView({model:this.figureFiles, figureModel: this.model});
@@ -104,6 +106,14 @@
             } else {
                 $(".script_version_warning").show()
                     .attr("title", "Export script not installed. Contact your OMERO administrator.");
+            }
+
+            // if we're NOT served by OMERO, hide elements such as Delete and Chgrp menu-items
+            if (!APP_SERVED_BY_OMERO) {
+                $(".omero_only_element").hide();
+            } else {
+                // otherwise hide elements with stand-alone specific content
+                $(".standalone_only_element").hide();
             }
 
             // respond to zoom changes
@@ -511,7 +521,12 @@
             var self = this;
             var callback = function() {
                 // Opening modal will trigger fetch of files
-                self.fileListViewModal.modal.show();
+                if (APP_SERVED_BY_OMERO) {
+                    self.fileListViewModal.modal.show();
+                } else {
+                    // Open local file or URL
+                    showModal("openLocalFileModal");
+                }
             };
 
             if (this.model.get("unsaved")) {
@@ -549,7 +564,7 @@
 
             var fileId = this.model.get('fileId'),
                 canEdit = this.model.get('canEdit');
-            if (fileId && canEdit) {
+            if (fileId && canEdit && APP_SERVED_BY_OMERO) {
                 // Prevent double-click
                 this.$saveBtn.attr('disabled', 'disabled');
                 // Save
@@ -575,20 +590,26 @@
 
             var self = this;
             options = options || {};
-            var defaultName = this.model.get('figureName');
-            if (!defaultName) {
-                defaultName = this.model.getDefaultFigureName();
+            var figureName = this.model.get('figureName');
+            if (!figureName) {
+                var defaultName = this.model.getDefaultFigureName();
+                figureName = prompt("Enter Figure Name", defaultName);
             }
-            var figureName = prompt("Enter Figure Name", defaultName);
 
             var nav = function(data){
-                console.log("nav", data, self.app);
+                // Update URL to new file (with ID)
                 self.app.navigate("file/"+data);
                 // in case you've Saved a copy of a file you can't edit
                 self.model.set('canEdit', true);
             };
             if (figureName) {
                 options.figureName = figureName;
+
+                if (!APP_SERVED_BY_OMERO) {
+                    this.model.set('figureName', figureName);
+                    this.model.save_to_download(options);
+                    return;
+                }
                 // On save, go to newly saved page, unless we have callback already
                 options.success = options.success || nav;
                 // Save

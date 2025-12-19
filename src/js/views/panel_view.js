@@ -201,8 +201,8 @@
                 this.$img_panel.show();
             }.bind(this));
 
-            var src = this.model.get_img_src();
-            this.$img_panel.attr('src', src);
+            this.model.get_img_src()
+                .then(src => this.$img_panel.attr('src', src));
 
             // if a 'reasonable' dpi is set, we don't pixelate
             if (this.model.get('min_export_dpi') > 100) {
@@ -389,9 +389,18 @@
             var lutBgPos;
             var isLUT = !(/^[0-9a-fA-F]+$/.test(color));  // check if it's a normal color or a LUT
             if (isLUT) {
-                lut_url = await FigureLutPicker.loadLuts();  // Ensure lut url and list are loaded
-                lutBgPos = FigureLutPicker.getLutBackgroundPosition(color);
+                // try to get lut.png data:URL from ome-zarr.js
+                var lutPng = FigureLutPicker.getLutPng(color);
+                if (lutPng) {
+                    lut_url = lutPng;
+                    lutBgPos = `0 0`;
+                } else {
+                    lut_url = await FigureLutPicker.loadLuts();  // Ensure lut url and list are loaded
+                    // Using lut.png from webgateway
+                    lutBgPos = FigureLutPicker.getLutBackgroundPosition(color);
+                }
             }
+
             var inverted_pos = {  // convenience variable for the colorbar template.
                 "left": "right",
                 "right": "left",
