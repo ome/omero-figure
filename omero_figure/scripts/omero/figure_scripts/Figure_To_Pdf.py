@@ -38,8 +38,6 @@ from omero.model.enums import UnitsLength
 
 from io import BytesIO
 
-from reportlab.pdfbase.pdfmetrics import stringWidth
-
 try:
     from PIL import Image, ImageDraw, ImageFont
 except ImportError:
@@ -64,6 +62,7 @@ try:
     from reportlab.platypus import Paragraph
     from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT
     from reportlab.lib.utils import ImageReader
+    from reportlab.pdfbase.pdfmetrics import stringWidth
     reportlab_installed = True
 except ImportError:
     reportlab_installed = False
