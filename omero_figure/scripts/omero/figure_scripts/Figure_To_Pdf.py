@@ -3480,6 +3480,8 @@ def handle_main():
 
     parser.add_argument('--omero', action='store_true',
                         help='Run with OMERO connection')
+    parser.add_argument('--file_type', choices=['pdf', 'tiff'], default='pdf',
+                        help='Type of file to export (default: pdf)')
     args = parser.parse_args()
 
     fpath = args.file
@@ -3488,7 +3490,7 @@ def handle_main():
 
     script_args = {
                     "Figure_JSON": json.dumps(figure_json),
-                    "Export_Option": "PDF",
+                    "Export_Option": args.file_type.upper(),
                     "Webclient_URI": "http://localhost/webclient/"
                 }
 
