@@ -669,7 +669,11 @@ class ShapeToPilExport(ShapeExport):
 
         if omero_installed:
             from omero.gateway import THISPATH
-            self.GATEWAYPATH = THISPATH
+            self.FONTPATH = os.path.join(THISPATH, "pilfonts")
+        else:
+            # get location of this script... /pilfonts
+            this_path = os.path.dirname(os.path.abspath(__file__))
+            self.FONTPATH = os.path.join(this_path, "pilfonts")
 
         super(ShapeToPilExport, self).__init__(panel)
 
@@ -727,16 +731,7 @@ class ShapeToPilExport(ShapeExport):
         r, g, b, a = self.get_rgba_int(shape['strokeColor'])
         # bump up alpha a bit to make text more readable
         rgba = (r, g, b, int(128 + a / 2))
-        font_name = "FreeSans.ttf"
-        if omero_installed:
-            path_to_font = os.path.join(self.GATEWAYPATH, "pilfonts", font_name)
-            try:
-                font = ImageFont.truetype(path_to_font, size)
-            except Exception:
-                font = ImageFont.load(
-                    '%s/pilfonts/B%0.2d.pil' % (self.GATEWAYPATH, size))
-        else:
-            font = ImageFont.load_default()
+        font = self.get_font(size)
         box = font.getbbox(text)
         width = box[2] - box[0]
         height = box[3] - box[1]
@@ -757,15 +752,7 @@ class ShapeToPilExport(ShapeExport):
         x, y = text_coords['x'], text_coords['y']
 
         r, g, b, a = self.get_rgba_int(stroke_color)
-
-        font_name = "FreeSans.ttf"
-        path_to_font = os.path.join(self.GATEWAYPATH, "pilfonts", font_name)
-        try:
-            font = ImageFont.truetype(path_to_font, font_size)
-        except Exception:
-            font = ImageFont.load(
-                '%s/pilfonts/B%0.2d.pil' % (self.GATEWAYPATH, font_size))
-
+        font = self.get_font(font_size)
         box = font.getbbox(text)
         txt_w = box[2] - box[0]
         box = font.getbbox("Mg")  # height including acsenders & descenders
@@ -2919,8 +2906,11 @@ class TiffExport(FigureExport):
 
         if omero_installed:
             from omero.gateway import THISPATH
-            self.GATEWAYPATH = THISPATH
-
+            self.FONTPATH = os.path.join(THISPATH, "pilfonts")
+        else:
+            # get location of this script... /pilfonts
+            this_path = os.path.dirname(os.path.abspath(__file__))
+            self.FONTPATH = os.path.join(this_path, "pilfonts")
         self.ns = "omero.web.figure.tiff"
         self.mimetype = "image/tiff"
 
@@ -2930,8 +2920,6 @@ class TiffExport(FigureExport):
 
     def get_font(self, fontsize, bold=False, italics=False):
         """ Try to load font from known location in OMERO """
-        if not omero_installed:
-            return ImageFont.load_default()
         font_name = "FreeSans.ttf"
         if bold and italics:
             font_name = "FreeSansBoldOblique.ttf"
@@ -2939,12 +2927,12 @@ class TiffExport(FigureExport):
             font_name = "FreeSansBold.ttf"
         elif italics:
             font_name = "FreeSansOblique.ttf"
-        path_to_font = os.path.join(self.GATEWAYPATH, "pilfonts", font_name)
+        path_to_font = os.path.join(self.FONTPATH, font_name)
         try:
             font = ImageFont.truetype(path_to_font, fontsize)
         except Exception:
-            font = ImageFont.load(
-                '%s/pilfonts/B%0.2d.pil' % (self.GATEWAYPATH, 24))
+            font_path = os.path.join(self.FONTPATH, "B24.pil")
+            font = ImageFont.load(font_path)
         return font
 
     def get_figure_file_ext(self):
