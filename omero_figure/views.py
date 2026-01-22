@@ -113,8 +113,6 @@ def index(request, file_id=None, conn=None, **kwargs):
     # Load the template html and replace OMEROWEB_INDEX
     template = loader.get_template("omero_figure/index.html")
     html = template.render({}, request)
-    html = html.replace('const APP_SERVED_BY_OMERO = false;',
-                        'const APP_SERVED_BY_OMERO = true;')
     omeroweb_index = reverse("index")
     figure_index = reverse("figure_index")
     ping_url = reverse("keepalive_ping")
