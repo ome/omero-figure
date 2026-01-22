@@ -105,6 +105,8 @@ def index(request, file_id=None, conn=None, **kwargs):
     length_units = get_length_units()
     cfg = conn.getConfigService()
     max_bytes = cfg.getConfigValue('omero.pixeldata.max_projection_bytes')
+    max_active_channels = cfg.getConfigValue('omero.web.figure.max_active_channels')
+    max_active_channels = max_active_channels or 10
     is_public_user = "false"
     if (hasattr(settings, 'PUBLIC_USER')
             and settings.PUBLIC_USER == user.getOmeName()):
@@ -131,6 +133,9 @@ def index(request, file_id=None, conn=None, **kwargs):
                         'const MAX_PLANE_SIZE = %s;' % max_plane_size)
     html = html.replace('const LENGTH_UNITS = LENGTHUNITS;',
                         'const LENGTH_UNITS = %s;' % json.dumps(length_units))
+    html = html.replace('const MAX_ACTIVE_CHANNELS = 10;',
+                        'const MAX_ACTIVE_CHANNELS = %s;' % max_active_channels)
+
     if max_bytes:
         html = html.replace('const MAX_PROJECTION_BYTES = 1024 * 1024 * 256;',
                             'const MAX_PROJECTION_BYTES = %s;' % max_bytes)
