@@ -105,7 +105,7 @@ def index(request, file_id=None, conn=None, **kwargs):
     length_units = get_length_units()
     cfg = conn.getConfigService()
     max_bytes = cfg.getConfigValue('omero.pixeldata.max_projection_bytes')
-    max_active_channels = cfg.getConfigValue('omero.web.figure.max_active_channels')
+    max_active_channels = cfg.getConfigValue('omero.figure.max_active_channels')
     max_active_channels = max_active_channels or 10
     is_public_user = "false"
     if (hasattr(settings, 'PUBLIC_USER')
