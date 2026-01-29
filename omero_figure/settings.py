@@ -26,3 +26,13 @@ import warnings
 
 warnings.warn("Deprecated. utils.__version__", DeprecationWarning)
 OMERO_FIGURE_VERSION = utils.__version__
+
+
+CUSTOM_SETTINGS_MAPPINGS = {
+    "omero.web.figure.max_active_channels": [
+        "MAX_ACTIVE_CHANNELS",
+        10,
+        int,
+        "Maximum number of active channels allowed in Figure"
+    ],
+}
