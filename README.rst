@@ -59,6 +59,14 @@ the webclient tree:
     $ omero config append omero.web.open_with '["omero_figure", "new_figure",
       {"supported_objects":["images"], "target": "_blank", "label": "OMERO.figure"}]'
 
+
+Optional: To change the maximum active channel count from the default of 10:
+
+::
+
+    $ omero config set omero.figure.max_active_channels 15  
+
+
 Now restart OMERO.web as normal.
 
 

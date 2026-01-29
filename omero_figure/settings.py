@@ -29,7 +29,7 @@ OMERO_FIGURE_VERSION = utils.__version__
 
 
 CUSTOM_SETTINGS_MAPPINGS = {
-    "omero.web.figure.max_active_channels": [
+    "omero.figure.max_active_channels": [
         "MAX_ACTIVE_CHANNELS",
         10,
         int,
