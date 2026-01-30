@@ -219,6 +219,8 @@ def img_data_json(request, image_id, conn=None, **kwargs):
     for img_path in paths_to_object(conn, image_id=image_id):
         for item in img_path:
             o_type = item["type"]
+            if o_type == "orphaned":
+                continue
             del item["type"]
             img_parents[o_type] = item
             if o_type == "wellsample":
