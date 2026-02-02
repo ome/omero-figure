@@ -165,6 +165,45 @@ Optional settings for each panel::
     // rotation symbol to display in label
     rotation_symbol:'°',
 
+    // parent objects metadata to add labels, e.g [project.name]
+    // Project and Dataset examples
+    parents: [
+        "project": {
+            "id": 123,
+            "name": "My project"
+        },
+        "dataset": {
+            "id": 456,
+            "name": "My dataset"
+        },
+    ]
+    // Screen, Plate, Acquisition (Run) and Well examples
+    parents: {
+        "screen": {
+            "id": 123,
+            "name": "My screen"
+        },
+        "plate": {
+            "id": 456,
+            "name": "My plate"
+        },
+        "acquisition": {
+            "id": 789,
+            "name": "My acquisition"
+        },
+        "well": {
+            "id": 123,
+            "label": "D2"
+        },
+        // index is the index within the well
+        // index_run is the index within the acquisition (run) for the well
+        // both are 0-based
+        "wellsample": {
+            "id": 456,
+            "index": 1,
+            "index_run": 0
+        }
+    }
 
 Optional settings for the top-level figure object. If not specified,
 the following defaults will be used::
@@ -178,7 +217,7 @@ the following defaults will be used::
     'page_color': 'FFFFFF',
     'page_count': 1,
     'orientation': 'vertical',
-    // If using page_size mm, 
+    // If using page_size mm,
     'width_mm': 210,
     'height_mm': 297,
     'legend': '',       // Figure legend in markdown format.
@@ -246,7 +285,7 @@ New in version 6:
 
 New in version 5:
 
-- `scalebar`: added 'pixel_size_x_unit': "MICROMETER". 
+- `scalebar`: added 'pixel_size_x_unit': "MICROMETER".
 - 'panel': `deltaT` values loaded with rounding to integer seconds
 
 New in version 4:
