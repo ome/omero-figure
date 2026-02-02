@@ -48,6 +48,7 @@ try:
     from omero.rtypes import rstring, robject
     from omero.model.enums import UnitsLength
     from Glacier2 import PermissionDeniedException
+    from Ice import ConnectionRefusedException
 except ImportError:
     omero_installed = False
     logger.info("OMERO libraries not installed.")
@@ -3453,7 +3454,7 @@ def handle_main():
             # normal script workflow - uses OMERO connection
             run_script()
             return
-    except PermissionDeniedException:
+    except (PermissionDeniedException, ConnectionRefusedException):
         # This is a workaround for the fact that the script is not run in a
         # session, so we need to create one manually.
 
