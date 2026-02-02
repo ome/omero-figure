@@ -197,11 +197,11 @@ Optional settings for each panel::
         },
         // index is the index within the well
         // index_run is the index within the acquisition (run) for the well
-        // both are 0-based
+        // both are 1-based
         "wellsample": {
             "id": 456,
-            "index": 1,
-            "index_run": 0
+            "index": 2,
+            "index_run": 1
         }
     }
 
