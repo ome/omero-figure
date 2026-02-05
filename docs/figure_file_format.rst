@@ -176,7 +176,7 @@ Optional settings for each panel::
             "id": 456,
             "name": "My dataset"
         },
-    ]
+    }
     // Screen, Plate, Acquisition (Run) and Well examples
     parents: {
         "screen": {
