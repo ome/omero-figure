@@ -38,6 +38,8 @@ export const RoiModalView = Backbone.View.extend({
 
         // This gets populated when dialog loads
         omeroRoiCount: 0,
+        maxRoisToAdd: 200,
+        visibleOmeroRoiCount: 0,
         roisLoaded: false,
         roisPageSize: 500,
         roisPage: 0,
@@ -51,6 +53,7 @@ export const RoiModalView = Backbone.View.extend({
             this.Rois = new RoiList();
             this.listenTo(this.Rois, "change:selection", this.showTempShape);  // mouseover shape
             this.listenTo(this.Rois, "shape_add", this.addShapeFromOmero);
+            this.listenTo(this.Rois, "add_all_shapes", this.addAllShapesFromOmero);
             this.listenTo(this.Rois, "shape_click", this.showShapePlane);
 
             // We manually bind Mousetrap keyboardEvents to body so as
@@ -161,6 +164,7 @@ export const RoiModalView = Backbone.View.extend({
             "click .roisJumpPage": "roisJumpPage",
             "click .revert_theZ": "revertTheZ",
             "click .revert_theT": "revertTheT",
+            "click .addAllOmeroShapes": "addAllShapesFromOmero",
         },
 
         revertTheZ: function() {
@@ -219,11 +223,14 @@ export const RoiModalView = Backbone.View.extend({
 
         // Load Shapes from OMERO and render them
         loadRois: function() {
-            var iid = this.m.get('imageId');
-            let url = BASE_OMEROWEB_URL + 'api/v0/m/rois/';
-            var roiUrl = url + '?image=' + iid + '&limit=' + this.roisPageSize + '&offset=' + (this.roisPageSize * this.roisPage);
+            var roiUrl = this.getRoisUrl(this.roisPageSize, this.roisPage)
             getJson(roiUrl).then((data) => {
                 this.Rois.set(data.data);
+                // filter only ROIs that are in the viewport
+                var filteredRois = this.filterShapesInViewport(this.Rois, this.shapeManager)
+                this.visibleOmeroRoiCount = filteredRois.length
+                this.Rois.set(filteredRois);
+                // render UI
                 $("#loadRois").prop('disabled', false);
                 $("#roiModalRoiList table").empty();
                 this.roisLoaded = true;
@@ -234,6 +241,13 @@ export const RoiModalView = Backbone.View.extend({
                 roiLoaderView.render();
                 this.renderPagination();
             });
+        },
+
+        getRoisUrl: function(pageSize, page){
+            var iid = this.m.get('imageId');
+            let url = BASE_OMEROWEB_URL + 'api/v0/m/rois/';
+            var roiUrl = url + '?image=' + iid + '&limit=' + pageSize + '&offset=' + (pageSize * page);
+            return roiUrl
         },
 
         showShapePlane: function(args) {
@@ -249,6 +263,25 @@ export const RoiModalView = Backbone.View.extend({
                 this.m.set(newPlane);
                 this.renderImagePlane();
             }
+        },
+
+        filterShapesInViewport: function(roiList, sm){
+            var viewport = this.m.getViewportAsRect();
+            var filteredRois = []
+            roiList.forEach(function (roi) {
+                var isIntersecting = false
+                roi.shapes.forEach(function (s) {
+                    var newShape = sm.createShapeJson(s.toJSON());
+                    if (newShape.intersectRegion(viewport)) {
+                        isIntersecting = true
+                    }
+                    newShape.destroy()
+                })
+                if(isIntersecting == true){
+                    filteredRois.push(roi)
+                }
+            })
+            return filteredRois
         },
 
         addShapeFromOmero: function(args) {
@@ -270,6 +303,19 @@ export const RoiModalView = Backbone.View.extend({
             shape = this.shapeManager.pasteShapesJson(shapesJson, viewport);
             if (!shape) {
                 alert("Couldn't add shape outside of current view. Try zooming out.");
+            }
+        },
+
+        addAllShapesFromOmero: function(){
+            // add all currently loaded shapes
+            if(this.Rois.length <= this.maxRoisToAdd){
+                this.Rois.forEach(function (roi) {
+                    roi.shapes.forEach(function (s) {
+                        this.addShapeFromOmero([s.toJSON()]);
+                    }, this)
+                }, this)
+            }else{
+                alert("Too much ROIs to add. Please crop the panel to smaller FoV to reduce the number of visible ROIs to lower than "+this.maxRoisToAdd);
             }
         },
 
@@ -609,35 +655,44 @@ export const RoiModalView = Backbone.View.extend({
                 return;
             }
             var pageCount = Math.ceil(this.omeroRoiCount / this.roisPageSize);
-            var html = `<span>${ this.omeroRoiCount} ROIs`
+            var htmlAllRoisButton = `<div class="btn-group" style="float:right">
+                                        <button title="Add all visible ROIs"
+                                            type="button" class="btn btn-sm btn-success float-end addAllOmeroShapes">
+                                            Add all
+                                        </button>
+                                    </div>`
+            var html = `<span>${ this.visibleOmeroRoiCount}/${this.omeroRoiCount} ROIs`
             // Only show pagination controls if needed
             if (pageCount > 1) {
-                html += `: page ${ this.roisPage + 1}/${pageCount}</span>
-                <div class="btn-group" style="float:right">
-                    <button title="Load previous page of ROIs" ${this.roisPage === 0 ? "disabled='disabled'":'' }
-                        type="button" class="btn btn-default btn-sm roisPrevPage">
-                        Prev
-                    </button>
-                    <button title="Load next page of ROIs" ${(this.roisPage + 1) >= pageCount ? "disabled='disabled'" : '' }
-                        type="button" class="btn btn-default btn-sm roisNextPage">
-                        Next
-                    </button>
-                    <button type="button" class="btn btn-default btn-sm dropdown-toggle" title="Select page" data-bs-toggle="dropdown">
-                        <span class="caret"></span>
-                    </button>
-                    <ul class="dropdown-menu" role="menu">
-                    ${
-                        _.range(pageCount).map(p => `<li>
-                        <a class="roisJumpPage" href="#" data-page="${p}">
-                            <span class="glyphicon glyphicon-ok" ${ this.roisPage !== p ? "style='visibility:hidden'" : ""}></span>
-                            Page ${p + 1}
-                        </a>
-                        </li>`).join(`\n`)
-                    }
-                    </ul>
+                html += htmlAllRoisButton +`</br>
+                <div style="margin-top: 10px;">
+                    Page ${ this.roisPage + 1}/${pageCount}</span>
+                    <div class="btn-group float-end" style="float: right">
+                        <button title="Load previous page of ROIs" ${this.roisPage === 0 ? "disabled='disabled'":'' }
+                            type="button" class="btn btn-default btn-sm roisPrevPage">
+                            Prev
+                        </button>
+                        <button title="Load next page of ROIs" ${(this.roisPage + 1) >= pageCount ? "disabled='disabled'" : '' }
+                            type="button" class="btn btn-default btn-sm roisNextPage">
+                            Next
+                        </button>
+                        <button type="button" class="btn btn-default btn-sm dropdown-toggle" title="Select page" data-bs-toggle="dropdown">
+                            <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu" role="menu">
+                        ${
+                            _.range(pageCount).map(p => `<li>
+                            <a class="roisJumpPage" href="#" data-page="${p}">
+                                <span class="glyphicon glyphicon-ok" ${ this.roisPage !== p ? "style='visibility:hidden'" : ""}></span>
+                                Page ${p + 1}
+                            </a>
+                            </li>`).join(`\n`)
+                        }
+                        </ul>
+                    </div>
                 </div>`
             } else {
-                html += `</span>`;
+                html += htmlAllRoisButton + `</span>`;
             }
             $("#roiPageControls").html(html).show();
         },
