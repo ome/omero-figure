@@ -19,6 +19,7 @@ from django.http import Http404, HttpResponse, \
     JsonResponse
 from django.views.decorators.http import require_POST
 from django.conf import settings
+from omero_figure import settings as figure_settings
 from django.template import loader
 from django.templatetags import static
 from datetime import datetime
@@ -107,6 +108,7 @@ def index(request, file_id=None, conn=None, **kwargs):
     length_units = get_length_units()
     cfg = conn.getConfigService()
     max_bytes = cfg.getConfigValue('omero.pixeldata.max_projection_bytes')
+    max_active_channels = getattr(figure_settings, 'MAX_ACTIVE_CHANNELS', 10)
     is_public_user = "false"
     if (hasattr(settings, 'PUBLIC_USER')
             and settings.PUBLIC_USER == user.getOmeName()):
@@ -133,6 +135,10 @@ def index(request, file_id=None, conn=None, **kwargs):
                         'const MAX_PLANE_SIZE = %s;' % max_plane_size)
     html = html.replace('const LENGTH_UNITS = LENGTHUNITS;',
                         'const LENGTH_UNITS = %s;' % json.dumps(length_units))
+    html = html.replace('const MAX_ACTIVE_CHANNELS = 10;',
+                        'const MAX_ACTIVE_CHANNELS = %s;'
+                        % max_active_channels)
+
     if max_bytes:
         html = html.replace('const MAX_PROJECTION_BYTES = 1024 * 1024 * 256;',
                             'const MAX_PROJECTION_BYTES = %s;' % max_bytes)
