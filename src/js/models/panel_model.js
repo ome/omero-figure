@@ -3,7 +3,7 @@
     import _ from "underscore";
     import $ from "jquery";
     import { rotatePoint } from "../views/util";
-
+    import {renderZarrToSrc} from "./zarr_utils";
     // Corresponds to css - allows us to calculate size of labels
     var LINE_HEIGHT = 1.43;
 
@@ -976,7 +976,28 @@
             return this.get('orig_width') * this.get('orig_height') > MAX_PLANE_SIZE;
         },
 
-        get_img_src: function(force_no_padding) {
+        get_zarr_img_src: async function(force_no_padding, targetSize) {
+            var rect;
+            if (this.is_big_image()) {
+                rect = this.getViewportAsRect();
+                if (!force_no_padding) {
+                    var length = Math.max(rect.width, rect.height) * 1.5;
+                    rect.x = rect.x - ((length - rect.width) / 2);
+                    rect.y = rect.y - ((length - rect.height) / 2);
+                    rect.width = length;
+                    rect.height = length;
+                }
+            }
+            return renderZarrToSrc(this.get('imageId'), this.get('zarr'), this.get('theZ'), this.get('theT'), this.get('channels'), rect, targetSize);
+        },
+
+        get_img_src: async function(force_no_padding) {
+            // async function since zarr src is the rendered image data
+            if (this.get("zarr")) {
+                // use current size to choose resolution level...
+                const targetSize = 2 * Math.max(this.get('width'), this.get('height'));
+                return this.get_zarr_img_src(force_no_padding, targetSize);
+            }
             var chs = this.get('channels');
             var cStrings = chs.map(function(c, i){
                 return (c.active ? '' : '-') + (1+i) + "|" + c.window.start + ":" + c.window.end + "$" + c.color;
@@ -1444,7 +1465,11 @@
 
         createLabelsFromTags: function(options) {
             // Loads Tags for selected images and creates labels
-            var image_ids = this.map(function(s){return s.get('imageId')})
+            var image_ids = this.map(function(s){return s.get('imageId')});
+            image_ids = _.uniq(image_ids).filter(id => !isNaN(id));    // ignore zarr images
+            if (image_ids.length === 0) {
+                return;
+            }
             image_ids = "image=" + image_ids.join("&image=");
             // TODO: Use /api/ when annotations is supported
             var url = WEBINDEX_URL + "api/annotations/?type=tag&parents=true&limit=1000&" + image_ids;

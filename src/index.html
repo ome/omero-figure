@@ -8,6 +8,8 @@
       // For dev, use this server to load/save figures (needs CORS enabled)
       const dev_omeroweb_url = "http://localhost:4080/";
       // These are updated by views.py when serving this page...
+      // Flag for knowing if app is served from OMERO (or standalone)
+      const APP_SERVED_BY_OMERO = false;
       const BASE_OMEROWEB_URL = dev_omeroweb_url;
       const EXPORT_ENABLED = false;
       const SCRIPT_VERSION = "";
@@ -711,11 +713,14 @@
           </div>
           <form class="addImagesForm" role="form">
             <div class="modal-body">
-              <p>
+              <p class="omero_only_element">
                 Add images to the figure by entering their IDs, separated by
                 commas.<br />
                 Hint: You can also select images in the webclient, click the
                 link in right panel, copy the URL and paste it here:
+              </p>
+              <p class="standalone_only_element">
+                Add OME-Zarr images to the figure by entering their full URL:
               </p>
               <div
                 class="form-group"
@@ -1013,7 +1018,7 @@
         </div>
       </div>
     </div>
-    <!-- File Open Modal -->
+    <!-- OMERO File Open Modal -->
     <div
       class="modal"
       id="openFigureModal"
@@ -1143,6 +1148,71 @@
         </div>
       </div>
     </div>
+    <!-- Open local File or http://url_to/figure.json -->
+    <div
+      class="modal"
+      id="openLocalFileModal"
+      tabindex="-1"
+      role="dialog"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Open File</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <form class="openLocalFileForm" role="form">
+            <div class="modal-body">
+              <p>
+                Enter a URL to an OMERO.figure JSON file...
+              </p>
+              <div
+                class="form-group"
+                style="margin-top: 15px; margin-bottom: 0px"
+              >
+                <input
+                  type="text"
+                  class="form-control figureFileUrl"
+                  placeholder="URL to a figure.json file"
+                />
+              </div>
+              <div
+                class="form-group"
+                style="margin-top: 15px; margin-bottom: 0px"
+              >
+                <p>
+                  ...or select a local file to open:
+                </p>
+                <input type="file" />
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-default"
+                data-bs-dismiss="modal"
+              >
+                Close
+              </button>
+              <button
+                type="submit"
+                class="btn btn-primary"
+                data-bs-dismiss="modal"
+                disabled="disabled"
+              >
+                Open
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
     <!-- Labels from Map Annotations Modal -->
     <div
       class="modal"
@@ -1262,10 +1332,11 @@
                 <li class="import_json">
                   <a class="dropdown-item" href="#">Import from JSON...</a>
                 </li>
-                <li class="delete_figure">
+                <!-- omero_only_element will be hidden if not APP_SERVED_BY_OMERO -->
+                <li class="delete_figure omero_only_element">
                   <a class="dropdown-item" href="#">Delete</a>
                 </li>
-                <li class="chgrp_figure">
+                <li class="chgrp_figure omero_only_element">
                   <a class="dropdown-item" href="#">Move Figure to Group...</a>
                 </li>
                 <li class="paper_setup">

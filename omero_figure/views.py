@@ -115,6 +115,8 @@ def index(request, file_id=None, conn=None, **kwargs):
     # Load the template html and replace OMEROWEB_INDEX
     template = loader.get_template("omero_figure/index.html")
     html = template.render({}, request)
+    html = html.replace('const APP_SERVED_BY_OMERO = false;',
+                        'const APP_SERVED_BY_OMERO = true;')
     omeroweb_index = reverse("index")
     figure_index = reverse("figure_index")
     ping_url = reverse("keepalive_ping")
@@ -122,6 +124,7 @@ def index(request, file_id=None, conn=None, **kwargs):
                         'const BASE_OMEROWEB_URL = "%s";' % omeroweb_index)
     html = html.replace('const APP_ROOT_URL = "";',
                         'const APP_ROOT_URL = "%s";' % figure_index)
+    # Replace various other placeholder values with OMERO data/configs
     html = html.replace('const USER_ID = 0;', 'const USER_ID = %s' % user.id)
     html = html.replace('const PING_URL = "";',
                         'const PING_URL = "%s";' % ping_url)
@@ -147,8 +150,8 @@ def index(request, file_id=None, conn=None, **kwargs):
 
     # update links to static files
     static_dir = static.static('omero_figure/')
-    html = html.replace('href="/', 'href="%s' % static_dir)
-    html = html.replace('src="/', 'src="%s' % static_dir)
+    html = html.replace('href="/omero-figure/assets', 'href="%sassets' % static_dir)
+    html = html.replace('src="/omero-figure/assets', 'src="%sassets' % static_dir)
     html = html.replace('const STATIC_DIR = "";',
                         'const STATIC_DIR = "%s";' % static_dir[0:-1])
 
@@ -397,9 +400,13 @@ def save_web_figure(request, conn=None, **kwargs):
     try:
         json_data = json.loads(figure_json)
         for panel in json_data['panels']:
-            image_ids.append(panel['imageId'])
+            try:
+                image_ids.append(int(panel['imageId']))
+            except ValueError:
+                # For NGFF images, the imageId is a string
+                pass
         if len(image_ids) > 0:
-            first_img_id = int(image_ids[0])
+            first_img_id = image_ids[0]
         # remove duplicates
         image_ids = list(set(image_ids))
         # pretty-print json
@@ -436,7 +443,7 @@ def save_web_figure(request, conn=None, **kwargs):
     if file_id is None:
         # Create new file
         # Try to set Group context to the same as first image
-        curr_gid = conn.SERVICE_OPTS.getOmeroGroup()
+        curr_gid = conn.getEventContext().groupId
         i = None
         if first_img_id:
             i = conn.getObject("Image", first_img_id)
