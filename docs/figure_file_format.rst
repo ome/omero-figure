@@ -166,6 +166,45 @@ Optional settings for each panel::
     // rotation symbol to display in label
     rotation_symbol:'°',
 
+    // parent objects metadata to add labels, e.g [project.name]
+    // Project and Dataset examples
+    parents: [
+        "project": {
+            "id": 123,
+            "name": "My project"
+        },
+        "dataset": {
+            "id": 456,
+            "name": "My dataset"
+        },
+    ]
+    // Screen, Plate, Acquisition (Run) and Well examples
+    parents: {
+        "screen": {
+            "id": 123,
+            "name": "My screen"
+        },
+        "plate": {
+            "id": 456,
+            "name": "My plate"
+        },
+        "acquisition": {
+            "id": 789,
+            "name": "My acquisition"
+        },
+        "well": {
+            "id": 123,
+            "label": "D2"
+        },
+        // index is the index within the well
+        // index_run is the index within the acquisition (run) for the well
+        // both are 1-based
+        "wellsample": {
+            "id": 456,
+            "index": 2,
+            "index_run": 1
+        }
+    }
 
 Optional settings for the top-level figure object. If not specified,
 the following defaults will be used::
