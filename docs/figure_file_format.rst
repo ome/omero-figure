@@ -36,7 +36,7 @@ This is an example of a minimal OMERO.figure JSON file::
 
     {
     // see older versions below
-    "version": 7,
+    "version": 9,
     "panels": [
         {
             // position of the panel on the page
@@ -92,6 +92,7 @@ Optional settings for each panel::
         "show": true,
         "length": 10,
         "height": 3,
+        "margin": 10,
         "units": "MICROMETER",
         "position": "bottomright",  // topright, topleft, bottomleft
         "color": "FFFFFF",
@@ -165,6 +166,45 @@ Optional settings for each panel::
     // rotation symbol to display in label
     rotation_symbol:'°',
 
+    // parent objects metadata to add labels, e.g [project.name]
+    // Project and Dataset examples
+    parents: {
+        "project": {
+            "id": 123,
+            "name": "My project"
+        },
+        "dataset": {
+            "id": 456,
+            "name": "My dataset"
+        },
+    }
+    // Screen, Plate, Acquisition (Run) and Well examples
+    parents: {
+        "screen": {
+            "id": 123,
+            "name": "My screen"
+        },
+        "plate": {
+            "id": 456,
+            "name": "My plate"
+        },
+        "acquisition": {
+            "id": 789,
+            "name": "My acquisition"
+        },
+        "well": {
+            "id": 123,
+            "label": "D2"
+        },
+        // index is the index within the well
+        // index_run is the index within the acquisition (run) for the well
+        // both are 1-based
+        "wellsample": {
+            "id": 456,
+            "index": 2,
+            "index_run": 1
+        }
+    }
 
 Optional settings for the top-level figure object. If not specified,
 the following defaults will be used::
@@ -178,7 +218,7 @@ the following defaults will be used::
     'page_color': 'FFFFFF',
     'page_count': 1,
     'orientation': 'vertical',
-    // If using page_size mm, 
+    // If using page_size mm,
     'width_mm': 210,
     'height_mm': 297,
     'legend': '',       // Figure legend in markdown format.
@@ -191,7 +231,18 @@ To convert mm to points (for paper_width and paper_height) multiply by 72 (dpi) 
 
 
 Shapes on a panel use the Image coordinates. However, ``strokeWidth`` uses Page units (points), so
-that lines will not appear thicker on a panel when it is zoomed in. Supported Shapes are::
+that lines will not appear thicker on a panel when it is zoomed in.
+All Shapes support the following attributes::
+
+    {
+        "type": "<shape type>",   // see below
+        "strokeColor": "#RRGGBB",
+        "strokeWidth": 2,
+        "fillColor": "#RRGGBB",
+        "fillOpacity": 1.0,
+    }
+
+ Supported Shapes are::
 
     {
         "type": "Rectangle",
@@ -199,8 +250,6 @@ that lines will not appear thicker on a panel when it is zoomed in. Supported Sh
         "y": 89.4,
         "width": 64.3,
         "height": 58.18,
-        "strokeWidth": 2,
-        "strokeColor": "#FFFFFF",
     },
     {
         "type", "Ellipse",
@@ -229,11 +278,23 @@ that lines will not appear thicker on a panel when it is zoomed in. Supported Sh
     {
         "type": "Polygon",
         "points": "105.4,63.1 98.2,85.1 117.2,109.2 165.4,97.7",
+    },
+    {
+        "type": "Text",
+        "x": 150.0,
+        "y": 50.0,
+        "text": "Sample Text",
+        "fontSize": 14,
+        "textAnchor": "start"  // options: start, middle, end
     }
 
 
 Version history
 ----------------
+
+New in version 9:
+
+- `scalebar`: added 'margin': <integer>
 
 New in version 7:
 
@@ -246,7 +307,7 @@ New in version 6:
 
 New in version 5:
 
-- `scalebar`: added 'pixel_size_x_unit': "MICROMETER". 
+- `scalebar`: added 'pixel_size_x_unit': "MICROMETER".
 - 'panel': `deltaT` values loaded with rounding to integer seconds
 
 New in version 4:

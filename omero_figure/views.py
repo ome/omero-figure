@@ -27,6 +27,8 @@ import traceback
 import json
 import time
 
+from omeroweb.webclient.show import paths_to_object
+
 from omeroweb.webgateway.marshal import imageMarshal
 from omeroweb.webgateway.views import _get_prepared_image
 from omeroweb.webclient.views import run_script
@@ -41,7 +43,7 @@ from omero_marshal import get_encoder
 from io import BytesIO
 
 from omeroweb.webclient.decorators import login_required
-from .omeroutils import get_timestamps
+from .omeroutils import get_timestamps, get_wellsample_index
 
 import logging
 
@@ -229,6 +231,26 @@ def img_data_json(request, image_id, conn=None, **kwargs):
     if size_t > 1:
         time_list = get_timestamps(conn, image)
     rv['deltaT'] = time_list
+
+    img_parents = {}
+    for img_path in paths_to_object(conn, image_id=image_id):
+        for item in img_path:
+            o_type = item["type"]
+            if o_type == "orphaned":
+                continue
+            del item["type"]
+            img_parents[o_type] = item
+            if o_type == "wellsample":
+                idx_plate, idx_run = get_wellsample_index(conn, item["id"])
+                item["index"] = idx_plate
+                item["index_run"] = idx_run
+                continue
+            obj = conn.getObject(o_type, item["id"])
+            if o_type == "well":
+                item["label"] = obj.getWellPos()
+            else:
+                item["name"] = obj.getName()
+    rv['parents'] = img_parents
 
     return HttpResponse(json.dumps(rv), content_type='json')
 
