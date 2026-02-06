@@ -122,6 +122,7 @@ def index(request, file_id=None, conn=None, **kwargs):
                         'const BASE_OMEROWEB_URL = "%s";' % omeroweb_index)
     html = html.replace('const APP_ROOT_URL = "";',
                         'const APP_ROOT_URL = "%s";' % figure_index)
+    # Replace various other placeholder values with OMERO data/configs
     html = html.replace('const USER_ID = 0;', 'const USER_ID = %s' % user.id)
     html = html.replace('const PING_URL = "";',
                         'const PING_URL = "%s";' % ping_url)
@@ -397,9 +398,13 @@ def save_web_figure(request, conn=None, **kwargs):
     try:
         json_data = json.loads(figure_json)
         for panel in json_data['panels']:
-            image_ids.append(panel['imageId'])
+            try:
+                image_ids.append(int(panel['imageId']))
+            except ValueError:
+                # For NGFF images, the imageId is a string
+                pass
         if len(image_ids) > 0:
-            first_img_id = int(image_ids[0])
+            first_img_id = image_ids[0]
         # remove duplicates
         image_ids = list(set(image_ids))
         # pretty-print json
@@ -436,7 +441,7 @@ def save_web_figure(request, conn=None, **kwargs):
     if file_id is None:
         # Create new file
         # Try to set Group context to the same as first image
-        curr_gid = conn.SERVICE_OPTS.getOmeroGroup()
+        curr_gid = conn.getEventContext().groupId
         i = None
         if first_img_id:
             i = conn.getObject("Image", first_img_id)
