@@ -2,7 +2,7 @@
     import Backbone from "backbone";
     import _ from "underscore";
     import $ from "jquery";
-    import { rotatePoint } from "../views/util";
+    import { rotatePoint, normalizeZProjectionBounds } from "../views/util";
 
     // Corresponds to css - allows us to calculate size of labels
     var LINE_HEIGHT = 1.43;
@@ -147,7 +147,7 @@
                                 let txtShape = shape;
                                 // apply any translation and rotation to Text
                                 let newCoords = {x: txtShape.x, y: txtShape.y};
-                                // If the Inset was previously rotated, we need to 'undo' that rotation first 
+                                // If the Inset was previously rotated, we need to 'undo' that rotation first
                                 if (prevCoords.rotation && prevCoords.rotation != 360) {
                                     let prevCx = prevCoords.x + prevCoords.width / 2;
                                     let prevCy = prevCoords.y + prevCoords.height / 2;
@@ -282,8 +282,22 @@
             if (this.get('theT') >= newData.sizeT) {
                 newData.theT = newData.sizeT - 1;
             }
+
             if (this.get('theZ') >= newData.sizeZ) {
                 newData.theZ = newData.sizeZ - 1;
+            }
+
+            // Ensure z-projection parameters are within bounds of the new image
+            if (this.get('z_start') !== undefined || this.get('z_end') !== undefined || this.get('z_projection') !== undefined) {
+                var normalized = normalizeZProjectionBounds(
+                    this.get('z_start'),
+                    this.get('z_end'),
+                    this.get('z_projection'),
+                    newData.sizeZ
+                );
+                newData.z_projection = normalized.z_projection;
+                newData.z_start = normalized.z_start;
+                newData.z_end = normalized.z_end;
             }
 
             // Make sure dx and dy are not outside the new image
