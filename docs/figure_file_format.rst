@@ -168,7 +168,7 @@ Optional settings for each panel::
 
     // parent objects metadata to add labels, e.g [project.name]
     // Project and Dataset examples
-    parents: [
+    parents: {
         "project": {
             "id": 123,
             "name": "My project"
@@ -177,7 +177,7 @@ Optional settings for each panel::
             "id": 456,
             "name": "My dataset"
         },
-    ]
+    }
     // Screen, Plate, Acquisition (Run) and Well examples
     parents: {
         "screen": {
