@@ -6,9 +6,11 @@
     import {PanelList, Panel} from "./panel_model";
     import { recoverFigureFromStorage,
         clearFigureFromStorage,
+        downloadAsFile,
         figureConfirmDialog,
-        getJson,
+        getJsonWithCredentials,
         saveFigureToStorage} from "../views/util";
+    import { loadZarrForPanel } from "./zarr_utils";
 
     // Version of the json file we're saving.
     // This only needs to increment when we make breaking changes (not linked to release versions.)
@@ -65,7 +67,7 @@
             var load_url = BASE_WEBFIGURE_URL + "load_web_figure/" + fileId + "/",
                 self = this;
 
-            getJson(load_url).then(data => {
+            getJsonWithCredentials(load_url).then(data => {
                 data.fileId = fileId;
                 self.load_from_JSON(data);
                 self.set('unsaved', false);
@@ -295,7 +297,7 @@
                 if (iids.length > 0) {
                     var ptUrl = BASE_WEBFIGURE_URL + 'pixels_type/';
                     ptUrl += '?image=' + iids.join('&image=');
-                    getJson(ptUrl).then(data => {
+                    getJsonWithCredentials(ptUrl).then(data => {
                         // Update all panels
                         // NB: By the time that this callback runs, the panels will have been created
                         self.panels.forEach(function(p){
@@ -357,6 +359,18 @@
             return figureJSON;
         },
 
+        load_from_url: function(url) {
+            // load content from a URL
+            console.log("load_from_url...", url);
+            $.getJSON(url, function(data){
+                this.load_from_JSON(data);
+                this.set('unsaved', false);
+            }.bind(this))
+            .fail(function(){
+                alert("Failed to load figure from URL: " + url);
+            });
+        },
+
         figure_fromJSON: function(data) {
             var parsed = JSON.parse(data);
             delete parsed.fileId;
@@ -378,6 +392,18 @@
                 figureConfirmDialog(
                     "Figure recovered", html, ["OK"]);
             }
+        },
+
+        save_to_download: function(options) {
+            // Downloads the FigureJSON as a file
+            let figureJSON = this.figure_toJSON();
+            if (options.figureName) {
+                figureJSON.figureName = options.figureName;
+            }
+            let fileName = figureJSON.figureName || "figure";
+            let jsonText = JSON.stringify(this.figure_toJSON());
+            downloadAsFile(jsonText, "application/json", fileName + ".json");
+            this.set({unsaved: false});
         },
 
         save_to_OMERO: function(options) {
@@ -518,6 +544,11 @@
             // new image panels appropriately in a grid.
             var invalidIds = [];
             for (var i=0; i<iIds.length; i++) {
+                console.log("Adding image", iIds[i]);
+                if (iIds[i].includes("http")) {
+                    this.importZarrImage(iIds[i], coords, i);
+                    continue;
+                }
                 var imgId = iIds[i].replace("|", ""),
                     validId = parseInt(imgId, 10) + "",
                     imgDataUrl = BASE_WEBFIGURE_URL + 'imgData/' + validId + '/';
@@ -531,6 +562,73 @@
                 var plural = invalidIds.length > 1 ? "s" : "";
                 alert("Could not add image with invalid ID" + plural + ": " + invalidIds.join(", "));
             }
+        },
+
+        updateCoordsAndPanelCoords(panel_json, coords, index) {
+            // update panel_json and coords
+            coords.spacer = coords.spacer || panel_json.orig_width/20;
+            var full_width = (coords.colCount * (panel_json.orig_width + coords.spacer)) - coords.spacer,
+                full_height = (coords.rowCount * (panel_json.orig_height + coords.spacer)) - coords.spacer;
+            coords.scale = coords.paper_width / (full_width + (2 * coords.spacer));
+            coords.scale = Math.min(coords.scale, 1);    // only scale down
+            // For the FIRST IMAGE ONLY (coords.px etc undefined), we
+            // need to work out where to start (px,py) now that we know size of panel
+            // (assume all panels are same size)
+            coords.px = coords.px || coords.c.x - (full_width * coords.scale)/2;
+            coords.py = coords.py || coords.c.y - (full_height * coords.scale)/2;
+            // calculate panel coordinates from index...
+            var row = parseInt(index / coords.colCount, 10);
+            var col = index % coords.colCount;
+            var panelX = coords.px + ((panel_json.orig_width + coords.spacer) * coords.scale * col);
+            var panelY = coords.py + ((panel_json.orig_height + coords.spacer) * coords.scale * row);
+            
+            // update panel_json
+            panel_json.x = panelX;
+            panel_json.y = panelY;
+            panel_json.width = panel_json.orig_width * coords.scale;
+            panel_json.height = panel_json.orig_height * coords.scale;
+        },
+
+        importZarrImage: async function(zarrUrl, coords, index) {
+            if (zarrUrl.endsWith("/")) {
+                zarrUrl = zarrUrl.slice(0, -1);
+            }
+            this.set('loading_count', this.get('loading_count') + 1);
+
+            let panel_json = await loadZarrForPanel(zarrUrl);
+            if (panel_json.Error) {
+                let zarrErr = panel_json.Error;
+                for (let fmt of ["bioformats2raw.layout", "OME-Zarr Plates"]) {
+                    if (zarrErr.includes(fmt)) {
+                        zarrErr = `Error loading Zarr ${zarrUrl}:
+                        <p>${fmt} not currently supported.</p>
+                        <p>Please <a href="https://ome.github.io/ome-ngff-validator/?source=${encodeURIComponent(zarrUrl)}" target="_blank">
+                        open in the OME-NGFF Validator</a> to choose a single Image url.</p>
+                        `;
+                    }
+                }
+                if (zarrErr.includes("File not found")) {
+                    zarrErr = `Error loading Zarr from <br/>${zarrUrl}:
+                    <p>File not found (No <code>zarr.json</code> or <code>.zattrs</code>)</p>`;
+                }
+                figureConfirmDialog(
+                    "Zarr Load Error",
+                    zarrErr,
+                    ["OK"]
+                );
+                // alert(`Error loading Zarr ${zarrUrl}: ${panel_json.Error}`);
+                this.set('loading_count', this.get('loading_count') - 1);
+                return;
+            }
+
+            // coords (px, py etc) are incremented for each panel added
+            this.updateCoordsAndPanelCoords(panel_json, coords, index)
+
+            this.set('loading_count', this.get('loading_count') - 1);
+            // create Panel (and select it)
+            // We do some additional processing in Panel.parse()
+            this.panels.create(panel_json, {'parse': true}).set('selected', true);
+            this.notifySelectionChange();
         },
 
         importImage: function(imgDataUrl, coords, baseUrl, index) {
@@ -565,23 +663,6 @@
                         return;
                     }
 
-                    coords.spacer = coords.spacer || data.size.width/20;
-                    var full_width = (coords.colCount * (data.size.width + coords.spacer)) - coords.spacer,
-                        full_height = (coords.rowCount * (data.size.height + coords.spacer)) - coords.spacer;
-                    coords.scale = coords.paper_width / (full_width + (2 * coords.spacer));
-                    coords.scale = Math.min(coords.scale, 1);    // only scale down
-                    // For the FIRST IMAGE ONLY (coords.px etc undefined), we
-                    // need to work out where to start (px,py) now that we know size of panel
-                    // (assume all panels are same size)
-                    coords.px = coords.px || coords.c.x - (full_width * coords.scale)/2;
-                    coords.py = coords.py || coords.c.y - (full_height * coords.scale)/2;
-
-                    // calculate panel coordinates from index...
-                    var row = parseInt(index / coords.colCount, 10);
-                    var col = index % coords.colCount;
-                    var panelX = coords.px + ((data.size.width + coords.spacer) * coords.scale * col);
-                    var panelY = coords.py + ((data.size.height + coords.spacer) * coords.scale * row);
-
                     // ****** This is the Data Model ******
                     //-------------------------------------
                     // Any changes here will create a new version
@@ -602,8 +683,8 @@
                         'channels': data.channels,
                         'orig_width': data.size.width,
                         'orig_height': data.size.height,
-                        'x': panelX,
-                        'y': panelY,
+                        'x': 0,
+                        'y': 0,
                         'datasetName': data.meta.datasetName,
                         'datasetId': data.meta.datasetId,
                         'pixel_size_x': data.pixel_size.valueX,
@@ -621,6 +702,10 @@
                     if (baseUrl) {
                         n.baseUrl = baseUrl;
                     }
+
+                    // coords (px, py etc) are incremented for each panel added
+                    self.updateCoordsAndPanelCoords(n, coords, index);
+
                     // create Panel (and select it)
                     // We do some additional processing in Panel.parse()
                     self.panels.create(n, {'parse': true}).set('selected', true);

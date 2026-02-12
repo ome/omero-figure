@@ -11,6 +11,7 @@
     import {FigureFileList, FileListView} from "./files";
 
     import {AddImagesModalView, DpiModalView, PaperSetupModalView, SetIdModalView } from "./modal_views";
+    import {OpenLocalFileModalView} from "./open_local_file_modal";
 
     import {CropModalView} from "./crop_modal_view";
     import {ChgrpModalView} from "./chgrp_modal_view";
@@ -52,6 +53,7 @@
             new DpiModalView({model: this.model});
             new LegendView({model: this.model});
             new LabelFromMapsModal({model: this.model});
+            new OpenLocalFileModalView({model: this.model, app: this.app});
 
             this.figureFiles = new FigureFileList();
             this.fileListViewModal = new FileListView({model:this.figureFiles, figureModel: this.model});
@@ -90,20 +92,33 @@
                 self.model.set('curr_zoom', event.target.value);
             });
 
-            // enable export (script is available)
-            if (EXPORT_ENABLED) {
-                $("button.export_pdf").removeAttr("disabled");
-                // check script version
-                if (SCRIPT_VERSION != RELEASE_VERSION) {
+            if (APP_SERVED_BY_OMERO) {
+                // enable export (script is available)
+                if (EXPORT_ENABLED) {
+                    $("button.export_pdf").removeAttr("disabled");
+                    // check script version
+                    if (SCRIPT_VERSION != RELEASE_VERSION) {
+                        $(".script_version_warning").show()
+                        .attr("title", "Script Version Warning");
+                    }
+                } else if (IS_ADMIN) {
                     $(".script_version_warning").show()
-                    .attr("title", "Script Version Warning");
+                        .attr("title", "Script missing! Click to Upload...");
+                } else {
+                    $(".script_version_warning").show()
+                        .attr("title", "Export script not installed. Contact your OMERO administrator.");
                 }
-            } else if (IS_ADMIN) {
-                $(".script_version_warning").show()
-                    .attr("title", "Script missing! Click to Upload...");
             } else {
-                $(".script_version_warning").show()
-                    .attr("title", "Export script not installed. Contact your OMERO administrator.");
+                // enable export (no script needed in stand-alone)
+                $("button.export_pdf").removeAttr("disabled");
+            }
+
+            // if we're NOT served by OMERO, hide elements such as Delete and Chgrp menu-items
+            if (!APP_SERVED_BY_OMERO) {
+                $(".omero_only_element").hide();
+            } else {
+                // otherwise hide elements with stand-alone specific content
+                $(".standalone_only_element").hide();
             }
 
             // respond to zoom changes
@@ -286,17 +301,9 @@
             event.preventDefault();
 
             // Status is indicated by showing / hiding 3 buttons
-            var figureModel = this.model,
-                $create_figure_pdf = $(event.target),
+            var $create_figure_pdf = $(event.target),
                 export_opt = $create_figure_pdf.attr('data-export-option'),
-                $pdf_inprogress = $("#pdf_inprogress"),
-                $pdf_download = $("#pdf_download"),
-                $script_error = $("#script_error"),
                 exportOption = "PDF";
-            $create_figure_pdf.hide();
-            $pdf_download.hide();
-            $script_error.hide();
-            $pdf_inprogress.show();
 
             // Map from HTML to script options
             const opts = {"PDF": "PDF",
@@ -306,11 +313,30 @@
                 "to OMERO": "OMERO"};
             exportOption = opts[export_opt];
 
+            if (!APP_SERVED_BY_OMERO) {
+                let title = "Figure Export Options";
+                let buttons = ["OK"];
+                let message = `The standalone app doesn't support export to PDF.
+                <p>You can download the figure via 'Save' and run the Figure_To_Pdf.py python script locally. TODO: add link & instructions.</p>`;
+
+                figureConfirmDialog(title, message, buttons);
+                return;
+            }
+
+            var url = MAKE_WEBFIGURE_URL;
+            this.run_export_script(url, exportOption);
+        },
+
+        run_export_script: function(url, exportOption) {
+
+            let $pdf_inprogress = $("#pdf_inprogress").show();
+            let $create_figure_pdf = $(".export_pdf").hide();
+            let $pdf_download = $("#pdf_download").hide();
+            let $script_error = $("#script_error").hide();
+
             // Get figure as json
             var figureJSON = this.model.figure_toJSON();
-
-            var url = MAKE_WEBFIGURE_URL,
-                data = {
+            var data = {
                     figureJSON: JSON.stringify(figureJSON),
                     exportOption: exportOption,
                 };
@@ -381,6 +407,10 @@
                         });
 
                 }, 1000);
+            }).fail(function(err) {
+                alert("Error starting export script", err);
+                $create_figure_pdf.show();
+                $pdf_inprogress.hide();
             });
         },
 
@@ -511,7 +541,12 @@
             var self = this;
             var callback = function() {
                 // Opening modal will trigger fetch of files
-                self.fileListViewModal.modal.show();
+                if (APP_SERVED_BY_OMERO) {
+                    self.fileListViewModal.modal.show();
+                } else {
+                    // Open local file or URL
+                    showModal("openLocalFileModal");
+                }
             };
 
             if (this.model.get("unsaved")) {
@@ -549,7 +584,7 @@
 
             var fileId = this.model.get('fileId'),
                 canEdit = this.model.get('canEdit');
-            if (fileId && canEdit) {
+            if (fileId && canEdit && APP_SERVED_BY_OMERO) {
                 // Prevent double-click
                 this.$saveBtn.attr('disabled', 'disabled');
                 // Save
@@ -575,20 +610,26 @@
 
             var self = this;
             options = options || {};
-            var defaultName = this.model.get('figureName');
-            if (!defaultName) {
-                defaultName = this.model.getDefaultFigureName();
+            var figureName = this.model.get('figureName');
+            if (!figureName) {
+                var defaultName = this.model.getDefaultFigureName();
+                figureName = prompt("Enter Figure Name", defaultName);
             }
-            var figureName = prompt("Enter Figure Name", defaultName);
 
             var nav = function(data){
-                console.log("nav", data, self.app);
+                // Update URL to new file (with ID)
                 self.app.navigate("file/"+data);
                 // in case you've Saved a copy of a file you can't edit
                 self.model.set('canEdit', true);
             };
             if (figureName) {
                 options.figureName = figureName;
+
+                if (!APP_SERVED_BY_OMERO) {
+                    this.model.set('figureName', figureName);
+                    this.model.save_to_download(options);
+                    return;
+                }
                 // On save, go to newly saved page, unless we have callback already
                 options.success = options.success || nav;
                 // Save
