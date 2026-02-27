@@ -19,6 +19,7 @@ from django.http import Http404, HttpResponse, \
     JsonResponse
 from django.views.decorators.http import require_POST
 from django.conf import settings
+from omero_figure import settings as figure_settings
 from django.template import loader
 from django.templatetags import static
 from datetime import datetime
@@ -26,6 +27,8 @@ import os
 import traceback
 import json
 import time
+
+from omeroweb.webclient.show import paths_to_object
 
 from omeroweb.webgateway.marshal import imageMarshal
 from omeroweb.webgateway.views import _get_prepared_image
@@ -41,7 +44,7 @@ from omero_marshal import get_encoder
 from io import BytesIO
 
 from omeroweb.webclient.decorators import login_required
-from .omeroutils import get_timestamps
+from .omeroutils import get_timestamps, get_wellsample_index
 
 import logging
 
@@ -105,6 +108,7 @@ def index(request, file_id=None, conn=None, **kwargs):
     length_units = get_length_units()
     cfg = conn.getConfigService()
     max_bytes = cfg.getConfigValue('omero.pixeldata.max_projection_bytes')
+    max_active_channels = getattr(figure_settings, 'MAX_ACTIVE_CHANNELS', 10)
     is_public_user = "false"
     if (hasattr(settings, 'PUBLIC_USER')
             and settings.PUBLIC_USER == user.getOmeName()):
@@ -131,6 +135,10 @@ def index(request, file_id=None, conn=None, **kwargs):
                         'const MAX_PLANE_SIZE = %s;' % max_plane_size)
     html = html.replace('const LENGTH_UNITS = LENGTHUNITS;',
                         'const LENGTH_UNITS = %s;' % json.dumps(length_units))
+    html = html.replace('const MAX_ACTIVE_CHANNELS = 10;',
+                        'const MAX_ACTIVE_CHANNELS = %s;'
+                        % max_active_channels)
+
     if max_bytes:
         html = html.replace('const MAX_PROJECTION_BYTES = 1024 * 1024 * 256;',
                             'const MAX_PROJECTION_BYTES = %s;' % max_bytes)
@@ -229,6 +237,26 @@ def img_data_json(request, image_id, conn=None, **kwargs):
     if size_t > 1:
         time_list = get_timestamps(conn, image)
     rv['deltaT'] = time_list
+
+    img_parents = {}
+    for img_path in paths_to_object(conn, image_id=image_id):
+        for item in img_path:
+            o_type = item["type"]
+            if o_type == "orphaned":
+                continue
+            del item["type"]
+            img_parents[o_type] = item
+            if o_type == "wellsample":
+                idx_plate, idx_run = get_wellsample_index(conn, item["id"])
+                item["index"] = idx_plate
+                item["index_run"] = idx_run
+                continue
+            obj = conn.getObject(o_type, item["id"])
+            if o_type == "well":
+                item["label"] = obj.getWellPos()
+            else:
+                item["name"] = obj.getName()
+    rv['parents'] = img_parents
 
     return HttpResponse(json.dumps(rv), content_type='json')
 
