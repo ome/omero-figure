@@ -70,16 +70,20 @@ Optional: To change the maximum active channel count from the default of 10:
 Now restart OMERO.web as normal.
 
 
-Enabling figure export
-----------------------
+Enabling figure export from OMERO
+---------------------------------
 
 This section assumes that an OMERO.server is already installed.
 
 Figures can be exported as PDF or TIFF files using a script that runs on the OMERO.server. This script needs to be uploaded to the OMERO.server and its dependencies
 installed in the OMERO.server virtual environment.
 
-The script can be uploaded using two alternative workflows, both of which require you to have the correct admin privileges.
-To find where OMERO.figure has been installed using pip, run:
+The script can be uploaded using various workflows, all of which require you to have the correct admin privileges.
+
+*Option 1*: Log in to the webclient as an Admin and open the OMERO.figure app. If the OMERO script is not found or is not up to date, you will
+see a warning message with a button to upload the script. Click the button to upload the script from the OMERO.figure app.
+
+*Option 2*: Upload the script from the installation directory. To find where OMERO.figure has been installed using pip, run:
 
 ::
 
@@ -87,18 +91,15 @@ To find where OMERO.figure has been installed using pip, run:
 
 The command will display the absolute path to the directory where the application is installed e.g. ``~/<virtualenv_name>/lib/python3.6/site-packages``. Go to that directory.
 
-*Option 1*: Connect to the OMERO server and upload the script via the CLI. It is important to be in the correct directory when uploading so that the script is uploaded with the full path: ``omero/figure_scripts/Figure_To_Pdf.py``:
+Connect to the OMERO server and upload the script via the CLI. It is important to be in the correct directory when uploading so that the script is uploaded with the full path: ``omero/figure_scripts/Figure_To_Pdf.py``:
 
 ::
 
     $ cd omero_figure/scripts
     $ omero script upload omero/figure_scripts/Figure_To_Pdf.py --official
 
-*Option 2*: Alternatively, before starting the OMERO.server, copy the script from the figure install
+*Option 3*: Alternatively, before starting the OMERO.server, copy the script from the figure install
 ``/omero_figure/scripts/omero/figure_scripts/Figure_To_Pdf.py`` to the OMERO.server ``path/to/OMERO.server/lib/scripts/omero/figure_scripts``. Then restart the OMERO.server.
-
-*Option 3*: Upload the script through the OMERO web interface: For this, log into your OMERO web interface as admin, select the scripts icon and click on the "Upload Script" button.
-Select the ``Figure_To_Pdf.py`` script from the directory where you copied it to locally and upload it into the directory ``omero/figure_scripts``.
 
 Now install the script's dependencies:
 
@@ -116,6 +117,31 @@ Now install the script's dependencies:
 ::
 
     $ pip install markdown
+
+
+Run Figure export locally
+-------------------------
+
+The export script can be run locally to convert a figure JSON file to PDF or TIFF.
+
+If the figure JSON file contains images from OMERO, you will need to have access to the OMERO.server where
+those images are stored and to login when running the script. In this case, you will need to have `omero-py` installed in your python environment.
+If the figure JSON only contains OME-Zarr images, then you 
+will not need to use OMERO or have `omero-py` installed.
+
+To run with an OMERO connection, use the ``--omero`` flag. The output file extension will be used to determine the export file type (PDF or TIFF)
+and the output path can be specified as a relative or absolute path.:
+
+::
+
+    $ python omero_figure/scripts/omero/figure_scripts/Figure_To_Pdf.py path/to/figure.json path/to/output.pdf --omero
+
+To run without an OMERO connection, simply omit the ``--omero`` flag.
+
+::
+
+    $ python omero_figure/scripts/omero/figure_scripts/Figure_To_Pdf.py path/to/figure.json /absolute/path/to/output.tiff
+
 
 Upgrading OMERO.figure
 ----------------------
