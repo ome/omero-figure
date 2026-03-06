@@ -304,6 +304,7 @@
                 "PDF & images": "PDF_IMAGES",
                 "TIFF": "TIFF",
                 "TIFF & images": "TIFF_IMAGES",
+                "PNG": "PNG",
                 "to OMERO": "OMERO"};
             exportOption = opts[export_opt];
 
