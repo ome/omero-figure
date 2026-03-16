@@ -19,6 +19,7 @@ from omero.sys import ParametersI
 from omero.gateway import PlaneInfoWrapper
 from omero.model.enums import UnitsTime
 from omero.model import TimeI
+from omero.rtypes import rlong
 
 
 def get_timestamps(conn, image):
@@ -87,3 +88,34 @@ def get_timestamps(conn, image):
             time_list.append(0)
 
     return time_list
+
+
+def get_wellsample_index(conn, wellsample_id):
+    params = ParametersI()
+    params.addId(wellsample_id)
+    query = """
+        SELECT index(ws), ws.plateAcquisition.id, ws.well.id
+        FROM Well w
+        LEFT OUTER JOIN w.wellSamples as ws
+        WHERE ws.id = :id
+        """
+    qs = conn.getQueryService()
+    rsp = qs.projection(query, params, conn.SERVICE_OPTS)
+
+    # increment index by 1, because OMERO returns 0-based index
+    ws_idx = rsp[0][0].val + 1
+    ws_run_idx = ws_idx  # index of the well sample in the plate
+
+    if rsp[0][1] is not None:
+        params = ParametersI()
+        params.addId(rsp[0][1].val)
+        params.add("wid", rlong(rsp[0][2].val))
+        query = """
+            SELECT min(index(ws))
+            FROM Well w JOIN w.wellSamples ws
+            WHERE ws.plateAcquisition.id = :id AND w.id = :wid
+        """
+        rsp = qs.projection(query, params, conn.SERVICE_OPTS)
+        ws_run_idx -= rsp[0][0].val  # index of the well for the run
+
+    return ws_idx, ws_run_idx
