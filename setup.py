@@ -82,7 +82,7 @@ setup(name="omero-figure",
       keywords=['OMERO.web', 'figure'],
       extras_require={
         'omero': ['omero-web>=5.6.0'],
-        'export': ['pillow', 'reportlab', 'zarr', 'dask'],
+        'export': ['pillow', 'reportlab', 'zarr', 'dask', 'fsspec[http]'],
       },
       python_requires='>=3',
       include_package_data=True,
