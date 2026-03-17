@@ -93,5 +93,10 @@ setup(name="omero-figure",
         'sdist': require_npm(sdist, True),
         'develop': require_npm(develop),
       },
+      entry_points={
+        'console_scripts': [
+          'figure_export=omero_figure.cli:figure_export',
+        ],
+      },
       tests_require=['pytest'],
       )
