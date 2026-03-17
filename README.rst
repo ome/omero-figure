@@ -122,25 +122,25 @@ Now install the script's dependencies:
 Run Figure export locally
 -------------------------
 
-The export script can be run locally to convert a figure JSON file to PDF or TIFF.
+If your figure contains only OME-Zarr images (no images from OMERO), then
+the export script can be run locally to convert a figure JSON file to PDF or TIFF.
 
-If the figure JSON file contains images from OMERO, you will need to have access to the OMERO.server where
-those images are stored and to login when running the script. In this case, you will need to have `omero-py` installed in your python environment.
-If the figure JSON only contains OME-Zarr images, then you 
-will not need to use OMERO or have `omero-py` installed.
-
-To run with an OMERO connection, use the ``--omero`` flag. The output file extension will be used to determine the export file type (PDF or TIFF)
-and the output path can be specified as a relative or absolute path.:
+Download the figure JSON (File > Save, in the standalone app) then install the export script.
+Here, we create a new conda environment and install the export script:
 
 ::
 
-    $ python omero_figure/scripts/omero/figure_scripts/Figure_To_Pdf.py path/to/figure.json path/to/output.pdf --omero
+    $ conda create --name figure_export python=3.12
+    $ conda activate figure_export
 
-To run without an OMERO connection, simply omit the ``--omero`` flag.
+    $ pip install "omero-figure[export]
+
+To export the figure as PDF or TIFF, run the script with the path to the figure JSON and the output file path as arguments:
+Use the ``.pdf`` extension for PDF export and ``.tiff`` for TIFF export.
 
 ::
 
-    $ python omero_figure/scripts/omero/figure_scripts/Figure_To_Pdf.py path/to/figure.json /absolute/path/to/output.tiff
+    $ figure_export figure_json/my_figure.json my_figure.pdf
 
 
 Upgrading OMERO.figure
