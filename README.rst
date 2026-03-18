@@ -124,6 +124,7 @@ Run Figure export locally
 
 If your figure contains only OME-Zarr images (no images from OMERO), then
 the export script can be run locally to convert a figure JSON file to PDF or TIFF.
+NB: the OME-Zarr URLs must be accessible from the machine where the export script is run.
 
 Download the figure JSON (File > Save, in the standalone app) then install the export script.
 Here, we create a new conda environment and install the export script:
