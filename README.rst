@@ -136,7 +136,7 @@ Here, we create a new conda environment and install the export script:
     $ conda create --name figure_export python=3.12
     $ conda activate figure_export
 
-    $ pip install "omero-figure[export]
+    $ pip install "omero-figure[export]"
 
 To export the figure as PDF or TIFF, run the script with the path to the figure JSON and the output file path as arguments:
 Use the ``.pdf`` extension for PDF export and ``.tiff`` for TIFF export. This example exports the
