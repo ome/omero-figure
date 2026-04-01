@@ -12,7 +12,11 @@
 OMERO.figure
 ============
 
-An OMERO.web app for creating figures from images in OMERO.
+An app for creating figures from images.
+
+The app can be used standalone with OME-Zarr images or installed within OMERO.web to work with OMERO images.
+
+The standalone app is available at `https://ome.github.io/omero-figure/ <https://ome.github.io/omero-figure/>`_.
 
 For full details see `SUPPORT.md <https://github.com/ome/omero-figure/blob/master/SUPPORT.md>`_.
 
