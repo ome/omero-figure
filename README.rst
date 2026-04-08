@@ -241,7 +241,7 @@ Deploying the standalone app
 ----------------------------
 
 The standalone app is deployed to GitHub pages at https://ome.github.io/omero-figure/ via a GitHub action defined in ``.github/workflows/pages.yml`` which acts on push to the `master` branch.
-which builds the app and pushes the built files to the `gh-pages` branch.
+The action then builds the app and pushes the built files to the `gh-pages` branch.
 
 To deploy the app from your own fork, you can push to your own `master` branch and set up GitHub pages to deploy from the
 root of your `gh-pages` branch.
