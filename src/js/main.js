@@ -22,6 +22,10 @@ const figureModel = new FigureModel();
 // make this global so we can access it from the browser console
 window.figureModel = figureModel;
 
+// This will be '/' unless deployed from gh-pages, when it will be '/omero-figure/'
+console.log("import.meta.env", import.meta.env)
+window.BASE_URL = import.meta.env.BASE_URL.slice(1);  // remove leading slash
+console.log("BASE_URL", BASE_URL);
 const RELEASE_VERSION = import.meta.env.VITE_VERSION;
 console.log("RELEASE_VERSION", RELEASE_VERSION);
 document.getElementById("release_version").innerHTML = RELEASE_VERSION;
@@ -73,17 +77,32 @@ var undoManager = new UndoManager({ figureModel: figureModel }),
 // Finally, start listening for changes to panels
 undoManager.listenToCollection(figureModel.panels);
 
+// All routes based on BASE_URL, which is either '/' or '/omero-figure/' depending on deployment
+let routes = {};
+routes[`${BASE_URL}(/)`] = "index";
+routes[`${BASE_URL}new(/)`] = "newFigure";
+routes[`${BASE_URL}recover(/)`] = "recoverFigure";
+routes[`${BASE_URL}open(/)`] = "openFigure";
+routes[`${BASE_URL}file/:id(/)`] = "loadFigure";
+
 var FigureRouter = Backbone.Router.extend({
-  routes: {
-    "": "index",
-    "new(/)": "newFigure",
-    "recover(/)": "recoverFigure",
-    "open(/)": "openFigure",
-    "file/:id(/)": "loadFigure",
-  },
+  routes: routes,
 
   index: function () {
     console.log("index");
+    // Check for ?file=http://...json
+    // TODO: do we ONLY want to do this on index?
+    if (window.location.search.length > 1) {
+      const searchParams = new URLSearchParams(window.location.search.substring(1));
+      if (searchParams.has("file")) {
+        const file = searchParams.get("file");
+        var cb = function () {
+          figureModel.load_from_url(file);
+        };
+        figureModel.checkSaveAndClear(cb);
+        return;
+      }
+    }
     hideModals();
     var cb = () => {
       showModal("welcomeModal");
@@ -161,7 +180,8 @@ $(document).on("click", "a", function (ev) {
   // check that links are 'internal' to this app
   if (href.substring(0, BASE_WEBFIGURE_URL.length) === BASE_WEBFIGURE_URL) {
     ev.preventDefault();
-    href = href.replace(BASE_WEBFIGURE_URL, "/");
+    let baseUrl = APP_SERVED_BY_OMERO ? "/" : "/omero-figure/";
+    href = href.replace(BASE_WEBFIGURE_URL, baseUrl);
     app.navigate(href, { trigger: true });
   }
 });

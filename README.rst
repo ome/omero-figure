@@ -12,7 +12,11 @@
 OMERO.figure
 ============
 
-An OMERO.web app for creating figures from images in OMERO.
+An app for creating figures from images.
+
+The app can be used standalone with OME-Zarr images or installed within OMERO.web to work with OMERO images.
+
+The standalone app is available at `https://ome.github.io/omero-figure/ <https://ome.github.io/omero-figure/>`_.
 
 For full details see `SUPPORT.md <https://github.com/ome/omero-figure/blob/master/SUPPORT.md>`_.
 
@@ -182,55 +186,63 @@ Install Node from https://nodejs.org, then:
     $ cd omero-figure
     $ npm install
 
+You can deploy the app during development in two ways: using the vite dev server or from OMERO.web.
+
+
+Deploying with vite dev server
+******************************
+
 To serve the app at http://localhost:8080/ using the vite dev server
 (this will automatically refresh the page when changes are saved):
 
 ::
 
-    $ npm run start
+    $ npm run dev     # or npm run start
+
+The app will run as a standalone app that can load OME-Zarr images.
+A global variable `APP_SERVED_BY_OMERO` will be `false` and this is used
+to determine the behaviour of various features such as File Open/Save
+and the figure Export dialog.
 
 If you are editing the Shape-Editor code, you can view the test page at
 http://localhost:8080/shapeEditorTest.html
 
 
-CORS
-****
+Deploying from OMERO.web
+************************
 
-During development, we load and save figure files to an omero-web server.
-You will need to have CORS enabled on your local omero-web server at
-http://localhost:4080/ and be logged in already.
-This URL can be edited in `src/index.html`.
-
-You MUST access the figure app at http://localhost:8080/ (NOT http://127.0.0.1:8080/)
-for CORS to work.
-
-NB: in general, POST actions such as saving of figure files or exporting figures doesn't
-yet work with the dev server. To test these actions, build the app as described below:
-
-
-Build
------
-
-To build the app:
+To deploy the app from OMERO.web during development, you should checkout the code
+and install from there into your OMERO.web python environment:
 
 ::
 
-   $ npm run build
-
-This compiles index.html and other static assets into correct locations to be
-served by the Django `omero-web` server.
-
-To serve this on a local omero-web, set config as above and install with:
-
-::
-
+   $ cd omero-figure
    $ pip install -e .
 
-In order to build whenever changes are saved within the `src/` directory:
+Then configure your local OMERO.web as described above and restart OMERO.web.
+You will need to build the app with:
+
+::
+
+    $ npm run build
+
+To build whenever changes are saved within the `src/` directory:
 
 ::
 
     $ npm run watch
+
+You will need to refresh the OMERO.figure app to see changes when using this workflow.
+
+
+Deploying the standalone app
+----------------------------
+
+The standalone app is deployed to GitHub pages at https://ome.github.io/omero-figure/ via a GitHub action defined in ``.github/workflows/pages.yml`` which acts on push to the `master` branch.
+The action then builds the app and pushes the built files to the `gh-pages` branch.
+
+To deploy the app from your own fork, you can push to your own `master` branch and set up GitHub pages to deploy from the
+root of your `gh-pages` branch.
 
 
 Release process

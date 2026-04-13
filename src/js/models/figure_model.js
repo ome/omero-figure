@@ -6,6 +6,7 @@
     import {PanelList, Panel} from "./panel_model";
     import { recoverFigureFromStorage,
         clearFigureFromStorage,
+        downloadAsFile,
         figureConfirmDialog,
         getJsonWithCredentials,
         saveFigureToStorage,
@@ -373,6 +374,18 @@
             return figureJSON;
         },
 
+        load_from_url: function(url) {
+            // load content from a URL
+            console.log("load_from_url...", url);
+            $.getJSON(url, function(data){
+                this.load_from_JSON(data);
+                this.set('unsaved', false);
+            }.bind(this))
+            .fail(function(){
+                alert("Failed to load figure from URL: " + url);
+            });
+        },
+
         figure_fromJSON: function(data) {
             var parsed = JSON.parse(data);
             delete parsed.fileId;
@@ -394,6 +407,18 @@
                 figureConfirmDialog(
                     "Figure recovered", html, ["OK"]);
             }
+        },
+
+        save_to_download: function(options) {
+            // Downloads the FigureJSON as a file
+            let figureJSON = this.figure_toJSON();
+            if (options.figureName) {
+                figureJSON.figureName = options.figureName;
+            }
+            let fileName = figureJSON.figureName || "figure";
+            let jsonText = JSON.stringify(this.figure_toJSON(), null, 2);
+            downloadAsFile(jsonText, "application/json", fileName + ".json");
+            this.set({unsaved: false});
         },
 
         save_to_OMERO: function(options) {
