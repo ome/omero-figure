@@ -133,13 +133,14 @@ NB: channel LUTs are not currently supported when rendering OME-Zarr images for 
 Any LUTs will be rendered with white color.
 
 Download the figure JSON (File > Save, in the standalone app) then install the export script.
-Here, we create a new conda environment and install the export script:
+Here, we create a new conda environment and install the export script.
+NB: We use the ``-pre`` flag to allow installation of the pre-release version of OMERO.figure:
 
 ::
 
     $ conda create --name figure_export python=3.12
     $ conda activate figure_export
-    $ pip install "omero-figure[export]"
+    $ pip install --pre "omero-figure[export]"
 
 To export the figure as PDF or TIFF, run the script with the path to the figure JSON and the output file path as arguments:
 Use the ``.pdf`` extension for PDF export and ``.tiff`` for TIFF export. This example exports the
