@@ -11,6 +11,36 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.10'
+      - name: Validate tag matches package version
+        if: startsWith(github.ref, 'refs/tags')
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          # Allow either 1.2.3rc1 or v1.2.3rc1 tags.
+          TAG_NO_V="${TAG#v}"
+          PKG_VERSION="$(python -c \"import omero_figure.utils as u; print(u.__version__)\")"
+
+          echo "Tag: ${TAG}"
+          echo "Package version: ${PKG_VERSION}"
+
+          # Compare normalized PEP 440 versions so 1.2.3.rc1 and 1.2.3rc1 are equivalent.
+          python - <<'PY'
+          import os
+          import sys
+
+          from packaging.version import Version
+
+          tag = os.environ["TAG_NO_V"]
+          pkg = os.environ["PKG_VERSION"]
+          tag_v = Version(tag)
+          pkg_v = Version(pkg)
+
+          if tag_v != pkg_v:
+              print(f"ERROR: Tag ({tag}) does not match package version ({pkg}).")
+              print(f"Normalized tag={tag_v}, package={pkg_v}")
+              sys.exit(1)
+
+          print(f"Validated normalized version match: {tag_v}")
+          PY
       - name: Build a binary wheel and a source tarball
         run: |
           python -mpip install build
@@ -22,6 +52,14 @@ jobs:
           password: ${{ secrets.PYPI_PASSWORD }}
       - name: Create a GitHub release
         if: startsWith(github.ref, 'refs/tags')
-        run: gh release create --generate-notes "${GITHUB_REF#refs/tags/}"
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          TAG_NO_V="${TAG#v}"
+          # Mark a/b/rc tags as prereleases.
+          if echo "${TAG_NO_V}" | grep -Eq '[0-9](\.?)(a|b|rc)[0-9]+$'; then
+            gh release create --generate-notes --prerelease "${TAG}"
+          else
+            gh release create --generate-notes "${TAG}"
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

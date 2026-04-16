@@ -249,15 +249,35 @@ Release process
 ---------------
 
 This repository uses `bump2version <https://pypi.org/project/bump2version/>`_ to manage version numbers.
-To tag a release run::
+To create a release-candidate (RC) from a development version run::
 
-    $ bumpversion release
+    $ bumpversion release    # e.g. 8.0.1.dev0 -> 8.0.1.rc0
+    $ bumpversion build      # e.g. 8.0.1.rc0 -> 8.0.1.rc1
 
-This will remove the ``.dev0`` suffix from the current version, commit, and tag the release.
+This creates commits and tags by default.
+
+To tag a stable release from RC run::
+
+    $ bumpversion release    # e.g. 8.0.1.rc1 -> 8.0.1
 
 To switch back to a development version run::
 
     $ bumpversion --no-tag [major|minor|patch]
+
+PyPI publishing notes:
+
+* Publishing is triggered by Git tags in the GitHub action.
+* The published package version comes from ``omero_figure/utils.py`` (not from tag text alone).
+* The workflow validates that the tag version and package version match before publishing.
+* Tag formats ``8.0.1rc1`` and ``v8.0.1rc1`` are both accepted.
+
+To create a stable release directly from ``.dev0`` (without RC), set an explicit version and tag it, for example::
+
+    $ bumpversion --new-version 8.0.1 release
+
+Previous flow (kept for reference) was:
+
+    $ bumpversion release
 
 specifying ``major``, ``minor`` or ``patch`` depending on whether the development branch will be a `major, minor or patch release <https://semver.org/>`_. This will also add the ``.dev0`` suffix.
 
