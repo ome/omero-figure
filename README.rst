@@ -264,14 +264,13 @@ To create a stable release directly from ``.dev0`` (without RC), set an explicit
 
     $ bumpversion --new-version 8.0.1 release
 
-Remember to ``git push`` all commits and tags.
-
 To switch back to a development version run::
 
     $ bumpversion --no-tag [major|minor|patch]
 
 specifying ``major``, ``minor`` or ``patch`` depending on whether the development branch will be a `major, minor or patch release <https://semver.org/>`_. This will also add the ``.dev0`` suffix.
 
+Remember to ``git push`` all commits and tags.
 
 PyPI publishing notes:
 
