@@ -134,7 +134,7 @@ Any LUTs will be rendered with white color.
 
 Download the figure JSON (File > Save, in the standalone app) then install the export script.
 Here, we create a new conda environment and install the export script.
-NB: We use the ``-pre`` flag to allow installation of the pre-release version of OMERO.figure:
+NB: We use the ``--pre`` flag to allow installation of the pre-release version of OMERO.figure:
 
 ::
 
