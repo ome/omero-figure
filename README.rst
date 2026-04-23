@@ -110,17 +110,19 @@ Now install the script's dependencies:
 
 * Install `reportlab <https://bitbucket.org/rptlab/reportlab>`_ PDF python package.
   This needs to be installed in the virtual environment where the ``OMERO.server`` is installed. Depending on your install, you may need to
-  call ``pip`` with, for example: ``/path/to_server_venv/venv/bin/pip install ...``
+  call ``pip`` with, for example: ``/path/to_server_venv/venv/bin/pip install ...``. The install of `Python Markdown <https://python-markdown.github.io/>`_ is optional
+  but is required to format any figure legends that use Markdown syntax.
 
 ::
 
-    $ pip install reportlab
+    $ pip install reportlab markdown
 
-* Optional: Figure legends can be formatted using Markdown syntax. To see this correctly in the exported PDF info page, we need `Python Markdown <https://python-markdown.github.io/>`_:
+* Optional: If your figure contains OME-Zarr images, you will also need to install the dependencies for rendering OME-Zarr images in the export script.
+  These are `zarr`, `dask` and `fsspec[http]`:
 
 ::
 
-    $ pip install markdown
+    $ pip install zarr dask fsspec[http]
 
 
 Run Figure export locally
