@@ -93,7 +93,7 @@ First install the script's dependencies:
 
     $ pip install reportlab markdown
 
-* Optional: If your figure contains OME-Zarr images, you will also need to install the dependencies for rendering
+* Optional (v8.0.1 release candidate only): If your figure contains OME-Zarr images, you will also need to install the dependencies for rendering
   OME-Zarr images in the export script. These are `zarr`, `dask` and `fsspec[http]`:
 
 ::
@@ -125,8 +125,8 @@ Connect to the OMERO server and upload the script via the CLI. It is important t
 ``/omero_figure/scripts/omero/figure_scripts/Figure_To_Pdf.py`` to the OMERO.server ``path/to/OMERO.server/lib/scripts/omero/figure_scripts``. Then restart the OMERO.server.
 
 
-Run Figure export locally
--------------------------
+Run Figure export locally (v8.0.1 release candidate only)
+---------------------------------------------------------
 
 If your figure contains only OME-Zarr images (no images from OMERO), then
 the export script can be run locally to convert a figure JSON file to PDF or TIFF.
