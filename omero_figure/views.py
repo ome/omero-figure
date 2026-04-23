@@ -156,14 +156,6 @@ def index(request, file_id=None, conn=None, **kwargs):
 
     # update links to static files
     static_dir = static.static('omero_figure/')
-
-    # The following lines remove the "omero-figure/" which comes from vite config.base
-    # *ONLY* present when built by gh-actions (where it's needed for gh-pages deploy).
-    # So, we need this fix for *release* builds built by gh-actions (NOT when installed from GitHub and built locally).
-    html = html.replace('href="/omero-figure/', 'href="/')
-    html = html.replace('src="/omero-figure/', 'src="/')
-
-    # Now we can update the standalone page to point to the OMERO static dir
     html = html.replace('href="/assets',
                         'href="%sassets' % static_dir)
     html = html.replace('src="/assets',
