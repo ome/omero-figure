@@ -82,6 +82,25 @@ This section assumes that an OMERO.server is already installed.
 Figures can be exported as PDF or TIFF files using a script that runs on the OMERO.server. This script needs to be uploaded to the OMERO.server and its dependencies
 installed in the OMERO.server virtual environment.
 
+First install the script's dependencies:
+
+* Install `reportlab <https://bitbucket.org/rptlab/reportlab>`_ PDF python package.
+  This needs to be installed in the virtual environment where the ``OMERO.server`` is installed. Depending on your install, you may need to
+  call ``pip`` with, for example: ``/path/to_server_venv/venv/bin/pip install ...``. The install of `Python Markdown <https://python-markdown.github.io/>`_ is optional
+  but is required to format any figure legends that use Markdown syntax.
+
+::
+
+    $ pip install reportlab markdown
+
+* Optional: If your figure contains OME-Zarr images, you will also need to install the dependencies for rendering
+  OME-Zarr images in the export script. These are `zarr`, `dask` and `fsspec[http]`:
+
+::
+
+    $ pip install zarr dask fsspec[http]
+
+
 The script can be uploaded using various workflows, all of which require you to have the correct admin privileges.
 
 *Option 1*: Log in to the webclient as an Admin and open the OMERO.figure app. If the OMERO script is not found or is not up to date, you will
@@ -104,25 +123,6 @@ Connect to the OMERO server and upload the script via the CLI. It is important t
 
 *Option 3*: Alternatively, before starting the OMERO.server, copy the script from the figure install
 ``/omero_figure/scripts/omero/figure_scripts/Figure_To_Pdf.py`` to the OMERO.server ``path/to/OMERO.server/lib/scripts/omero/figure_scripts``. Then restart the OMERO.server.
-
-Now install the script's dependencies:
-
-
-* Install `reportlab <https://bitbucket.org/rptlab/reportlab>`_ PDF python package.
-  This needs to be installed in the virtual environment where the ``OMERO.server`` is installed. Depending on your install, you may need to
-  call ``pip`` with, for example: ``/path/to_server_venv/venv/bin/pip install ...``. The install of `Python Markdown <https://python-markdown.github.io/>`_ is optional
-  but is required to format any figure legends that use Markdown syntax.
-
-::
-
-    $ pip install reportlab markdown
-
-* Optional: If your figure contains OME-Zarr images, you will also need to install the dependencies for rendering OME-Zarr images in the export script.
-  These are `zarr`, `dask` and `fsspec[http]`:
-
-::
-
-    $ pip install zarr dask fsspec[http]
 
 
 Run Figure export locally
