@@ -130,7 +130,7 @@ Run Figure export locally
 
 If your figure contains only OME-Zarr images (no images from OMERO), then
 the export script can be run locally to convert a figure JSON file to PDF or TIFF.
-NB: the OME-Zarr URLs must be publicly accessible from the machine where the export script is run.
+NB: the OME-Zarr URLs must be publicly accessible. Also, you need to be able to access the URLs from the machine where the export script is run.
 NB: channel LUTs are not currently supported when rendering OME-Zarr images for PDF or TIFFs.
 Any LUTs will be rendered with white color.
 
