@@ -12,11 +12,10 @@
 OMERO.figure
 ============
 
-An app for creating figures from images.
+An app for creating figures from images in OMERO.
 
-The app can be used standalone with OME-Zarr images or installed within OMERO.web to work with OMERO images.
-
-The standalone app is available at `https://ome.github.io/omero-figure/ <https://ome.github.io/omero-figure/>`_.
+OMERO.figure bundles the standalone https://ome.github.io/figure/ application into an OMERO.web app
+for working with OMERO images and saving figures to the OMERO.server.
 
 For full details see `SUPPORT.md <https://github.com/ome/omero-figure/blob/master/SUPPORT.md>`_.
 
@@ -125,33 +124,6 @@ Connect to the OMERO server and upload the script via the CLI. It is important t
 ``/omero_figure/scripts/omero/figure_scripts/Figure_To_Pdf.py`` to the OMERO.server ``path/to/OMERO.server/lib/scripts/omero/figure_scripts``. Then restart the OMERO.server.
 
 
-Run Figure export locally
--------------------------
-
-If your figure contains only OME-Zarr images (no images from OMERO), then
-the export script can be run locally to convert a figure JSON file to PDF or TIFF.
-NB: the OME-Zarr URLs must be publicly accessible. Also, you need to be able to access the URLs from the machine where the export script is run.
-NB: channel LUTs are not currently supported when rendering OME-Zarr images for PDF or TIFFs.
-Any LUTs will be rendered with white color.
-
-Download the figure JSON (File > Save, in the standalone app) then install the export script.
-Here, we create a new conda environment and install the export script:
-
-::
-
-    $ conda create --name figure_export python=3.12
-    $ conda activate figure_export
-    $ pip install "omero-figure[export]"
-
-To export the figure as PDF or TIFF, run the script with the path to the figure JSON and the output file path as arguments:
-Use the ``.pdf`` extension for PDF export and ``.tiff`` for TIFF export. This example exports the
-downloaded ``figure_json/my_figure.json`` to ``my_figure.pdf`` in the current directory:
-
-::
-
-    $ figure_export figure_json/my_figure.json my_figure.pdf
-
-
 Upgrading OMERO.figure
 ----------------------
 
@@ -177,6 +149,11 @@ above. If using *Option 1*, you need to *replace* the existing script:
 Development
 -----------
 
+See the `figure` app at `https://ome.github.io/figure/ <https://ome.github.io/figure/>`_
+for development details of the standalone app.
+
+The `figure` repo is a submodule of the `omero-figure` repository.
+
 See `docs/contributing.md` for information on code layout and other details.
 
 We use `vite.js <https://vitejs.dev/>`_ to build and serve the app during development.
@@ -185,7 +162,7 @@ Install Node from https://nodejs.org, then:
 
 ::
 
-    $ cd omero-figure
+    $ cd omero-figure/figure
     $ npm install
 
 You can deploy the app during development in two ways: using the vite dev server or from OMERO.web.
@@ -235,16 +212,6 @@ To build whenever changes are saved within the `src/` directory:
     $ npm run watch
 
 You will need to refresh the OMERO.figure app to see changes when using this workflow.
-
-
-Deploying the standalone app
-----------------------------
-
-The standalone app is deployed to GitHub pages at https://ome.github.io/omero-figure/ via a GitHub action defined in ``.github/workflows/pages.yml`` which acts on push to the `master` branch.
-The action then builds the app and pushes the built files to the `gh-pages` branch.
-
-To deploy the app from your own fork, you can push to your own `master` branch and set up GitHub pages to deploy from the
-root of your `gh-pages` branch.
 
 
 Release process
