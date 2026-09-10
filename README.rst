@@ -164,21 +164,13 @@ Install Node from https://nodejs.org, then:
 
     $ cd omero-figure/figure
     $ npm install
+    $ npm run start
 
-You can deploy the app during development in two ways: using the vite dev server or from OMERO.web.
-
-
-Deploying with vite dev server
-******************************
-
-To serve the app at http://localhost:8080/ using the vite dev server
+View the app at http://localhost:8080/
 (this will automatically refresh the page when changes are saved):
 
-::
-
-    $ npm run dev     # or npm run start
-
 The app will run as a standalone app that can load OME-Zarr images.
+
 A global variable `APP_SERVED_BY_OMERO` will be `false` and this is used
 to determine the behaviour of various features such as File Open/Save
 and the figure Export dialog.
@@ -190,29 +182,45 @@ http://localhost:8080/shapeEditorTest.html
 Deploying from OMERO.web
 ************************
 
-To deploy the app from OMERO.web during development, you should checkout the code
-and install from there into your OMERO.web python environment:
+You will need to install this repo in your `omero-web` environment 
+and configure as above.
 
-::
+```
+    $ cd omero-figure
+    $ pip install -e .
+```
 
-   $ cd omero-figure
-   $ pip install -e .
+To propagate changes from `/figure` to `omero-figure`, so we can test them
+when deployed from OMERO.web, we can either:
 
-Then configure your local OMERO.web as described above and restart OMERO.web.
-You will need to build the app with:
+```
+    $ cd figure
+    $ npm run build     # builds into figure/dist
+    $ cd ../
+    $ ./deploy_build.sh     # copies figure/dist/assets etc into omero-figure
+```
 
-::
+or run the python build command:
 
-    $ npm run build
-
-To build whenever changes are saved within the `src/` directory:
-
-::
-
-    $ npm run watch
+```
+    $ python -m build
+```
 
 You will need to refresh the OMERO.figure app to see changes when using this workflow.
 
+Commiting changes
+*****************
+
+Commit changes to `figure` first, then update the submodule commit:
+
+```
+    $ cd figure
+    $ git add....   # git commit etc.
+
+    $ cd ../
+    $ git add figure
+    $ git commit "Update /figure to feature X"
+```
 
 Release process
 ---------------
