@@ -7,7 +7,6 @@ demo/omero_figure/
 demo/figure.js
 demo/index.html
 figure/node_modules/
-gh_pages/
 _site
 dist
 omero_figure.egg-info
