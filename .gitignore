@@ -12,6 +12,7 @@ dist
 omero_figure.egg-info
 omero_figure/templates/
 omero_figure/static/
+omero_figure/scripts/
 figure/build
 .vscode
 .idea
