@@ -114,7 +114,7 @@ def index(request, file_id=None, conn=None, **kwargs):
             and settings.PUBLIC_USER == user.getOmeName()):
         is_public_user = "true"
 
-    # Load the template html and replace various placeholders with actual values
+    # Load the template html and replace placeholders with actual values
     template = loader.get_template("omero_figure/index.html")
     html = template.render({}, request)
     omeroweb_index = reverse("index")
@@ -130,11 +130,16 @@ def index(request, file_id=None, conn=None, **kwargs):
         'const APP_ROOT_URL = "%s";' % figure_index,
         'const USER_ID = 0;': 'const USER_ID = %s' % user.id,
         'const PING_URL = "";': 'const PING_URL = "%s";' % ping_url,
-        'const USER_FULL_NAME = "OME";': 'const USER_FULL_NAME = "%s";' % user_full_name,
-        'const IS_PUBLIC_USER = false;': 'const IS_PUBLIC_USER = %s;' % is_public_user,
-        'const MAX_PLANE_SIZE = 10188864;': 'const MAX_PLANE_SIZE = %s;' % max_plane_size,
-        'const LENGTH_UNITS = LENGTHUNITS;': 'const LENGTH_UNITS = %s;' % json.dumps(length_units),
-        'const MAX_ACTIVE_CHANNELS = 10;': 'const MAX_ACTIVE_CHANNELS = %s;' % max_active_channels,
+        'const USER_FULL_NAME = "OME";':
+        'const USER_FULL_NAME = "%s";' % user_full_name,
+        'const IS_PUBLIC_USER = false;':
+        'const IS_PUBLIC_USER = %s;' % is_public_user,
+        'const MAX_PLANE_SIZE = 10188864;':
+        'const MAX_PLANE_SIZE = %s;' % max_plane_size,
+        'const LENGTH_UNITS = LENGTHUNITS;':
+        'const LENGTH_UNITS = %s;' % json.dumps(length_units),
+        'const MAX_ACTIVE_CHANNELS = 10;':
+        'const MAX_ACTIVE_CHANNELS = %s;' % max_active_channels,
     }
     for key, value in to_replace.items():
         if key not in html:
