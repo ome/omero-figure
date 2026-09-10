@@ -185,26 +185,26 @@ Deploying from OMERO.web
 You will need to install this repo in your `omero-web` environment 
 and configure as above.
 
-```
+::
+
     $ cd omero-figure
     $ pip install -e .
-```
 
 To propagate changes from `/figure` to `omero-figure`, so we can test them
 when deployed from OMERO.web, we can either:
 
-```
+::
+
     $ cd figure
     $ npm run build     # builds into figure/dist
     $ cd ../
     $ ./deploy_build.sh     # copies figure/dist/assets etc into omero-figure
-```
 
 or run the python build command:
 
-```
+::
+
     $ python -m build
-```
 
 You will need to refresh the OMERO.figure app to see changes when using this workflow.
 
@@ -213,14 +213,14 @@ Commiting changes
 
 Commit changes to `figure` first, then update the submodule commit:
 
-```
+::
+
     $ cd figure
     $ git add....   # git commit etc.
 
     $ cd ../
     $ git add figure
     $ git commit "Update /figure to feature X"
-```
 
 Release process
 ---------------
