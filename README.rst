@@ -12,11 +12,10 @@
 OMERO.figure
 ============
 
-An app for creating figures from images.
+An app for creating figures from images in OMERO.
 
-The app can be used standalone with OME-Zarr images or installed within OMERO.web to work with OMERO images.
-
-The standalone app is available at `https://ome.github.io/omero-figure/ <https://ome.github.io/omero-figure/>`_.
+OMERO.figure bundles the standalone https://ome.github.io/figure/ application into an OMERO.web app
+for working with OMERO images and saving figures to the OMERO.server.
 
 For full details see `SUPPORT.md <https://github.com/ome/omero-figure/blob/master/SUPPORT.md>`_.
 
@@ -124,7 +123,6 @@ Connect to the OMERO server and upload the script via the CLI. It is important t
 *Option 3*: Alternatively, before starting the OMERO.server, copy the script from the figure install
 ``/omero_figure/scripts/omero/figure_scripts/Figure_To_Pdf.py`` to the OMERO.server ``path/to/OMERO.server/lib/scripts/omero/figure_scripts``. Then restart the OMERO.server.
 
-
 Run Figure export locally
 -------------------------
 
@@ -151,7 +149,6 @@ downloaded ``figure_json/my_figure.json`` to ``my_figure.pdf`` in the current di
 
     $ figure_export figure_json/my_figure.json my_figure.pdf
 
-
 Upgrading OMERO.figure
 ----------------------
 
@@ -177,6 +174,11 @@ above. If using *Option 1*, you need to *replace* the existing script:
 Development
 -----------
 
+See the `figure` app at `https://ome.github.io/figure/ <https://ome.github.io/figure/>`_
+for development details of the standalone app.
+
+The `figure` repo is a submodule of the `omero-figure` repository.
+
 See `docs/contributing.md` for information on code layout and other details.
 
 We use `vite.js <https://vitejs.dev/>`_ to build and serve the app during development.
@@ -185,23 +187,15 @@ Install Node from https://nodejs.org, then:
 
 ::
 
-    $ cd omero-figure
+    $ cd omero-figure/figure
     $ npm install
+    $ npm run start
 
-You can deploy the app during development in two ways: using the vite dev server or from OMERO.web.
-
-
-Deploying with vite dev server
-******************************
-
-To serve the app at http://localhost:8080/ using the vite dev server
+View the app at http://localhost:8080/
 (this will automatically refresh the page when changes are saved):
 
-::
-
-    $ npm run dev     # or npm run start
-
 The app will run as a standalone app that can load OME-Zarr images.
+
 A global variable `APP_SERVED_BY_OMERO` will be `false` and this is used
 to determine the behaviour of various features such as File Open/Save
 and the figure Export dialog.
@@ -213,39 +207,45 @@ http://localhost:8080/shapeEditorTest.html
 Deploying from OMERO.web
 ************************
 
-To deploy the app from OMERO.web during development, you should checkout the code
-and install from there into your OMERO.web python environment:
+You will need to install this repo in your `omero-web` environment 
+and configure as above.
 
 ::
 
-   $ cd omero-figure
-   $ pip install -e .
+    $ cd omero-figure
+    $ pip install -e .
 
-Then configure your local OMERO.web as described above and restart OMERO.web.
-You will need to build the app with:
-
-::
-
-    $ npm run build
-
-To build whenever changes are saved within the `src/` directory:
+To propagate changes from `/figure` to `omero-figure`, so we can test them
+when deployed from OMERO.web, we can either:
 
 ::
 
-    $ npm run watch
+    $ cd figure
+    $ npm run build     # builds into figure/dist
+    $ cd ../
+    $ ./deploy_build.sh     # copies figure/dist/assets etc into omero-figure
+
+or run the python build command:
+
+::
+
+    $ python -m build
 
 You will need to refresh the OMERO.figure app to see changes when using this workflow.
 
+Commiting changes
+*****************
 
-Deploying the standalone app
-----------------------------
+Commit changes to `figure` first, then update the submodule commit:
 
-The standalone app is deployed to GitHub pages at https://ome.github.io/omero-figure/ via a GitHub action defined in ``.github/workflows/pages.yml`` which acts on push to the `master` branch.
-The action then builds the app and pushes the built files to the `gh-pages` branch.
+::
 
-To deploy the app from your own fork, you can push to your own `master` branch and set up GitHub pages to deploy from the
-root of your `gh-pages` branch.
+    $ cd figure
+    $ git add....   # git commit etc.
 
+    $ cd ../
+    $ git add figure
+    $ git commit "Update /figure to feature X"
 
 Release process
 ---------------

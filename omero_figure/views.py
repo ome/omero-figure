@@ -114,33 +114,38 @@ def index(request, file_id=None, conn=None, **kwargs):
             and settings.PUBLIC_USER == user.getOmeName()):
         is_public_user = "true"
 
-    # Load the template html and replace OMEROWEB_INDEX
+    # Load the template html and replace placeholders with actual values
     template = loader.get_template("omero_figure/index.html")
     html = template.render({}, request)
-    html = html.replace('const APP_SERVED_BY_OMERO = false;',
-                        'const APP_SERVED_BY_OMERO = true;')
     omeroweb_index = reverse("index")
     figure_index = reverse("figure_index")
     ping_url = reverse("keepalive_ping")
-    html = html.replace('const BASE_OMEROWEB_URL = dev_omeroweb_url;',
-                        'const BASE_OMEROWEB_URL = "%s";' % omeroweb_index)
-    html = html.replace('const APP_ROOT_URL = "";',
-                        'const APP_ROOT_URL = "%s";' % figure_index)
-    # Replace various other placeholder values with OMERO data/configs
-    html = html.replace('const USER_ID = 0;', 'const USER_ID = %s' % user.id)
-    html = html.replace('const PING_URL = "";',
-                        'const PING_URL = "%s";' % ping_url)
-    html = html.replace('const USER_FULL_NAME = "OME";',
-                        'const USER_FULL_NAME = "%s";' % user_full_name)
-    html = html.replace('const IS_PUBLIC_USER = false;',
-                        'const IS_PUBLIC_USER = %s;' % is_public_user)
-    html = html.replace('const MAX_PLANE_SIZE = 10188864;',
-                        'const MAX_PLANE_SIZE = %s;' % max_plane_size)
-    html = html.replace('const LENGTH_UNITS = LENGTHUNITS;',
-                        'const LENGTH_UNITS = %s;' % json.dumps(length_units))
-    html = html.replace('const MAX_ACTIVE_CHANNELS = 10;',
-                        'const MAX_ACTIVE_CHANNELS = %s;'
-                        % max_active_channels)
+
+    to_replace = {
+        'const APP_SERVED_BY_OMERO = false;':
+        'const APP_SERVED_BY_OMERO = true;',
+        'const BASE_OMEROWEB_URL = dev_omeroweb_url;':
+        'const BASE_OMEROWEB_URL = "%s";' % omeroweb_index,
+        'const APP_ROOT_URL = "";':
+        'const APP_ROOT_URL = "%s";' % figure_index,
+        'const USER_ID = 0;': 'const USER_ID = %s' % user.id,
+        'const PING_URL = "";': 'const PING_URL = "%s";' % ping_url,
+        'const USER_FULL_NAME = "OME";':
+        'const USER_FULL_NAME = "%s";' % user_full_name,
+        'const IS_PUBLIC_USER = false;':
+        'const IS_PUBLIC_USER = %s;' % is_public_user,
+        'const MAX_PLANE_SIZE = 10188864;':
+        'const MAX_PLANE_SIZE = %s;' % max_plane_size,
+        'const LENGTH_UNITS = LENGTHUNITS;':
+        'const LENGTH_UNITS = %s;' % json.dumps(length_units),
+        'const MAX_ACTIVE_CHANNELS = 10;':
+        'const MAX_ACTIVE_CHANNELS = %s;' % max_active_channels,
+    }
+    for key, value in to_replace.items():
+        if key not in html:
+            # HARD fail if ANY keys not found. Silent failure could hide bugs!
+            raise ValueError(f"Placeholder '{key}' not found in HTML.")
+        html = html.replace(key, value)
 
     if max_bytes:
         html = html.replace('const MAX_PROJECTION_BYTES = 1024 * 1024 * 256;',

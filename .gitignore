@@ -6,12 +6,13 @@
 demo/omero_figure/
 demo/figure.js
 demo/index.html
-node_modules/
-gh_pages/
+figure/node_modules/
 _site
 dist
 omero_figure.egg-info
 omero_figure/templates/
 omero_figure/static/
+omero_figure/scripts/
+figure/build
 .vscode
 .idea
