@@ -18,7 +18,7 @@
 import argparse
 import os
 
-from figure.python_scripts.Figure_To_Pdf \
+from omero_figure.scripts.omero.figure_scripts.Figure_To_Pdf \
     import export_figure
 
 
