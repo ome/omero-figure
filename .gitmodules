@@ -1,0 +1,3 @@
+[submodule "figure"]
+	path = figure
+	url = https://github.com/ome/figure.git
