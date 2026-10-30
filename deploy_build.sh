@@ -18,8 +18,3 @@ cp figure/dist/index.html omero_figure/templates/omero_figure/
 echo "copying static assets (js & css) to static directory..."
 mkdir -p omero_figure/static/omero_figure/assets/
 cp figure/dist/assets/* omero_figure/static/omero_figure/assets/
-
-# Also copy the Figure_To_Pdf.py script to omero-figure...
-mkdir -p omero_figure/scripts/omero/figure_scripts/
-cp figure/ome_figure/Figure_To_Pdf.py omero_figure/scripts/omero/figure_scripts/Figure_To_Pdf.py
-echo "Figure_To_Pdf.py script copied to omero_figure/scripts/omero/figure_scripts/"
