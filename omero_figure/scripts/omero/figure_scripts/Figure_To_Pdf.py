@@ -1920,17 +1920,19 @@ class FigureExport(object):
             label_list = []
             if para_width <= bbox[2]:
                 if 'bottom' in position:
-                    lbl_1 = ("%s" % (symbol), ly - half_height)
-                    lbl_2 = ("%s" % (sb['length']), ly - half_height - bbox[3] + 3)
+                    lbl_y = ly - half_height
+                    lbl_1 = ("%s" % (symbol), lbl_y)
+                    lbl_2 = ("%s" % (sb['length']), lbl_y - bbox[3] + 3)
                     label_list.append(lbl_1)
                     label_list.append(lbl_2)
                 else:
-                    lbl_1 = ("%s" % (sb['length']), ly + half_height)
-                    lbl_2 = ("%s" % (symbol), ly + half_height + bbox[3] - 3)
+                    lbl_y = ly + half_height
+                    lbl_1 = ("%s" % (sb['length']), lbl_y)
+                    lbl_2 = ("%s" % (symbol), lbl_y + bbox[3] - 3)
                     label_list.append(lbl_1)
                     label_list.append(lbl_2)
             else:
-                lbl_y = ly + ((-1 if 'bottom' in position else 1) * half_height)
+                lbl_y = ly + (-1 if 'bottom' in position else 1) * half_height
                 label_list.append((label, lbl_y))
 
             for label_tuple in label_list:
