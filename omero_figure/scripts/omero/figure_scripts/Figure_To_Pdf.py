@@ -158,11 +158,11 @@ def get_font(fontsize, bold=False, italics=False):
 
     if omero_installed:
         from omero.gateway import THISPATH
-        FONTPATH = os.path.join(THISPATH, "pilfonts")
+        pil_font_path = os.path.join(THISPATH, "pilfonts")
     else:
         # get location of this script... /pilfonts
         this_path = os.path.dirname(os.path.abspath(__file__))
-        FONTPATH = os.path.join(this_path, "pilfonts")
+        pil_font_path = os.path.join(this_path, "pilfonts")
 
     font_name = "FreeSans.ttf"
     if bold and italics:
@@ -171,12 +171,12 @@ def get_font(fontsize, bold=False, italics=False):
         font_name = "FreeSansBold.ttf"
     elif italics:
         font_name = "FreeSansOblique.ttf"
-    path_to_font = os.path.join(FONTPATH, font_name)
+    path_to_font = os.path.join(pil_font_path, font_name)
     try:
         font = ImageFont.truetype(path_to_font, fontsize)
     except Exception:
         try:
-            font_path = os.path.join(FONTPATH, "B24.pil")
+            font_path = os.path.join(pil_font_path, "B24.pil")
             font = ImageFont.load(font_path)
         except Exception:
             font = ImageFont.load_default()
@@ -1911,25 +1911,34 @@ class FigureExport(object):
 
             font = get_font(font_size)
             bbox = font.getbbox(label)
-            para_width = min(bbox[2] + 1, abs(wrap - ((lx + lx_end) / 2) + (-1 if "left" in position else 1)*(bbox[2] / 2)))
+            lbl_x = (lx + lx_end) / 2
+            lbl_size = bbox[2] + 1
+            panel_limit = abs(wrap - lbl_x +
+                              (-1 if "left" in position else 1)*(bbox[2] / 2))
+            para_width = min(lbl_size, panel_limit)
 
             label_list = []
             if para_width <= bbox[2]:
-                if 'bottom' in position: 
-                    label_list.append(("%s" % (symbol), ly - half_height))
-                    label_list.append(("%s" % (sb['length']), ly - half_height - bbox[3] + 3))
+                if 'bottom' in position:
+                    lbl_1 = ("%s" % (symbol), ly - half_height)
+                    lbl_2 = ("%s" % (sb['length']), ly - half_height - bbox[3] + 3)
+                    label_list.append(lbl_1)
+                    label_list.append(lbl_2)
                 else:
-                    label_list.append(("%s" % (sb['length']), ly + half_height))
-                    label_list.append(("%s" % (symbol), ly + half_height + bbox[3] - 3)) 
+                    lbl_1 = ("%s" % (sb['length']), ly + half_height)
+                    lbl_2 = ("%s" % (symbol), ly + half_height + bbox[3] - 3)
+                    label_list.append(lbl_1)
+                    label_list.append(lbl_2)
             else:
-                label_list.append((label, ly + ((-1 if 'bottom' in position else 1) * half_height)))
+                lbl_y = ly + ((-1 if 'bottom' in position else 1) * half_height)
+                label_list.append((label, lbl_y))
 
             for label_tuple in label_list:
                 self.draw_text(
-                    label_tuple[0], 
-                    (lx + lx_end) / 2,
+                    label_tuple[0],
+                    lbl_x,
                     label_tuple[1],
-                    font_size, 
+                    font_size,
                     (red, green, blue),
                     align="center")
 
@@ -2839,7 +2848,7 @@ class FigureExport(object):
         c = self.figure_canvas
         # Needs to be wide enough to avoid wrapping
         para_width = self.page_width
-        
+
         red, green, blue = rgb
         red = float(red) / 255
         green = float(green) / 255
@@ -2885,7 +2894,7 @@ class FigureExport(object):
             fontSize=fontsize)
 
         para = Paragraph(text, style)
-        w, h = para.wrap(self.page_width, y)  # to get the right heigth, with ot without wrapping
+        w, h = para.wrap(para_width, y)  # find required space
         para.drawOn(c, x, y - h + int(fontsize * 0.25))
 
         # Rotate back again
