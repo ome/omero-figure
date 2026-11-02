@@ -75,7 +75,7 @@ except ImportError:
     reportlab_installed = False
     logger.error("Reportlab not installed.")
 
-VERSION = "8.0.2.dev0"
+VERSION = "0.1.0.dev0"
 DEFAULT_OFFSET = 0
 
 ORIGINAL_DIR = "1_originals"
@@ -151,6 +151,36 @@ def compress(target, base):
                 zip_file.write(fullpath, archive_name)
     finally:
         zip_file.close()
+
+
+def get_font(fontsize, bold=False, italics=False):
+    """ Try to load font from known location in OMERO """
+
+    if omero_installed:
+        from omero.gateway import THISPATH
+        FONTPATH = os.path.join(THISPATH, "pilfonts")
+    else:
+        # get location of this script... /pilfonts
+        this_path = os.path.dirname(os.path.abspath(__file__))
+        FONTPATH = os.path.join(this_path, "pilfonts")
+
+    font_name = "FreeSans.ttf"
+    if bold and italics:
+        font_name = "FreeSansBoldOblique.ttf"
+    elif bold:
+        font_name = "FreeSansBold.ttf"
+    elif italics:
+        font_name = "FreeSansOblique.ttf"
+    path_to_font = os.path.join(FONTPATH, font_name)
+    try:
+        font = ImageFont.truetype(path_to_font, fontsize)
+    except Exception:
+        try:
+            font_path = os.path.join(FONTPATH, "B24.pil")
+            font = ImageFont.load(font_path)
+        except Exception:
+            font = ImageFont.load_default()
+    return font
 
 
 class Bounds(object):
@@ -668,35 +698,7 @@ class ShapeToPilExport(ShapeExport):
         self.scale = pil_img.size[0] / crop['width']
         self.draw = ImageDraw.Draw(pil_img)
 
-        if omero_installed:
-            from omero.gateway import THISPATH
-            self.FONTPATH = os.path.join(THISPATH, "pilfonts")
-        else:
-            # get location of this script... /pilfonts
-            this_path = os.path.dirname(os.path.abspath(__file__))
-            self.FONTPATH = os.path.join(this_path, "pilfonts")
-
         super(ShapeToPilExport, self).__init__(panel)
-
-    def get_font(self, fontsize, bold=False, italics=False):
-        """ Try to load font from known location in OMERO or local """
-        font_name = "FreeSans.ttf"
-        if bold and italics:
-            font_name = "FreeSansBoldOblique.ttf"
-        elif bold:
-            font_name = "FreeSansBold.ttf"
-        elif italics:
-            font_name = "FreeSansOblique.ttf"
-        path_to_font = os.path.join(self.FONTPATH, font_name)
-        try:
-            font = ImageFont.truetype(path_to_font, fontsize)
-        except Exception:
-            try:
-                font_path = os.path.join(self.FONTPATH, "B24.pil")
-                font = ImageFont.load(font_path)
-            except Exception:
-                font = ImageFont.load_default()
-        return font
 
     def get_panel_coords(self, shape_x, shape_y):
         """
@@ -752,7 +754,7 @@ class ShapeToPilExport(ShapeExport):
         r, g, b, a = self.get_rgba_int(shape['strokeColor'])
         # bump up alpha a bit to make text more readable
         rgba = (r, g, b, int(128 + a / 2))
-        font = self.get_font(size)
+        font = get_font(size)
         box = font.getbbox(text)
         width = box[2] - box[0]
         height = box[3] - box[1]
@@ -773,7 +775,7 @@ class ShapeToPilExport(ShapeExport):
         x, y = text_coords['x'], text_coords['y']
 
         r, g, b, a = self.get_rgba_int(stroke_color)
-        font = self.get_font(font_size)
+        font = get_font(font_size)
         box = font.getbbox(text)
         txt_w = box[2] - box[0]
         box = font.getbbox("Mg")  # height including acsenders & descenders
@@ -826,13 +828,15 @@ class ShapeToPilExport(ShapeExport):
         # Do some trigonometry to get the line angle can calculate arrow points
         dx = x2 - x1
         dy = y2 - y1
+        f = -1
         if dy == 0:
             line_angle = radians(90)
+            if dx < 0:
+                f = 1
         else:
             line_angle = atan(dx / dy)
-        f = -1
-        if dy < 0:
-            f = 1
+            if dy < 0:
+                f = 1
         # Angle of arrow head is 0.8 radians (0.4 either side of line_angle)
         arrow_point1_x = x2 + (f * sin(line_angle - 0.4) * head_size)
         arrow_point1_y = y2 + (f * cos(line_angle - 0.4) * head_size)
@@ -1840,16 +1844,20 @@ class FigureExport(object):
         if position == 'topleft':
             lx = x + spacer
             ly = y + spacer + half_height
+            wrap = x
         elif position == 'topright':
             lx = x + width - spacer
             ly = y + spacer + half_height
             align = "right"
+            wrap = x + width
         elif position == 'bottomleft':
             lx = x + spacer
             ly = y + height - spacer - half_height
+            wrap = x
         elif position == 'bottomright':
             lx = x + width - spacer
             ly = y + height - spacer - half_height
+            wrap = x + width
             align = "right"
 
         pixel_size_x = panel['pixel_size_x']
@@ -1901,12 +1909,29 @@ class FigureExport(object):
             else:
                 ly = ly + 5
 
-            self.draw_text(
-                label, (lx + lx_end) / 2,
-                ly + ((-1 if position in ["bottomleft", "bottomright"]
-                       else 1) * half_height),
-                font_size, (red, green, blue),
-                align="center")
+            font = get_font(font_size)
+            bbox = font.getbbox(label)
+            para_width = min(bbox[2] + 1, abs(wrap - ((lx + lx_end) / 2) + (-1 if "left" in position else 1)*(bbox[2] / 2)))
+
+            label_list = []
+            if para_width <= bbox[2]:
+                if 'bottom' in position: 
+                    label_list.append(("%s" % (symbol), ly - half_height))
+                    label_list.append(("%s" % (sb['length']), ly - half_height - bbox[3] + 3))
+                else:
+                    label_list.append(("%s" % (sb['length']), ly + half_height))
+                    label_list.append(("%s" % (symbol), ly + half_height + bbox[3] - 3)) 
+            else:
+                label_list.append((label, ly + ((-1 if 'bottom' in position else 1) * half_height)))
+
+            for label_tuple in label_list:
+                self.draw_text(
+                    label_tuple[0], 
+                    (lx + lx_end) / 2,
+                    label_tuple[1],
+                    font_size, 
+                    (red, green, blue),
+                    align="center")
 
     def get_color_ramp(self, channel):
         """
@@ -2536,7 +2561,7 @@ class FigureExport(object):
         # Optional rotation
         if 'rotation' in panel and panel['rotation'] > 0:
             rotation = -int(panel['rotation'])
-            pil_img = pil_img.rotate(rotation, Image.BICUBIC)
+            pil_img = pil_img.rotate(rotation, Image.BICUBIC, expand=1)
 
         # Final crop to size
         panel_size = self.get_crop_region(panel)
@@ -2814,7 +2839,7 @@ class FigureExport(object):
         c = self.figure_canvas
         # Needs to be wide enough to avoid wrapping
         para_width = self.page_width
-
+        
         red, green, blue = rgb
         red = float(red) / 255
         green = float(green) / 255
@@ -2860,7 +2885,7 @@ class FigureExport(object):
             fontSize=fontsize)
 
         para = Paragraph(text, style)
-        w, h = para.wrap(para_width, y)  # find required space
+        w, h = para.wrap(self.page_width, y)  # to get the right heigth, with ot without wrapping
         para.drawOn(c, x, y - h + int(fontsize * 0.25))
 
         # Rotate back again
@@ -2952,39 +2977,12 @@ class TiffExport(FigureExport):
 
         super(TiffExport, self).__init__(conn, script_params, export_images)
 
-        if omero_installed:
-            from omero.gateway import THISPATH
-            self.FONTPATH = os.path.join(THISPATH, "pilfonts")
-        else:
-            # get location of this script... /pilfonts
-            this_path = os.path.dirname(os.path.abspath(__file__))
-            self.FONTPATH = os.path.join(this_path, "pilfonts")
         self.ns = "omero.web.figure.tiff"
         self.mimetype = "image/tiff"
 
     def add_rois(self, panel, page):
         """ TIFF export doesn't add ROIs to page (does it to panel)"""
         pass
-
-    def get_font(self, fontsize, bold=False, italics=False):
-        """ Try to load font from known location in OMERO """
-        font_name = "FreeSans.ttf"
-        if bold and italics:
-            font_name = "FreeSansBoldOblique.ttf"
-        elif bold:
-            font_name = "FreeSansBold.ttf"
-        elif italics:
-            font_name = "FreeSansOblique.ttf"
-        path_to_font = os.path.join(self.FONTPATH, font_name)
-        try:
-            font = ImageFont.truetype(path_to_font, fontsize)
-        except Exception:
-            try:
-                font_path = os.path.join(self.FONTPATH, "B24.pil")
-                font = ImageFont.load(font_path)
-            except Exception:
-                font = ImageFont.load_default()
-        return font
 
     def get_figure_file_ext(self):
         return "tiff"
@@ -3098,7 +3096,7 @@ class TiffExport(FigureExport):
         widths = []
         heights = []
         for t in tokens:
-            font = self.get_font(fontsize, t['bold'], t['italics'])
+            font = get_font(fontsize, t['bold'], t['italics'])
             box = font.getbbox(t['text'])
             txt_w = box[2] - box[0]
             txt_h = box[3] - box[1]
@@ -3113,7 +3111,7 @@ class TiffExport(FigureExport):
 
         w = 0
         for t in tokens:
-            font = self.get_font(fontsize, t['bold'], t['italics'])
+            font = get_font(fontsize, t['bold'], t['italics'])
             box = font.getbbox(t['text'])
             txt_w = box[2] - box[0]
             txt_h = box[3] - box[1]
