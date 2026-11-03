@@ -335,7 +335,23 @@ def render_scaled_region(request, iid, z, t, conn=None, **kwargs):
     else:
         # fix to force correct rendering for vsi files  
         if image._obj.getFormat().getId().getValue() == 78:
-            scale_levels = {i: 1/pow(2,i) for i in range(0,len(scale_levels))}
+            try:
+                image._prepareRenderingEngine()
+                resolution_descriptions = image._re.getResolutionDescriptions()
+
+                for i in range(0, len(scale_levels)):
+                    r = resolution_descriptions[i]
+                    w = r.sizeX
+                    h = r.sizeY
+                    downsampleX = width / w;
+                    downsampleY = height / h;
+                    downsample = pow(2, i);
+                    absoluteMax = max(abs(downsampleX), abs(downsampleY))
+                    relativeDifference = abs((downsampleX - downsampleY) / absoluteMax)
+                    if relativeDifference > 0.01:
+                        scale_levels[i] = 1/downsample
+            except Exception:
+                scale_levels[i] = 1/downsample
         
         # Pick zoom such that returned image is below MAX size
         max_level = len(scale_levels.keys()) - 1
