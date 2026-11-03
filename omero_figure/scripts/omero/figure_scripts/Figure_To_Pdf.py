@@ -2161,24 +2161,24 @@ class FigureExport(object):
         # fix to force correct rendering for vsi files  
         if image._obj.getFormat().getId().getValue() == 78:
             try:
-                reOK = image._prepareRenderingEngine()
+                re_ok = image._prepareRenderingEngine()
             except Exception:
-                reOK = False
+                re_ok = False
 
-            if reOK:
-                resolution_descriptions = image._re.getResolutionDescriptions()
+            if re_ok:
+                rd = image._re.getResolutionDescriptions()
 
                 for i in range(0, len(zm_levels)):
-                    r = resolution_descriptions[i]
+                    r = rd[i]
                     w = r.sizeX
                     h = r.sizeY
-                    downsampleX = size_x / w;
-                    downsampleY = size_y / h;
-                    downsample = pow(2, i);
-                    absoluteMax = max(abs(downsampleX), abs(downsampleY))
-                    relativeDifference = abs((downsampleX - downsampleY) / absoluteMax)
-                    if relativeDifference > 0.01:
-                        zm_levels[i] = 1/downsample
+                    ds_x = size_x / w
+                    ds_y = size_y / h
+                    ds = pow(2, i)
+                    abs_max = max(abs(ds_x), abs(ds_y))
+                    rel_diff = abs((ds_x - ds_y) / abs_max)
+                    if rel_diff > 0.01:
+                        zm_levels[i] = 1/ds
         
         # e.g. {0: 1.0, 1: 0.25, 2: 0.0625, 3: 0.03123, 4: 0.01440}
         # Pick zoom such that returned image is below MAX size
