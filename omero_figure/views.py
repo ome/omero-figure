@@ -333,7 +333,7 @@ def render_scaled_region(request, iid, z, t, conn=None, **kwargs):
         # Not a big image - can load at full size
         level = None
     else:
-        # fix to force correct rendering for vsi files  
+        # fix to force correct rendering for vsi files
         if image._obj.getFormat().getId().getValue() == 78:
             try:
                 re_ok = image._prepareRenderingEngine()
@@ -354,7 +354,7 @@ def render_scaled_region(request, iid, z, t, conn=None, **kwargs):
                     rel_diff = abs((ds_x - ds_y) / abs_max)
                     if rel_diff > 0.01:
                         scale_levels[i] = 1/ds
-        
+
         # Pick zoom such that returned image is below MAX size
         max_level = len(scale_levels.keys()) - 1
         longest_side = max(width, height)
