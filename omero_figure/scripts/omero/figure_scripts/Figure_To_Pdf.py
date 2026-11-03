@@ -2155,6 +2155,8 @@ class FigureExport(object):
         height = region['height']
 
         zm_levels = image.getZoomLevelScaling()
+        size_x = image.getSizeX()
+        size_y = image.getSizeY()
         
         # fix to force correct rendering for vsi files  
         if image._obj.getFormat().getId().getValue() == 78:
@@ -2170,8 +2172,8 @@ class FigureExport(object):
                     r = resolution_descriptions[i]
                     w = r.sizeX
                     h = r.sizeY
-                    downsampleX = width / w;
-                    downsampleY = height / h;
+                    downsampleX = size_x / w;
+                    downsampleY = size_y / h;
                     downsample = pow(2, i);
                     absoluteMax = max(abs(downsampleX), abs(downsampleY))
                     relativeDifference = abs((downsampleX - downsampleY) / absoluteMax)
