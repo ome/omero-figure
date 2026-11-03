@@ -2155,6 +2155,11 @@ class FigureExport(object):
         height = region['height']
 
         zm_levels = image.getZoomLevelScaling()
+        
+        # fix to force correct rendering for vsi files  
+        if image._obj.getFormat().getId().getValue() == 78:
+            zm_levels = {i: 1/pow(2,i) for i in range(0, len(zm_levels))}
+        
         # e.g. {0: 1.0, 1: 0.25, 2: 0.0625, 3: 0.03123, 4: 0.01440}
         # Pick zoom such that returned image is below MAX size
         max_level = len(zm_levels.keys()) - 1
