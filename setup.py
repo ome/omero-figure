@@ -44,8 +44,16 @@ def require_npm(command, strict=False):
         def run(self):
             if strict or not os.path.exists(
                     'omero_figure/templates/omero_figure/index.html'):
+                # cd into the figure directory
+                os.chdir('figure')
                 self.spawn(['npm', 'install'])
                 self.spawn(['npm', 'run', 'build'])
+                print("NPM build completed.")
+                # return to the original directory
+                os.chdir(os.path.dirname(os.path.abspath(__file__)))
+                # run deploy_build.sh
+                self.spawn(['sh', 'deploy_build.sh'])
+
             command.run(self)
     return WrappedCommand
 

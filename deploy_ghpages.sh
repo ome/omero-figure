@@ -4,4 +4,5 @@
 # ./gh_pages/ output dir. The pages.yml workflow copies all of that dir
 #  to the gh-pages branch.
 
+mv figure/gh_pages gh_pages
 touch gh_pages/.nojekyll
