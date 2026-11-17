@@ -1922,13 +1922,13 @@ class FigureExport(object):
                 if 'bottom' in position:
                     lbl_y = ly - half_height
                     lbl_1 = ("%s" % (symbol), lbl_y)
-                    lbl_2 = ("%s" % (sb['length']), lbl_y - bbox[3] + 3)
+                    lbl_2 = ("%s" % (sb['length']), lbl_y - bbox[3] + 2)
                     label_list.append(lbl_1)
                     label_list.append(lbl_2)
                 else:
                     lbl_y = ly + half_height
                     lbl_1 = ("%s" % (sb['length']), lbl_y)
-                    lbl_2 = ("%s" % (symbol), lbl_y + bbox[3] - 3)
+                    lbl_2 = ("%s" % (symbol), lbl_y + bbox[3] - 2)
                     label_list.append(lbl_1)
                     label_list.append(lbl_2)
             else:
