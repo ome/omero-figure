@@ -29,7 +29,7 @@
   "homepage": "https://github.com/ome/omero-figure",
   "devDependencies": {
     "sass": "^1.54.1",
-    "vite": "^8.0.16",
+    "vite": "^8.1.6",
     "watch": "^0.13.0"
   },
   "dependencies": {
